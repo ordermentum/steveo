@@ -1,0 +1,8 @@
+{
+  "name": "steveo",
+  "version": "1.0.0",
+  "description": "A Task Manager Library",
+  "main": "index.js",
+  "author": "engineering@ordermentum.com",
+  "license": "Apache 2.0"
+}
