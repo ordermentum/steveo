@@ -1,4 +1,6 @@
 // @flow
+import 'babel-polyfill';
+
 import Task from './task';
 import Registry from './registry';
 import Runner from './runner';
