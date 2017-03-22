@@ -1,0 +1,11 @@
+{
+  "name": "test-kafka",
+  "version": "1.0.0",
+  "description": "test steveo",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "bananaman": "^1.3.3",
+    "steveo": "^1.0.0"
+  }
+}
