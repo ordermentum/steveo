@@ -1,5 +1,7 @@
 src
 coverage
 test
+types
+example
 .nyc_output
 coverage
