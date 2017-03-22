@@ -18,4 +18,3 @@ const Runner = (env: string, kafkaHost: string, registry: Object) => {
 };
 
 export default Runner;
-

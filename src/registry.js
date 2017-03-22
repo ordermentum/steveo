@@ -1,5 +1,5 @@
 // @flow
-const registry = (registeredTasks: Object) => {
+const Registry = (registeredTasks: Object) => {
   const addNewTask = (task: Object) => {
     registeredTasks[task.topic] = task; // eslint-disable-line
   };
@@ -14,4 +14,4 @@ const registry = (registeredTasks: Object) => {
   };
 };
 
-export default registry;
+export default Registry;
