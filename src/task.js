@@ -1,5 +1,5 @@
 // @flow
-import type { CB } from '../types';
+import type { Callback } from '../types';
 
 const Task = (registry: Object, runner: Object) => {
   let topic = null;
@@ -11,7 +11,7 @@ const Task = (registry: Object, runner: Object) => {
     return subscribeCallback(payload);
   };
 
-  const define = (taskName: string, callback: CB) => {
+  const define = (taskName: string, callback: Callback) => {
     topic = taskName;
     subscribeCallback = callback;
     registry.addNewTask({

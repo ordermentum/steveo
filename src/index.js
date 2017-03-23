@@ -5,7 +5,9 @@ import Task from './task';
 import Registry from './registry';
 import Runner from './runner';
 
-const Steveo = (env: string, kafkaHost: string) => {
+import type { Env } from '../types';
+
+const Steveo = (env: Env, kafkaHost: string) => {
   const registeredTopics = {};
   const registry = Registry(registeredTopics);
   const runner = Runner(env, kafkaHost, registry);

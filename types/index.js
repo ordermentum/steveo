@@ -1,1 +1,24 @@
-export type CB = (x: any) => any;
+/* @flow */
+
+export type Callback = (x: any) => any;
+
+export type Logger = {
+  logLevel: number,
+};
+
+export type KafkaParams = {
+  kafkaConnection: string,
+  kafkaGroupId: string,
+  clientId: ?string,
+  kafkaCodec: string,
+  logger: Logger,
+};
+
+export type Env = {
+  KAFKA_CONNECTION: string,
+  KAFKA_CODEC: string,
+  CLIENT_ID: string,
+  LOG_LEVEL: number,
+  KAFKA_GROUP_ID: string,
+}
+
