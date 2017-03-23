@@ -1,5 +1,6 @@
 [ignore]
 ./node_modules/kafka/*
+./node_modules/moment/*
 
 [include]
 

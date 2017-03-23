@@ -1,13 +1,13 @@
 // @flow
 import type { Callback } from '../types';
 
-const Task = (registry: Object, runner: Object) => {
+const Task = (registry: Object, runner: Object, logger: Object) => {
   let topic = null;
   let subscribeCallback = () => {};
 
   const subscribe = (payload: any) => {
     // publish message on topic without delay
-    console.log(payload);
+    logger.info(payload);
     return subscribeCallback(payload);
   };
 
@@ -24,7 +24,7 @@ const Task = (registry: Object, runner: Object) => {
     // check with registry for valid topic
     // publish message on topic
     runner.send(...args);
-    console.log(args, topic);
+    logger.info(args, topic);
   };
 
   return {
