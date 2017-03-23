@@ -23,7 +23,8 @@
   "nyc": {
     "exclude": [
       "lib",
-      "node_modules"
+      "test",
+      "types"
     ]
   },
   "dependencies": {

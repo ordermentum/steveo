@@ -19,7 +19,11 @@ const Runner = (env: Env, registry: Object, logger: Object) => {
   const receive = async (payload: Object, topic: string) => {
     logger.info('Payload: ', JSON.stringify(payload, null, 2), 'received on topic:', topic);
     const task = registry[topic];
-    await task.subscribe(payload);
+    try {
+      await task.subscribe(payload);
+    } catch (ex) {
+      logger.error('Error while executing consumer callback ', ex);
+    }
   };
 
 

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import Steveo from '../lib';
+import Steveo from '../src';
 
 describe('Index', () => {
   it('should check steveo import', () => {

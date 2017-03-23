@@ -65,4 +65,28 @@ describe('Runner', () => {
     expect(registry['a-topic'].subscribe.callCount).to.equal(1);
     expect(registry['a-topic'].subscribe.calledWith({ it: 'is a payload' }));
   });
+
+  it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
+    const registry = {
+      'a-topic': {
+        publish: () => {},
+        subscribe: sinon.stub().returns(Promise.reject({ some: 'error' })),
+      },
+    };
+    const anotherRunner = Runner({
+      CLIENT_ID: uuid.v4(),
+      KAFKA_CODEC: kafka.COMPRESSION_GZIP,
+      KAFKA_GROUP_ID: '123',
+      LOG_LEVEL: 1,
+    }, registry, console);
+    let error = false;
+    try {
+      await anotherRunner.receive({ it: 'is a payload' }, 'a-topic');
+    } catch (ex) {
+      error = true;
+      expect(registry['a-topic'].subscribe.callCount).to.equal(1);
+      expect(registry['a-topic'].subscribe.calledWith({ it: 'is a payload' }));
+    }
+    expect(error);
+  });
 });
