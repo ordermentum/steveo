@@ -44,4 +44,22 @@ describe('Runner', () => {
     expect(initStub.callCount).to.equal(1);
     runner.kafkaClient.consumer.init.restore();
   });
+
+  it('should invoke callback when receives a message on topic', () => {
+    const registry = {
+      'a-topic': {
+        publish: () => {},
+        subscribe: sinon.stub(),
+      },
+    };
+    const anotherRunner = Runner({
+      CLIENT_ID: uuid.v4(),
+      KAFKA_CODEC: kafka.COMPRESSION_GZIP,
+      KAFKA_GROUP_ID: '123',
+      LOG_LEVEL: 1,
+    }, registry, console);
+    anotherRunner.receive({ it: 'is a payload' }, 'a-topic');
+    expect(registry['a-topic'].subscribe.callCount).to.equal(1);
+    expect(registry['a-topic'].subscribe.calledWith({ it: 'is a payload' }));
+  });
 });

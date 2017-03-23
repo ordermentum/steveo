@@ -17,7 +17,7 @@ const Runner = (env: Env, registry: Object, logger: Object) => {
 
 
   const receive = async (payload: Object, topic: string) => {
-    // receive messages from kafka
+    logger.info('Payload: ', JSON.stringify(payload, null, 2), 'received on topic:', topic);
     const task = registry[topic];
     await task.subscribe(payload);
   };
