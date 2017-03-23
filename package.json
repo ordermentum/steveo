@@ -20,6 +20,12 @@
   "files": [
     "lib/*"
   ],
+  "nyc": {
+    "exclude": [
+      "lib",
+      "node_modules"
+    ]
+  },
   "dependencies": {
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",

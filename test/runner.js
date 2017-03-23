@@ -11,6 +11,9 @@ describe('Runner', () => {
     KAFKA_CODEC: kafka.COMPRESSION_GZIP,
     KAFKA_GROUP_ID: '123',
     LOG_LEVEL: 1,
+    KAFKA_SEND_ATTEMPTS: 1,
+    KAFKA_SEND_DELAY_MIN: 100,
+    KAFKA_SEND_DELAY_MAX: 300,
   }, {}, console);
   it('should create an instance', () => {
     expect(typeof runner).to.equal('object');
@@ -18,18 +21,18 @@ describe('Runner', () => {
     expect(typeof runner.receive).to.equal('function');
   });
 
-  it('should send a payload to kafka', () => {
+  it('should send a payload to kafka', async () => {
     const sendStub = sinon.stub(runner.kafkaClient.producer, 'send').returns(Promise.resolve());
-    runner.send('hello', { pay: 'load' });
+    await runner.send('hello', { pay: 'load' });
     expect(sendStub.callCount).to.equal(1);
     runner.kafkaClient.producer.send.restore();
   });
 
-  it('should log if a payload failed to send to kafka', () => {
+  it('should log if a payload failed to send to kafka', async () => {
     const sendStub = sinon.stub(runner.kafkaClient.producer, 'send').returns(Promise.reject({ error: 'happened' }));
     let err = false;
     try {
-      runner.send('hello', { pay: 'load' });
+      await runner.send('hello', { pay: 'load' });
     } catch (ex) {
       err = true;
       expect(sendStub.callCount).to.equal(1);
@@ -45,11 +48,11 @@ describe('Runner', () => {
     runner.kafkaClient.consumer.init.restore();
   });
 
-  it('should invoke callback when receives a message on topic', () => {
+  it('should invoke callback when receives a message on topic', async () => {
     const registry = {
       'a-topic': {
         publish: () => {},
-        subscribe: sinon.stub(),
+        subscribe: sinon.stub().returns(Promise.resolve()),
       },
     };
     const anotherRunner = Runner({
@@ -58,7 +61,7 @@ describe('Runner', () => {
       KAFKA_GROUP_ID: '123',
       LOG_LEVEL: 1,
     }, registry, console);
-    anotherRunner.receive({ it: 'is a payload' }, 'a-topic');
+    await anotherRunner.receive({ it: 'is a payload' }, 'a-topic');
     expect(registry['a-topic'].subscribe.callCount).to.equal(1);
     expect(registry['a-topic'].subscribe.calledWith({ it: 'is a payload' }));
   });

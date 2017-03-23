@@ -42,7 +42,9 @@ const Runner = (env: Env, registry: Object, logger: Object) => {
   };
 
   const send = async (topic: string, payload: Object) => {
+    logger.info('Message ', JSON.stringify(payload, null, 2), ' arrived on topic: ', topic);
     const data = producerPayload(payload, topic);
+    logger.info('*****', data);
     const sendParams = {
       retries: {
         attempts: env.KAFKA_SEND_ATTEMPTS,
