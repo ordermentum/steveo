@@ -20,5 +20,9 @@ export type Env = {
   CLIENT_ID: string,
   LOG_LEVEL: number,
   KAFKA_GROUP_ID: string,
-}
+  KAFKA_SEND_ATTEMPTS: ?number,
+  KAFKA_SEND_DELAY_MIN: ?number,
+  KAFKA_SEND_DELAY_MAX: ?number,
+};
+
 

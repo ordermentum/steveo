@@ -10,7 +10,7 @@ import type { Env } from '../types';
 const Steveo = (env: Env, kafkaHost: string, logger: Object) => {
   const registeredTopics = {};
   const registry = Registry(registeredTopics);
-  const runner = Runner(env, kafkaHost, registry, logger);
+  const runner = Runner(env, registry, logger);
   return {
     task: Task(registry, runner, logger),
   };

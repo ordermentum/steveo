@@ -4,7 +4,7 @@ import KafkaClient from './helpers/kafka';
 
 import type { Env } from '../types';
 
-const Runner = (env: Env, kafkaHost: string, registry: Object, logger: Object) => {
+const Runner = (env: Env, registry: Object, logger: Object) => {
   const kafkaClient = KafkaClient({
     kafkaConnection: env.KAFKA_CONNECTION,
     kafkaCodec: env.KAFKA_CODEC,
@@ -25,15 +25,29 @@ const Runner = (env: Env, kafkaHost: string, registry: Object, logger: Object) =
     };
   };
 
-  const send = (topic: string, payload: Object) => {
-    // send messages to kafka
-    kafkaClient.producer.send(producerPayload(payload, topic));
-    logger.info(`*****PRODUCE********
-                 topic:- ${topic}
-                 ********************
-                 payload:- ${JSON.stringify(payload)}
-                 ********************
-                `);
+  const send = async (topic: string, payload: Object) => {
+    const data = producerPayload(payload, topic);
+    const sendParams = {
+      retries: {
+        attempts: env.KAFKA_SEND_ATTEMPTS,
+        delay: {
+          min: env.KAFKA_SEND_DELAY_MIN,
+          max: env.KAFKA_SEND_DELAY_MAX,
+        },
+      },
+    };
+    try {
+      await kafkaClient.producer.send(data, sendParams);
+      logger.info(`
+        *****PRODUCE********
+        topic:- ${topic}
+        ********************
+        payload:- ${JSON.stringify(payload)}
+        ********************
+      `);
+    } catch (ex) {
+      logger.error('Error while sending payload:', JSON.stringify(payload, null, 2), 'topic :', topic, 'Error :', ex);
+    }
   };
 
   const receive = async (payload: Object, topic: string) => {
@@ -45,6 +59,7 @@ const Runner = (env: Env, kafkaHost: string, registry: Object, logger: Object) =
   return {
     send,
     receive,
+    kafkaClient,
   };
 };
 
