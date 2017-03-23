@@ -22,7 +22,9 @@
   ],
   "dependencies": {
     "babel-polyfill": "^6.23.0",
-    "babel-runtime": "^6.23.0"
+    "babel-runtime": "^6.23.0",
+    "no-kafka": "^3.1.1",
+    "uuid": "^3.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.24.0",
