@@ -37,4 +37,11 @@ describe('Runner', () => {
     expect(err);
     runner.kafkaClient.producer.send.restore();
   });
+
+  it('should initialize consumer', () => {
+    const initStub = sinon.stub(runner.kafkaClient.consumer, 'init').returns(Promise.resolve({ yeah: 'created' }));
+    runner.initializeConsumer(['test-topic']);
+    expect(initStub.callCount).to.equal(1);
+    runner.kafkaClient.consumer.init.restore();
+  });
 });

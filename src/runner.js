@@ -15,6 +15,22 @@ const Runner = (env: Env, registry: Object, logger: Object) => {
     kafkaGroupId: env.KAFKA_GROUP_ID,
   });
 
+
+  const receive = async (payload: Object, topic: string) => {
+    // receive messages from kafka
+    const task = registry[topic];
+    await task.subscribe(payload);
+  };
+
+
+  const initializeConsumer = (subscriptions: Array<string>) => {
+    logger.info('initializing consumer', subscriptions);
+    return kafkaClient.consumer.init([{
+      subscriptions,
+      handler: receive,
+    }]);
+  };
+
   const producerPayload = (msg: Object, topic: string) => {
     const timestamp = moment().unix();
 
@@ -50,16 +66,11 @@ const Runner = (env: Env, registry: Object, logger: Object) => {
     }
   };
 
-  const receive = async (payload: Object, topic: string) => {
-    // receive messages from kafka
-    const task = registry[topic];
-    await task.subscribe(payload);
-  };
-
   return {
     send,
     receive,
     kafkaClient,
+    initializeConsumer,
   };
 };
 
