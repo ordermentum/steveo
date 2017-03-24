@@ -1,10 +1,10 @@
 // @flow
 import C from './constants';
-import type { Callback, Reg } from '../types';
+import type { Callback, Reg, Runner } from '../types';
 
 
-const Task = (registry: Reg, runner: Object, logger: Object) => {
-  let topic = null;
+const Task = (registry: Reg, runner: Runner, logger: Object) => {
+  let topic: string;
   let subscribeCallback = C.NOOP;
 
   const subscribe = (payload: any) => {
@@ -20,7 +20,7 @@ const Task = (registry: Reg, runner: Object, logger: Object) => {
       topic,
       subscribe: subscribeCallback,
     };
-    registry.addNewTask(task);
+    registry.addNewTask(task, runner);
   };
 
   const publish = async (payload: Object) => {

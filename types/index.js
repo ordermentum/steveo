@@ -34,7 +34,15 @@ export type RegistredTopics = {
   [key: ?string]: Task,
 };
 
+export type Runner = {
+  send: (topic: string, payload: Object) => any,
+  receive: (payload: Object, topic: string) => any,
+  kafkaClient: Object,
+  initializeConsumer: (topics: Array<string>) => any,
+};
+
+
 export type Reg = {
-  addNewTask: (task: Task) => any,
-  removeTask: (task: Task) => any,
+  addNewTask: (task: Task, runner: Runner) => any,
+  removeTask: (task: Task, runner: Runner) => any,
 };
