@@ -1,9 +1,11 @@
 // @flow
+import C from './constants';
 import type { Callback, Reg } from '../types';
+
 
 const Task = (registry: Reg, runner: Object, logger: Object) => {
   let topic = null;
-  let subscribeCallback = () => {};
+  let subscribeCallback = C.NOOP;
 
   const subscribe = (payload: any) => {
     // publish message on topic without delay

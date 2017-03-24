@@ -24,7 +24,8 @@
     "exclude": [
       "lib",
       "test",
-      "types"
+      "types",
+      "src/constants"
     ]
   },
   "dependencies": {
