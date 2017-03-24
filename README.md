@@ -1,4 +1,5 @@
-# Lunartick
+# Steveo - Kafka Task Framework for Node.js
+
 [![npm version](https://badge.fury.io/js/steveo.svg)](https://badge.fury.io/js/steveo)
 [![Build Status](https://travis-ci.org/ordermentum/steveo.svg?branch=master)](https://travis-ci.org/ordermentum/steveo)
 [![dependencies Status](https://david-dm.org/ordermentum/steveo/status.svg)](https://david-dm.org/ordermentum/steveo)
@@ -10,7 +11,7 @@
 
 Status: WIP
 
-Steveo is a "JOB" management library for Kafka
+Steveo is a task management library for Kafka
 
 On a highlevel, it works as below, Steveo will have 3 main factory components
 
