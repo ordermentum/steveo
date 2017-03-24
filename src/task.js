@@ -1,7 +1,7 @@
 // @flow
-import type { Callback } from '../types';
+import type { Callback, Reg } from '../types';
 
-const Task = (registry: Object, runner: Object, logger: Object) => {
+const Task = (registry: Reg, runner: Object, logger: Object) => {
   let topic = null;
   let subscribeCallback = () => {};
 
@@ -11,13 +11,14 @@ const Task = (registry: Object, runner: Object, logger: Object) => {
     return subscribeCallback(payload);
   };
 
-  const define = (taskName: string, callback: Callback) => {
-    topic = taskName;
-    subscribeCallback = callback;
-    registry.addNewTask({
+  const define = (topicName: string, callBack: Callback) => {
+    topic = topicName;
+    subscribeCallback = callBack;
+    const task = {
       topic,
-      subscribe,
-    });
+      subscribe: subscribeCallback,
+    };
+    registry.addNewTask(task);
   };
 
   const publish = async (...args: Array<string>) => {

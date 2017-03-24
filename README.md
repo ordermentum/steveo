@@ -14,19 +14,19 @@ Steveo is a "JOB" management library for Kafka
 
 On a highlevel, it works as below, Steveo will have 3 main factory components
 
-    +-----------+                  +-----------+
-    |           |                  |           |
-    |   TASK    |                  | REGISTRY  |
-    |           |                  |           |
-    |           |                  |           |
-    +-----------+                  +-----------+
+              +-----------+                  +-----------+
+              |           |                  |           |
+              |   TASK    |                  | REGISTRY  |
+              |           |                  |           |
+              |           |                  |           |
+              +-----------+                  +-----------+
 
-                    +-----------+
-                    |           |
-                    |   RUNNER  |
-        SEND  <-----|           |<----- RECEIVE
-                    |           |
-                    +-----------+
+                              +-----------+
+                              |           |
+                              |   RUNNER  |
+                  SEND  <-----|           |<----- RECEIVE
+                              |           |
+                              +-----------+
 
 ### Task
 

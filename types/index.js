@@ -25,4 +25,16 @@ export type Env = {
   KAFKA_SEND_DELAY_MAX: ?number,
 };
 
+export type Task = {
+  topic: string,
+  subscribe: Object,
+};
 
+export type RegistredTopics = {
+  [key: ?string]: Task,
+};
+
+export type Reg = {
+  addNewTask: (task: Task) => any,
+  removeTask: (task: Task) => any,
+};
