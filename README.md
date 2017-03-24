@@ -8,12 +8,9 @@
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
 
 
-
-Status: WIP
-
 Steveo is a task management library for Kafka
 
-On a highlevel, it works as below, Steveo will have 3 main factory components
+On a highlevel, it works as below, Steveo has 3 main factory components
 
               +-----------+                  +-----------+
               |           |                  |           |
