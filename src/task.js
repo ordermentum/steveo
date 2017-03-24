@@ -21,11 +21,11 @@ const Task = (registry: Reg, runner: Object, logger: Object) => {
     registry.addNewTask(task);
   };
 
-  const publish = async (...args: Array<string>) => {
+  const publish = async (payload: Object) => {
     // check with registry for valid topic
     // publish message on topic
-    runner.send(...args);
-    logger.info(args, topic);
+    await runner.send(topic, payload);
+    logger.info(topic, payload);
   };
 
   return {
