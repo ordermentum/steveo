@@ -5,10 +5,11 @@ import kafka from 'no-kafka';
 import Task from './task';
 import Registry from './registry';
 import Runner from './runner';
+import NULL_LOGGER from 'null-logger';
 
 import type { Env } from '../types';
 
-const Steveo = (env: Env, logger: Object) => {
+const Steveo = (env: Env, logger: Object = NULL_LOGGER) => {
   const registeredTopics = {};
   const registry = Registry(registeredTopics);
   const runner = Runner(env, registry, logger);
