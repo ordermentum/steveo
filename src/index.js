@@ -2,10 +2,10 @@
 import 'babel-polyfill';
 
 import kafka from 'no-kafka';
+import NULL_LOGGER from 'null-logger';
 import Task from './task';
 import Registry from './registry';
 import Runner from './runner';
-import NULL_LOGGER from 'null-logger';
 
 import type { Env } from '../types';
 
