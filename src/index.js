@@ -1,13 +1,14 @@
 // @flow
 import 'babel-polyfill';
 
+import kafka from 'no-kafka';
 import Task from './task';
 import Registry from './registry';
 import Runner from './runner';
 
 import type { Env } from '../types';
 
-const Steveo = (env: Env, kafkaHost: string, logger: Object) => {
+const Steveo = (env: Env, logger: Object) => {
   const registeredTopics = {};
   const registry = Registry(registeredTopics);
   const runner = Runner(env, registry, logger);
@@ -16,4 +17,9 @@ const Steveo = (env: Env, kafkaHost: string, logger: Object) => {
   };
 };
 
+export const kafkaCompression = {
+  SNAPPY: kafka.COMPRESSION_SNAPPY,
+  GZIP: kafka.COMPRESSION_GZIP,
+  NONE: kafka.COMPRESSION_NONE,
+};
 export default Steveo;

@@ -43,3 +43,6 @@ Responsible for sending messages to Kafka & Receive message from Kafka.
   - Task factory uses `send` method on `Runner` to send the message to kafka with a payload
   - When a kafka emits a message, `Runner` will listen to it and call the subscribe callback from `Task`
 
+### Example
+
+See [example](https://github.com/ordermentum/steveo/blob/master/example/README.md)
