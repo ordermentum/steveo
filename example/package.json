@@ -6,6 +6,6 @@
   "license": "MIT",
   "dependencies": {
     "bananaman": "^1.3.3",
-    "steveo": "^1.0.0"
+    "steveo": "^1.0.6"
   }
 }
