@@ -47,7 +47,7 @@ describe('Runner', () => {
 
   it('should initialize consumer', async () => {
     const initStub = sinon.stub(runner.kafkaClient.consumer, 'init').returns(Promise.resolve({ yeah: 'created' }));
-    runner.initializeConsumer(['test-topic']);
+    await runner.initializeConsumer(['test-topic']);
     expect(initStub.callCount).to.equal(1);
     runner.kafkaClient.consumer.init.restore();
   });
