@@ -7,12 +7,12 @@ import Task from './task';
 import Registry from './registry';
 import Runner from './runner';
 
-import type { Env } from '../types';
+import type { Config } from '../types';
 
-const Steveo = (env: Env, logger: Object = NULL_LOGGER) => {
+const Steveo = (config: Config, logger: Object = NULL_LOGGER) => {
   const registeredTopics = {};
   const registry = Registry(registeredTopics);
-  const runner = Runner(env, registry, logger);
+  const runner = Runner(config, registry, logger);
   return {
     task: Task(registry, runner, logger),
   };

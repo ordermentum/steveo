@@ -2,17 +2,17 @@
 import moment from 'moment';
 import KafkaClient from './helpers/kafka';
 
-import type { Env } from '../types';
+import type { Config } from '../types';
 
-const Runner = (env: Env, registry: Object, logger: Object) => {
+const Runner = (config: Config, registry: Object, logger: Object) => {
   const kafkaClient = KafkaClient({
-    kafkaConnection: env.KAFKA_CONNECTION,
-    kafkaCodec: env.KAFKA_CODEC,
-    clientId: env.CLIENT_ID,
+    kafkaConnection: config.kafkaConnection,
+    kafkaCodec: config.kafkaCodec,
+    clientId: config.clientId,
     logger: {
-      logLevel: env.LOG_LEVEL,
+      logLevel: config.logLevel,
     },
-    kafkaGroupId: env.KAFKA_GROUP_ID,
+    kafkaGroupId: config.kafkaGroupId,
   });
 
 
@@ -51,10 +51,10 @@ const Runner = (env: Env, registry: Object, logger: Object) => {
     logger.info('*****', data);
     const sendParams = {
       retries: {
-        attempts: env.KAFKA_SEND_ATTEMPTS,
+        attempts: config.kafkaSendAttempts,
         delay: {
-          min: env.KAFKA_SEND_DELAY_MIN,
-          max: env.KAFKA_SEND_DELAY_MAX,
+          min: config.kafkaSendDelayMin,
+          max: config.kafkaSendDelayMax,
         },
       },
     };

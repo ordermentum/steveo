@@ -7,13 +7,13 @@ import Runner from '../src/runner';
 
 describe('Runner', () => {
   const runner = Runner({
-    CLIENT_ID: uuid.v4(),
-    KAFKA_CODEC: kafka.COMPRESSION_GZIP,
-    KAFKA_GROUP_ID: '123',
-    LOG_LEVEL: 1,
-    KAFKA_SEND_ATTEMPTS: 1,
-    KAFKA_SEND_DELAY_MIN: 100,
-    KAFKA_SEND_DELAY_MAX: 300,
+    clientId: uuid.v4(),
+    kafkaCodec: kafka.COMPRESSION_GZIP,
+    kafkaGroupId: '123',
+    logLevel: 1,
+    kafkaSendAttempts: 1,
+    kafkaSendDelayMin: 100,
+    kafkaSendDelayMax: 300,
   }, {}, console);
   it('should create an instance', () => {
     expect(typeof runner).to.equal('object');
@@ -56,10 +56,10 @@ describe('Runner', () => {
       },
     };
     const anotherRunner = Runner({
-      CLIENT_ID: uuid.v4(),
-      KAFKA_CODEC: kafka.COMPRESSION_GZIP,
-      KAFKA_GROUP_ID: '123',
-      LOG_LEVEL: 1,
+      clientId: uuid.v4(),
+      kafkaCoded: kafka.COMPRESSION_GZIP,
+      kafkaGroupId: '123',
+      logLevel: 1,
     }, registry, console);
     await anotherRunner.receive({ it: 'is a payload' }, 'a-topic');
     expect(registry['a-topic'].subscribe.callCount).to.equal(1);
@@ -74,10 +74,10 @@ describe('Runner', () => {
       },
     };
     const anotherRunner = Runner({
-      CLIENT_ID: uuid.v4(),
-      KAFKA_CODEC: kafka.COMPRESSION_GZIP,
-      KAFKA_GROUP_ID: '123',
-      LOG_LEVEL: 1,
+      clientId: uuid.v4(),
+      kafkaCodec: kafka.COMPRESSION_GZIP,
+      kafkaGroupId: '123',
+      logLevel: 1,
     }, registry, console);
     let error = false;
     try {

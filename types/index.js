@@ -14,15 +14,15 @@ export type KafkaParams = {
   logger: Logger,
 };
 
-export type Env = {
-  KAFKA_CONNECTION: string,
-  KAFKA_CODEC: string,
-  CLIENT_ID: string,
-  LOG_LEVEL: number,
-  KAFKA_GROUP_ID: string,
-  KAFKA_SEND_ATTEMPTS: ?number,
-  KAFKA_SEND_DELAY_MIN: ?number,
-  KAFKA_SEND_DELAY_MAX: ?number,
+export type Config = {
+  kafkaConnection: string,
+  kafkaCodec: string,
+  clientId: string,
+  logLevel: number,
+  kafkaGroupId: string,
+  kafkaSendAttempts: ?number,
+  kafkaSendDelayMin: ?number,
+  kafkaSendDelayMax: ?number,
 };
 
 export type Task = {
