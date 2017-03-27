@@ -2,18 +2,22 @@
 import type { Task, RegistredTopics, Runner } from '../types';
 
 const Registry = (registeredTasks: RegistredTopics) => {
-  const addNewTask = (task: Task, runner: Runner) => {
+  const addNewTask = async (task: Task, runner: Runner) => {
     registeredTasks[task.topic] = task; // eslint-disable-line
     // call initialize consumer
     const topics = Object.keys(registeredTasks);
-    runner.initializeConsumer(topics);
+    await runner.initializeProducer();
+    await runner.initializeConsumer(topics);
+    await runner.initializeGroupAdmin();
   };
 
-  const removeTask = (task: Task, runner: Runner) => {
+  const removeTask = async (task: Task, runner: Runner) => {
     delete registeredTasks[task.topic]; // eslint-disable-line
      // call initialize consumer
     const topics = Object.keys(registeredTasks);
-    runner.initializeConsumer(topics);
+    await runner.initializeProducer();
+    await runner.initializeConsumer(topics);
+    await runner.initializeGroupAdmin();
   };
 
   return {

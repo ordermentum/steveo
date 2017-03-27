@@ -18,9 +18,17 @@ const KafkaClient = (params: KafkaParams) => {
     logger: params.logger,
   });
 
+  const admin = new Kafka.GroupAdmin({
+    groupId: params.kafkaGroupId,
+    clientId: params.clientId || uuid.v4(),
+    connectionString: params.kafkaConnection,
+    codec: params.kafkaCodec,
+  });
+
   return {
     producer,
     consumer,
+    admin,
   };
 };
 

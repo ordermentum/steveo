@@ -35,6 +35,10 @@ const Runner = (config: Config, registry: Object, logger: Object) => {
     }]);
   };
 
+  const initializeGroupAdmin = () => kafkaClient.admin.init();
+
+  const initializeProducer = () => kafkaClient.producer.init();
+
   const producerPayload = (msg: Object, topic: string) => {
     const timestamp = moment().unix();
 
@@ -72,11 +76,20 @@ const Runner = (config: Config, registry: Object, logger: Object) => {
     }
   };
 
+  const fetchConsumerLag = (groupId: string, topicName: string, partitions: Array<number>) =>
+    kafkaClient.admin.fetchConsumerLag(groupId, [{
+      topicName,
+      partitions,
+    }]);
+
   return {
     send,
     receive,
     kafkaClient,
     initializeConsumer,
+    initializeGroupAdmin,
+    initializeProducer,
+    fetchConsumerLag,
   };
 };
 

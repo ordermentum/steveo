@@ -19,6 +19,10 @@ describe('Runner', () => {
     expect(typeof runner).to.equal('object');
     expect(typeof runner.send).to.equal('function');
     expect(typeof runner.receive).to.equal('function');
+    expect(typeof runner.initializeConsumer).to.equal('function');
+    expect(typeof runner.initializeGroupAdmin).to.equal('function');
+    expect(typeof runner.initializeProducer).to.equal('function');
+    expect(typeof runner.fetchConsumerLag).to.equal('function');
   });
 
   it('should send a payload to kafka', async () => {
@@ -41,11 +45,32 @@ describe('Runner', () => {
     runner.kafkaClient.producer.send.restore();
   });
 
-  it('should initialize consumer', () => {
+  it('should initialize consumer', async () => {
     const initStub = sinon.stub(runner.kafkaClient.consumer, 'init').returns(Promise.resolve({ yeah: 'created' }));
     runner.initializeConsumer(['test-topic']);
     expect(initStub.callCount).to.equal(1);
     runner.kafkaClient.consumer.init.restore();
+  });
+
+  it('should initialize group admin', async () => {
+    const initStub = sinon.stub(runner.kafkaClient.admin, 'init').returns(Promise.resolve({ yeah: 'admin' }));
+    await runner.initializeGroupAdmin();
+    expect(initStub.callCount).to.equal(1);
+    runner.kafkaClient.admin.init.restore();
+  });
+
+  it('should initialize producer', async () => {
+    const initStub = sinon.stub(runner.kafkaClient.producer, 'init').returns(Promise.resolve({ yeah: 'created' }));
+    await runner.initializeProducer();
+    expect(initStub.callCount).to.equal(1);
+    runner.kafkaClient.producer.init.restore();
+  });
+
+  it('should fetch fetchConsumerLag', async () => {
+    const fetchConsumerLagStub = sinon.stub(runner.kafkaClient.admin, 'fetchConsumerLag').returns(Promise.resolve({ lag: '0' }));
+    await runner.fetchConsumerLag();
+    expect(fetchConsumerLagStub.callCount).to.equal(1);
+    runner.kafkaClient.admin.fetchConsumerLag.restore();
   });
 
   it('should invoke callback when receives a message on topic', async () => {

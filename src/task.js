@@ -13,14 +13,14 @@ const Task = (registry: Reg, runner: Runner, logger: Object) => {
     return subscribeCallback(payload);
   };
 
-  const define = (topicName: string, callBack: Callback) => {
+  const define = async (topicName: string, callBack: Callback) => {
     topic = topicName;
     subscribeCallback = callBack;
     const task = {
       topic,
       subscribe: subscribeCallback,
     };
-    registry.addNewTask(task, runner);
+    await registry.addNewTask(task, runner);
   };
 
   const publish = async (payload: Object) => {
@@ -29,6 +29,7 @@ const Task = (registry: Reg, runner: Runner, logger: Object) => {
     await runner.send(topic, payload);
     logger.info(topic, payload);
   };
+
 
   return {
     define,

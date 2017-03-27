@@ -6,7 +6,7 @@ describe('Index', () => {
     expect(typeof Steveo).to.equal('function');
   });
 
-  it('should create task', () => {
+  it('should create task', async () => {
     const steveo = Steveo('dev', '127.0.0.1');
     expect(typeof steveo).to.equal('object');
     expect(typeof steveo.task).to.equal('object');

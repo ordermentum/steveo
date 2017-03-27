@@ -15,6 +15,7 @@ const Steveo = (config: Config, logger: Object = NULL_LOGGER) => {
   const runner = Runner(config, registry, logger);
   return {
     task: Task(registry, runner, logger),
+    fetchConsumerLag: runner.fetchConsumerLag,
   };
 };
 

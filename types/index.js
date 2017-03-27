@@ -39,6 +39,8 @@ export type Runner = {
   receive: (payload: Object, topic: string) => any,
   kafkaClient: Object,
   initializeConsumer: (topics: Array<string>) => any,
+  initializeGroupAdmin: () => any,
+  initializeProducer: () => any,
 };
 
 

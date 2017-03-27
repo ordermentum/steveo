@@ -10,11 +10,13 @@ describe('Registry', () => {
     registry = Registry(registeredTasks);
     runner = {
       initializeConsumer: sinon.stub(),
+      initializeProducer: sinon.stub(),
+      initializeGroupAdmin: sinon.stub(),
     };
   });
 
-  it('should add new tasks', () => {
-    registry.addNewTask({
+  it('should add new tasks', async () => {
+    await registry.addNewTask({
       topic: 'hello',
       subscribe: () => {},
     }, runner);
@@ -22,12 +24,12 @@ describe('Registry', () => {
     expect(runner.initializeConsumer.callCount).to.equal(1);
   });
 
-  it('should not duplicate tasks', () => {
-    registry.addNewTask({
+  it('should not duplicate tasks', async () => {
+    await registry.addNewTask({
       topic: 'hello',
       subscribe: () => {},
     }, runner);
-    registry.addNewTask({
+    await registry.addNewTask({
       topic: 'hello',
       subscribe: () => {},
     }, runner);
@@ -35,12 +37,12 @@ describe('Registry', () => {
     expect(runner.initializeConsumer.callCount).to.equal(2);
   });
 
-  it('should remove tasks', () => {
-    registry.addNewTask({
+  it('should remove tasks', async () => {
+    await registry.addNewTask({
       topic: 'hello',
       subscribe: () => {},
     }, runner);
-    registry.removeTask({
+    await registry.removeTask({
       topic: 'hello',
       subscribe: () => {},
     }, runner);
