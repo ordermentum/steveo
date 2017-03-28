@@ -1,5 +1,6 @@
 // @flow
 import moment from 'moment';
+import kafka from 'no-kafka';
 import KafkaClient from './helpers/kafka';
 
 import type { Config } from '../types';
@@ -15,21 +16,33 @@ const Runner = (config: Config, registry: Object, logger: Object) => {
     kafkaGroupId: config.kafkaGroupId,
   });
 
-
-  const receive = async (payload: Object, topic: string) => {
-    logger.info('Payload: ', JSON.stringify(payload, null, 2), 'received on topic:', topic);
-    const task = registry[topic];
-    try {
-      await task.subscribe(payload);
-    } catch (ex) {
-      logger.error('Error while executing consumer callback ', ex);
-    }
-  };
-
+  const receive = (messageSet: Array<Object>, topic: string, partition: number) =>
+    Promise.all(messageSet.map(async (m) => {
+      try {
+        logger.info(`
+        *****CONSUME********
+        topic:- ${topic}
+        ********************
+        payload:- ${m.message.value}
+        ********************
+      `);
+        // commit offset
+        await kafkaClient.consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' });
+        const task = registry[topic];
+        await task.subscribe(JSON.parse(m.message.value.toString('utf8')));
+      } catch (ex) {
+        logger.error('Error while executing consumer callback ', ex);
+      }
+    }));
 
   const initializeConsumer = (subscriptions: Array<string>) => {
     logger.info('initializing consumer', subscriptions);
+
     return kafkaClient.consumer.init([{
+      strategy: new kafka.WeightedRoundRobinAssignmentStrategy(),
+      metadata: {
+        weight: 4,
+      },
       subscriptions,
       handler: receive,
     }]);
