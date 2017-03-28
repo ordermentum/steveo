@@ -14,6 +14,12 @@ export type KafkaParams = {
   logger: Logger,
 };
 
+export type PublishCallback = {
+  success: Callback,
+  failure: Callback
+};
+
+
 export type Config = {
   kafkaConnection: string,
   kafkaCodec: string,
@@ -23,6 +29,7 @@ export type Config = {
   kafkaSendAttempts: ?number,
   kafkaSendDelayMin: ?number,
   kafkaSendDelayMax: ?number,
+  publishCallback: ?PublishCallback,
 };
 
 export type Task = {
@@ -36,7 +43,7 @@ export type RegistredTopics = {
 
 export type Runner = {
   send: (topic: string, payload: Object) => any,
-  receive: (payload: Object, topic: string) => any,
+  receive: (messageSet: Array<Object>, topic: string, partition: number) => any,
   kafkaClient: Object,
   initializeConsumer: (topics: Array<string>) => any,
   initializeGroupAdmin: () => any,
@@ -47,4 +54,6 @@ export type Runner = {
 export type Reg = {
   addNewTask: (task: Task, runner: Runner) => any,
   removeTask: (task: Task, runner: Runner) => any,
+  successCallback: Callback,
+  failureCallback: Callback,
 };
