@@ -32,9 +32,9 @@ const Task = (registry: Reg, runner: Runner, logger: Object) => {
       registry.successCallback(topic, payload);
     } catch (ex) {
       registry.failureCallback(topic, payload);
+      throw ex;
     }
   };
-
 
   return {
     define,

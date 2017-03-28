@@ -6,15 +6,23 @@ import sinon from 'sinon';
 import Runner from '../src/runner';
 
 describe('Runner', () => {
-  const runner = Runner({
-    clientId: uuid.v4(),
-    kafkaCodec: kafka.COMPRESSION_GZIP,
-    kafkaGroupId: '123',
-    logLevel: 1,
-    kafkaSendAttempts: 1,
-    kafkaSendDelayMin: 100,
-    kafkaSendDelayMax: 300,
-  }, {}, console);
+  let runner;
+  beforeEach(() => {
+    runner = Runner({
+      clientId: uuid.v4(),
+      kafkaCodec: kafka.COMPRESSION_GZIP,
+      kafkaGroupId: '123',
+      logLevel: 1,
+      kafkaSendAttempts: 1,
+      kafkaSendDelayMin: 100,
+      kafkaSendDelayMax: 300,
+      publishCallback: {
+        success: sinon.stub(),
+        failure: sinon.stub(),
+      },
+    }, {}, console);
+  });
+
   it('should create an instance', () => {
     expect(typeof runner).to.equal('object');
     expect(typeof runner.send).to.equal('function');
@@ -86,9 +94,10 @@ describe('Runner', () => {
       kafkaGroupId: '123',
       logLevel: 1,
     }, registry, console);
-    await anotherRunner.receive({ it: 'is a payload' }, 'a-topic');
+    const commitOffsetStub = sinon.stub(anotherRunner.kafkaClient.consumer, 'commitOffset');
+    await anotherRunner.receive([{ message: { value: '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D' } }], 'a-topic', 0);
+    expect(commitOffsetStub.callCount).to.equal(1);
     expect(registry['a-topic'].subscribe.callCount).to.equal(1);
-    expect(registry['a-topic'].subscribe.calledWith({ it: 'is a payload' }));
   });
 
   it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
@@ -105,12 +114,15 @@ describe('Runner', () => {
       logLevel: 1,
     }, registry, console);
     let error = false;
+    let commitOffsetStub;
     try {
-      await anotherRunner.receive({ it: 'is a payload' }, 'a-topic');
+      commitOffsetStub = sinon.stub(anotherRunner.kafkaClient.consumer, 'commitOffset');
+      await anotherRunner.receive([{ message: { value: '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D' } }], 'a-topic', 0);
     } catch (ex) {
       error = true;
       expect(registry['a-topic'].subscribe.callCount).to.equal(1);
       expect(registry['a-topic'].subscribe.calledWith({ it: 'is a payload' }));
+      expect(commitOffsetStub.callCount).to.equal(1);
     }
     expect(error);
   });

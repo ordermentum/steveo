@@ -6,9 +6,12 @@ describe('Index', () => {
     expect(typeof Steveo).to.equal('function');
   });
 
-  it('should create task', async () => {
-    const steveo = Steveo('dev', '127.0.0.1');
+  it('should create task', () => {
+    const steveo = Steveo({}, console);
     expect(typeof steveo).to.equal('object');
-    expect(typeof steveo.task).to.equal('object');
+    expect(typeof steveo.task).to.equal('function');
+    const task = steveo.task();
+    expect(typeof task).to.equal('object');
+    expect(typeof steveo.lag).to.equal('function');
   });
 });

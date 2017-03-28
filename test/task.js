@@ -13,6 +13,8 @@ describe('Task', () => {
     registry = {
       addNewTask: sinon.stub(),
       removeTask: sinon.stub(),
+      successCallback: sinon.stub(),
+      failureCallback: sinon.stub(),
     };
     task = Task(registry, mockRunner, console);
   });
@@ -33,6 +35,23 @@ describe('Task', () => {
     task.define('a-simple-task', () => {});
     await task.publish({ payload: 'something-big' });
     expect(mockRunner.send.callCount).to.equal(1);
+  });
+
+  it('should be able to publish with callback on failure', async () => {
+    const failureRunner = {
+      send: sinon.stub().returns(Promise.reject()),
+    };
+    const failTask = Task(registry, failureRunner, console);
+    failTask.define('a-simple-task', () => {});
+    let err = false;
+    try {
+      await failTask.publish({ payload: 'something-big' });
+    } catch (ex) {
+      expect(registry.failureCallback.callCount).to.equal(1);
+      expect(failureRunner.send.callCount).to.equal(1);
+      err = true;
+    }
+    expect(err).to.equal(true);
   });
 
   it('should be have subscribe method to invoke', () => {

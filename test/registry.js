@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import Registry from '../src/registry';
+import C from '../src/constants';
 
 describe('Registry', () => {
   let registry;
@@ -48,5 +49,17 @@ describe('Registry', () => {
     }, runner);
     expect(Object.keys(registeredTasks).length).to.equal(0);
     expect(runner.initializeConsumer.callCount).to.equal(2);
+  });
+
+  it('should have NOOP success & failure callbacks if not defined', () => {
+    const reg = Registry({});
+    expect(reg.successCallback).to.deep.equal(C.NOOP);
+    expect(reg.failureCallback).to.deep.equal(C.NOOP);
+  });
+
+  it('should have success & failure callbacks if  defined', () => {
+    const reg = Registry({}, { success: C.NOOP, failure: C.NOOP });
+    expect(reg.successCallback).to.deep.equal(C.NOOP);
+    expect(reg.failureCallback).to.deep.equal(C.NOOP);
   });
 });

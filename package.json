@@ -25,7 +25,8 @@
       "lib",
       "test",
       "types",
-      "src/constants"
+      "src/constants",
+      "src/admin.js"
     ]
   },
   "dependencies": {
