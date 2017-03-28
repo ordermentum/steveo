@@ -17,21 +17,100 @@ babel-runtime@^6.22.0, babel-runtime@^6.23.0:
     core-js "^2.4.0"
     regenerator-runtime "^0.10.0"
 
-bananaman@^1.3.3:
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/bananaman/-/bananaman-1.3.3.tgz#83e1491e8c54f9c28f7eab3230cd715bc67004cf"
+bin-protocol@^3.0.2:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/bin-protocol/-/bin-protocol-3.0.3.tgz#010e53caed26c2b6e8e3b6a33cbbfe484e65ca1e"
+  dependencies:
+    lodash "^4.1.0"
+    long "^3.0.3"
+    protocol-buffers-schema "^3.0.0"
+
+bluebird@^3.3.3:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.0.tgz#791420d7f551eea2897453a8a77653f96606d67c"
+
+buffer-crc32@^0.2.5:
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/buffer-crc32/-/buffer-crc32-0.2.13.tgz#0d333e3f00eac50aa1454abd30ef8c2a5d9a7242"
+
+connection-parse@0.0.x:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/connection-parse/-/connection-parse-0.0.7.tgz#18e7318aab06a699267372b10c5226d25a1c9a69"
 
 core-js@^2.4.0:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.4.1.tgz#4de911e667b0eae9124e34254b53aea6fc618d3e"
 
+hashring@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/hashring/-/hashring-3.2.0.tgz#fda4efde8aa22cdb97fb1d2a65e88401e1c144ce"
+  dependencies:
+    connection-parse "0.0.x"
+    simple-lru-cache "0.0.x"
+
+lodash@=4.16.4, lodash@^4.0.1, lodash@^4.1.0, lodash@^4.3.0:
+  version "4.16.4"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.16.4.tgz#01ce306b9bad1319f2a5528674f88297aeb70127"
+
+long@^3.0.3:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/long/-/long-3.2.0.tgz#d821b7138ca1cb581c172990ef14db200b5c474b"
+
+moment@^2.18.1:
+  version "2.18.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
+
+murmur-hash-js@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/murmur-hash-js/-/murmur-hash-js-1.0.0.tgz#5041049269c96633c866386960b2f4289e75e5b0"
+
+nice-simple-logger@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/nice-simple-logger/-/nice-simple-logger-1.0.1.tgz#0f9e648527be7be3e49ab76fa8c8c098af951bf6"
+  dependencies:
+    lodash "^4.3.0"
+
+no-kafka@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/no-kafka/-/no-kafka-3.1.1.tgz#9b16935cd1c38e0a9dd82098dfb3b2bb9cac29ba"
+  dependencies:
+    bin-protocol "^3.0.2"
+    bluebird "^3.3.3"
+    buffer-crc32 "^0.2.5"
+    hashring "^3.2.0"
+    lodash "=4.16.4"
+    murmur-hash-js "^1.0.0"
+    nice-simple-logger "^1.0.1"
+    wrr-pool "^1.0.3"
+
+protocol-buffers-schema@^3.0.0:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/protocol-buffers-schema/-/protocol-buffers-schema-3.1.1.tgz#b5e4800ce8adab7fb8ffe8770bb36e2a04359c78"
+
 regenerator-runtime@^0.10.0:
   version "0.10.3"
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.10.3.tgz#8c4367a904b51ea62a908ac310bf99ff90a82a3e"
 
-steveo@^1.0.0:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/steveo/-/steveo-1.0.4.tgz#bfb51f9556653affb0c9c31ca8b84d1ce68ffeea"
+simple-lru-cache@0.0.x:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/simple-lru-cache/-/simple-lru-cache-0.0.2.tgz#d59cc3a193c1a5d0320f84ee732f6e4713e511dd"
+
+steveo@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/steveo/-/steveo-1.0.6.tgz#b2468dc06ecd7284296f5a28c6021f398c79844e"
   dependencies:
     babel-polyfill "^6.23.0"
     babel-runtime "^6.23.0"
+    moment "^2.18.1"
+    no-kafka "^3.1.1"
+    uuid "^3.0.1"
+
+uuid@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.1.tgz#6544bba2dfda8c1cf17e629a3a305e2bb1fee6c1"
+
+wrr-pool@^1.0.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/wrr-pool/-/wrr-pool-1.1.3.tgz#fdad22f2ea1f30363ffe5d781cf79497a77ff07e"
+  dependencies:
+    lodash "^4.0.1"
