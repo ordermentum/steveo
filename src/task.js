@@ -26,8 +26,13 @@ const Task = (registry: Reg, runner: Runner, logger: Object) => {
   const publish = async (payload: Object) => {
     // check with registry for valid topic
     // publish message on topic
-    await runner.send(topic, payload);
-    logger.info(topic, payload);
+    try {
+      await runner.send(topic, payload);
+      logger.info('FROM PRODUCER', topic, payload);
+      registry.successCallback(topic, payload);
+    } catch (ex) {
+      registry.failureCallback(topic, payload);
+    }
   };
 
 
@@ -35,6 +40,7 @@ const Task = (registry: Reg, runner: Runner, logger: Object) => {
     define,
     publish,
     subscribe,
+    runner,
   };
 };
 
