@@ -34,7 +34,12 @@ export type Config = {
 
 export type Task = {
   topic: string,
-  subscribe: Object,
+  subscribe: () => any,
+};
+
+export type Producer = {
+  send: (topic: string, payload: Object) => any,
+  initialize: () => any,
 };
 
 export type RegistredTopics = {
@@ -43,7 +48,7 @@ export type RegistredTopics = {
 
 export type Runner = {
   send: (topic: string, payload: Object) => any,
-  receive: (messageSet: Array<Object>, topic: string, partition: number) => any,
+  receive: (messages: Array<Object>, topic: string, partition: number) => any,
   kafkaClient: Object,
   initializeConsumer: (topics: Array<string>) => any,
   initializeGroupAdmin: () => any,
@@ -52,8 +57,10 @@ export type Runner = {
 
 
 export type Reg = {
-  addNewTask: (task: Task, runner: Runner) => any,
-  removeTask: (task: Task, runner: Runner) => any,
+  addNewTask: (task: Task) => any,
+  removeTask: (task: Task) => any,
   successCallback: Callback,
   failureCallback: Callback,
+  getTopics: () => Array<string>,
+  getTask: (topic: string) => Task,
 };

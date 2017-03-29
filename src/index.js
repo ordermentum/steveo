@@ -7,20 +7,21 @@ import Task from './task';
 import Registry from './registry';
 import Runner from './runner';
 import Admin from './admin';
+import Producer from './producer';
 
 import type { Config } from '../types';
 
 const Steveo = (config: Config, logger: Object = NULL_LOGGER) => {
-  const registeredTopics = {};
-  const registry = Registry(registeredTopics, config.publishCallback);
+  const registry = Registry(config.publishCallback);
   const task = () => {
-    const runner = Runner(config, registeredTopics, logger);
-    return Task(registry, runner, logger);
+    const producer = Producer(config, logger);
+    return Task(config, registry, producer);
   };
 
   return {
     task,
     lag: Admin(config).lag,
+    runner: Runner(config, registry, logger),
   };
 };
 

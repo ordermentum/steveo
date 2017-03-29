@@ -5,10 +5,11 @@ import Task from '../src/task';
 describe('Task', () => {
   let registry;
   let task;
-  let mockRunner;
+  let producer;
   beforeEach(() => {
-    mockRunner = {
+    producer = {
       send: sinon.stub().returns(Promise.resolve()),
+      initialize: sinon.stub.returns(Promise.resolve()),
     };
     registry = {
       addNewTask: sinon.stub(),
@@ -16,7 +17,7 @@ describe('Task', () => {
       successCallback: sinon.stub(),
       failureCallback: sinon.stub(),
     };
-    task = Task(registry, mockRunner, console);
+    task = Task({}, registry, producer, console);
   });
 
   it('should create a new task instance', () => {
@@ -34,21 +35,22 @@ describe('Task', () => {
   it('should be able to publish', async () => {
     task.define('a-simple-task', () => {});
     await task.publish({ payload: 'something-big' });
-    expect(mockRunner.send.callCount).to.equal(1);
+    expect(producer.send.callCount).to.equal(1);
   });
 
   it('should be able to publish with callback on failure', async () => {
-    const failureRunner = {
+    const failureProducer = {
       send: sinon.stub().returns(Promise.reject()),
+      initialize: sinon.stub.returns(Promise.resolve()),
     };
-    const failTask = Task(registry, failureRunner, console);
+    const failTask = Task({}, registry, failureProducer, console);
     failTask.define('a-simple-task', () => {});
     let err = false;
     try {
       await failTask.publish({ payload: 'something-big' });
     } catch (ex) {
       expect(registry.failureCallback.callCount).to.equal(1);
-      expect(failureRunner.send.callCount).to.equal(1);
+      expect(failureProducer.send.callCount).to.equal(1);
       err = true;
     }
     expect(err).to.equal(true);

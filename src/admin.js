@@ -1,19 +1,16 @@
 // @flow
-import KafkaClient from './helpers/kafka';
+import Kafka from 'no-kafka';
 
 import type { Config } from '../types';
 
 const Admin = (config: Config) => {
   const lag = async (groupId: string,
     topicName: string, partitions: Array<number>) => {
-    const { admin } = await KafkaClient({
-      kafkaConnection: config.kafkaConnection,
-      kafkaCodec: config.kafkaCodec,
+    const admin = new Kafka.GroupAdmin({
+      groupId: config.kafkaGroupId,
       clientId: config.clientId,
-      logger: {
-        logLevel: config.logLevel,
-      },
-      kafkaGroupId: config.kafkaGroupId,
+      connectionString: config.kafkaConnection,
+      codec: config.kafkaCodec,
     });
     await admin.init();
     return admin.fetchConsumerLag(groupId, [{
