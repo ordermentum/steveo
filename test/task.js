@@ -45,6 +45,9 @@ describe('Task', () => {
     };
     const failTask = Task({}, registry, failureProducer, console);
     failTask.define('a-simple-task', () => {});
+    failTask.publish.on('failure', (a, b) => {
+      console.log('*******', a, b);
+    });
     let err = false;
     try {
       await failTask.publish({ payload: 'something-big' });
