@@ -45,7 +45,7 @@ describe('Task', () => {
     };
     const failTask = Task({}, registry, failureProducer, console);
     failTask.define('a-simple-task', () => {});
-    failTask.publish.on('failure', (a, b) => {
+    failTask.events.on('failure', (a, b) => {
       console.log('*******', a, b);
     });
     let err = false;

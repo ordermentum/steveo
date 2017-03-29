@@ -8,35 +8,38 @@ function Task(config: Config, registry: Reg, producer: Producer) {
   let subscribeCallback = C.NOOP;
   const eventEmitter = new events.EventEmitter();
 
+  const subscribe = (payload: any) => subscribeCallback(payload);
+
+  const define = async (topicName: string, callBack: Callback) => {
+    topic = topicName;
+    subscribeCallback = callBack;
+    const task = {
+      topic,
+      subscribe: subscribeCallback,
+    };
+    registry.addNewTask(task, producer);
+    eventEmitter.emit('create', topicName);
+    await producer.initialize();
+  };
+
+  const publish = async (payload: Object) => {
+    try {
+      await producer.send(topic, payload);
+      eventEmitter.emit('success', topic, payload);
+      registry.successCallback(topic, payload);
+    } catch (ex) {
+      eventEmitter.emit('failure', topic, payload);
+      registry.failureCallback(topic, payload);
+      throw ex;
+    }
+  };
+
   return {
-    eventEmitter,
-    subscribe(payload: any) { subscribeCallback(payload); },
-
-    async define(topicName: string, callBack: Callback) {
-      topic = topicName;
-      subscribeCallback = callBack;
-      const task = {
-        topic,
-        subscribe: subscribeCallback,
-      };
-      registry.addNewTask(task, producer);
-      this.eventEmitter.emit('create', topicName);
-      await producer.initialize();
-    },
-
-    async publish(payload: Object) {
-      try {
-        await producer.send(topic, payload);
-        this.eventEmitter.emit('success', topic, payload);
-        registry.successCallback(topic, payload);
-      } catch (ex) {
-        this.eventEmitter.emit('failure', topic, payload);
-        registry.failureCallback(topic, payload);
-        throw ex;
-      }
-    },
+    define,
+    publish,
+    subscribe,
+    events: eventEmitter,
   };
 }
 
 export default Task;
-
