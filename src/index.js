@@ -12,7 +12,7 @@ import Producer from './producer';
 import type { Config } from '../types';
 
 const Steveo = (config: Config, logger: Object = NULL_LOGGER) => {
-  const registry = Registry(config.publishCallback);
+  const registry = Registry();
   const task = () => {
     const producer = Producer(config, logger);
     return Task(config, registry, producer);

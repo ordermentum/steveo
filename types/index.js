@@ -14,11 +14,6 @@ export type KafkaParams = {
   logger: Logger,
 };
 
-export type PublishCallback = {
-  success: Callback,
-  failure: Callback
-};
-
 
 export type Config = {
   kafkaConnection: string,
@@ -29,7 +24,6 @@ export type Config = {
   kafkaSendAttempts: ?number,
   kafkaSendDelayMin: ?number,
   kafkaSendDelayMax: ?number,
-  publishCallback: ?PublishCallback,
 };
 
 export type Task = {
@@ -59,8 +53,6 @@ export type Runner = {
 export type Reg = {
   addNewTask: (task: Task) => any,
   removeTask: (task: Task) => any,
-  successCallback: Callback,
-  failureCallback: Callback,
   getTopics: () => Array<string>,
   getTask: (topic: string) => Task,
 };

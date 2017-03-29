@@ -1,8 +1,7 @@
 // @flow
-import C from './constants';
-import type { Task, PublishCallback } from '../types';
+import type { Task } from '../types';
 
-const Registry = (publishCallbacks: ?PublishCallback) => {
+const Registry = () => {
   const registeredTasks = {};
   const addNewTask = (task: Task) => {
     registeredTasks[task.topic] = task; // eslint-disable-line
@@ -21,11 +20,6 @@ const Registry = (publishCallbacks: ?PublishCallback) => {
     removeTask,
     getTopics,
     getTask,
-    successCallback:
-      (publishCallbacks && publishCallbacks.success) ? publishCallbacks.success : C.NOOP,
-    failureCallback:
-      (publishCallbacks && publishCallbacks.failure) ? publishCallbacks.failure :
-      C.NOOP,
   };
 };
 

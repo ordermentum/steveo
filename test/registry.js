@@ -42,16 +42,4 @@ describe('Registry', () => {
     });
     expect(registry.getTopics().length).to.equal(0);
   });
-
-  it('should have NOOP success & failure callbacks if not defined', () => {
-    const reg = Registry({});
-    expect(reg.successCallback).to.deep.equal(C.NOOP);
-    expect(reg.failureCallback).to.deep.equal(C.NOOP);
-  });
-
-  it('should have success & failure callbacks if  defined', () => {
-    const reg = Registry({ success: C.NOOP, failure: C.NOOP });
-    expect(reg.successCallback).to.deep.equal(C.NOOP);
-    expect(reg.failureCallback).to.deep.equal(C.NOOP);
-  });
 });

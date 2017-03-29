@@ -26,10 +26,8 @@ function Task(config: Config, registry: Reg, producer: Producer) {
     try {
       await producer.send(topic, payload);
       eventEmitter.emit('success', topic, payload);
-      registry.successCallback(topic, payload);
     } catch (ex) {
       eventEmitter.emit('failure', topic, payload);
-      registry.failureCallback(topic, payload);
       throw ex;
     }
   };

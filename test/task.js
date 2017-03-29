@@ -14,8 +14,6 @@ describe('Task', () => {
     registry = {
       addNewTask: sinon.stub(),
       removeTask: sinon.stub(),
-      successCallback: sinon.stub(),
-      failureCallback: sinon.stub(),
     };
     task = Task({}, registry, producer, console);
   });
@@ -34,26 +32,28 @@ describe('Task', () => {
 
   it('should be able to publish', async () => {
     task.define('a-simple-task', () => {});
+    const cbStub = sinon.stub();
+    task.events.on('success', cbStub);
     await task.publish({ payload: 'something-big' });
     expect(producer.send.callCount).to.equal(1);
+    expect(cbStub.callCount).to.equal(1);
   });
 
-  it.only('should be able to publish with callback on failure', async () => {
+  it('should be able to publish with callback on failure', async () => {
     const failureProducer = {
       send: sinon.stub().returns(Promise.reject()),
       initialize: sinon.stub.returns(Promise.resolve()),
     };
     const failTask = Task({}, registry, failureProducer, console);
     failTask.define('a-simple-task', () => {});
-    failTask.events.on('failure', (a, b) => {
-      console.log('*******', a, b);
-    });
+    const cbStub = sinon.stub();
+    failTask.events.on('failure', cbStub);
     let err = false;
     try {
       await failTask.publish({ payload: 'something-big' });
     } catch (ex) {
-      expect(registry.failureCallback.callCount).to.equal(1);
       expect(failureProducer.send.callCount).to.equal(1);
+      expect(cbStub.callCount).to.equal(1);
       err = true;
     }
     expect(err).to.equal(true);
