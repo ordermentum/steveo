@@ -9,8 +9,8 @@ const publishCallback = {
 const config = {
   kafkaConnection: process.env.KAFKA_CONNECTION,
   kafkaCodec: kafkaCompression.GZIP,
-  clientId: process.env.CLIENT_ID,
-  logLevel: process.env.LOG_LEVEL,
+  clientId: '1234-123',
+  logLevel: 5,
   kafkaGroupId: '1234',
   kafkaSendAttempts: process.env.KAFKA_SEND_ATTEMPTS,
   kafkaSendDelayMin: process.env.KAFKA_SEND_DELAY_MIN,
@@ -21,41 +21,45 @@ const config = {
 (async () => {
   const steveo = Steveo(config, console);
 
-  // wait for the kafka consumer to call the subscribe action
+  // subscribe Call for first task
   const subscribe = async (payload) => {
-    console.log('First producer payload', payload);
+    console.log('Payload from first producer', payload);
   };
 
-  // task
-  const task = steveo.task();
-  // define task
-  await task.define('test-topic', subscribe);
+  // create first Task
+  const firstTask = steveo.task();
 
-  // publish task
-  await task.publish({ here: 'is first payload' });
+  // define Task
+  await firstTask.define('test-topic', subscribe);
 
-  // get lag
+  // subscribe Call for second task
+  const subscribe2 = async (payload) => {
+    console.log('Payload from second producer', payload);
+  };
+
+  // create second Task
+  const secondTask = steveo.task();
+
+  // define Task
+  await secondTask.define('another-test-topic', subscribe2);
+
+  // start the runner now
+  await steveo.runner.process();
+
+  // publish some data
+  await firstTask.publish({ task1: 'Task 1 Payload' });
+  await secondTask.publish({ task2: 'Task 2 Payload' });
+
+  // get lag for topics
   let lag;
   setTimeout(async () => {
     lag = await steveo.lag('1234', 'test-topic', [0]);
-    console.log('*******LAG*******', lag);
+    console.log('*******LAG1*******', lag);
   }, 2000);
 
-  const subscribe2 = async (payload) => {
-    console.log('Second producer payload', payload);
-  };
-
-  // task
-  const task2 = steveo.task();
-  // define task
-  await task2.define('another-test-topic', subscribe2);
-
-  // publish task
-  await task2.publish({ here: 'is second payload' });
-
-  setTimeout(async () => {
+  setTimeout(async () => { // eslint-disable-line
     lag = await steveo.lag('1234', 'another-test-topic', [0]);
-    console.log('*******LAG*******', lag);
+    console.log('*******LAG2*******', lag);
   }, 2000);
 })().catch((ex) => {
   console.log('Exception', ex);

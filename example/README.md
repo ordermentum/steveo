@@ -19,69 +19,25 @@ Steps:
   Output will be as below,
 
   ```shell
-  root@2f9d15302906:/usr/src/app# node index.js
-  initializing consumer [ 'test-topic' ]
-  2017-03-28T06:57:12.328Z INFO '1234-234' Joined group 1234 generationId 1 as '1234-234'-5d1420d6-c9b1-4ebd-8060-5118a9c7fef7
-  2017-03-28T06:57:12.328Z INFO '1234-234' Elected as group leader
-  2017-03-28T06:57:12.359Z DEBUG '1234-234' Subscribed to test-topic:0 offset 181 leader kafka:9092
-  Message  {
-    "here": "is first payload"
-  }  arrived on topic:  test-topic
-
-          *****PRODUCE********
-          topic:- test-topic
-          ********************
-          payload:- {"here":"is first payload"}
-          ********************
-
-  FROM PRODUCER test-topic { here: 'is first payload' }
-  test-topic { here: 'is first payload' } Yaaay success
+  root@f5946f7ccd03:/usr/src/app# node index
   initializing consumer [ 'test-topic', 'another-test-topic' ]
-
-          *****CONSUME********
-          topic:- test-topic
-          ********************
-          payload:- {"here":"is first payload","timestamp":1490684232}
-          ********************
-
-  First producer payload { here: 'is first payload', timestamp: 1490684232 }
-  2017-03-28T06:57:13.384Z INFO '1234-234' Rejoining group on RebalanceInProgress
-  2017-03-28T06:57:13.389Z INFO '1234-234' Joined group 1234 generationId 2 as '1234-234'-5d1420d6-c9b1-4ebd-8060-5118a9c7fef7
-  2017-03-28T06:57:13.389Z INFO '1234-234' Elected as group leader
-  2017-03-28T06:57:13.397Z INFO '1234-234' Joined group 1234 generationId 2 as '1234-234'-574a3543-f4a3-4b45-894c-a880d0019f22
-  2017-03-28T06:57:13.405Z WARN '1234-234' No partition assignment received
-  2017-03-28T06:57:13.422Z DEBUG '1234-234' Subscribed to another-test-topic:0 offset 149 leader kafka:9092
-  2017-03-28T06:57:13.422Z DEBUG '1234-234' Subscribed to test-topic:0 offset 182 leader kafka:9092
-  Message  {
-    "here": "is second payload"
-  }  arrived on topic:  another-test-topic
-
-          *****PRODUCE********
-          topic:- another-test-topic
-          ********************
-          payload:- {"here":"is second payload"}
-          ********************
-
-  FROM PRODUCER another-test-topic { here: 'is second payload' }
-  another-test-topic { here: 'is second payload' } Yaaay success
-
-          *****CONSUME********
-          topic:- another-test-topic
-          ********************
-          payload:- {"here":"is second payload","timestamp":1490684233}
-          ********************
-
-  Second producer payload { here: 'is second payload', timestamp: 1490684233 }
-  *******LAG******* [ { topic: 'test-topic',
+  2017-03-29T04:35:39.490Z INFO 1234-123 Joined group 1234 generationId 1 as 1234-123-fee6cabc-b767-4f8c-81ff-1699a20b1304
+  2017-03-29T04:35:39.491Z INFO 1234-123 Elected as group leader
+  2017-03-29T04:35:39.515Z DEBUG 1234-123 Subscribed to another-test-topic:0 offset 33 leader kafka:9092
+  2017-03-29T04:35:39.516Z DEBUG 1234-123 Subscribed to test-topic:0 offset 31 leader kafka:9092
+  test-topic { task1: 'Task 1 Payload' } Yaaay success
+  another-test-topic { task2: 'Task 2 Payload' } Yaaay success
+  Payload from second producer { task2: 'Task 2 Payload', timestamp: 1490762139 }
+  Payload from first producer { task1: 'Task 1 Payload', timestamp: 1490762139 }
+  *******LAG1******* [ { topic: 'test-topic',
       partition: 0,
-      offset: 182,
-      highwaterMark: 182,
+      offset: 32,
+      highwaterMark: 32,
       consumerLag: 0 } ]
-  *******LAG******* [ { topic: 'another-test-topic',
+  *******LAG2******* [ { topic: 'another-test-topic',
       partition: 0,
-      offset: 150,
-      highwaterMark: 150,
+      offset: 34,
+      highwaterMark: 34,
       consumerLag: 0 } ]
-  ^C
-  root@2f9d15302906:/usr/src/app#
+
   ```
