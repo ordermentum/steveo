@@ -1,11 +1,6 @@
 const Steveo = require('steveo').default;
 const { kafkaCompression } = require('steveo');
 
-const publishCallback = {
-  success: (topic, payload) => console.log(topic, payload, 'Yaaay success'),
-  failure: (topic, payload) => console.log(topic, payload, 'Ohhh failed'),
-};
-
 const config = {
   kafkaConnection: process.env.KAFKA_CONNECTION,
   kafkaCodec: kafkaCompression.GZIP,
@@ -15,7 +10,6 @@ const config = {
   kafkaSendAttempts: process.env.KAFKA_SEND_ATTEMPTS,
   kafkaSendDelayMin: process.env.KAFKA_SEND_DELAY_MIN,
   kafkaSendDelayMax: process.env.KAFKA_SEND_DELAY_MAX,
-  publishCallback,
 };
 
 (async () => {

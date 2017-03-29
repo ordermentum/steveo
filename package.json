@@ -15,7 +15,8 @@
     "build": "babel src --out-dir lib",
     "prepublish": "yarn run build",
     "reporter": "nyc --reporter=html yarn run test",
-    "flow": "./node_modules/.bin/flow check"
+    "flow": "./node_modules/.bin/flow check",
+    "steveo": "node ./lib/cli-task.js"
   },
   "files": [
     "lib/*"
@@ -32,7 +33,6 @@
   "dependencies": {
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",
-    "cli": "^1.0.1",
     "lazy-object": "^1.0.1",
     "moment": "^2.18.1",
     "no-kafka": "^3.1.1",
