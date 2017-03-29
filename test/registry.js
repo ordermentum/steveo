@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import Registry from '../src/registry';
-import C from '../src/constants';
 
 describe('Registry', () => {
   let registry;
