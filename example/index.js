@@ -30,7 +30,7 @@ const config = {
   const firstTask = steveo.task();
 
   // define Task
-  await firstTask.define('test-topic', subscribe);
+  firstTask.define('test-topic', subscribe);
 
   // subscribe Call for second task
   const subscribe2 = async (payload) => {
@@ -41,7 +41,7 @@ const config = {
   const secondTask = steveo.task();
 
   // define Task
-  await secondTask.define('another-test-topic', subscribe2);
+  secondTask.define('another-test-topic', subscribe2);
 
   // start the runner now
   await steveo.runner.process();

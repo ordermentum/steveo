@@ -32,6 +32,8 @@
   "dependencies": {
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",
+    "cli": "^1.0.1",
+    "lazy-object": "^1.0.1",
     "moment": "^2.18.1",
     "no-kafka": "^3.1.1",
     "null-logger": "^1.0.0",

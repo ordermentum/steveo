@@ -10,7 +10,7 @@ function Task(config: Config, registry: Reg, producer: Producer) {
 
   const subscribe = (payload: any) => subscribeCallback(payload);
 
-  const define = async (topicName: string, callBack: Callback) => {
+  const define = (topicName: string, callBack: Callback) => {
     topic = topicName;
     subscribeCallback = callBack;
     const task = {
@@ -19,7 +19,7 @@ function Task(config: Config, registry: Reg, producer: Producer) {
     };
     registry.addNewTask(task, producer);
     eventEmitter.emit('create', topicName);
-    await producer.initialize();
+    producer.initialize();
   };
 
   const publish = async (payload: Object) => {
