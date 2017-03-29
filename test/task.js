@@ -38,7 +38,7 @@ describe('Task', () => {
     expect(producer.send.callCount).to.equal(1);
   });
 
-  it('should be able to publish with callback on failure', async () => {
+  it.only('should be able to publish with callback on failure', async () => {
     const failureProducer = {
       send: sinon.stub().returns(Promise.reject()),
       initialize: sinon.stub.returns(Promise.resolve()),
