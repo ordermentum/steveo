@@ -26,35 +26,18 @@ const config = {
   // define Task
   firstTask.define('test-topic', subscribe);
 
-  // subscribe Call for second task
-  const subscribe2 = async (payload) => {
-    console.log('Payload from second producer', payload);
-  };
-
-  // create second Task
-  const secondTask = steveo.task();
-
-  // define Task
-  secondTask.define('another-test-topic', subscribe2);
-
-  // start the runner now
-  await steveo.runner.process();
-
-  // publish some data
-  await firstTask.publish({ task1: 'Task 1 Payload' });
-  await secondTask.publish({ task2: 'Task 2 Payload' });
-
-  // get lag for topics
-  let lag;
-  setTimeout(async () => {
-    lag = await steveo.lag('1234', 'test-topic', [0]);
-    console.log('*******LAG1*******', lag);
-  }, 2000);
-
-  setTimeout(async () => { // eslint-disable-line
-    lag = await steveo.lag('1234', 'another-test-topic', [0]);
-    console.log('*******LAG2*******', lag);
-  }, 2000);
+  // let it run & publish messages in every second
+  function produceMessages(counter) {
+    if (counter < 1000) {
+      setTimeout(async () => {
+        counter += 1; // eslint-disable-line
+        console.log('Produce: Message ', counter);
+        await firstTask.publish({ payload: `Message ${counter}` });
+        produceMessages(counter);
+      }, 1000);
+    }
+  }
+  produceMessages(0);
 })().catch((ex) => {
   console.log('Exception', ex);
   process.exit();
