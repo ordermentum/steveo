@@ -17,19 +17,20 @@ const Runner = (config: Config, registry: Reg, logger: Object) => {
     },
   });
 
-  const receive = (messages: Array<Object>, topic: string, partition: number) =>
-    Promise.all(messages.map(async (m) => {
+  const receive = async (messages: Array<Object>, topic: string, partition: number) => {
+    for (const m of messages) { // eslint-disable-line
       try {
         // commit offset
-        await consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' });
+        await consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' }); // eslint-disable-line
         const task = registry.getTask(topic);
-        await task.subscribe(JSON.parse(m.message.value.toString('utf8')));
+        await task.subscribe(JSON.parse(m.message.value.toString('utf8'))); // eslint-disable-line
         eventEmitter.emit('success', topic, m.message.value);
       } catch (ex) {
         logger.error('Error while executing consumer callback ', ex);
         eventEmitter.emit('failure', topic, m.message.value);
       }
-    }));
+    }
+  };
 
   const process = () => {
     const subscriptions = registry.getTopics();
