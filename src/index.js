@@ -18,10 +18,12 @@ const Steveo = (config: Config, logger: Object = NULL_LOGGER) => {
     return Task(config, registry, producer);
   };
 
+  const runner = () => Runner(config, registry, logger);
+
   return {
     task,
     lag: Admin(config).lag,
-    runner: Runner(config, registry, logger),
+    runner,
   };
 };
 
