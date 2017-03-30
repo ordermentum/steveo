@@ -32,6 +32,7 @@ Holds the information about the type of task. It has below methods,
   - define
   - publish
   - subscribe
+  - events
 
 ### Registry
 
@@ -39,10 +40,9 @@ Responsible for keeping the inventory of tasks. Whenever a new task is created, 
 
 ### Runner
 
-Responsible for sending messages to Kafka & Receive message from Kafka.
-  - Task factory uses `send` method on `Runner` to send the message to kafka with a payload
-  - When a kafka emits a message, `Runner` will listen to it and call the subscribe callback from `Task`
+Responsible for consuming messages,
+ - `process` method initialize group consumers and start to consume the messages. It will then call the subscribe callback set on the task
 
 ### Example
 
-See [example](https://github.com/ordermentum/steveo/blob/master/example/README.md)
+For more details, see [example](https://github.com/ordermentum/steveo/blob/master/example/README.md)

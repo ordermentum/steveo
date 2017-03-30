@@ -15,16 +15,11 @@ const config = {
 (async () => {
   const steveo = Steveo(config, console);
 
-  // subscribe Call for first task
-  const subscribe = async (payload) => {
-    console.log('Payload from first producer', payload);
-  };
-
   // create first Task
   const firstTask = steveo.task();
 
   // define Task
-  firstTask.define('test-topic', subscribe);
+  firstTask.define('test-topic', () => {});
 
   // let it run & publish messages in every second
   function produceMessages(counter) {
