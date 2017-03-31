@@ -38,10 +38,11 @@ describe('Runner', () => {
   });
 
   it('should invoke callback when receives a message on topic', async () => {
+    const subscribeStub = sinon.stub().returns(Promise.resolve({ some: 'success' }));
     const anotherRegistry = {
       getTask: () => ({
         publish: () => {},
-        subscribe: sinon.stub().returns(Promise.resolve({ some: 'success' })),
+        subscribe: subscribeStub,
       }),
     };
     const anotherRunner = Runner({
@@ -51,9 +52,10 @@ describe('Runner', () => {
       logLevel: 1,
     }, anotherRegistry, console);
     const commitOffsetStub = sinon.stub(anotherRunner.consumer, 'commitOffset');
-    await anotherRunner.receive([{ message: { value: '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D' }, offset: 1 }], 'a-topic', 0);
-    expect(commitOffsetStub.callCount).to.equal(1);
-    // expect(anotherRegistry.getTask().subscribe.callCount).to.equal(1);
+    await anotherRunner.receive([{ message: { value: '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D' }, offset: 1 },
+    { message: { value: '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D' }, offset: 2 }], 'a-topic', 0);
+    expect(commitOffsetStub.callCount).to.equal(2);
+    expect(subscribeStub.callCount).to.equal(2);
   });
 
   it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
