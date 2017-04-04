@@ -65,4 +65,19 @@ describe('Task', () => {
     task.subscribe({ payload: 'something-small' });
     expect(subscribeStub.callCount).to.equal(1);
   });
+
+  it('should create attach env to topic name', () => {
+    task.events.on('create', (topic) => {
+      expect(topic).to.equal(`${process.env.NODE_ENV}_a-simple-task`.toUpperCase());
+    });
+    task.define('a-simple-task', () => {});
+  });
+
+  it('should create attach env to topic name', () => {
+    task.events.on('create', (topic) => {
+      expect(topic).to.equal('DEVELOPMENT_A-SIMPLE-TASK');
+    });
+    delete process.env.NODE_ENV;
+    task.define('a-simple-task', () => {});
+  });
 });

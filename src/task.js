@@ -8,17 +8,19 @@ function Task(config: Config, registry: Reg, producer: Producer) {
   let subscribeCallback = C.NOOP;
   const eventEmitter = new events.EventEmitter();
 
+  const getTopicName = (name: string) => `${process.env.NODE_ENV || 'DEVELOPMENT'}_${name}`.toUpperCase();
+
   const subscribe = (payload: any) => subscribeCallback(payload);
 
   const define = (topicName: string, callBack: Callback) => {
-    topic = topicName;
+    topic = getTopicName(topicName);
     subscribeCallback = callBack;
     const task = {
       topic,
       subscribe: subscribeCallback,
     };
     registry.addNewTask(task, producer);
-    eventEmitter.emit('create', topicName);
+    eventEmitter.emit('create', topic);
     producer.initialize();
   };
 
