@@ -27,7 +27,7 @@ const Runner = (config: Config, registry: Reg, logger: Object) => {
         eventEmitter.emit('success', topic, m.message.value);
       } catch (ex) {
         logger.error('Error while executing consumer callback ', ex);
-        eventEmitter.emit('failure', topic, m.message.value);
+        eventEmitter.emit('failure', topic, ex);
       }
     }
   };
