@@ -67,17 +67,19 @@ describe('Task', () => {
   });
 
   it('should create attach env to topic name', () => {
+    const name = task.getTopicName('a-simple-task');
     task.events.on('create', (topic) => {
       expect(topic).to.equal(`${process.env.NODE_ENV}_a-simple-task`.toUpperCase());
     });
-    task.define('a-simple-task', () => {});
+    task.define(name, () => {});
   });
 
   it('should create attach env to topic name', () => {
+    delete process.env.NODE_ENV;
+    const name = task.getTopicName('a-simple-task');
     task.events.on('create', (topic) => {
       expect(topic).to.equal('DEVELOPMENT_A-SIMPLE-TASK');
     });
-    delete process.env.NODE_ENV;
-    task.define('a-simple-task', () => {});
+    task.define(name, () => {});
   });
 });

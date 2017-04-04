@@ -13,7 +13,7 @@ function Task(config: Config, registry: Reg, producer: Producer) {
   const subscribe = (payload: any) => subscribeCallback(payload);
 
   const define = (topicName: string, callBack: Callback) => {
-    topic = getTopicName(topicName);
+    topic = topicName;
     subscribeCallback = callBack;
     const task = {
       topic,
@@ -39,6 +39,7 @@ function Task(config: Config, registry: Reg, producer: Producer) {
     publish,
     subscribe,
     events: eventEmitter,
+    getTopicName,
   };
 }
 
