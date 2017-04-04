@@ -3,10 +3,10 @@ node_js:
   - "6"
   - "7"
 script:
-  - yarn run lint
-  - yarn run flow
-  - yarn run test
-  - yarn run build
+  - npm run lint
+  - npm run flow
+  - npm run test
+  - npm run build
 branches:
   only:
     - master
