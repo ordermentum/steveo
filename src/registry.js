@@ -1,24 +1,25 @@
 // @flow
-import type { Task, RegistredTopics, Runner } from '../types';
+import type { Task } from '../types';
 
-const Registry = (registeredTasks: RegistredTopics) => {
-  const addNewTask = (task: Task, runner: Runner) => {
+const Registry = () => {
+  const registeredTasks = {};
+  const addNewTask = (task: Task) => {
     registeredTasks[task.topic] = task; // eslint-disable-line
-    // call initialize consumer
-    const topics = Object.keys(registeredTasks);
-    runner.initializeConsumer(topics);
   };
 
-  const removeTask = (task: Task, runner: Runner) => {
+  const removeTask = (task: Task) => {
     delete registeredTasks[task.topic]; // eslint-disable-line
-     // call initialize consumer
-    const topics = Object.keys(registeredTasks);
-    runner.initializeConsumer(topics);
   };
+
+  const getTopics = () => Object.keys(registeredTasks);
+
+  const getTask = (topic: string) => registeredTasks[topic];
 
   return {
     addNewTask,
     removeTask,
+    getTopics,
+    getTask,
   };
 };
 

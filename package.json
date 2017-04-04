@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A Task Manager Library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -15,7 +15,8 @@
     "build": "babel src --out-dir lib",
     "prepublish": "yarn run build",
     "reporter": "nyc --reporter=html yarn run test",
-    "flow": "./node_modules/.bin/flow check"
+    "flow": "./node_modules/.bin/flow check",
+    "steveo": "node ./lib/cli-task.js"
   },
   "files": [
     "lib/*"
@@ -25,12 +26,14 @@
       "lib",
       "test",
       "types",
-      "src/constants"
+      "src/constants",
+      "src/admin.js"
     ]
   },
   "dependencies": {
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",
+    "lazy-object": "^1.0.1",
     "moment": "^2.18.1",
     "no-kafka": "^3.1.1",
     "null-logger": "^1.0.0",

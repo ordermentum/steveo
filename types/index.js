@@ -14,20 +14,26 @@ export type KafkaParams = {
   logger: Logger,
 };
 
-export type Env = {
-  KAFKA_CONNECTION: string,
-  KAFKA_CODEC: string,
-  CLIENT_ID: string,
-  LOG_LEVEL: number,
-  KAFKA_GROUP_ID: string,
-  KAFKA_SEND_ATTEMPTS: ?number,
-  KAFKA_SEND_DELAY_MIN: ?number,
-  KAFKA_SEND_DELAY_MAX: ?number,
+
+export type Config = {
+  kafkaConnection: string,
+  kafkaCodec: string,
+  clientId: string,
+  logLevel: number,
+  kafkaGroupId: string,
+  kafkaSendAttempts: ?number,
+  kafkaSendDelayMin: ?number,
+  kafkaSendDelayMax: ?number,
 };
 
 export type Task = {
   topic: string,
-  subscribe: Object,
+  subscribe: () => any,
+};
+
+export type Producer = {
+  send: (topic: string, payload: Object) => any,
+  initialize: () => any,
 };
 
 export type RegistredTopics = {
@@ -36,13 +42,17 @@ export type RegistredTopics = {
 
 export type Runner = {
   send: (topic: string, payload: Object) => any,
-  receive: (payload: Object, topic: string) => any,
+  receive: (messages: Array<Object>, topic: string, partition: number) => any,
   kafkaClient: Object,
   initializeConsumer: (topics: Array<string>) => any,
+  initializeGroupAdmin: () => any,
+  initializeProducer: () => any,
 };
 
 
 export type Reg = {
-  addNewTask: (task: Task, runner: Runner) => any,
-  removeTask: (task: Task, runner: Runner) => any,
+  addNewTask: (task: Task) => any,
+  removeTask: (task: Task) => any,
+  getTopics: () => Array<string>,
+  getTask: (topic: string) => Task,
 };

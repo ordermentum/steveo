@@ -6,15 +6,24 @@ import NULL_LOGGER from 'null-logger';
 import Task from './task';
 import Registry from './registry';
 import Runner from './runner';
+import Admin from './admin';
+import Producer from './producer';
 
-import type { Env } from '../types';
+import type { Config } from '../types';
 
-const Steveo = (env: Env, logger: Object = NULL_LOGGER) => {
-  const registeredTopics = {};
-  const registry = Registry(registeredTopics);
-  const runner = Runner(env, registry, logger);
+const Steveo = (config: Config, logger: Object = NULL_LOGGER) => {
+  const registry = Registry();
+  const task = () => {
+    const producer = Producer(config, logger);
+    return Task(config, registry, producer);
+  };
+
+  const runner = () => Runner(config, registry, logger);
+
   return {
-    task: Task(registry, runner, logger),
+    task,
+    lag: Admin(config).lag,
+    runner,
   };
 };
 

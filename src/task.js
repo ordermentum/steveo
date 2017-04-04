@@ -1,17 +1,14 @@
 // @flow
+import events from 'events';
 import C from './constants';
-import type { Callback, Reg, Runner } from '../types';
+import type { Config, Callback, Reg, Producer } from '../types';
 
-
-const Task = (registry: Reg, runner: Runner, logger: Object) => {
+function Task(config: Config, registry: Reg, producer: Producer) {
   let topic: string;
   let subscribeCallback = C.NOOP;
+  const eventEmitter = new events.EventEmitter();
 
-  const subscribe = (payload: any) => {
-    // publish message on topic without delay
-    logger.info(payload);
-    return subscribeCallback(payload);
-  };
+  const subscribe = (payload: any) => subscribeCallback(payload);
 
   const define = (topicName: string, callBack: Callback) => {
     topic = topicName;
@@ -20,22 +17,27 @@ const Task = (registry: Reg, runner: Runner, logger: Object) => {
       topic,
       subscribe: subscribeCallback,
     };
-    registry.addNewTask(task, runner);
+    registry.addNewTask(task, producer);
+    eventEmitter.emit('create', topicName);
+    producer.initialize();
   };
 
   const publish = async (payload: Object) => {
-    // check with registry for valid topic
-    // publish message on topic
-    await runner.send(topic, payload);
-    logger.info(topic, payload);
+    try {
+      await producer.send(topic, payload);
+      eventEmitter.emit('success', topic, payload);
+    } catch (ex) {
+      eventEmitter.emit('failure', topic, payload);
+      throw ex;
+    }
   };
 
   return {
     define,
     publish,
     subscribe,
+    events: eventEmitter,
   };
-};
+}
 
 export default Task;
-
