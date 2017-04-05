@@ -27,7 +27,7 @@ const config = {
       setTimeout(async () => {
         counter += 1; // eslint-disable-line
         console.log('Produce: Message ', counter);
-        await firstTask.publish({ payload: `Message ${counter}` });
+        await firstTask.publish([{ payload: `Message ${counter}` }]);
         produceMessages(counter);
       }, 1000);
     }

@@ -24,9 +24,9 @@ function Task(config: Config, registry: Reg, producer: Producer) {
     producer.initialize();
   };
 
-  const publish = async (payload: Object) => {
+  const publish = async (payload: Array<Object>) => {
     try {
-      await producer.send(topic, payload);
+      await Promise.all(payload.map(data => producer.send(topic, data)));
       eventEmitter.emit('success', topic, payload);
     } catch (ex) {
       eventEmitter.emit('failure', topic, payload);

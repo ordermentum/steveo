@@ -34,7 +34,7 @@ describe('Task', () => {
     task.define('a-simple-task', () => {});
     const cbStub = sinon.stub();
     task.events.on('success', cbStub);
-    await task.publish({ payload: 'something-big' });
+    await task.publish([{ payload: 'something-big' }]);
     expect(producer.send.callCount).to.equal(1);
     expect(cbStub.callCount).to.equal(1);
   });
@@ -50,7 +50,7 @@ describe('Task', () => {
     failTask.events.on('failure', cbStub);
     let err = false;
     try {
-      await failTask.publish({ payload: 'something-big' });
+      await failTask.publish([{ payload: 'something-big' }]);
     } catch (ex) {
       expect(failureProducer.send.callCount).to.equal(1);
       expect(cbStub.callCount).to.equal(1);
