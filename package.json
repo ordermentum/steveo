@@ -33,6 +33,7 @@
   "dependencies": {
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",
+    "flow-bin": "^0.43.1",
     "lazy-object": "^1.0.1",
     "moment": "^2.18.1",
     "no-kafka": "^3.1.1",
@@ -56,7 +57,6 @@
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
-    "flow-bin": "^0.42.0",
     "mocha": "^3.2.0",
     "nyc": "^10.1.2",
     "sinon": "^2.1.0"
