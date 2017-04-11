@@ -21,10 +21,7 @@ const config = {
   };
 
   // create first Task
-  const firstTask = steveo.task();
-
-  // define Task
-  firstTask.define('test-topic', subscribe);
+  steveo.task('test-topic', subscribe);
 
   // initialize consumer
   await steveo.runner().process();

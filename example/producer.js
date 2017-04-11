@@ -16,10 +16,7 @@ const config = {
   const steveo = Steveo(config, console)();
 
   // create first Task
-  const firstTask = steveo.task();
-
-  // define Task
-  firstTask.define('test-topic', () => {});
+  const firstTask = steveo.task('test-topic', () => {});
 
   // let it run & publish messages in every second
   function produceMessages(counter) {

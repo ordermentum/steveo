@@ -29,7 +29,6 @@ On a highlevel, it works as below, Steveo has 3 main factory components
 ### Task
 
 Holds the information about the type of task. It has below methods,
-  - define
   - publish
   - subscribe
   - events
