@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 import Steveo from '../src';
 
 describe('Index', () => {
@@ -21,5 +22,13 @@ describe('Index', () => {
     expect(typeof steveo.runner).to.equal('function');
     const runner = steveo.runner();
     expect(typeof runner).to.equal('object');
+  });
+
+  it('should accept callback for customizing topic name', () => {
+    const steveo = Steveo({}, console)();
+    const topicNameStub = sinon.stub();
+    steveo.customTopicName(topicNameStub);
+    steveo.task('A_BIG_TOPIC', () => {});
+    expect(topicNameStub.callCount).to.equal(1);
   });
 });

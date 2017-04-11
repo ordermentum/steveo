@@ -9,13 +9,23 @@ import Runner from './runner';
 import Admin from './admin';
 import Producer from './producer';
 
-import type { Config } from '../types';
+import type { Config, Callback } from '../types';
 
 const Steveo = (config: Config, logger: Object = NULL_LOGGER) => () => {
   const registry = Registry();
-  const task = () => {
+  let getTopicName = null;
+
+  const task = (topic: string, callBack: Callback) => {
     const producer = Producer(config, logger);
-    return Task(config, registry, producer);
+    let topicName = topic;
+    if (getTopicName && typeof getTopicName === 'function') {
+      topicName = getTopicName(topic);
+    }
+    return Task(config, registry, producer, topicName, callBack);
+  };
+
+  const customTopicName = (cb: Callback) => {
+    getTopicName = cb;
   };
 
   const runner = () => Runner(config, registry, logger);
@@ -24,6 +34,7 @@ const Steveo = (config: Config, logger: Object = NULL_LOGGER) => () => {
     task,
     lag: Admin(config).lag,
     runner,
+    customTopicName,
   };
 };
 
@@ -32,4 +43,5 @@ export const kafkaCompression = {
   GZIP: kafka.COMPRESSION_GZIP,
   NONE: kafka.COMPRESSION_NONE,
 };
+
 export default Steveo;
