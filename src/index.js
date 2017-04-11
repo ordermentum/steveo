@@ -11,7 +11,7 @@ import Producer from './producer';
 
 import type { Config } from '../types';
 
-const Steveo = (config: Config, logger: Object = NULL_LOGGER) => {
+const Steveo = (config: Config, logger: Object = NULL_LOGGER) => () => {
   const registry = Registry();
   const task = () => {
     const producer = Producer(config, logger);

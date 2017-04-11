@@ -13,7 +13,7 @@ const config = {
 };
 
 (async () => {
-  const steveo = Steveo(config, console);
+  const steveo = Steveo(config, console)();
 
   // create first Task
   const firstTask = steveo.task();

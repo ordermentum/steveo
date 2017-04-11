@@ -13,7 +13,7 @@ const config = {
 };
 
 (async () => {
-  const steveo = Steveo(config, console);
+  const steveo = Steveo(config, console)();
 
   // subscribe Call for first task
   const subscribe = async (payload) => {

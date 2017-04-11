@@ -7,7 +7,7 @@ describe('Index', () => {
   });
 
   it('should create task', () => {
-    const steveo = Steveo({}, console);
+    const steveo = Steveo({}, console)();
     expect(typeof steveo).to.equal('object');
     expect(typeof steveo.task).to.equal('function');
     const task = steveo.task();
@@ -16,7 +16,7 @@ describe('Index', () => {
   });
 
   it('should create runner', () => {
-    const steveo = Steveo({}, console);
+    const steveo = Steveo({}, console)();
     expect(typeof steveo).to.equal('object');
     expect(typeof steveo.runner).to.equal('function');
     const runner = steveo.runner();
