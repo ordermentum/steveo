@@ -59,7 +59,7 @@ Steps:
   Payload from producer { payload: 'Message 6', timestamp: 1490832372 }
   ```
 
-   #### Start Consumer 1
+   #### Start Consumer 2
 
   ```shell
   root@228729b5b1be:/usr/src/app# node consumer.js
