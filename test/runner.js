@@ -11,7 +11,9 @@ describe('Runner', () => {
   let registry;
   beforeEach(() => {
     registry = Registry({ publishCallback: {
-      eventEmitter: sinon.stub(),
+      events: {
+        emit: sinon.stub(),
+      },
     } });
     runner = Runner({
       clientId: uuid.v4(),
@@ -43,6 +45,9 @@ describe('Runner', () => {
         publish: () => {},
         subscribe: subscribeStub,
       }),
+      events: {
+        emit: sinon.stub(),
+      },
     };
     const anotherRunner = Runner({
       clientId: uuid.v4(),
@@ -63,6 +68,9 @@ describe('Runner', () => {
         publish: () => {},
         subscribe: sinon.stub().returns(Promise.reject({ some: 'error' })),
       }),
+      events: {
+        emit: sinon.stub(),
+      },
     };
     const anotherRunner = Runner({
       clientId: uuid.v4(),
