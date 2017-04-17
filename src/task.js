@@ -7,7 +7,6 @@ function Task(
   producer: Producer,
   topic: string,
   subscribeCallback: Callback) {
-
   const subscribe = (payload: any) => subscribeCallback(payload);
 
   const publish = async (payload: Array<Object>) => {
@@ -31,7 +30,6 @@ function Task(
   return {
     publish,
     subscribe,
-    events: registry.events,
   };
 }
 

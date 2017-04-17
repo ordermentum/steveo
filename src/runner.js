@@ -3,7 +3,6 @@ import Kafka from 'no-kafka';
 import type { Config, Reg } from '../types';
 
 const Runner = (config: Config, registry: Reg, logger: Object) => {
-
   const consumer = new Kafka.GroupConsumer({
     groupId: config.kafkaGroupId,
     clientId: config.clientId,
@@ -42,7 +41,6 @@ const Runner = (config: Config, registry: Reg, logger: Object) => {
     process,
     consumer,
     receive,
-    events: registry.events,
   };
 };
 

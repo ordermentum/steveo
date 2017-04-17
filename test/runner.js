@@ -11,8 +11,7 @@ describe('Runner', () => {
   let registry;
   beforeEach(() => {
     registry = Registry({ publishCallback: {
-      success: sinon.stub(),
-      failure: sinon.stub(),
+      eventEmitter: sinon.stub(),
     } });
     runner = Runner({
       clientId: uuid.v4(),

@@ -1,7 +1,6 @@
 // @flow
 import Kafka from 'no-kafka';
 import moment from 'moment';
-import events from 'events';
 import { defineLazyProperty } from 'lazy-object';
 import type { Config, Reg } from '../types';
 
@@ -50,7 +49,6 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
     send,
     initialize,
     producer,
-    events: registry.events,
   };
 };
 

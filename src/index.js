@@ -35,6 +35,7 @@ const Steveo = (config: Config, logger: Object = NULL_LOGGER) => () => {
     lag: Admin(config).lag,
     runner,
     customTopicName,
+    events: registry.events,
   };
 };
 
