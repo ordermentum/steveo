@@ -3,7 +3,7 @@ import Kafka from 'no-kafka';
 import moment from 'moment';
 import events from 'events';
 import { defineLazyProperty } from 'lazy-object';
-import type { Config } from '../types';
+import type { Config, Reg } from '../types';
 
 const Producer = (config: Config, registry: Reg, logger: Object) => {
   const producer = new Kafka.Producer({
@@ -38,10 +38,10 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
 
     try {
       await producer.send(data, sendParams);
-      registry.events.emit('enqueue_success', topic, payload);
+      registry.events.emit('producer_success', topic, payload);
     } catch (ex) {
       logger.error('Error while sending payload:', JSON.stringify(payload, null, 2), 'topic :', topic, 'Error :', ex);
-      registry.events.emit('failure', topic, payload);
+      registry.events.emit('producer_failure', topic, payload);
       throw ex;
     }
   };
