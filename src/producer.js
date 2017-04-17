@@ -5,9 +5,7 @@ import events from 'events';
 import { defineLazyProperty } from 'lazy-object';
 import type { Config } from '../types';
 
-const Producer = (config: Config, logger: Object) => {
-  const eventEmitter = new events.EventEmitter();
-
+const Producer = (config: Config, registry: Reg, logger: Object) => {
   const producer = new Kafka.Producer({
     connectionString: config.kafkaConnection,
     codec: config.kafkaCodec,
@@ -40,10 +38,10 @@ const Producer = (config: Config, logger: Object) => {
 
     try {
       await producer.send(data, sendParams);
-      eventEmitter.emit('success', topic, payload);
+      registry.events.emit('enqueue_success', topic, payload);
     } catch (ex) {
       logger.error('Error while sending payload:', JSON.stringify(payload, null, 2), 'topic :', topic, 'Error :', ex);
-      eventEmitter.emit('failure', topic, payload);
+      registry.events.emit('failure', topic, payload);
       throw ex;
     }
   };
@@ -52,7 +50,7 @@ const Producer = (config: Config, logger: Object) => {
     send,
     initialize,
     producer,
-    events: eventEmitter,
+    events: registry.events,
   };
 };
 

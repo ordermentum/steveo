@@ -1,11 +1,8 @@
 // @flow
 import Kafka from 'no-kafka';
-import events from 'events';
-
 import type { Config, Reg } from '../types';
 
 const Runner = (config: Config, registry: Reg, logger: Object) => {
-  const eventEmitter = new events.EventEmitter();
 
   const consumer = new Kafka.GroupConsumer({
     groupId: config.kafkaGroupId,
@@ -24,10 +21,10 @@ const Runner = (config: Config, registry: Reg, logger: Object) => {
         await consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' }); // eslint-disable-line
         const task = registry.getTask(topic);
         await task.subscribe(JSON.parse(m.message.value.toString('utf8'))); // eslint-disable-line
-        eventEmitter.emit('success', topic, m.message.value);
+        registry.events.emit('runner_receive', topic, m.message.value);
       } catch (ex) {
         logger.error('Error while executing consumer callback ', ex);
-        eventEmitter.emit('failure', topic, ex);
+        registry.events.emit('runner_failure', topic, ex);
       }
     }
   };
@@ -45,7 +42,7 @@ const Runner = (config: Config, registry: Reg, logger: Object) => {
     process,
     consumer,
     receive,
-    events: eventEmitter,
+    events: registry.events,
   };
 };
 

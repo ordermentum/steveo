@@ -16,7 +16,7 @@ const Steveo = (config: Config, logger: Object = NULL_LOGGER) => () => {
   let getTopicName = null;
 
   const task = (topic: string, callBack: Callback) => {
-    const producer = Producer(config, logger);
+    const producer = Producer(config, registry, logger);
     let topicName = topic;
     if (getTopicName && typeof getTopicName === 'function') {
       topicName = getTopicName(topic);
