@@ -53,6 +53,7 @@ export type Runner = {
 export type Reg = {
   addNewTask: (task: Task) => any,
   removeTask: (task: Task) => any,
+  events: Object,
   getTopics: () => Array<string>,
   getTask: (topic: string) => Task,
 };

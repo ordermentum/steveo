@@ -15,6 +15,11 @@ const config = {
 (async () => {
   const steveo = Steveo(config, console)();
 
+  steveo.events.on('producer_failure', (topic, ex) => {
+    console.log('Failed to produce message', topic, ex);
+  });
+
+
   // create first Task
   const firstTask = steveo.task('test-topic', () => {});
 

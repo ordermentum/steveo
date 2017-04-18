@@ -1,13 +1,10 @@
 // @flow
 import Kafka from 'no-kafka';
 import moment from 'moment';
-import events from 'events';
 import { defineLazyProperty } from 'lazy-object';
-import type { Config } from '../types';
+import type { Config, Reg } from '../types';
 
-const Producer = (config: Config, logger: Object) => {
-  const eventEmitter = new events.EventEmitter();
-
+const Producer = (config: Config, registry: Reg, logger: Object) => {
   const producer = new Kafka.Producer({
     connectionString: config.kafkaConnection,
     codec: config.kafkaCodec,
@@ -40,10 +37,10 @@ const Producer = (config: Config, logger: Object) => {
 
     try {
       await producer.send(data, sendParams);
-      eventEmitter.emit('success', topic, payload);
+      registry.events.emit('producer_success', topic, payload);
     } catch (ex) {
       logger.error('Error while sending payload:', JSON.stringify(payload, null, 2), 'topic :', topic, 'Error :', ex);
-      eventEmitter.emit('failure', topic, payload);
+      registry.events.emit('producer_failure', topic, ex);
       throw ex;
     }
   };
@@ -52,7 +49,6 @@ const Producer = (config: Config, logger: Object) => {
     send,
     initialize,
     producer,
-    events: eventEmitter,
   };
 };
 
