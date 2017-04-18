@@ -14,7 +14,7 @@ function Task(
       await Promise.all(payload.map(data => producer.send(topic, data)));
       registry.events.emit('task_success', topic, payload);
     } catch (ex) {
-      registry.events.emit('task_failure', topic, payload);
+      registry.events.emit('task_failure', topic, ex);
       throw ex;
     }
   };

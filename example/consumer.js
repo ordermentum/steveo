@@ -15,6 +15,10 @@ const config = {
 (async () => {
   const steveo = Steveo(config, console)();
 
+  steveo.events.on('runner_failure', (topic, ex) => {
+    console.log('Failed to call subscribe', topic, ex);
+  });
+
   // subscribe Call for first task
   const subscribe = async (payload) => {
     console.log('Payload from producer', payload);

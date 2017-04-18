@@ -40,7 +40,7 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
       registry.events.emit('producer_success', topic, payload);
     } catch (ex) {
       logger.error('Error while sending payload:', JSON.stringify(payload, null, 2), 'topic :', topic, 'Error :', ex);
-      registry.events.emit('producer_failure', topic, payload);
+      registry.events.emit('producer_failure', topic, ex);
       throw ex;
     }
   };
