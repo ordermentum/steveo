@@ -30,8 +30,14 @@ describe('Task', () => {
   });
 
 
-  it('should be able to publish', async () => {
+  it('should be able to publish array', async () => {
     await task.publish([{ payload: 'something-big' }]);
+    expect(producer.send.callCount).to.equal(1);
+    expect(registry.events.emit.callCount).to.equal(1);
+  });
+
+  it('should be able to publish object', async () => {
+    await task.publish({ payload: 'something-big' });
     expect(producer.send.callCount).to.equal(1);
     expect(registry.events.emit.callCount).to.equal(1);
   });
