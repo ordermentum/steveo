@@ -9,10 +9,16 @@ function Task(
   subscribeCallback: Callback) {
   const subscribe = (payload: any) => subscribeCallback(payload);
 
-  const publish = async (payload: Array<Object>) => {
+  const publish = async (payload: Array<Object> | any) => {
+    let params = payload;
+
+    if (!Array.isArray(payload)) {
+      params = [payload];
+    }
+
     try {
       await producer.initialize();
-      await Promise.all(payload.map(data => producer.send(topic, data)));
+      await Promise.all(params.map(data => producer.send(topic, data)));
       registry.events.emit('task_success', topic, payload);
     } catch (ex) {
       registry.events.emit('task_failure', topic, ex);
