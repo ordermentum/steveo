@@ -42,6 +42,16 @@ describe('Task', () => {
     expect(registry.events.emit.callCount).to.equal(1);
   });
 
+  it('should accept non-promise methods', async () => {
+    let x = null;
+    const functionTask = Task({}, registry, producer, 'test', () => {
+      x = 1;
+    });
+
+    await functionTask.subscribe({ payload: 'something-big' });
+    expect(x).to.equal(1);
+  });
+
   it('should be able to publish with callback on failure', async () => {
     const failureProducer = {
       send: sinon.stub().returns(Promise.reject()),
