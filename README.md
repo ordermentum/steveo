@@ -44,4 +44,19 @@ Responsible for consuming messages,
 
 ### Example
 
+```javascript
+const steveo = new Steveo({
+  // kafka parameters
+});
+
+const example = steveo.task('example-task', (hello) => {
+ console.log(`hello ${hello}`);
+});
+
+await example.publish('tommo');
+await example.publish('bazza');
+
+steveo.runner(); // consume messages
+```
+
 For more details, see [example](https://github.com/ordermentum/steveo/blob/master/example/README.md)
