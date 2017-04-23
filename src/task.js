@@ -7,7 +7,7 @@ function Task(
   producer: Producer,
   topic: string,
   subscribeCallback: Callback) {
-  const subscribe = (payload: any) => subscribeCallback(payload);
+  const subscribe = (payload: any) => Promise.resolve(subscribeCallback(payload));
 
   const publish = async (payload: Array<Object> | any) => {
     let params = payload;
