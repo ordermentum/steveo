@@ -19,10 +19,11 @@ const Runner = (config: Config, registry: Reg, logger: Object) => {
       try {
         // commit offset
         params = JSON.parse(m.message.value.toString('utf8'));
+        registry.events.emit('runner_receive', topic, params);
         await consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' }); // eslint-disable-line
         const task = registry.getTask(topic);
         await task.subscribe(params); // eslint-disable-line
-        registry.events.emit('runner_receive', topic, m.message.value);
+        registry.events.emit('runner_complete', topic, params);
       } catch (ex) {
         logger.error('Error while executing consumer callback ', { params, topic, error: ex });
         registry.events.emit('runner_failure', topic, ex, params);
