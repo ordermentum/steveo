@@ -30,9 +30,4 @@ services:
       - .:/usr/src/app
     environment:
       - KAFKA_CONNECTION=kafka://kafka:9092
-      - KAFKA_SEND_ATTEMPTS=2
-      - KAFKA_SEND_DELAY_MIN=100
-      - KAFKA_SEND_DELAY_MAX=300
       - CLIENT_ID='1234-234'
-      - KAFKA_GROUP_ID=GROUP_A
-      - LOG_LEVEL=5

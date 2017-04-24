@@ -8,11 +8,13 @@ import Registry from './registry';
 import Runner from './runner';
 import Admin from './admin';
 import Producer from './producer';
+import Config from './config';
 
-import type { Config, Callback } from '../types';
+import type { Callback, Configuration } from '../types';
 
-const Steveo = (config: Config, logger: Object = NULL_LOGGER) => () => {
+const Steveo = (configuration: Configuration, logger: Object = NULL_LOGGER) => () => {
   const registry = Registry();
+  const config = new Config(configuration);
   let getTopicName = null;
 
   const task = (topic: string, callBack: Callback) => {

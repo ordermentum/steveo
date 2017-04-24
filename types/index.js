@@ -15,12 +15,12 @@ export type KafkaParams = {
 };
 
 
-export type Config = {
+export type Configuration = {
   kafkaConnection: string,
-  kafkaCodec: string,
   clientId: string,
-  logLevel: number,
-  kafkaGroupId: string,
+  kafkaGroupId: ?string,
+  logLevel: ?number,
+  kafkaCodec: ?string,
   kafkaSendAttempts: ?number,
   kafkaSendDelayMin: ?number,
   kafkaSendDelayMax: ?number,
