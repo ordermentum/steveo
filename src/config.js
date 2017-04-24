@@ -12,4 +12,4 @@ export default class Config {
     this.kafkaSendDelayMin = config.kafkaSendDelayMin || 100;
     this.kafkaSendDelayMax = config.kafkaSendDelayMax || 300;
   }
-};
+}
