@@ -1,7 +1,6 @@
 // @flow
 import Kafka from 'no-kafka';
-
-import type { Config } from '../types';
+import Config from './config';
 
 const Admin = (config: Config) => {
   const lag = async (groupId: string,

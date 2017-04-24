@@ -1,5 +1,6 @@
 // @flow
-import type { Config, Callback, Reg, Producer } from '../types';
+import Config from './config';
+import type { Callback, Reg, Producer } from '../types';
 
 function Task(
   config: Config,
