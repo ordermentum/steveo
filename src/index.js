@@ -12,9 +12,9 @@ import Config from './config';
 
 import type { Callback, Configuration } from '../types';
 
-const Steveo = (config: Configuration, logger: Object = NULL_LOGGER) => () => {
+const Steveo = (configuration: Configuration, logger: Object = NULL_LOGGER) => () => {
   const registry = Registry();
-  config = new Config(config);
+  const config = new Config(configuration);
   let getTopicName = null;
 
   const task = (topic: string, callBack: Callback) => {
