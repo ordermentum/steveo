@@ -45,18 +45,21 @@ Responsible for consuming messages,
 ### Example
 
 ```javascript
-const steveo = new Steveo({
-  // kafka parameters
-});
+(async () => {
+  const steveo = new Steveo({
+    kafkaConnection: process.env.KAFKA_CONNECTION,
+    clientId: '1234-123',
+  });
 
-const example = steveo.task('example-task', (hello) => {
- console.log(`hello ${hello}`);
-});
+  const example = steveo.task('example-task', (hello) => {
+  console.log(`hello ${hello}`);
+  });
 
-await example.publish('tommo');
-await example.publish('bazza');
+  await example.publish('tommo');
+  await example.publish('bazza');
 
-steveo.runner(); // consume messages
+  await steveo.runner().process();
+})();
 ```
 
 For more details, see [example](https://github.com/ordermentum/steveo/blob/master/example/README.md)
