@@ -46,7 +46,7 @@ Responsible for consuming messages,
 
 ```javascript
 (async () => {
-  const steveo = new Steveo({
+  const steveo = Steveo({
     kafkaConnection: process.env.KAFKA_CONNECTION,
     clientId: '1234-123',
   });
