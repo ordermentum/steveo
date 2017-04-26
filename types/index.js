@@ -1,6 +1,11 @@
 /* @flow */
-
 export type Callback = (x: any) => any;
+
+export type ProducerPayload = (msg: Object, topic: string) => {
+  timestamp: number,
+  topic: string,
+  message: Object,
+}
 
 export type Logger = {
   logLevel: number,
@@ -18,12 +23,12 @@ export type KafkaParams = {
 export type Configuration = {
   kafkaConnection: string,
   clientId: string,
-  kafkaGroupId: ?string,
-  logLevel: ?number,
-  kafkaCodec: ?string,
-  kafkaSendAttempts: ?number,
-  kafkaSendDelayMin: ?number,
-  kafkaSendDelayMax: ?number,
+  kafkaGroupId: string,
+  logLevel: number,
+  kafkaCodec: number | string,
+  kafkaSendAttempts: number,
+  kafkaSendDelayMin: number,
+  kafkaSendDelayMax: number,
 };
 
 export type Task = {
@@ -34,6 +39,7 @@ export type Task = {
 export type Producer = {
   send: (topic: string, payload: Object) => any,
   initialize: () => any,
+  producer: Object,
 };
 
 export type RegistredTopics = {
@@ -57,3 +63,16 @@ export type Reg = {
   getTopics: () => Array<string>,
   getTask: (topic: string) => Task,
 };
+
+export type KafkaCompression = {
+  SNAPPY: number,
+  GZIP: number,
+  NONE: number,
+};
+
+export type Consumer = {
+  init: () => Promise<any>,
+  commitOffset: () => Promise<any>,
+  receive: () => Promise<any>,
+};
+

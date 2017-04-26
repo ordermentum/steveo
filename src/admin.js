@@ -5,7 +5,7 @@ import Config from './config';
 const Admin = (config: Config) => {
   const lag = async (groupId: string,
     topicName: string, partitions: Array<number>) => {
-    const admin = new Kafka.GroupAdmin({
+    const admin: Object = new Kafka.GroupAdmin({
       groupId: config.kafkaGroupId,
       clientId: config.clientId,
       connectionString: config.kafkaConnection,

@@ -3,16 +3,16 @@ import Kafka from 'no-kafka';
 import moment from 'moment';
 import { defineLazyProperty } from 'lazy-object';
 import Config from './config';
-import type { Reg } from '../types';
+import type { Reg, ProducerPayload } from '../types';
 
 const Producer = (config: Config, registry: Reg, logger: Object) => {
-  const producer = new Kafka.Producer({
+  const producer: Object = new Kafka.Producer({
     connectionString: config.kafkaConnection,
     codec: config.kafkaCodec,
   });
 
-  const producerPayload = (msg: Object, topic: string) => {
-    const timestamp = moment().unix();
+  const producerPayload: ProducerPayload = (msg, topic) => {
+    const timestamp: number = moment().unix();
 
     return {
       timestamp,
@@ -21,7 +21,7 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
     };
   };
 
-  const initialize = () =>
+  const initialize = (): Object =>
     defineLazyProperty(producer, { init: producer.init() });
 
   const send = async (topic: string, payload: Object) => {

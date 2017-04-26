@@ -28,6 +28,7 @@ coverage
 tmp
 .nyc_output
 lib/*
+flow-coverage
 
 # Users Environment Variables
 .lock-wscript

@@ -1,8 +1,19 @@
+// @flow
+
 import type { Configuration } from '../types';
 import { kafkaCompression } from './index';
 
 export default class Config {
-  constructor(config = Configuration) {
+  kafkaConnection: string;
+  clientId: string;
+  kafkaGroupId: string;
+  kafkaCodec: number | string;
+  logLevel: number;
+  kafkaSendAttempts: number;
+  kafkaSendDelayMin: number;
+  kafkaSendDelayMax: number;
+
+  constructor(config: Configuration) {
     this.kafkaConnection = config.kafkaConnection;
     this.clientId = config.clientId;
     this.kafkaGroupId = config.kafkaGroupId || 'STEVEO_TASKS';
