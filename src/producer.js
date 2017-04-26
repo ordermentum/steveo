@@ -6,7 +6,7 @@ import Config from './config';
 import type { Reg, ProducerPayload } from '../types';
 
 const Producer = (config: Config, registry: Reg, logger: Object) => {
-  const producer = new Kafka.Producer({
+  const producer: Object = new Kafka.Producer({
     connectionString: config.kafkaConnection,
     codec: config.kafkaCodec,
   });
@@ -21,7 +21,7 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
     };
   };
 
-  const initialize = () =>
+  const initialize = (): Object =>
     defineLazyProperty(producer, { init: producer.init() });
 
   const send = async (topic: string, payload: Object) => {

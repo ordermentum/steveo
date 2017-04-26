@@ -1,10 +1,9 @@
 // @flow
 import Kafka from 'no-kafka';
-import Config from './config';
-import type { Reg } from '../types';
+import type { Reg, Configuration, Consumer } from '../types';
 
-const Runner = (config: Config, registry: Reg, logger: Object) => {
-  const consumer = new Kafka.GroupConsumer({
+const Runner = (config: Configuration, registry: Reg, logger: Object) => {
+  const consumer: Consumer = new Kafka.GroupConsumer({
     groupId: config.kafkaGroupId,
     clientId: config.clientId,
     connectionString: config.kafkaConnection,
@@ -16,7 +15,7 @@ const Runner = (config: Config, registry: Reg, logger: Object) => {
 
   const receive = async (messages: Array<Object>, topic: string, partition: number) => {
     for (const m of messages) { // eslint-disable-line
-      let params = null;
+      let params: Object = {};
       try {
         // commit offset
         params = JSON.parse(m.message.value.toString('utf8'));
