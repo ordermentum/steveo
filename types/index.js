@@ -57,3 +57,9 @@ export type Reg = {
   getTopics: () => Array<string>,
   getTask: (topic: string) => Task,
 };
+
+export type KafkaCompression = {
+  SNAPPY: number,
+  GZIP: number,
+  NONE: number,
+};

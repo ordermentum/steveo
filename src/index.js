@@ -10,7 +10,7 @@ import Admin from './admin';
 import Producer from './producer';
 import Config from './config';
 
-import type { Callback, Configuration } from '../types';
+import type { Callback, Configuration, KafkaCompression } from '../types';
 
 const Steveo = (configuration: Configuration, logger: Object = NULL_LOGGER) => () => {
   const registry = Registry();
@@ -41,7 +41,7 @@ const Steveo = (configuration: Configuration, logger: Object = NULL_LOGGER) => (
   };
 };
 
-export const kafkaCompression = {
+export const kafkaCompression: KafkaCompression = {
   SNAPPY: kafka.COMPRESSION_SNAPPY,
   GZIP: kafka.COMPRESSION_GZIP,
   NONE: kafka.COMPRESSION_NONE,

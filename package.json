@@ -16,7 +16,8 @@
     "prepublish": "yarn run build",
     "reporter": "nyc --reporter=html yarn run test",
     "flow": "./node_modules/.bin/flow check",
-    "steveo": "node ./lib/cli-task.js"
+    "steveo": "node ./lib/cli-task.js",
+    "flow:coverage": "./node_modules/.bin/flow-coverage-report -i 'src/**/*.js' -x 'src/test/**' -t html -t json -t text"
   },
   "files": [
     "lib/*"
@@ -57,6 +58,7 @@
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
     "flow-bin": "^0.43.1",
+    "flow-coverage-report": "^0.3.0",
     "mocha": "^3.2.0",
     "nyc": "^10.1.2",
     "sinon": "^2.1.0"
