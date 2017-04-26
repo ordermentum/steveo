@@ -2,6 +2,12 @@
 
 export type Callback = (x: any) => any;
 
+export type ProducerPayload = (msg: Object, topic: string) => {
+  timestamp: number,
+  topic: string,
+  message: Object,
+}
+
 export type Logger = {
   logLevel: number,
 };
@@ -34,6 +40,8 @@ export type Task = {
 export type Producer = {
   send: (topic: string, payload: Object) => any,
   initialize: () => any,
+  producer: Object,
+  producerPayload: Callback,
 };
 
 export type RegistredTopics = {
