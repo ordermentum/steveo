@@ -2,7 +2,8 @@
   "parser": "babel-eslint",
   "extends": "airbnb",
   "rules": {
-    "indent": 2
+    "indent": 2,
+    "jsx-a11y/img-has-alt": "off"
   },
   "globals": {
     "describe": true,
