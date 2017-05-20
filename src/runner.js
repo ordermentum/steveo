@@ -20,12 +20,12 @@ const Runner = (config: Config, registry: Reg, logger: Object) => {
         // commit offset
         params = JSON.parse(m.message.value.toString('utf8'));
         registry.events.emit('runner_receive', topic, params);
-        logger.info('commit offset', topic, params);
+        logger.info('Commit offset', topic, params);
         await consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' }); // eslint-disable-line
         const task = registry.getTask(topic);
-        logger.info('start subscribe call', topic, params);
+        logger.info('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
-        logger.info('subscribe call finished', topic);
+        logger.info('Finish subscribe', topic);
         registry.events.emit('runner_complete', topic, params);
       } catch (ex) {
         logger.error('Error while executing consumer callback ', { params, topic, error: ex });
