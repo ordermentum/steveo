@@ -3,7 +3,7 @@
   "extends": "airbnb",
   "rules": {
     "indent": 2,
-    "jsx-a11y/img-has-alt": "off"
+    "jsx-a11y/img-has-alt": 0
   },
   "globals": {
     "describe": true,
