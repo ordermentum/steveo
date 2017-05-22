@@ -4,8 +4,7 @@ import Kafka from 'no-kafka';
 import type { Config } from '../types';
 
 const Admin = (config: Config) => {
-  const lag = async (groupId: string,
-    topicName: string, partitions: Array<number>) => {
+  const lag = async (topicName: string, partitions: Array<number>) => {
     const admin = new Kafka.GroupAdmin({
       groupId: config.kafkaGroupId,
       clientId: config.clientId,
@@ -13,7 +12,7 @@ const Admin = (config: Config) => {
       codec: config.kafkaCodec,
     });
     await admin.init();
-    return admin.fetchConsumerLag(groupId, [{
+    return admin.fetchConsumerLag(config.kafkaGroupId, [{
       topicName,
       partitions,
     }]);
