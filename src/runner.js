@@ -25,7 +25,7 @@ const Runner = (config: Config, registry: Reg, logger: Object) => {
         const task = registry.getTask(topic);
         logger.info('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
-        logger.info('Finish subscribe', topic);
+        logger.info('Finish subscribe', topic, params);
         registry.events.emit('runner_complete', topic, params);
       } catch (ex) {
         logger.error('Error while executing consumer callback ', { params, topic, error: ex });
