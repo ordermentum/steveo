@@ -3,8 +3,29 @@ import Kafka from 'no-kafka';
 import moment from 'moment';
 import { defineLazyProperty } from 'lazy-object';
 import type { Config, Reg } from '../types';
+import { sqs } from '../config';
+
+const sqsInit = (topic, logger) => {
+  return new Promise((resolve, reject) => {
+    const params = {
+      QueueName: topic,
+      Attributes: {
+        'ReceiveMessageWaitTimeSeconds': '20', // Linger time for long poll connections
+        'MessageRetentionPeriod': '604800' // 7 days
+      }
+    };
+
+    sqs.createQueue(params, function(err, data) {
+      // If the queue already exists this function just returns the queue URL
+      if (err) return reject(err);
+      resolve(data.QueueUrl);
+    });
+  });
+}
 
 const Producer = (config: Config, registry: Reg, logger: Object) => {
+  const sqsUrls = {};
+
   const producer = new Kafka.Producer({
     connectionString: config.kafkaConnection,
     codec: config.kafkaCodec,
@@ -20,11 +41,34 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
     };
   };
 
+  const sqsPayload = (msg: Object, topic: string) => {
+    const timestamp = moment().unix();
+
+    return {
+      MessageAttributes: {
+        Timestamp: {
+          DataType: 'Number',
+          StringValue: timestamp.toString(),
+        }
+      },
+      MessageBody: JSON.stringify(Object.assign({}, msg, { timestamp })),
+      QueueUrl: sqsUrls[topic],
+    }
+  };
+
   const initialize = () =>
     defineLazyProperty(producer, { init: producer.init() });
 
   const send = async (topic: string, payload: Object) => {
+    try {
+      if (!sqsUrls[topic]) sqsUrls[topic] = await sqsInit(topic, logger);
+    } catch (e) {
+      logger.error('Error initializing SQS', e)
+    }
+
     const data = producerPayload(payload, topic);
+    const sqsData = sqsPayload(payload, topic);
+
     const sendParams = {
       retries: {
         attempts: config.kafkaSendAttempts,
@@ -34,6 +78,18 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
         },
       },
     };
+
+    try {
+      await new Promise((resolve, reject) => {
+        sqs.sendMessage(sqsData, function(err, data) {
+          if (err) reject(err);
+          logger.info('sqs success', data);
+          resolve();
+        });
+      });
+    } catch (e) {
+      logger.error('sqs failure', e)
+    }
 
     try {
       await producer.send(data, sendParams);
@@ -49,6 +105,7 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
     send,
     initialize,
     producer,
+    sqs,
   };
 };
 
