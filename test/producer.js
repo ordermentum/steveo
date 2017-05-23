@@ -41,5 +41,4 @@ describe('Producer', () => {
     await p.send('test-topic', { a: 'payload', b: '¼' });
     expect(sendStub.callCount).to.equal(1);
   });
-
 });
