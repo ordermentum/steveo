@@ -33,4 +33,13 @@ describe('Producer', () => {
     }
     expect(err).to.equal(true);
   });
+
+  it('should send utf-8 strings', async () => {
+    const registry = new Registry();
+    const p = Producer({}, registry, console);
+    const sendStub = sinon.stub(p.producer, 'send').returns(Promise.resolve());
+    await p.send('test-topic', { a: 'payload', b: '¼' });
+    expect(sendStub.callCount).to.equal(1);
+  });
+
 });
