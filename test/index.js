@@ -13,7 +13,6 @@ describe('Index', () => {
     expect(typeof steveo.task).to.equal('function');
     const task = steveo.task();
     expect(typeof task).to.equal('object');
-    expect(typeof steveo.lag).to.equal('function');
   });
 
   it('should create runner', () => {
