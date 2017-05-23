@@ -12,11 +12,14 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
 
   const producerPayload = (msg: Object, topic: string) => {
     const timestamp = moment().unix();
-
+    const payload = JSON.stringify(Object.assign({}, msg, { timestamp }));
+    logger.info('Payload Size:', topic, payload.length);
     return {
       timestamp,
       topic,
-      message: { value: JSON.stringify(Object.assign({}, msg, { timestamp })) },
+      message: {
+        value: payload,
+      },
     };
   };
 
