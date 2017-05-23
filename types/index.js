@@ -6,24 +6,7 @@ export type Logger = {
   logLevel: number,
 };
 
-export type KafkaParams = {
-  kafkaConnection: string,
-  kafkaGroupId: string,
-  clientId: ?string,
-  kafkaCodec: string,
-  logger: Logger,
-};
-
-
 export type Config = {
-  kafkaConnection: string,
-  kafkaCodec: string,
-  clientId: string,
-  logLevel: number,
-  kafkaGroupId: string,
-  kafkaSendAttempts: ?number,
-  kafkaSendDelayMin: ?number,
-  kafkaSendDelayMax: ?number,
 };
 
 export type Task = {
