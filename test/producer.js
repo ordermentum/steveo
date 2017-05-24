@@ -36,14 +36,14 @@ describe('Producer', () => {
     const registry = new Registry();
     const p = Producer({}, registry, console);
     const sendStub = sinon.stub(p.producer, 'send').returns(Promise.reject());
-    const sendStubSqs = sinon.stub(p.sqs, 'sendMessage').callsArg(1);
+    const sendStubSqs = sinon.stub(p.sqs, 'sendMessage').callsArgWith(1, new Error('ohai'));
     let err;
     try {
       await p.send('test-topic', { a: 'payload' });
     } catch (ex) {
       err = true;
-      expect(sendStub.callCount).to.equal(1);
     }
+    expect(sendStub.callCount).to.equal(1);
     expect(err).to.equal(true);
     sendStubSqs.restore();
   });

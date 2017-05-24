@@ -64,6 +64,7 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
       if (!sqsUrls[topic]) sqsUrls[topic] = await sqsInit(topic, logger);
     } catch (e) {
       logger.error('Error initializing SQS', e)
+      throw e;
     }
 
     const data = producerPayload(payload, topic);
@@ -80,22 +81,22 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
     };
 
     try {
+      await producer.send(data, sendParams);
+    } catch (ex) {
+      logger.error('Error while sending kafka payload:', JSON.stringify(payload, null, 2), 'topic :', topic, 'Error :', ex);
+    }
+
+    try {
       await new Promise((resolve, reject) => {
         sqs.sendMessage(sqsData, function(err, data) {
           if (err) reject(err);
           logger.info('sqs success', data);
           resolve();
         });
+        registry.events.emit('producer_success', topic, payload);
       });
-    } catch (e) {
-      logger.error('sqs failure', e)
-    }
-
-    try {
-      await producer.send(data, sendParams);
-      registry.events.emit('producer_success', topic, payload);
     } catch (ex) {
-      logger.error('Error while sending payload:', JSON.stringify(payload, null, 2), 'topic :', topic, 'Error :', ex);
+      logger.error('Error while sending sqs payload:', JSON.stringify(payload, null, 2), 'topic :', topic, 'Error :', e);
       registry.events.emit('producer_failure', topic, ex);
       throw ex;
     }
