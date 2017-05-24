@@ -19,11 +19,11 @@ describe('Registry', () => {
   });
 
   it('should not duplicate tasks', async () => {
-    await registry.addNewTask({
+    registry.addNewTask({
       topic: 'hello',
       subscribe: () => {},
     });
-    await registry.addNewTask({
+    registry.addNewTask({
       topic: 'hello',
       subscribe: () => {},
     }, runner);
