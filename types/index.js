@@ -33,7 +33,7 @@ export type Configuration = {
 
 export type Task = {
   topic: string,
-  subscribe: () => any,
+  subscribe: (any) => any,
 };
 
 export type Producer = {
@@ -57,7 +57,7 @@ export type Runner = {
 
 
 export type Reg = {
-  addNewTask: (task: Task) => any,
+  addNewTask: (task: Task, producer: Producer) => any,
   removeTask: (task: Task) => any,
   events: Object,
   getTopics: () => Array<string>,
@@ -71,8 +71,8 @@ export type KafkaCompression = {
 };
 
 export type Consumer = {
-  init: () => Promise<any>,
-  commitOffset: () => Promise<any>,
+  init: (Array<Object>) => Promise<any>,
+  commitOffset: (Object) => Promise<any>,
   receive: () => Promise<any>,
 };
 
