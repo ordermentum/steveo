@@ -3,7 +3,7 @@ import Kafka from 'no-kafka';
 import { memoryUsage, abort } from 'process';
 import type { Reg, Configuration, Consumer } from '../types';
 
-const maxRss = process.env.STEVEO_MAX_RSS && parseInt(process.env.STEVEO_MAX_RSS);
+const maxRss = process.env.STEVEO_MAX_RSS && parseInt(process.env.STEVEO_MAX_RSS, 10);
 
 const Runner = (config: Configuration, registry: Reg, logger: Object) => {
   const consumer: Consumer = new Kafka.GroupConsumer({
@@ -21,12 +21,12 @@ const Runner = (config: Configuration, registry: Reg, logger: Object) => {
       let params: Object = {};
       const currentRss = memoryUsage().rss;
       try {
-        if ( maxRss ) {
+        if (maxRss) {
           if (currentRss > maxRss) {
             logger.error(`Steveo - Memory ${currentRss} is above max ${maxRss}. Killing the process`);
             abort();
           }
-        };
+        }
         // commit offset
         params = JSON.parse(m.message.value.toString('utf8'));
         registry.events.emit('runner_receive', topic, params);

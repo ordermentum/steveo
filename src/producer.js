@@ -3,7 +3,7 @@ import Kafka from 'no-kafka';
 import moment from 'moment';
 import { defineLazyProperty } from 'lazy-object';
 import Config from './config';
-import type { Reg, ProducerPayload } from '../types';
+import type { Reg } from '../types';
 
 const Producer = (config: Config, registry: Reg, logger: Object) => {
   const producer: Object = new Kafka.Producer({
