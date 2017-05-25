@@ -19,9 +19,9 @@ const Runner = (config: Configuration, registry: Reg, logger: Object) => {
   const receive = async (messages: Array<Object>, topic: string, partition: number) => {
     for (const m of messages) { // eslint-disable-line no-restricted-syntax
       let params: Object = {};
+      const currentRss = memoryUsage().rss;
       try {
         if ( maxRss ) {
-          const currentRss = memoryUsage().rss;
           if (currentRss > maxRss) {
             logger.error(`Steveo - Memory ${currentRss} is above max ${maxRss}. Killing the process`);
             abort();
@@ -30,6 +30,7 @@ const Runner = (config: Configuration, registry: Reg, logger: Object) => {
         // commit offset
         params = JSON.parse(m.message.value.toString('utf8'));
         registry.events.emit('runner_receive', topic, params);
+        logger.info('Current rss memory:', currentRss);
         logger.info('Commit offset', topic, params);
         await consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' }); // eslint-disable-line
         const task = registry.getTask(topic);
