@@ -3,7 +3,7 @@ import Kafka from 'no-kafka';
 import moment from 'moment';
 import { defineLazyProperty } from 'lazy-object';
 import Config from './config';
-import type { Reg, ProducerPayload } from '../types';
+import type { Reg } from '../types';
 
 const Producer = (config: Config, registry: Reg, logger: Object) => {
   const producer: Object = new Kafka.Producer({
@@ -11,13 +11,17 @@ const Producer = (config: Config, registry: Reg, logger: Object) => {
     codec: config.kafkaCodec,
   });
 
-  const producerPayload: ProducerPayload = (msg, topic) => {
-    const timestamp: number = moment().unix();
-
+  const producerPayload = (msg: Object, topic: string) => {
+    const timestamp = moment().unix();
+    const payload = JSON.stringify(Object.assign({}, msg, { timestamp }));
+    const size = Buffer.from(payload, 'utf-8');
+    logger.info('Payload Size:', topic, size.length);
     return {
       timestamp,
       topic,
-      message: { value: JSON.stringify(Object.assign({}, msg, { timestamp })) },
+      message: {
+        value: payload,
+      },
     };
   };
 
