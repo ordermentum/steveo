@@ -1,6 +1,9 @@
 // @flow
 import Kafka from 'no-kafka';
+import { memoryUsage, abort } from 'process';
 import type { Reg, Configuration, Consumer } from '../types';
+
+const maxRss = process.env.STEVEO_MAX_RSS && parseInt(process.env.STEVEO_MAX_RSS);
 
 const Runner = (config: Configuration, registry: Reg, logger: Object) => {
   const consumer: Consumer = new Kafka.GroupConsumer({
@@ -17,6 +20,13 @@ const Runner = (config: Configuration, registry: Reg, logger: Object) => {
     for (const m of messages) { // eslint-disable-line no-restricted-syntax
       let params: Object = {};
       try {
+        if ( maxRss ) {
+          const currentRss = memoryUsage().rss;
+          if (currentRss > maxRss) {
+            logger.error(`Steveo - Memory ${currentRss} is above max ${maxRss}. Killing the process`);
+            abort();
+          }
+        };
         // commit offset
         params = JSON.parse(m.message.value.toString('utf8'));
         registry.events.emit('runner_receive', topic, params);
