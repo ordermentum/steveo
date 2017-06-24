@@ -29,6 +29,7 @@ export type Configuration = {
   kafkaSendAttempts: number,
   kafkaSendDelayMin: number,
   kafkaSendDelayMax: number,
+  engine: string,
 };
 
 export type Task = {
