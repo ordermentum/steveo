@@ -1,8 +1,17 @@
+// @flow
+
 import moment from 'moment';
 import Kafka from 'no-kafka';
 
-class KafkaProducer {
-  constructor(config, registry, logger) {
+import type { Configuration, Logger, Producer, IProducer, IRegistry } from '../../types';
+
+class KafkaProducer implements IProducer {
+  config: Configuration;
+  registry: IRegistry;
+  logger: Logger;
+  producer: Producer;
+
+  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
     this.config = config;
     this.producer = new Kafka.Producer({
       connectionString: this.config.kafkaConnection,

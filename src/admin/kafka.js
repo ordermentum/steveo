@@ -1,10 +1,16 @@
+// @flow
+
 import Kafka from 'no-kafka';
 
-class KafkaAdmin {
-  constructor(config, groupId, topic, partitions) {
+import type { Configuration, IAdmin } from '../../types';
+
+class KafkaAdmin implements IAdmin {
+  config: Configuration;
+  groupId: string;
+  admin: Object;
+
+  constructor(config: Configuration) {
     this.config = config;
-    this.groupId = groupId;
-    this.partitions = partitions;
   }
 
   async initialize() {
@@ -17,10 +23,10 @@ class KafkaAdmin {
     await this.admin.init();
   }
 
-  lag() {
-    return this.admin.fetchConsumerLag(this.groupId, [{
-      topicName: this.topicName,
-      partitions: this.partitions,
+  lag(topicName: string, partitions: string) {
+    return this.admin.fetchConsumerLag(this.config.kafkaGroupId, [{
+      topicName,
+      partitions,
     }]);
   }
 }

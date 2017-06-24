@@ -1,9 +1,13 @@
+// @flow
 
 import events from 'events';
 
-import type { Task } from '../types';
+import type { IRegistry, IEvent, Task } from '../types';
 
-class Registry {
+class Registry implements IRegistry {
+  registeredTasks: Object;
+  events: IEvent;
+
   constructor() {
     this.registeredTasks = {};
     this.events = new events.EventEmitter();
