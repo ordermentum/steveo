@@ -9,7 +9,6 @@ import Runner from './runner/kafka';
 import Admin from './admin/kafka';
 import Producer from './producer/kafka';
 import Config from './config';
-import C from './constants';
 
 import type { ITask, Configuration, Callback, Logger, ISteveo, IRegistry, IEvent, IAdmin } from '../types';
 
@@ -27,7 +26,6 @@ class Steveo implements ISteveo {
     this.config = new Config(configuration);
     this.admin = new Admin(this.config);
     this.events = this.registry.events;
-    this.getTopicName = C.NOOP;
   }
 
   task(topic: string, callBack: Callback): ITask {

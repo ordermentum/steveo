@@ -82,7 +82,7 @@ export interface ISteveo {
   task(topic: string, callBack: Callback): ITask;
   runner(): IRunner;
   customTopicName(cb: Callback): void;
-  lag(): Callback;
+  lag(): (topicName: string, partitions: string) => Object;
 }
 
 export type Producer = {
