@@ -1,50 +1,52 @@
-// @flow
 import 'babel-polyfill';
 
 import kafka from 'no-kafka';
 import NULL_LOGGER from 'null-logger';
-import Task from './task';
+import Task from './task/kafka';
 import Registry from './registry';
-import Runner from './runner';
-import Admin from './admin';
-import Producer from './producer';
+import Runner from './runner/kafka';
+import Admin from './admin/kafka';
+import Producer from './producer/kafka';
 import Config from './config';
 
-import type { Callback, Configuration, KafkaCompression } from '../types';
 
-const Steveo = (configuration: Configuration, logger: Object = NULL_LOGGER) => () => {
-  const registry = Registry();
-  const config = new Config(configuration);
-  let getTopicName = null;
+class Steveo {
+  constructor(configuration, logger = NULL_LOGGER) {
+    this.logger = logger;
+    this.registry = new Registry();
+    this.config = new Config(configuration);
+    this.getTopicName = null;
+    this.admin = new Admin(this.config);
+    this.events = this.registry.events;
+  }
 
-  const task = (topic: string, callBack: Callback) => {
-    const producer = Producer(config, registry, logger);
+  task(topic, callBack) {
+    const producer = new Producer(this.config, this.registry, this.logger);
     let topicName = topic;
-    if (getTopicName && typeof getTopicName === 'function') {
-      topicName = getTopicName(topic);
+    if (this.getTopicName && typeof getTopicName === 'function') {
+      topicName = this.getTopicName(topic);
     }
-    return Task(config, registry, producer, topicName, callBack);
+    return new Task(this.config, this.registry, producer, topicName, callBack);
+  }
+
+  runner() {
+    return new Runner(this.config, this.registry, this.logger);
+  }
+
+  customTopicName = (cb) => {
+    this.getTopicName = cb;
   };
 
-  const customTopicName = (cb: Callback) => {
-    getTopicName = cb;
-  };
+  lag() {
+    return this.admin.lag;
+  }
+}
 
-  const runner = () => Runner(config, registry, logger);
+export default (config, logger) => () => new Steveo(config, logger);
 
-  return {
-    task,
-    lag: Admin(config).lag,
-    runner,
-    customTopicName,
-    events: registry.events,
-  };
-};
-
-export const kafkaCompression: KafkaCompression = {
+export const kafkaCompression = {
   SNAPPY: kafka.COMPRESSION_SNAPPY,
   GZIP: kafka.COMPRESSION_GZIP,
   NONE: kafka.COMPRESSION_NONE,
 };
 
-export default Steveo;

@@ -1,33 +1,27 @@
-// @flow
+
 import events from 'events';
 
 import type { Task } from '../types';
 
-const Registry = () => {
-  const registeredTasks = {};
-  const eventEmitter = new events.EventEmitter();
+class Registry {
+  constructor() {
+    this.registeredTasks = {};
+    this.events = new events.EventEmitter();
+  }
 
-  const addNewTask = (task: Task) => {
-    eventEmitter.emit('task_added', task);
-    registeredTasks[task.topic] = task; // eslint-disable-line
-  };
+  addNewTask(task: Task) {
+    this.events.emit('task_added', task);
+    this.registeredTasks[task.topic] = task; // eslint-disable-line
+  }
 
-  const removeTask = (task: Task) => {
-    eventEmitter.emit('task_removed', task);
-    delete registeredTasks[task.topic]; // eslint-disable-line
-  };
+  removeTask(task: Task) {
+    this.events.emit('task_removed', task);
+    delete this.registeredTasks[task.topic]; // eslint-disable-line
+  }
 
-  const getTopics = () => Object.keys(registeredTasks);
+  getTopics = () => Object.keys(this.registeredTasks);
 
-  const getTask = (topic: string) => registeredTasks[topic];
-
-  return {
-    addNewTask,
-    removeTask,
-    getTopics,
-    events: eventEmitter,
-    getTask,
-  };
-};
+  getTask = (topic: string) => this.registeredTasks[topic];
+}
 
 export default Registry;

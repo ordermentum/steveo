@@ -12,6 +12,7 @@ export default class Config {
   kafkaSendAttempts: number;
   kafkaSendDelayMin: number;
   kafkaSendDelayMax: number;
+  engine: string;
 
   constructor(config: Configuration) {
     this.kafkaConnection = config.kafkaConnection;
@@ -22,5 +23,6 @@ export default class Config {
     this.kafkaSendAttempts = config.kafkaSendAttempts || 2;
     this.kafkaSendDelayMin = config.kafkaSendDelayMin || 100;
     this.kafkaSendDelayMax = config.kafkaSendDelayMax || 300;
+    this.engine = config.engine || 'kafka';
   }
 }
