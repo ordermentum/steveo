@@ -3,11 +3,11 @@ import 'babel-polyfill';
 
 import kafka from 'no-kafka';
 import NULL_LOGGER from 'null-logger';
-import Task from './task/kafka';
+import task from './base/task';
 import Registry from './registry';
-import Runner from './runner/kafka';
-import Admin from './admin/kafka';
-import Producer from './producer/kafka';
+import runner from './base/runner';
+import admin from './base/admin';
+import producer from './base/producer';
 import Config from './config';
 
 import type { ITask, Configuration, Callback, Logger, ISteveo, IRegistry, IEvent, IAdmin } from '../types';
@@ -24,21 +24,21 @@ class Steveo implements ISteveo {
     this.logger = logger;
     this.registry = new Registry();
     this.config = new Config(configuration);
-    this.admin = new Admin(this.config);
+    this.admin = admin(this.config.engine, this.config);
     this.events = this.registry.events;
   }
 
   task(topic: string, callBack: Callback): ITask {
-    const producer = new Producer(this.config, this.registry, this.logger);
+    const prod = producer(this.config.engine, this.config, this.registry, this.logger);
     let topicName = topic;
     if (this.getTopicName && typeof this.getTopicName === 'function') {
       topicName = this.getTopicName(topic);
     }
-    return new Task(this.config, this.registry, producer, topicName, callBack);
+    return task(this.config.engine, this.config, this.registry, prod, topicName, callBack);
   }
 
   runner() {
-    return new Runner(this.config, this.registry, this.logger);
+    return runner(this.config.engine, this.config, this.registry, this.logger);
   }
 
   customTopicName = (cb: Callback) => {
