@@ -3,6 +3,7 @@ const Steveo = require('steveo').default;
 const config = {
   kafkaConnection: process.env.KAFKA_CONNECTION,
   clientId: '1234-123',
+  engine: 'kafka',
 };
 
 (async () => {
