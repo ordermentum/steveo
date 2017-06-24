@@ -1,7 +1,14 @@
+// @flow
 import Kafka from 'no-kafka';
+import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
-class KafkaRunner {
-  constructor(config, registry, logger) {
+class KafkaRunner implements IRunner {
+  config: Configuration;
+  logger: Logger;
+  registry: IRegistry;
+  consumer: Consumer;
+
+  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -17,7 +24,7 @@ class KafkaRunner {
     });
   }
 
-  receive = async (messages, topic, partition) => {
+  receive = async (messages: Array<Object>, topic: string, partition: string) => {
     for (const m of messages) { // eslint-disable-line no-restricted-syntax
       let params: Object = {};
       try {

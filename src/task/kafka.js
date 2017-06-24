@@ -1,6 +1,15 @@
+// @flow
+import type { ITask, Configuration, Callback, IProducer, IRegistry } from '../../types';
 
-class KafkaTask {
-  constructor(config, registry, producer, topic, subscribe) {
+class KafkaTask implements ITask {
+  config: Configuration;
+  registry: IRegistry;
+  subscribe: Callback;
+  producer: IProducer;
+  topic: string;
+
+  constructor(config: Configuration, registry: IRegistry,
+    producer: IProducer, topic:string, subscribe: Callback) {
     this.config = config;
     this.registry = registry;
     this.subscribe = subscribe;
@@ -10,10 +19,10 @@ class KafkaTask {
       topic,
       subscribe: this.subscribe,
     };
-    this.registry.addNewTask(task, producer);
+    this.registry.addNewTask(task);
   }
 
-  async publish(payload) {
+  publish = async (payload: Object) => {
     let params = payload;
     if (!Array.isArray(payload)) {
       params = [payload];
