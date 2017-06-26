@@ -1,8 +1,13 @@
 const Steveo = require('steveo').default;
 
 const config = {
-  kafkaConnection: process.env.KAFKA_CONNECTION,
-  clientId: '1234-123',
+  // kafkaConnection: process.env.KAFKA_CONNECTION,
+  // clientId: '1234-123',
+  region: 'usa',
+  apiVersion: '2012-11-05',
+  receiveMessageWaitTimeSeconds: '20',
+  messageRetentionPeriod: '604800',
+  engine: 'sqs',
 };
 
 (async () => {

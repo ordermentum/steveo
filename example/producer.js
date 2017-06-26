@@ -1,8 +1,15 @@
 const Steveo = require('steveo').default;
 
 const config = {
-  kafkaConnection: process.env.KAFKA_CONNECTION,
-  clientId: '1234-123',
+  // kafkaConnection: process.env.KAFKA_CONNECTION,
+  // clientId: '1234-123',
+  region: 'usa',
+  apiVersion: '2012-11-05',
+  receiveMessageWaitTimeSeconds: '20',
+  messageRetentionPeriod: '604800',
+  engine: 'sqs',
+  accessKeyId: '123',
+  secretAccessKey: '23asdds',
 };
 
 (async () => {
@@ -10,6 +17,10 @@ const config = {
 
   steveo.events.on('producer_failure', (topic, ex) => {
     console.log('Failed to produce message', topic, ex);
+  });
+
+  steveo.events.on('task_failure', (topic, ex) => {
+    console.log('Failed task', topic, ex);
   });
 
   // create first Task

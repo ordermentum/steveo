@@ -29,7 +29,7 @@ class Task implements ITask {
     }
 
     try {
-      await this.producer.initialize();
+      await this.producer.initialize(this.topic);
       await Promise.all(params.map(data => this.producer.send(this.topic, data)));
       this.registry.events.emit('task_success', this.topic, payload);
     } catch (ex) {

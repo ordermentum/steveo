@@ -7,10 +7,8 @@ const sqs = (config) => {
     accessKeyId: config.accessKeyId,
     secretAccessKey: config.secretAccessKey,
   });
-  console.log('********process.env.NODE_ENV', process.env.NODE_ENV);
   if (process.env.NODE_ENV === 'development') {
     instance.setEndpoint(process.env.DEV_SQS);
-    console.log(instance);
   }
   return instance;
 };
