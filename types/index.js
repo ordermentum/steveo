@@ -21,6 +21,7 @@ export type KafkaParams = {
   logger: Logger,
 };
 
+export type Engine = 'kafka' | 'sqs';
 
 export type Configuration = {
   kafkaConnection: string,
@@ -31,7 +32,11 @@ export type Configuration = {
   kafkaSendAttempts: number,
   kafkaSendDelayMin: number,
   kafkaSendDelayMax: number,
-  engine: string,
+  engine: Engine,
+  region: string;
+  apiVersion: string;
+  messageRetentionPeriod: string;
+  receiveMessageWaitTimeSeconds: string;
 };
 
 export type Task = {
@@ -88,6 +93,7 @@ export interface ISteveo {
 export type Producer = {
   send(data: Object, sendParams: Object): void;
   init() : void;
+  createQueue(params: Object, Callback): ?Promise<void>;
 };
 
 export interface IProducer {
@@ -95,7 +101,7 @@ export interface IProducer {
   logger: Logger;
   registry: IRegistry;
   producer: Producer;
-  initialize(): void;
+  initialize(topic: ?string): ?Promise<void>;
   producerPayload(msg: Object, topic: string): Object;
   send(topic: string, payload: Object): Promise<void>;
 }
@@ -107,3 +113,6 @@ export interface IAdmin {
   lag(topicName: string, partitions: string): Object;
 }
 
+export type sqsUrls = {
+  [key: string]: Promise<void>,
+}
