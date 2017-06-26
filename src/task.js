@@ -1,7 +1,7 @@
 // @flow
-import type { ITask, Configuration, Callback, IProducer, IRegistry } from '../../types';
+import type { ITask, Configuration, Callback, IProducer, IRegistry } from '../types';
 
-class KafkaTask implements ITask {
+class Task implements ITask {
   config: Configuration;
   registry: IRegistry;
   subscribe: Callback;
@@ -39,4 +39,4 @@ class KafkaTask implements ITask {
   }
 }
 
-export default KafkaTask;
+export default Task;

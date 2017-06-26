@@ -3,7 +3,7 @@ import 'babel-polyfill';
 
 import kafka from 'no-kafka';
 import NULL_LOGGER from 'null-logger';
-import task from './base/task';
+import Task from './task';
 import Registry from './registry';
 import runner from './base/runner';
 import admin from './base/admin';
@@ -34,7 +34,7 @@ class Steveo implements ISteveo {
     if (this.getTopicName && typeof this.getTopicName === 'function') {
       topicName = this.getTopicName(topic);
     }
-    return task(this.config.engine, this.config, this.registry, prod, topicName, callBack);
+    return new Task(this.config, this.registry, prod, topicName, callBack);
   }
 
   runner() {

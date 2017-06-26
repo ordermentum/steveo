@@ -1,16 +1,33 @@
 version: '2'
 
 services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+  kafka:
+    image: wurstmeister/kafka:0.9.0.1
+    ports:
+      - 9092:9092
+    command: start-kafka.sh
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME=kafka
+      - KAFKA_CREATE_TOPICS="test-topic:1:1"
+      - KAFKA_ADVERTISED_PORT=9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
   app:
     build:
       context: .
+    links:
+      - zookeeper
+      - kafka
+    depends_on:
+      - zookeeper
+      - kafka
     volumes:
       - .:/usr/src/app
     environment:
       - KAFKA_CONNECTION=kafka://kafka:9092
       - CLIENT_ID='1234-234'
-
-networks:
-  default:
-    external:
-      name: oaknuggins_default
