@@ -17,6 +17,8 @@ export default class Config {
   apiVersion: string;
   messageRetentionPeriod: string;
   receiveMessageWaitTimeSeconds: string;
+  accessKeyId: string;
+  secretAccessKey: string;
 
   constructor(config: Configuration) {
     this.engine = config.engine || 'kafka';
@@ -34,6 +36,8 @@ export default class Config {
       this.apiVersion = config.apiVersion;
       this.messageRetentionPeriod = config.messageRetentionPeriod;
       this.receiveMessageWaitTimeSeconds = config.receiveMessageWaitTimeSeconds;
+      this.accessKeyId = config.accessKeyId;
+      this.secretAccessKey = config.secretAccessKey;
     }
   }
 }

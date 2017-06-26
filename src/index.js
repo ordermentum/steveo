@@ -6,25 +6,25 @@ import NULL_LOGGER from 'null-logger';
 import Task from './task';
 import Registry from './registry';
 import runner from './base/runner';
-import admin from './base/admin';
+import metric from './base/metric';
 import producer from './base/producer';
 import Config from './config';
 
-import type { ITask, Configuration, Callback, Logger, ISteveo, IRegistry, IEvent, IAdmin } from '../types';
+import type { ITask, Configuration, Callback, Logger, ISteveo, IRegistry, IEvent, IMetric } from '../types';
 
 class Steveo implements ISteveo {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   getTopicName: Callback;
-  admin: IAdmin;
+  metric: IMetric;
   events: IEvent;
 
   constructor(configuration: Configuration, logger :Logger = NULL_LOGGER) {
     this.logger = logger;
     this.registry = new Registry();
     this.config = new Config(configuration);
-    this.admin = admin(this.config.engine, this.config);
+    this.metric = metric(this.config.engine, this.config, this.logger);
     this.events = this.registry.events;
   }
 
@@ -45,8 +45,8 @@ class Steveo implements ISteveo {
     this.getTopicName = cb;
   };
 
-  lag() {
-    return this.admin.lag;
+  metric() {
+    return this.metric;
   }
 }
 
