@@ -22,7 +22,7 @@ class SqsProducer implements IProducer {
   initialize(topic: ?string) {
     return new Promise((resolve: any, reject: any) => {
       const params = {
-        Quename: topic,
+        QueueName: topic,
         Attributes: {
           ReceiveMessageWaitTimeSeconds: this.config.receiveMessageWaitTimeSeconds,
           MessageRetentionPeriod: this.config.messageRetentionPeriod,

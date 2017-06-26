@@ -33,10 +33,12 @@ export type Configuration = {
   kafkaSendDelayMin: number,
   kafkaSendDelayMax: number,
   engine: Engine,
-  region: string;
-  apiVersion: string;
-  messageRetentionPeriod: string;
-  receiveMessageWaitTimeSeconds: string;
+  region: string,
+  apiVersion: string,
+  messageRetentionPeriod: string,
+  receiveMessageWaitTimeSeconds: string,
+  accessKeyId: string,
+  secretAccessKey: string,
 };
 
 export type Task = {
@@ -80,6 +82,12 @@ export interface IRunner {
   process(): Promise<any>;
 }
 
+export interface IMetric {
+  config: Configuration;
+  groupId: string;
+  initialize(): Promise<void>;
+}
+
 export interface ISteveo {
   config: Configuration;
   logger: Logger;
@@ -87,7 +95,6 @@ export interface ISteveo {
   task(topic: string, callBack: Callback): ITask;
   runner(): IRunner;
   customTopicName(cb: Callback): void;
-  lag(): (topicName: string, partitions: string) => Object;
 }
 
 export type Producer = {
@@ -106,12 +113,6 @@ export interface IProducer {
   send(topic: string, payload: Object): Promise<void>;
 }
 
-export interface IAdmin {
-  config: Configuration;
-  groupId: string;
-  initialize(): Promise<void>;
-  lag(topicName: string, partitions: string): Object;
-}
 
 export type sqsUrls = {
   [key: string]: Promise<void>,

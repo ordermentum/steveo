@@ -1,14 +1,16 @@
 // @flow
 
 import KafkaProducer from '../producer/kafka';
+import SqsProducer from '../producer/sqs';
 import type { IProducer, Configuration, IRegistry, Logger } from '../../types';
 
 type ProducersType = {
-  [key: string]: typeof KafkaProducer,
+  [key: string]: typeof KafkaProducer | typeof SqsProducer,
 };
 
 const Producers: ProducersType = {
   kafka: KafkaProducer,
+  sqs: SqsProducer,
 };
 
 const getProducer = (

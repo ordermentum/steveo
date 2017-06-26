@@ -1,13 +1,15 @@
 // @flow
 
 import KafkaRunner from '../runner/kafka';
+import SqsRunner from '../runner/sqs';
 import type { IRunner, Configuration, IRegistry, Logger } from '../../types';
 
 type RunnersType = {
-  [key: string]: typeof KafkaRunner,
+  [key: string]: typeof KafkaRunner | typeof SqsRunner,
 }
 const Runners: RunnersType = {
   kafka: KafkaRunner,
+  sqs: SqsRunner,
 };
 
 const getRunner = (
