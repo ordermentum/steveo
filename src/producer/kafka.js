@@ -38,7 +38,7 @@ class KafkaProducer implements IProducer {
     };
   }
 
-  send = async (topic: string, payload: Object) => {
+  async send(topic: string, payload: Object) {
     const data = this.producerPayload(payload, topic);
     const sendParams = {
       retries: {

@@ -22,7 +22,7 @@ class Task implements ITask {
     this.registry.addNewTask(task);
   }
 
-  publish = async (payload: Object) => {
+  async publish(payload: Object) {
     let params = payload;
     if (!Array.isArray(payload)) {
       params = [payload];
