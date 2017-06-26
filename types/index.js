@@ -77,7 +77,7 @@ export interface IRunner {
   registry: IRegistry;
   consumer: Consumer;
   receive(messages: Array<Object>, topic: string, partition: string): Promise<void>;
-  process(): Callback;
+  process(): Promise<any>;
 }
 
 export interface ISteveo {

@@ -19,7 +19,7 @@ class SqsProducer implements IProducer {
     this.registry = registry;
   }
 
-  initialize = (topic: ?string) => {
+  initialize(topic: ?string) {
     return new Promise((resolve: any, reject: any) => {
       const params = {
         Quename: topic,
@@ -50,7 +50,7 @@ class SqsProducer implements IProducer {
     };
   }
 
-  send = async (topic: string, payload: Object) => {
+  async send(topic: string, payload: Object) {
     try {
       if (!this.sqsUrls[topic]) {
         this.sqsUrls[topic] = await this.initialize(topic);
