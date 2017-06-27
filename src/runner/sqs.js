@@ -1,7 +1,8 @@
 // @flow
-import SqsConf from '../config/sqs';
+import sqsConf from '../config/sqs';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
+/* istanbul ignore next */
 const getUrl = (instance, topic) => {
   const params = {
     QueueName: topic,
@@ -18,6 +19,7 @@ type DeleteMessage = {
   logger: Logger
 };
 
+/* istanbul ignore next */
 const deleteMessage = async ({
   instance,
   topic,
@@ -51,7 +53,7 @@ class SqsRunner implements IRunner {
     this.registry = registry;
     this.logger = logger;
     this.sqsUrls = {};
-    this.sqs = SqsConf.sqs(config);
+    this.sqs = sqsConf.sqs(config);
   }
 
   receive = async (messages: Array<Object>, topic: string) => {
@@ -78,14 +80,14 @@ class SqsRunner implements IRunner {
       }
     }
   }
-
+  /* istanbul ignore next */
   iterateOnQueue = async (params: Object, topic: string) => {
     const data = await this.sqs.receiveMessageAsync(params);
     try {
       await this.receive(data.Messages, topic);
-      this.iterateOnQueue(params, topic);
+      await this.iterateOnQueue(params, topic);
     } catch (ex) {
-      this.iterateOnQueue(params, topic);
+      await this.iterateOnQueue(params, topic);
     }
   };
 

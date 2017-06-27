@@ -1,6 +1,6 @@
 // @flow
 
-import SqsConf from '../config/sqs';
+import sqsConf from '../config/sqs';
 
 import type { Configuration, Logger, Producer, IProducer, IRegistry, sqsUrls } from '../../types';
 
@@ -14,7 +14,7 @@ class SqsProducer implements IProducer {
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger) {
     this.config = config;
-    this.producer = SqsConf.sqs(config);
+    this.producer = sqsConf.sqs(config);
     this.logger = logger;
     this.registry = registry;
     this.sqsUrls = {};

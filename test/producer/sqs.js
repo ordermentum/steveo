@@ -2,17 +2,18 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producer/sqs';
 import Registry from '../../src/registry';
-import SqsConf from '../../src/config/sqs';
+import sqsConf from '../../src/config/sqs';
 
 describe('SQS Producer', () => {
   it('should initialize', async () => {
     const registry = new Registry();
-    const initStub = sinon.stub(SqsConf, 'sqs').returns({
+    const initStub = sinon.stub(sqsConf, 'sqs').returns({
       createQueueAsync: sinon.stub().resolves({ data: { QueueUrl: 'kjsdkh' } }),
     });
     const p = new Producer({}, registry, console);
     await p.initialize('test');
     expect(initStub.callCount).to.equal(1);
+    sqsConf.sqs.restore();
   });
 
   it('should initialize & send if no sqsUrls ', async () => {
