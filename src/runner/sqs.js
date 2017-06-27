@@ -1,5 +1,5 @@
 // @flow
-import sqs from '../config/sqs';
+import SqsConf from '../config/sqs';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
 const getUrl = (instance, topic) => (
@@ -58,7 +58,7 @@ class SqsRunner implements IRunner {
     this.registry = registry;
     this.logger = logger;
     this.sqsUrls = {};
-    this.sqs = sqs(config);
+    this.sqs = SqsConf.sqs(config);
   }
 
   receive = async (messages: Array<Object>, topic: string) => {

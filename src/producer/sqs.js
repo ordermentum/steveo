@@ -1,6 +1,6 @@
 // @flow
 
-import sqs from '../config/sqs';
+import SqsConf from '../config/sqs';
 import type { Configuration, Logger, Producer, IProducer, IRegistry, sqsUrls } from '../../types';
 
 class SqsProducer implements IProducer {
@@ -12,7 +12,7 @@ class SqsProducer implements IProducer {
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger) {
     this.config = config;
-    this.producer = sqs(config);
+    this.producer = SqsConf.sqs(config);
     this.logger = logger;
     this.registry = registry;
     this.sqsUrls = {};
@@ -71,7 +71,6 @@ class SqsProducer implements IProducer {
     }
 
     const sqsData = this.getPayload(payload, topic);
-
     try {
       await new Promise((resolve, reject) => {
         this.producer.sendMessage(sqsData, (err, data) => {

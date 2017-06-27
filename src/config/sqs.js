@@ -16,4 +16,6 @@ const sqs = (config: Configuration) => {
   return instance;
 };
 
-export default sqs;
+export default {
+  sqs,
+};
