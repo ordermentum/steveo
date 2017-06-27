@@ -101,6 +101,7 @@ export type Producer = {
   send(data: Object, sendParams: Object): void;
   init() : void;
   createQueue(params: Object, Callback): ?Promise<void>;
+  sendMessage(params: Object, Callback): ?Promise<void>;
 };
 
 export interface IProducer {

@@ -17,6 +17,7 @@ class SqsProducer implements IProducer {
     this.producer = sqs(config);
     this.logger = logger;
     this.registry = registry;
+    this.sqsUrls = {};
   }
 
   initialize(topic: ?string) {
@@ -36,7 +37,6 @@ class SqsProducer implements IProducer {
   }
 
   producerPayload(msg: Object, topic: string) {
-    this.sqsUrls = {};
     const timestamp = moment().unix();
     return {
       MessageAttributes: {
@@ -64,7 +64,7 @@ class SqsProducer implements IProducer {
 
     try {
       await new Promise((resolve, reject) => {
-        sqs.sendMessage(sqsData, (err, data) => {
+        this.producer.sendMessage(sqsData, (err, data) => {
           if (err) reject(err);
           this.logger.info('SQS Publish Data', data);
           resolve();

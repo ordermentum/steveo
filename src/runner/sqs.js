@@ -2,13 +2,13 @@
 import sqs from '../config/sqs';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
-const getUrl = topic => (
+const getUrl = (instance, topic) => (
   new Promise((resolve, reject) => {
     const params = {
       QueueName: topic,
     };
 
-    sqs.getQueueUrl(params, (err, data) => {
+    instance.getQueueUrl(params, (err, data) => {
       if (err) return reject(err);
       return resolve(data && data.QueueUrl);
     });
@@ -16,6 +16,7 @@ const getUrl = topic => (
 );
 
 type DeleteMessage = {
+  instance: Object,
   topic: string,
   message: Object,
   sqsUrls: Object,
@@ -23,6 +24,7 @@ type DeleteMessage = {
 };
 
 const deleteMessage = ({
+  instance,
   topic,
   message,
   sqsUrls,
@@ -33,7 +35,7 @@ const deleteMessage = ({
       QueueUrl: sqsUrls[topic],
       ReceiptHandle: message.ReceiptHandle,
     };
-    sqs.deleteMessage(deleteParams, (err, data) => {
+    instance.deleteMessage(deleteParams, (err, data) => {
       if (err) {
         logger.info('sqs deletion error', err, topic, message);
         return reject(err);
@@ -49,12 +51,14 @@ class SqsRunner implements IRunner {
   registry: IRegistry;
   consumer: Consumer;
   sqsUrls: Object;
+  sqs: Object;
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger) {
     this.config = config;
     this.registry = registry;
     this.logger = logger;
     this.sqsUrls = {};
+    this.sqs = sqs(config);
   }
 
   receive = async (messages: Array<Object>, topic: string) => {
@@ -65,6 +69,7 @@ class SqsRunner implements IRunner {
         this.registry.events.emit('runner_receive', topic, params);
         this.logger.info('Deleting message', topic, params);
         await deleteMessage({ // eslint-disable-line
+          instance: this.sqs,
           topic,
           message: m,
           sqsUrls: this.sqsUrls,
@@ -83,7 +88,7 @@ class SqsRunner implements IRunner {
 
   iterateOnQueue = (params: Object, topic: string) => (
     new Promise((resolve, reject) => {
-      sqs.receiveMessage(params, (err, data) => {
+      this.sqs.receiveMessage(params, (err, data) => {
         if (err) {
           return reject(err);
         }
@@ -98,7 +103,7 @@ class SqsRunner implements IRunner {
     const subscriptions = this.registry.getTopics();
     this.logger.info('initializing consumer', subscriptions);
     return Promise.all(subscriptions.map(async (topic) => {
-      const queueURL = await getUrl(topic);
+      const queueURL = await getUrl(this.sqs, topic);
       this.sqsUrls[topic] = queueURL;
       this.logger.info(`queueURL for topic ${topic} is ${queueURL}`);
 
