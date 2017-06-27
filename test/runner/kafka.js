@@ -3,19 +3,19 @@ import uuid from 'uuid';
 import kafka from 'no-kafka';
 import sinon from 'sinon';
 
-import Runner from '../src/runner';
-import Registry from '../src/registry';
+import Runner from '../../src/runner/kafka';
+import Registry from '../../src/registry';
 
 describe('Runner', () => {
   let runner;
   let registry;
   beforeEach(() => {
-    registry = Registry({ publishCallback: {
+    registry = new Registry({ publishCallback: {
       events: {
         emit: sinon.stub(),
       },
     } });
-    runner = Runner({
+    runner = new Runner({
       clientId: uuid.v4(),
       kafkaCodec: kafka.COMPRESSION_GZIP,
       kafkaGroupId: '123',
@@ -49,7 +49,7 @@ describe('Runner', () => {
         emit: sinon.stub(),
       },
     };
-    const anotherRunner = Runner({
+    const anotherRunner = new Runner({
       clientId: uuid.v4(),
       kafkaCoded: kafka.COMPRESSION_GZIP,
       kafkaGroupId: '123',
@@ -72,7 +72,7 @@ describe('Runner', () => {
         emit: sinon.stub(),
       },
     };
-    const anotherRunner = Runner({
+    const anotherRunner = new Runner({
       clientId: uuid.v4(),
       kafkaCodec: kafka.COMPRESSION_GZIP,
       kafkaGroupId: '123',
