@@ -19,6 +19,9 @@ export default class Config {
   receiveMessageWaitTimeSeconds: string;
   accessKeyId: string;
   secretAccessKey: string;
+  maxNumberOfMessages: number;
+  visibilityTimeout: number;
+  waitTimeSeconds: number;
 
   constructor(config: Configuration) {
     this.engine = config.engine || 'kafka';
@@ -38,6 +41,9 @@ export default class Config {
       this.receiveMessageWaitTimeSeconds = config.receiveMessageWaitTimeSeconds;
       this.accessKeyId = config.accessKeyId;
       this.secretAccessKey = config.secretAccessKey;
+      this.maxNumberOfMessages = config.maxNumberOfMessages;
+      this.visibilityTimeout = config.visibilityTimeout;
+      this.waitTimeSeconds = config.waitTimeSeconds;
     }
   }
 }

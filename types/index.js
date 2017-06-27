@@ -39,11 +39,21 @@ export type Configuration = {
   receiveMessageWaitTimeSeconds: string,
   accessKeyId: string,
   secretAccessKey: string,
+  maxNumberOfMessages: number,
+  visibilityTimeout: number,
+  waitTimeSeconds: number,
 };
+
+export type Attribute = {
+  name: string,
+  dataType: string,
+  value: string,
+}
 
 export type Task = {
   topic: string,
   subscribe(any): any,
+  attributes?: Array<Attribute>,
 }
 
 export interface IEvent {
@@ -56,7 +66,7 @@ export interface IRegistry {
   addNewTask(task: Task): void;
   removeTask(task: Task): void;
   getTopics(): Array<string>;
-  getTask(topic: string): ITask; //eslint-disable-line
+  getTask(topic: string): Task; //eslint-disable-line
 }
 
 export interface ITask {
@@ -113,7 +123,6 @@ export interface IProducer {
   getPayload(msg: Object, topic: string): Object;
   send(topic: string, payload: Object): Promise<void>;
 }
-
 
 export type sqsUrls = {
   [key: string]: Promise<void>,
