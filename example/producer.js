@@ -10,6 +10,9 @@ const config = {
   engine: 'sqs',
   accessKeyId: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  MaxNumberOfMessages: 1,
+  VisibilityTimeout: 180,
+  WaitTimeSeconds: 20,
 };
 
 (async () => {
@@ -23,8 +26,13 @@ const config = {
     console.log('Failed task', topic, ex);
   });
 
+  const attributes = [{
+    name: 'Hello',
+    value: 'world',
+    dataType: 'String',
+  }];
   // create first Task
-  const firstTask = steveo.task('test-topic', () => {});
+  const firstTask = steveo.task('test-topic', () => {}, attributes);
 
   // let it run & publish messages in every second
   function produceMessages(counter) {
