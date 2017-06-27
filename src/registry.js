@@ -15,12 +15,12 @@ class Registry implements IRegistry {
 
   addNewTask(task: Task) {
     this.events.emit('task_added', task);
-    this.registeredTasks[task.topic] = task; // eslint-disable-line
+    this.registeredTasks[task.topic] = task;
   }
 
   removeTask(task: Task) {
     this.events.emit('task_removed', task);
-    delete this.registeredTasks[task.topic]; // eslint-disable-line
+    delete this.registeredTasks[task.topic];
   }
 
   getTopics = () => Object.keys(this.registeredTasks);

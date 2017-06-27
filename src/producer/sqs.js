@@ -1,7 +1,5 @@
 // @flow
 
-import moment from 'moment';
-
 import sqs from '../config/sqs';
 import type { Configuration, Logger, Producer, IProducer, IRegistry, sqsUrls } from '../../types';
 
@@ -37,14 +35,26 @@ class SqsProducer implements IProducer {
   }
 
   getPayload(msg: Object, topic: string) {
-    const timestamp = moment().unix();
-    return {
-      MessageAttributes: {
-        Timestamp: {
-          DataType: 'Number',
-          StringValue: timestamp.toString(),
-        },
+    const timestamp = new Date().getTime();
+    const task = this.registry.getTask(topic);
+    const attributes = task ? task.attributes : [];
+    const messageAttributes = {
+      Timestamp: {
+        DataType: 'Number',
+        StringValue: timestamp.toString(),
       },
+    };
+    if (attributes) {
+      attributes.forEach((a) => {
+        messageAttributes[a.name] = {
+          DataType: a.dataType || 'String',
+          StringValue: a.value.toString(),
+        };
+      });
+    }
+
+    return {
+      MessageAttributes: messageAttributes,
       MessageBody: JSON.stringify(Object.assign({}, msg, { timestamp })),
       QueueUrl: this.sqsUrls[topic],
     };

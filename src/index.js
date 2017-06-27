@@ -10,7 +10,7 @@ import metric from './base/metric';
 import producer from './base/producer';
 import Config from './config';
 
-import type { ITask, Configuration, Callback, Logger, ISteveo, IRegistry, IEvent, IMetric } from '../types';
+import type { ITask, Configuration, Callback, Logger, ISteveo, IRegistry, IEvent, IMetric, Attribute } from '../types';
 
 class Steveo implements ISteveo {
   config: Configuration;
@@ -28,13 +28,13 @@ class Steveo implements ISteveo {
     this.events = this.registry.events;
   }
 
-  task(topic: string, callBack: Callback): ITask {
+  task(topic: string, callBack: Callback, attributes: Array<Attribute> = []): ITask {
     const prod = producer(this.config.engine, this.config, this.registry, this.logger);
     let topicName = topic;
     if (this.getTopicName && typeof this.getTopicName === 'function') {
       topicName = this.getTopicName(topic);
     }
-    return new Task(this.config, this.registry, prod, topicName, callBack);
+    return new Task(this.config, this.registry, prod, topicName, callBack, attributes);
   }
 
   runner() {

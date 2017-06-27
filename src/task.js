@@ -1,5 +1,5 @@
 // @flow
-import type { ITask, Configuration, Callback, IProducer, IRegistry } from '../types';
+import type { ITask, Configuration, Callback, IProducer, IRegistry, Attribute } from '../types';
 
 class Task implements ITask {
   config: Configuration;
@@ -9,7 +9,7 @@ class Task implements ITask {
   topic: string;
 
   constructor(config: Configuration, registry: IRegistry,
-    producer: IProducer, topic:string, subscribe: Callback) {
+    producer: IProducer, topic:string, subscribe: Callback, attributes: Array<Attribute> = []) {
     this.config = config;
     this.registry = registry;
     this.subscribe = subscribe;
@@ -18,6 +18,7 @@ class Task implements ITask {
     const task = {
       topic,
       subscribe: this.subscribe,
+      attributes,
     };
     this.registry.addNewTask(task);
   }

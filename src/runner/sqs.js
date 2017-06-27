@@ -108,10 +108,10 @@ class SqsRunner implements IRunner {
       this.logger.info(`queueURL for topic ${topic} is ${queueURL}`);
 
       const params = {
-        MaxNumberOfMessages: 1,
+        MaxNumberOfMessages: this.config.maxNumberOfMessages,
         QueueUrl: queueURL,
-        VisibilityTimeout: 180,
-        WaitTimeSeconds: 20,
+        VisibilityTimeout: this.config.visibilityTimeout,
+        WaitTimeSeconds: this.config.waitTimeSeconds,
       };
       this.logger.info('initializing consumer', topic, params);
 
