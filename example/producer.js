@@ -3,13 +3,13 @@ const Steveo = require('steveo').default;
 const config = {
   // kafkaConnection: process.env.KAFKA_CONNECTION,
   // clientId: '1234-123',
-  region: 'usa',
+  region: process.env.AWS_REGION,
   apiVersion: '2012-11-05',
   receiveMessageWaitTimeSeconds: '20',
   messageRetentionPeriod: '604800',
   engine: 'sqs',
-  accessKeyId: '123',
-  secretAccessKey: '23asdds',
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 };
 
 (async () => {
