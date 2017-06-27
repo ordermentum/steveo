@@ -1,6 +1,7 @@
 // @flow
 
 import AWS from 'aws-sdk';
+import bluebird from 'bluebird';
 import type { Configuration } from '../../types';
 
 const sqs = (config: Configuration) => {
@@ -13,7 +14,7 @@ const sqs = (config: Configuration) => {
     visibilityTimeout: config.visibilityTimeout,
     waitTimeSeconds: config.waitTimeSeconds,
   });
-  return instance;
+  return bluebird.promisifyAll(instance);
 };
 
 export default {

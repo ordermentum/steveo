@@ -110,8 +110,8 @@ export interface ISteveo {
 export type Producer = {
   send(data: Object, sendParams: Object): void;
   init() : void;
-  createQueue(params: Object, Callback): ?Promise<void>;
-  sendMessage(params: Object, Callback): ?Promise<void>;
+  createQueueAsync(params: Object): Promise<void>;
+  sendMessageAsync(params: Object): Promise<void>;
 };
 
 export interface IProducer {
@@ -125,5 +125,5 @@ export interface IProducer {
 }
 
 export type sqsUrls = {
-  [key: string]: Promise<void>,
+  [key: string]: ?Promise<void>,
 }

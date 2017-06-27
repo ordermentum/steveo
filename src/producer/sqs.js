@@ -1,7 +1,9 @@
 // @flow
 
 import SqsConf from '../config/sqs';
+
 import type { Configuration, Logger, Producer, IProducer, IRegistry, sqsUrls } from '../../types';
+
 
 class SqsProducer implements IProducer {
   config: Configuration;
@@ -19,19 +21,14 @@ class SqsProducer implements IProducer {
   }
 
   initialize(topic: ?string) {
-    return new Promise((resolve: any, reject: any) => {
-      const params = {
-        QueueName: topic,
-        Attributes: {
-          ReceiveMessageWaitTimeSeconds: this.config.receiveMessageWaitTimeSeconds,
-          MessageRetentionPeriod: this.config.messageRetentionPeriod,
-        },
-      };
-      this.producer.createQueue(params, (err, data) => {
-        if (err) reject(err);
-        resolve(data && data.QueueUrl);
-      });
-    });
+    const params = {
+      QueueName: topic,
+      Attributes: {
+        ReceiveMessageWaitTimeSeconds: this.config.receiveMessageWaitTimeSeconds,
+        MessageRetentionPeriod: this.config.messageRetentionPeriod,
+      },
+    };
+    return this.producer.createQueueAsync(params).then(data => data && data.QueueUrl);
   }
 
   getPayload(msg: Object, topic: string) {
@@ -72,14 +69,9 @@ class SqsProducer implements IProducer {
 
     const sqsData = this.getPayload(payload, topic);
     try {
-      await new Promise((resolve, reject) => {
-        this.producer.sendMessage(sqsData, (err, data) => {
-          if (err) reject(err);
-          this.logger.info('SQS Publish Data', data);
-          resolve();
-        });
-        this.registry.events.emit('producer_success', topic, payload);
-      });
+      const data = await this.producer.sendMessageAsync(sqsData);
+      this.logger.info('SQS Publish Data', data);
+      this.registry.events.emit('producer_success', topic, payload);
     } catch (ex) {
       this.logger.error('Error while sending SQS payload', topic, ex);
       this.registry.events.emit('producer_failure', topic, ex);

@@ -2,18 +2,13 @@
 import SqsConf from '../config/sqs';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
-const getUrl = (instance, topic) => (
-  new Promise((resolve, reject) => {
-    const params = {
-      QueueName: topic,
-    };
+const getUrl = (instance, topic) => {
+  const params = {
+    QueueName: topic,
+  };
 
-    instance.getQueueUrl(params, (err, data) => {
-      if (err) return reject(err);
-      return resolve(data && data.QueueUrl);
-    });
-  })
-);
+  return instance.getQueueUrlAsync(params).then(data => data && data.QueueUrl);
+};
 
 type DeleteMessage = {
   instance: Object,
@@ -23,27 +18,25 @@ type DeleteMessage = {
   logger: Logger
 };
 
-const deleteMessage = ({
+const deleteMessage = async ({
   instance,
   topic,
   message,
   sqsUrls,
   logger,
-}: DeleteMessage) => (
-  new Promise((resolve, reject) => {
-    const deleteParams = {
-      QueueUrl: sqsUrls[topic],
-      ReceiptHandle: message.ReceiptHandle,
-    };
-    instance.deleteMessage(deleteParams, (err, data) => {
-      if (err) {
-        logger.info('sqs deletion error', err, topic, message);
-        return reject(err);
-      }
-      return resolve(data);
-    });
-  })
-);
+}: DeleteMessage) => {
+  const deleteParams = {
+    QueueUrl: sqsUrls[topic],
+    ReceiptHandle: message.ReceiptHandle,
+  };
+  try {
+    const data = await instance.deleteMessageAsync(deleteParams);
+    return data;
+  } catch (ex) {
+    logger.info('sqs deletion error', ex, topic, message);
+    throw ex;
+  }
+};
 
 class SqsRunner implements IRunner {
   config: Configuration;
@@ -86,18 +79,15 @@ class SqsRunner implements IRunner {
     }
   }
 
-  iterateOnQueue = (params: Object, topic: string) => (
-    new Promise((resolve, reject) => {
-      this.sqs.receiveMessage(params, (err, data) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(this.receive(data.Messages, topic)
-        .catch(() => this.iterateOnQueue(params, topic))
-        .then(() => this.iterateOnQueue(params, topic)));
-      });
-    })
-  );
+  iterateOnQueue = async (params: Object, topic: string) => {
+    const data = await this.sqs.receiveMessageAsync(params);
+    try {
+      await this.receive(data.Messages, topic);
+      this.iterateOnQueue(params, topic);
+    } catch (ex) {
+      this.iterateOnQueue(params, topic);
+    }
+  };
 
   process() {
     const subscriptions = this.registry.getTopics();
@@ -114,7 +104,6 @@ class SqsRunner implements IRunner {
         WaitTimeSeconds: this.config.waitTimeSeconds,
       };
       this.logger.info('initializing consumer', topic, params);
-
       return this.iterateOnQueue(params, topic);
     }));
   }

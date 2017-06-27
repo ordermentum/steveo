@@ -10,6 +10,9 @@ const config = {
   engine: 'sqs',
   accessKeyId: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  maxNumberOfMessages: 1,
+  visibilityTimeout: 180,
+  waitTimeSeconds: 20,
 };
 
 
