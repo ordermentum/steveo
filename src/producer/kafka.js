@@ -24,7 +24,8 @@ class KafkaProducer implements IProducer {
   initialize() {
     this.producer.init();
   }
-  producerPayload(msg: Object, topic: string) {
+
+  getPayload(msg: Object, topic: string) {
     const timestamp = moment().unix();
     const payload = JSON.stringify(Object.assign({}, msg, { timestamp }));
     const size = Buffer.from(payload, 'utf-8');
@@ -39,7 +40,7 @@ class KafkaProducer implements IProducer {
   }
 
   async send(topic: string, payload: Object) {
-    const data = this.producerPayload(payload, topic);
+    const data = this.getPayload(payload, topic);
     const sendParams = {
       retries: {
         attempts: this.config.kafkaSendAttempts,

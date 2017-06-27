@@ -1,7 +1,7 @@
 // @flow
 export type Callback = (x: any) => any;
 
-export type ProducerPayload = (msg: Object, topic: string) => {
+export type getPayload = (msg: Object, topic: string) => {
   timestamp: number,
   topic: string,
   message: Object,
@@ -110,7 +110,7 @@ export interface IProducer {
   registry: IRegistry;
   producer: Producer;
   initialize(topic: ?string): ?Promise<void>;
-  producerPayload(msg: Object, topic: string): Object;
+  getPayload(msg: Object, topic: string): Object;
   send(topic: string, payload: Object): Promise<void>;
 }
 

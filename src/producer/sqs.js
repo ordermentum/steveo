@@ -36,7 +36,7 @@ class SqsProducer implements IProducer {
     });
   }
 
-  producerPayload(msg: Object, topic: string) {
+  getPayload(msg: Object, topic: string) {
     const timestamp = moment().unix();
     return {
       MessageAttributes: {
@@ -60,7 +60,7 @@ class SqsProducer implements IProducer {
       throw ex;
     }
 
-    const sqsData = this.producerPayload(payload, topic);
+    const sqsData = this.getPayload(payload, topic);
 
     try {
       await new Promise((resolve, reject) => {
