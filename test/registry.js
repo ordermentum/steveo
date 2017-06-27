@@ -5,7 +5,7 @@ describe('Registry', () => {
   let registry;
   let runner;
   beforeEach(() => {
-    registry = Registry();
+    registry = new Registry();
   });
 
   it('should add new tasks', () => {
@@ -40,5 +40,21 @@ describe('Registry', () => {
       subscribe: () => {},
     });
     expect(registry.getTopics().length).to.equal(0);
+  });
+
+  it('should add new tasks with attributes', () => {
+    registry.addNewTask({
+      topic: 'hello',
+      subscribe: () => {},
+      attributes: [{
+        name: 'An Attribute',
+        dataType: 'string',
+        value: 'aaaaa',
+      }],
+    });
+
+    expect(registry.getTopics().length).to.equal(1);
+    expect(registry.getTask('hello').topic).to.equal('hello');
+    expect(registry.getTask('hello').attributes).to.deep.equal([{ name: 'An Attribute', dataType: 'string', value: 'aaaaa' }]);
   });
 });
