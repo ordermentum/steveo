@@ -21,7 +21,7 @@ export type KafkaParams = {
   logger: Logger,
 };
 
-export type Engine = 'kafka' | 'sqs';
+export type Engine = 'kafka' | 'sqs' | 'redis';
 
 export type Configuration = {
   kafkaConnection: string,
@@ -42,6 +42,8 @@ export type Configuration = {
   maxNumberOfMessages: number,
   visibilityTimeout: number,
   waitTimeSeconds: number,
+  redisHost: string,
+  redisPort: string,
 };
 
 export type Attribute = {
@@ -94,7 +96,7 @@ export interface IRunner {
 
 export interface IMetric {
   config: Configuration;
-  groupId: string;
+  groupId?: string;
   initialize(): Promise<void>;
 }
 

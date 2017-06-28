@@ -39,6 +39,7 @@
     "lazy-object": "^1.0.1",
     "no-kafka": "^3.1.8",
     "null-logger": "^1.0.0",
+    "rsmq": "^0.8.2",
     "uuid": "^3.1.0"
   },
   "devDependencies": {

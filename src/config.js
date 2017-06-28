@@ -22,6 +22,8 @@ export default class Config {
   maxNumberOfMessages: number;
   visibilityTimeout: number;
   waitTimeSeconds: number;
+  redisHost: string;
+  redisPort: string;
 
   constructor(config: Configuration) {
     this.engine = config.engine || 'kafka';
@@ -44,6 +46,9 @@ export default class Config {
       this.maxNumberOfMessages = config.maxNumberOfMessages;
       this.visibilityTimeout = config.visibilityTimeout;
       this.waitTimeSeconds = config.waitTimeSeconds;
+    } else if (config.engine === 'sqs') {
+      this.redisHost = config.redisHost;
+      this.redisPort = config.redisPort;
     }
   }
 }
