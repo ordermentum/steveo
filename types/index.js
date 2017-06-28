@@ -116,6 +116,7 @@ export type Producer = {
   createQueueAsync(params: Object): Promise<void>;
   sendMessageAsync(params: Object): Promise<void>;
   listQueuesAsync(): Array<string>;
+  getQueueAttributesAsync(): Object;
 };
 
 export interface IProducer {
