@@ -1,4 +1,4 @@
-# Steveo - Kafka Task Framework for Node.js
+# Steveo - Task Framework for Node.js (Supports Kafka, AWS SQS)
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/ordermentum/steveo.svg)](https://greenkeeper.io/)
 
@@ -10,7 +10,7 @@
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
 
 
-Steveo is a task management library for Kafka
+Steveo is a task management library for Kafka, SQS
 
 On a highlevel, it works as below, Steveo has 3 main components
 ```
