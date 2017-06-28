@@ -1,43 +1,43 @@
 // @flow
-import Config from './config';
-import type { Callback, Reg, Producer } from '../types';
+import type { ITask, Configuration, Callback, IProducer, IRegistry, Attribute } from '../types';
 
-function Task(
-  config: Config,
-  registry: Reg,
-  producer: Producer,
-  topic: string,
-  subscribeCallback: Callback) {
-  const subscribe = (payload: any) => Promise.resolve(subscribeCallback(payload));
+class Task implements ITask {
+  config: Configuration;
+  registry: IRegistry;
+  subscribe: Callback;
+  producer: IProducer;
+  topic: string;
 
-  const publish = async (payload: Array<Object> | any) => {
+  constructor(config: Configuration, registry: IRegistry,
+    producer: IProducer, topic:string, subscribe: Callback, attributes: Array<Attribute> = []) {
+    this.config = config;
+    this.registry = registry;
+    this.subscribe = subscribe;
+    this.producer = producer;
+    this.topic = topic;
+    const task = {
+      topic,
+      subscribe: this.subscribe,
+      attributes,
+    };
+    this.registry.addNewTask(task);
+  }
+
+  async publish(payload: Object) {
     let params = payload;
-
     if (!Array.isArray(payload)) {
       params = [payload];
     }
 
     try {
-      await producer.initialize();
-      await Promise.all(params.map(data => producer.send(topic, data)));
-      registry.events.emit('task_success', topic, payload);
+      await this.producer.initialize(this.topic);
+      await Promise.all(params.map(data => this.producer.send(this.topic, data)));
+      this.registry.events.emit('task_success', this.topic, payload);
     } catch (ex) {
-      registry.events.emit('task_failure', topic, ex);
+      this.registry.events.emit('task_failure', this.topic, ex);
       throw ex;
     }
-  };
-
-  const task = {
-    topic,
-    subscribe: subscribeCallback,
-  };
-
-  registry.addNewTask(task, producer);
-
-  return {
-    publish,
-    subscribe,
-  };
+  }
 }
 
 export default Task;

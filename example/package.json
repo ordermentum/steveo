@@ -5,6 +5,8 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.77.0",
+    "bluebird": "^3.5.0",
     "no-kafka": "^3.1.1",
     "steveo": "^1.0.7"
   }

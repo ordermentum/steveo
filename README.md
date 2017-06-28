@@ -1,4 +1,4 @@
-# Steveo - Kafka Task Framework for Node.js
+# Steveo - Task Framework for Node.js (Supports Kafka, AWS SQS)
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/ordermentum/steveo.svg)](https://greenkeeper.io/)
 
@@ -10,34 +10,27 @@
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
 
 
-Steveo is a task management library for Kafka
+Steveo is a task management library for Kafka, SQS
 
-On a highlevel, it works as below, Steveo has 3 main factory components
-
-              +-----------+                  +-----------+
-              |           |                  |           |
-              |   TASK    |                  | REGISTRY  |
-              |           |                  |           |
-              |           |                  |           |
-              +-----------+                  +-----------+
-
-                              +-----------+
-                              |           |
-                              |   RUNNER  |
-                  SEND  <-----|           |<----- RECEIVE
-                              |           |
-                              +-----------+
+On a highlevel, it works as below, Steveo has 3 main components
+```
+              +-----------+     +-----------+     +-----------+
+              |           |     |           |     |           |
+PUBLISH ----->|   TASK    |     | REGISTRY  |     |   RUNNER  |-----> RECEIVE
+              |           |     |           |     |           |
+              |           |     |           |     |           |
+              +-----------+     +-----------+     +-----------+
+```
 
 ### Task
 
 Holds the information about the type of task. It has below methods,
   - publish
-  - subscribe
-  - events
+  - subscribe function
 
 ### Registry
 
-Responsible for keeping the inventory of tasks. Whenever a new task is created, an entry will be added in the registry
+Responsible for keeping the inventory of tasks & event manager. Whenever a new task is created, an entry will be added in the registry
 
 ### Runner
 
@@ -51,10 +44,10 @@ Responsible for consuming messages,
   const steveo = Steveo({
     kafkaConnection: process.env.KAFKA_CONNECTION,
     clientId: '1234-123',
-  });
+  }, console);
 
   const example = steveo.task('example-task', (hello) => {
-  console.log(`hello ${hello}`);
+    console.log(`hello ${hello}`);
   });
 
   await example.publish('tommo');

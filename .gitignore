@@ -39,3 +39,5 @@ dist
 # VS Code
 .vscode/
 jsconfig.json
+
+example/docker-compose-ordermentum.yml

@@ -30,4 +30,15 @@ describe('Config', () => {
     expect(config.kafkaSendDelayMin).to.equal(200);
     expect(config.kafkaSendDelayMax).to.equal(500);
   });
+
+  it('checks engine values', () => {
+    const config = new Config({
+      kafkaConnection: 'kakfa://kafka:9200',
+      clientId: 'test',
+      kafkaGroupId: 'test',
+      engine: 'sqs',
+    });
+    expect(config.engine).to.equal('sqs');
+    expect(config.kafkaConnection).to.equal(undefined);
+  });
 });
