@@ -18,9 +18,16 @@ const kafkaConfig = {
   clientId: '1234-123',
 };
 
+const redisConfig = {
+  redisHost: process.env.REDIS_HOST,
+  redisPort: process.env.REDIS_PORT,
+  engine: 'redis',
+};
+
 const steveoConfig = {
   kafka: kafkaConfig,
   sqs: sqsConfig,
+  redis: redisConfig,
 };
 
 const logger = console;
