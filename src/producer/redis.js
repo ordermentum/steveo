@@ -2,37 +2,37 @@
 
 import redisConf from '../config/redis';
 
-import type { Configuration, Logger, Producer, IProducer, IRegistry, sqsUrls } from '../../types';
+import type { Configuration, Logger, Producer, IProducer, IRegistry } from '../../types';
 
 
-class SqsProducer implements IProducer {
+class RedisProducer implements IProducer {
   config: Configuration;
   registry: IRegistry;
   logger: Logger;
   producer: Producer;
-  sqsUrls: sqsUrls;
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger) {
     this.config = config;
     this.producer = redisConf.redis(config);
     this.logger = logger;
     this.registry = registry;
-    this.sqsUrls = {};
   }
 
-  initialize(topic: ?string) {
+  async initialize(topic: ?string) {
     const params = {
       qname: topic,
       vt: this.config.visibilityTimeout,
       maxsize: this.config.redisMessageMaxsize,
     };
-    return this.producer.createQueueAsync(params);
+    const queues = await this.producer.listQueuesAsync();
+    if (!queues.find(q => q === topic)) {
+      this.producer.createQueueAsync(params);
+    }
   }
 
   getPayload(msg: Object, topic: string) {
     const timestamp = new Date().getTime();
     const task = this.registry.getTask(topic);
-
     return {
       qname: task.topic,
       message: JSON.stringify(Object.assign({}, msg, { timestamp })),
@@ -40,16 +40,6 @@ class SqsProducer implements IProducer {
   }
 
   async send(topic: string, payload: Object) {
-    try {
-      const queues = await this.producer.listQueuesAsync();
-      if (!queues.find(q => q === topic)) {
-        await this.initialize(topic);
-      }
-    } catch (ex) {
-      this.logger.error('Error while initalizing new topic in redis', ex);
-      throw ex;
-    }
-
     const redisData = this.getPayload(payload, topic);
     try {
       const data = await this.producer.sendMessageAsync(redisData);
@@ -63,4 +53,4 @@ class SqsProducer implements IProducer {
   }
 }
 
-export default SqsProducer;
+export default RedisProducer;
