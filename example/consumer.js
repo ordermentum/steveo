@@ -1,8 +1,6 @@
 const Steveo = require('steveo').default;
 
-const config = {
-  // kafkaConnection: process.env.KAFKA_CONNECTION,
-  // clientId: '1234-123',
+const sqsConfig = {
   region: process.env.AWS_REGION,
   apiVersion: '2012-11-05',
   receiveMessageWaitTimeSeconds: '20',
@@ -15,17 +13,34 @@ const config = {
   waitTimeSeconds: 20,
 };
 
+const kafkaConfig = {
+  kafkaConnection: process.env.KAFKA_CONNECTION,
+  clientId: '1234-123',
+};
+
+const steveoConfig = {
+  kafka: kafkaConfig,
+  sqs: sqsConfig,
+};
+
+const logger = console;
 
 (async () => {
-  const steveo = Steveo(config, console)();
+  const config = steveoConfig[process.env.ENGINE];
+
+  if (!config) {
+    return;
+  }
+
+  const steveo = Steveo(config, logger)();
 
   steveo.events.on('runner_failure', (topic, ex) => {
-    console.log('Failed to call subscribe', topic, ex);
+    logger.info('Failed to call subscribe', topic, ex);
   });
 
   // subscribe Call for first task
   const subscribe = async (payload) => {
-    console.log('Payload from producer', payload);
+    logger.info('Payload from producer', payload);
   };
 
   // create first Task
@@ -34,6 +49,6 @@ const config = {
   // initialize consumer
   await steveo.runner().process();
 })().catch((ex) => {
-  console.log('Exception', ex);
+  logger.info('Exception', ex);
   process.exit();
 });
