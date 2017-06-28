@@ -44,6 +44,7 @@ export type Configuration = {
   waitTimeSeconds: number,
   redisHost: string,
   redisPort: string,
+  redisMessageMaxsize: number,
 };
 
 export type Attribute = {
@@ -114,6 +115,7 @@ export type Producer = {
   init() : void;
   createQueueAsync(params: Object): Promise<void>;
   sendMessageAsync(params: Object): Promise<void>;
+  listQueuesAsync(): Array<string>;
 };
 
 export interface IProducer {
