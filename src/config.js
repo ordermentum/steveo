@@ -47,10 +47,10 @@ export default class Config {
       this.maxNumberOfMessages = config.maxNumberOfMessages;
       this.visibilityTimeout = config.visibilityTimeout;
       this.waitTimeSeconds = config.waitTimeSeconds;
-    } else if (config.engine === 'sqs') {
+    } else if (config.engine === 'redis') {
       this.redisHost = config.redisHost;
       this.redisPort = config.redisPort;
-      this.visibilityTimeout = config.visibilityTimeout;
+      this.visibilityTimeout = config.visibilityTimeout || 20;
       this.redisMessageMaxsize = config.redisMessageMaxsize || 1024;
     }
   }
