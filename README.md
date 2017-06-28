@@ -13,13 +13,14 @@
 Steveo is a task management library for Kafka
 
 On a highlevel, it works as below, Steveo has 3 main components
-
+```
               +-----------+     +-----------+     +-----------+
               |           |     |           |     |           |
 PUBLISH ----->|   TASK    |     | REGISTRY  |     |   RUNNER  |-----> RECEIVE
               |           |     |           |     |           |
               |           |     |           |     |           |
               +-----------+     +-----------+     +-----------+
+```
 
 ### Task
 
