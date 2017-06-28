@@ -2,6 +2,14 @@
 # yarn lockfile v1
 
 
+"@types/bluebird@3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.0.tgz#2633470a4eabe9a47cd9a45fdb20ed5f93407bca"
+
+"@types/lodash@^4.14.55":
+  version "4.14.67"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.67.tgz#4714714434da110306b9862fbd36b30b55eb850a"
+
 aws-sdk@^2.77.0:
   version "2.77.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.77.0.tgz#809090bb874d8f4fffcac5316629587638e7865c"
@@ -97,10 +105,6 @@ long@^3.0.3:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/long/-/long-3.2.0.tgz#d821b7138ca1cb581c172990ef14db200b5c474b"
 
-moment@^2.18.1:
-  version "2.18.1"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
-
 murmur-hash-js@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/murmur-hash-js/-/murmur-hash-js-1.0.0.tgz#5041049269c96633c866386960b2f4289e75e5b0"
@@ -124,6 +128,22 @@ no-kafka@^3.1.1:
     nice-simple-logger "^1.0.1"
     wrr-pool "^1.0.3"
 
+no-kafka@^3.1.8:
+  version "3.1.9"
+  resolved "https://registry.yarnpkg.com/no-kafka/-/no-kafka-3.1.9.tgz#2664483c9f882ca032e266a4147247ec92efacdb"
+  dependencies:
+    "@types/bluebird" "3.5.0"
+    "@types/lodash" "^4.14.55"
+    bin-protocol "^3.0.2"
+    bluebird "^3.3.3"
+    buffer-crc32 "^0.2.5"
+    hashring "^3.2.0"
+    lodash "=4.16.4"
+    murmur-hash-js "^1.0.0"
+    nice-simple-logger "^1.0.1"
+    typescript "2.2.1"
+    wrr-pool "^1.0.3"
+
 null-logger@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/null-logger/-/null-logger-1.0.0.tgz#d6b58b5d07de49891f21a5cc2670e62016e7c0e0"
@@ -141,8 +161,8 @@ querystring@0.2.0:
   resolved "https://registry.yarnpkg.com/querystring/-/querystring-0.2.0.tgz#b209849203bb25df820da756e747005878521620"
 
 regenerator-runtime@^0.10.0:
-  version "0.10.3"
-  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.10.3.tgz#8c4367a904b51ea62a908ac310bf99ff90a82a3e"
+  version "0.10.5"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.10.5.tgz#336c3efc1220adcedda2c9fab67b5a7955a33658"
 
 sax@1.2.1, sax@>=0.6.0:
   version "1.2.1"
@@ -152,17 +172,22 @@ simple-lru-cache@0.0.x:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/simple-lru-cache/-/simple-lru-cache-0.0.2.tgz#d59cc3a193c1a5d0320f84ee732f6e4713e511dd"
 
-steveo@^1.0.7:
-  version "1.0.28"
-  resolved "https://registry.yarnpkg.com/steveo/-/steveo-1.0.28.tgz#ced211dfb660ac4b01fca0a73dc02cbac44466d6"
+steveo@^1.0.29:
+  version "1.0.29"
+  resolved "https://registry.yarnpkg.com/steveo/-/steveo-1.0.29.tgz#40c07fa8f90367b430a66f8c9bb6ca548acb6b15"
   dependencies:
+    aws-sdk "^2.77.0"
     babel-polyfill "^6.23.0"
     babel-runtime "^6.23.0"
+    bluebird "^3.5.0"
     lazy-object "^1.0.1"
-    moment "^2.18.1"
-    no-kafka "^3.1.1"
+    no-kafka "^3.1.8"
     null-logger "^1.0.0"
-    uuid "^3.0.1"
+    uuid "^3.1.0"
+
+typescript@2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.2.1.tgz#4862b662b988a4c8ff691cc7969622d24db76ae9"
 
 url@0.10.3:
   version "0.10.3"
@@ -171,9 +196,13 @@ url@0.10.3:
     punycode "1.3.2"
     querystring "0.2.0"
 
-uuid@3.0.1, uuid@^3.0.1:
+uuid@3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.1.tgz#6544bba2dfda8c1cf17e629a3a305e2bb1fee6c1"
+
+uuid@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
 
 wrr-pool@^1.0.3:
   version "1.1.3"
