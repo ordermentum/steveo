@@ -58,3 +58,10 @@ Responsible for consuming messages,
 ```
 
 For more details, see [example](https://github.com/ordermentum/steveo/blob/master/example/README.md)
+
+_Credits_
+
+- [nokafka](https://github.com/oleksiyk/kafka)
+- [rsmq](https://github.com/smrchy/rsmq)
+- [aws-sdk](https://github.com/aws/aws-sdk-js)
+
