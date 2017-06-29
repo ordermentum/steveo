@@ -1,6 +1,6 @@
 // @flow
 
-import AWS from 'aws-sdk';
+import AWS from 'aws-sdk'; //eslint-disable-line
 import bluebird from 'bluebird';
 import type { Configuration } from '../../types';
 

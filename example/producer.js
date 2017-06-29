@@ -8,9 +8,9 @@ const sqsConfig = {
   engine: 'sqs',
   accessKeyId: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  MaxNumberOfMessages: 1,
-  VisibilityTimeout: 180,
-  WaitTimeSeconds: 20,
+  maxNumberOfMessages: 1,
+  visibilityTimeout: 180,
+  waitTimeSeconds: 20,
 };
 
 const kafkaConfig = {
@@ -39,6 +39,10 @@ const logger = console;
     return;
   }
   const steveo = Steveo(config, logger)();
+
+  await steveo.runner().createQueue({
+    topic: 'test-topic',
+  });
 
   steveo.events.on('producer_failure', (topic, ex) => {
     logger.log('Failed to produce message', topic, ex);

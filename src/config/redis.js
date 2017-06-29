@@ -1,6 +1,6 @@
 // @flow
 
-import RedisSMQ from 'rsmq';
+import RedisSMQ from 'rsmq'; //eslint-disable-line
 import bluebird from 'bluebird';
 import type { Configuration } from '../../types';
 
