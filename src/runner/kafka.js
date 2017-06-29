@@ -53,6 +53,11 @@ class KafkaRunner implements IRunner {
       handler: this.receive,
     }]);
   }
+
+  async createQueue() {
+    this.logger.info('kafka createQueue API not available');
+    return true;
+  }
 }
 
 export default KafkaRunner;

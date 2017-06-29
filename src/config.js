@@ -22,6 +22,9 @@ export default class Config {
   maxNumberOfMessages: number;
   visibilityTimeout: number;
   waitTimeSeconds: number;
+  redisHost: string;
+  redisPort: string;
+  redisMessageMaxsize: number;
 
   constructor(config: Configuration) {
     this.engine = config.engine || 'kafka';
@@ -44,6 +47,11 @@ export default class Config {
       this.maxNumberOfMessages = config.maxNumberOfMessages;
       this.visibilityTimeout = config.visibilityTimeout;
       this.waitTimeSeconds = config.waitTimeSeconds;
+    } else if (config.engine === 'redis') {
+      this.redisHost = config.redisHost;
+      this.redisPort = config.redisPort;
+      this.visibilityTimeout = config.visibilityTimeout || 604800;
+      this.redisMessageMaxsize = config.redisMessageMaxsize || 1024;
     }
   }
 }

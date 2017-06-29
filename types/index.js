@@ -21,7 +21,7 @@ export type KafkaParams = {
   logger: Logger,
 };
 
-export type Engine = 'kafka' | 'sqs';
+export type Engine = 'kafka' | 'sqs' | 'redis';
 
 export type Configuration = {
   kafkaConnection: string,
@@ -42,6 +42,9 @@ export type Configuration = {
   maxNumberOfMessages: number,
   visibilityTimeout: number,
   waitTimeSeconds: number,
+  redisHost: string,
+  redisPort: string,
+  redisMessageMaxsize: number,
 };
 
 export type Attribute = {
@@ -94,7 +97,7 @@ export interface IRunner {
 
 export interface IMetric {
   config: Configuration;
-  groupId: string;
+  groupId?: string;
   initialize(): Promise<void>;
 }
 
@@ -112,6 +115,8 @@ export type Producer = {
   init() : void;
   createQueueAsync(params: Object): Promise<void>;
   sendMessageAsync(params: Object): Promise<void>;
+  listQueuesAsync(): Array<string>;
+  getQueueAttributesAsync(params: Object): Object;
 };
 
 export interface IProducer {
@@ -127,3 +132,15 @@ export interface IProducer {
 export type sqsUrls = {
   [key: string]: ?Promise<void>,
 }
+
+export type CreateRedisTopic = {
+  topic: string,
+  visibilityTimeout: number,
+  maxsize: number,
+};
+
+export type CreateSqsTopic = {
+  topic: string,
+  messageRetentionPeriod: string,
+  receiveMessageWaitTimeSeconds: string,
+};

@@ -1,6 +1,6 @@
 // @flow
 import sqsConf from '../config/sqs';
-import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
+import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
 
 /* istanbul ignore next */
 const getUrl = (instance, topic) => {
@@ -108,6 +108,21 @@ class SqsRunner implements IRunner {
       this.logger.info('initializing consumer', topic, params);
       return this.iterateOnQueue(params, topic);
     }));
+  }
+
+  async createQueue({ topic, receiveMessageWaitTimeSeconds = '20', messageRetentionPeriod = '604800' }: CreateSqsTopic) {
+    const queues = await this.sqs.listQueuesAsync();
+    if (!queues) {
+      const params = {
+        QueueName: topic,
+        Attributes: {
+          ReceiveMessageWaitTimeSeconds: receiveMessageWaitTimeSeconds,
+          MessageRetentionPeriod: messageRetentionPeriod,
+        },
+      };
+      return this.sqs.createQueueAsync(params);
+    }
+    return true;
   }
 }
 

@@ -8,7 +8,10 @@ It also has containers for `kafka` and `zookeeper`
   - Run `docker-compose build app`
   - Run `docker-compose up app` (it will exit but will link zookeeper, kafka & app)
 
-#### Create topic in `kafka`
+
+### `Kafka` Engine
+
+#### Create topic in `Kafka`
 
   - Run `docker-compose run kafka bash`
   - Navigate to `opt/kafka-<version>/bin`
@@ -19,7 +22,7 @@ It also has containers for `kafka` and `zookeeper`
   - Above steps will create topic `test-topic` with 2 partitions
   - Exit from kafka
 
-#### Run `steveo` using kafka backend
+#### Connect to container
   - Run `docker-compose run app bash`
 
 #### Start `kafka` producer
@@ -41,7 +44,9 @@ It also has containers for `kafka` and `zookeeper`
   Finish subscribe test-topic { payload: 'Message 1', timestamp: 1498609251252 }
   ```
 
-#### Run `steveo` using SQS backend
+### `SQS` Backend
+
+#### Connect to container
   - Run `docker-compose run app bash`
 
 #### Start `sqs` producer
@@ -67,6 +72,50 @@ It also has containers for `kafka` and `zookeeper`
   Deleting message test-topic { payload: 'Message 1', timestamp: 1498609468761 }
   Start subscribe test-topic { payload: 'Message 1', timestamp: 1498609468761 }
   Payload from producer { payload: 'Message 1', timestamp: 1498609468761 }
+  ```
+
+### `Redis` Backend
+
+#### Connect to container
+  - Run `docker-compose run app bash`
+
+#### Start `redis` producer
+  ```shell
+  root@57f35557fe6b:/usr/src/app# ENGINE=redis node producer.js
+  Produce: Message  1
+  Redis Publish Data { qname: 'test-topic',
+    message: '{"payload":"Message 1","timestamp":1498647318149}',
+    delay: 0 } id er852naugvE35vCeVSqCSbx89BVogTW3
+  Queue status { vt: 20,
+    delay: 0,
+    maxsize: 1024,
+    totalrecv: 426,
+    totalsent: 427,
+    created: 1498632439,
+    modified: 1498632439,
+    msgs: 1,
+    hiddenmsgs: 1 }
+  ```
+
+#### Start Consumer
+  ```shell
+  root@83df25a76b71:/usr/src/app# ENGINE=redis node consumer.js
+
+  initializing consumer [ 'test-topic' ]
+  initializing consumer test-topic
+  Message from redis { id: 'er85888ojiiTFUHNHkjSGTdH2KTGUsJq',
+    message: '{"payload":"Message 1","timestamp":1498647655650}',
+    rc: 1,
+    fr: 1498647660359,
+    sent: 1498647655654 }
+  Deleting message test-topic { payload: 'Message 1', timestamp: 1498647655650 }
+  Start subscribe test-topic { payload: 'Message 1', timestamp: 1498647655650 }
+  Payload from producer { payload: 'Message 1', timestamp: 1498647655650 }
+  Message from redis { id: 'er8588v18wSjAYFLKBZmguioX9ZNwsgR',
+    message: '{"payload":"Message 2","timestamp":1498647656692}',
+    rc: 1,
+    fr: 1498647660380,
+    sent: 1498647656697 }
   ```
 
 
