@@ -116,7 +116,7 @@ export type Producer = {
   createQueueAsync(params: Object): Promise<void>;
   sendMessageAsync(params: Object): Promise<void>;
   listQueuesAsync(): Array<string>;
-  getQueueAttributesAsync(): Object;
+  getQueueAttributesAsync(params: Object): Object;
 };
 
 export interface IProducer {
@@ -132,3 +132,15 @@ export interface IProducer {
 export type sqsUrls = {
   [key: string]: ?Promise<void>,
 }
+
+export type CreateRedisTopic = {
+  topic: string,
+  visibilityTimeout: number,
+  maxsize: number,
+};
+
+export type CreateSqsTopic = {
+  topic: string,
+  messageRetentionPeriod: string,
+  receiveMessageWaitTimeSeconds: string,
+};

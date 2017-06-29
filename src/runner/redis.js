@@ -1,6 +1,6 @@
 // @flow
 import redisConf from '../config/redis';
-import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
+import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateRedisTopic } from '../../types';
 
 type DeleteMessage = {
   instance: Object,
@@ -86,6 +86,19 @@ class RedisRunner implements IRunner {
       this.logger.info('initializing consumer', topic);
       return this.iterateOnQueue(topic);
     }));
+  }
+
+  async createQueue({ topic, visibilityTimeout = 604800, maxsize = 1024 }: CreateRedisTopic) {
+    const queues = await this.redis.listQueuesAsync();
+    if (!queues.find(q => q === topic)) {
+      const params = {
+        qname: topic,
+        vt: visibilityTimeout,
+        maxsize,
+      };
+      return this.redis.createQueueAsync(params);
+    }
+    return true;
   }
 }
 
