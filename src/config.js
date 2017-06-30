@@ -51,7 +51,7 @@ export default class Config {
       this.redisHost = config.redisHost;
       this.redisPort = config.redisPort;
       this.visibilityTimeout = config.visibilityTimeout || 604800;
-      this.redisMessageMaxsize = config.redisMessageMaxsize || 1024;
+      this.redisMessageMaxsize = config.redisMessageMaxsize || 65536;
     }
   }
 }
