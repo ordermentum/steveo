@@ -1,6 +1,7 @@
 // @flow
 
 import Kafka from 'no-kafka';
+import moment from 'moment';
 
 import type { Configuration, Logger, Producer, IProducer, IRegistry } from '../../types';
 
@@ -25,7 +26,7 @@ class KafkaProducer implements IProducer {
   }
 
   getPayload(msg: Object, topic: string) {
-    const timestamp = new Date().getTime();
+    const timestamp = moment().unix();
     const payload = JSON.stringify(Object.assign({}, msg, { timestamp }));
     const size = Buffer.from(payload, 'utf-8');
     this.logger.info('Payload Size:', topic, size.length);
