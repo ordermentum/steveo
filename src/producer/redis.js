@@ -1,5 +1,6 @@
 // @flow
 
+import moment from 'moment';
 import redisConf from '../config/redis';
 
 import type { Configuration, Logger, Producer, IProducer, IRegistry } from '../../types';
@@ -31,7 +32,7 @@ class RedisProducer implements IProducer {
   }
 
   getPayload(msg: Object, topic: string) {
-    const timestamp = new Date().getTime();
+    const timestamp = moment().unix();
     const task = this.registry.getTask(topic);
     return {
       qname: task.topic,

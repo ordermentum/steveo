@@ -1,5 +1,5 @@
 // @flow
-
+import moment from 'moment';
 import sqsConf from '../config/sqs';
 
 import type { Configuration, Logger, Producer, IProducer, IRegistry, sqsUrls } from '../../types';
@@ -32,7 +32,7 @@ class SqsProducer implements IProducer {
   }
 
   getPayload(msg: Object, topic: string) {
-    const timestamp = new Date().getTime();
+    const timestamp = moment().unix();
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
     const messageAttributes = {
