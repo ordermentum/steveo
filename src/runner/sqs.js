@@ -1,4 +1,5 @@
 // @flow
+import difference from 'lodash.difference';
 import sqsConf from '../config/sqs';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
 
@@ -91,10 +92,11 @@ class SqsRunner implements IRunner {
     }
   };
 
-  process() {
+  process(filterTopics: Array<string>) {
     const subscriptions = this.registry.getTopics();
+    const filtered = difference(subscriptions, filterTopics);
     this.logger.info('initializing consumer', subscriptions);
-    return Promise.all(subscriptions.map(async (topic) => {
+    return Promise.all(filtered.map(async (topic) => {
       const queueURL = await getUrl(this.sqs, topic);
       this.sqsUrls[topic] = queueURL;
       this.logger.info(`queueURL for topic ${topic} is ${queueURL}`);

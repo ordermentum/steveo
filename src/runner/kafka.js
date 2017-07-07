@@ -1,5 +1,6 @@
 // @flow
 import Kafka from 'no-kafka';
+import difference from 'lodash.difference';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
 class KafkaRunner implements IRunner {
@@ -45,11 +46,12 @@ class KafkaRunner implements IRunner {
     }
   }
 
-  process() {
+  process(filterTopics: Array<string>) {
     const subscriptions = this.registry.getTopics();
+    const filtered = difference(subscriptions, filterTopics);
     this.logger.info('initializing consumer', subscriptions);
     return this.consumer.init([{
-      subscriptions,
+      subscriptions: filtered,
       handler: this.receive,
     }]);
   }

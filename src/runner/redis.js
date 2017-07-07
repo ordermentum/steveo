@@ -1,4 +1,5 @@
 // @flow
+import difference from 'lodash.difference';
 import redisConf from '../config/redis';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateRedisTopic } from '../../types';
 
@@ -79,10 +80,11 @@ class RedisRunner implements IRunner {
     }
   };
 
-  process() {
+  process(filterTopics: Array<string>) {
     const subscriptions = this.registry.getTopics();
+    const filtered = difference(subscriptions, filterTopics);
     this.logger.info('initializing consumer', subscriptions);
-    return Promise.all(subscriptions.map(async (topic) => {
+    return Promise.all(filtered.map(async (topic) => {
       this.logger.info('initializing consumer', topic);
       return this.iterateOnQueue(topic);
     }));

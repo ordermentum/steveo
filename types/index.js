@@ -92,7 +92,7 @@ export interface IRunner {
   registry: IRegistry;
   consumer: Consumer;
   receive(messages: Array<Object>, topic: string, partition: string): Promise<void>;
-  process(): Promise<any>;
+  process(Array <string>): Promise<any>;
 }
 
 export interface IMetric {
