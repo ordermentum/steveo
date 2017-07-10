@@ -114,6 +114,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async createQueue({ topic, receiveMessageWaitTimeSeconds = '20', messageRetentionPeriod = '604800' }: CreateSqsTopic) {
     const queues = await this.sqs.listQueuesAsync();
+
     if (!queues) {
       const params = {
         QueueName: topic,

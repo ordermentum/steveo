@@ -91,16 +91,22 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async createQueue({ topic, visibilityTimeout = 604800, maxsize = -1 }: CreateRedisTopic) {
+    this.logger.info(`creating queue ${topic}`);
+
     const queues = await this.redis.listQueuesAsync();
-    if (!queues.find(q => q === topic)) {
-      const params = {
-        qname: topic,
-        vt: visibilityTimeout,
-        maxsize,
-      };
-      return this.redis.createQueueAsync(params);
+    const exists = queues.find(q => q === topic);
+
+    if (exists) {
+      this.logger.info(`${topic} already exists`);
+      return true;
     }
-    return true;
+
+    const params = {
+      qname: topic,
+      vt: visibilityTimeout,
+      maxsize,
+    };
+    return this.redis.createQueueAsync(params);
   }
 }
 

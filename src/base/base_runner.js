@@ -9,6 +9,7 @@ class BaseRunner {
 
   createQueues() {
     const topics = this.registry.getTopics();
+    this.logger.info('creating queues:', topics);
     return Promise.all(topics.map((topic) => this.createQueue({ topic })));
   }
 
