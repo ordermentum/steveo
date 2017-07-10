@@ -1,4 +1,5 @@
 // @flow
+import BaseRunner from '../base/base_runner';
 import redisConf from '../config/redis';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateRedisTopic } from '../../types';
 
@@ -29,7 +30,7 @@ const deleteMessage = async ({
   }
 };
 
-class RedisRunner implements IRunner {
+class RedisRunner extends BaseRunner implements IRunner {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
@@ -37,6 +38,7 @@ class RedisRunner implements IRunner {
   redis: Object;
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger) {
+    super();
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -79,8 +81,8 @@ class RedisRunner implements IRunner {
     }
   };
 
-  process() {
-    const subscriptions = this.registry.getTopics();
+  process(topics: Array<string>) {
+    const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.info('initializing consumer', subscriptions);
     return Promise.all(subscriptions.map(async (topic) => {
       this.logger.info('initializing consumer', topic);

@@ -879,9 +879,9 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-bin-protocol@^3.0.2:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/bin-protocol/-/bin-protocol-3.0.3.tgz#010e53caed26c2b6e8e3b6a33cbbfe484e65ca1e"
+bin-protocol@^3.0.4:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/bin-protocol/-/bin-protocol-3.0.4.tgz#465a9d3506feb0e126b52b5b2160d936e15b27f4"
   dependencies:
     lodash "^4.1.0"
     long "^3.0.3"
@@ -2405,6 +2405,10 @@ lodash.create@3.1.1:
     lodash._basecreate "^3.0.0"
     lodash._isiterateecall "^3.0.0"
 
+lodash.difference@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.difference/-/lodash.difference-4.5.0.tgz#9ccb4e505d486b91651345772885a2df27fd017c"
+
 lodash.isarguments@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/lodash.isarguments/-/lodash.isarguments-3.1.0.tgz#2f573d85c6a24289ff00663b491c1d338ff3458a"
@@ -2604,13 +2608,13 @@ nice-simple-logger@^1.0.1:
   dependencies:
     lodash "^4.3.0"
 
-no-kafka@^3.1.8:
-  version "3.1.8"
-  resolved "https://registry.yarnpkg.com/no-kafka/-/no-kafka-3.1.8.tgz#b3cd673cc9fc55b2abb8ce7ce168e5dc3ed7e433"
+no-kafka@^3.1.10:
+  version "3.1.10"
+  resolved "https://registry.yarnpkg.com/no-kafka/-/no-kafka-3.1.10.tgz#d77e24830d61643240dba3d1355d52e5aed09ae3"
   dependencies:
     "@types/bluebird" "3.5.0"
     "@types/lodash" "^4.14.55"
-    bin-protocol "^3.0.2"
+    bin-protocol "^3.0.4"
     bluebird "^3.3.3"
     buffer-crc32 "^0.2.5"
     hashring "^3.2.0"

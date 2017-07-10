@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "1.0.32",
+  "version": "1.1.0",
   "description": "A Task Manager Library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -36,10 +36,15 @@
     "babel-runtime": "^6.23.0",
     "bluebird": "^3.5.0",
     "lazy-object": "^1.0.1",
+    "lodash.difference": "^4.5.0",
     "moment": "^2.18.1",
-    "no-kafka": "^3.1.8",
+    "no-kafka": "^3.1.10",
     "null-logger": "^1.0.0",
     "uuid": "^3.1.0"
+  },
+  "optionalDependencies": {
+    "aws-sdk": "^2.78.0",
+    "rsmq": "^0.8.2"
   },
   "devDependencies": {
     "babel-cli": "^6.24.0",
@@ -63,9 +68,5 @@
     "mocha": "^3.2.0",
     "nyc": "^11.0.0",
     "sinon": "^2.3.5"
-  },
-  "optionalDependencies": {
-    "aws-sdk": "^2.78.0",
-    "rsmq": "^0.8.2"
   }
 }

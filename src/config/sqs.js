@@ -1,10 +1,9 @@
 // @flow
-
-import AWS from 'aws-sdk'; //eslint-disable-line
 import bluebird from 'bluebird';
 import type { Configuration } from '../../types';
 
 const sqs = (config: Configuration) => {
+  const AWS = require('aws-sdk'); //eslint-disable-line
   const instance: Object = new AWS.SQS({
     region: config.region,
     apiVersion: config.apiVersion,
