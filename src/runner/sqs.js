@@ -1,5 +1,5 @@
 // @flow
-import difference from 'lodash.difference';
+import BaseRunner from '../base/base_runner';
 import sqsConf from '../config/sqs';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
 
@@ -41,7 +41,7 @@ const deleteMessage = async ({
   }
 };
 
-class SqsRunner implements IRunner {
+class SqsRunner extends BaseRunner implements IRunner {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
@@ -50,6 +50,7 @@ class SqsRunner implements IRunner {
   sqs: Object;
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger) {
+    super();
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -93,10 +94,9 @@ class SqsRunner implements IRunner {
   };
 
   process(filterTopics: Array<string>) {
-    const subscriptions = this.registry.getTopics();
-    const filtered = difference(subscriptions, filterTopics);
+    const subscriptions = this.activeSubscriptions(filterTopics);
     this.logger.info('initializing consumer', subscriptions);
-    return Promise.all(filtered.map(async (topic) => {
+    return Promise.all(subscriptions.map(async (topic) => {
       const queueURL = await getUrl(this.sqs, topic);
       this.sqsUrls[topic] = queueURL;
       this.logger.info(`queueURL for topic ${topic} is ${queueURL}`);
@@ -113,6 +113,7 @@ class SqsRunner implements IRunner {
   }
 
   async createQueue({ topic, receiveMessageWaitTimeSeconds = '20', messageRetentionPeriod = '604800' }: CreateSqsTopic) {
+    console.log('*********', this.sqs);
     const queues = await this.sqs.listQueuesAsync();
     if (!queues) {
       const params = {

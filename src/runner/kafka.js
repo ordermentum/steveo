@@ -1,15 +1,16 @@
 // @flow
 import Kafka from 'no-kafka';
-import difference from 'lodash.difference';
+import BaseRunner from '../base/base_runner';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
-class KafkaRunner implements IRunner {
+class KafkaRunner extends BaseRunner implements IRunner {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   consumer: Consumer;
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger) {
+    super();
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -47,18 +48,12 @@ class KafkaRunner implements IRunner {
   }
 
   process(filterTopics: Array<string>) {
-    const subscriptions = this.registry.getTopics();
-    const filtered = difference(subscriptions, filterTopics);
+    const subscriptions = this.activeSubscriptions(filterTopics);
     this.logger.info('initializing consumer', subscriptions);
     return this.consumer.init([{
-      subscriptions: filtered,
+      subscriptions,
       handler: this.receive,
     }]);
-  }
-
-  async createQueue() {
-    this.logger.info('kafka createQueue API not available');
-    return true;
   }
 }
 

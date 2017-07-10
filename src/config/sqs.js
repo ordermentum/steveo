@@ -4,7 +4,7 @@ import type { Configuration } from '../../types';
 
 const sqs = (config: Configuration) => {
   const AWS = require('aws-sdk'); //eslint-disable-line
-  const instance: Object = () => new AWS.SQS({
+  const instance: Object = new AWS.SQS({
     region: config.region,
     apiVersion: config.apiVersion,
     accessKeyId: config.accessKeyId,

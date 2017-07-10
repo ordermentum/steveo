@@ -1,5 +1,5 @@
 // @flow
-import difference from 'lodash.difference';
+import BaseRunner from '../base/base_runner';
 import redisConf from '../config/redis';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateRedisTopic } from '../../types';
 
@@ -30,7 +30,7 @@ const deleteMessage = async ({
   }
 };
 
-class RedisRunner implements IRunner {
+class RedisRunner extends BaseRunner implements IRunner {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
@@ -38,6 +38,7 @@ class RedisRunner implements IRunner {
   redis: Object;
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger) {
+    super();
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -81,10 +82,9 @@ class RedisRunner implements IRunner {
   };
 
   process(filterTopics: Array<string>) {
-    const subscriptions = this.registry.getTopics();
-    const filtered = difference(subscriptions, filterTopics);
+    const subscriptions = this.activeSubscriptions(filterTopics);
     this.logger.info('initializing consumer', subscriptions);
-    return Promise.all(filtered.map(async (topic) => {
+    return Promise.all(subscriptions.map(async (topic) => {
       this.logger.info('initializing consumer', topic);
       return this.iterateOnQueue(topic);
     }));
