@@ -32,6 +32,7 @@
     ]
   },
   "dependencies": {
+    "aws-sdk": "^2.78.0",
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",
     "bluebird": "^3.5.0",
@@ -63,10 +64,7 @@
     "flow-coverage-report": "^0.3.0",
     "mocha": "^3.2.0",
     "nyc": "^11.0.0",
+    "rsmq": "^0.8.2",
     "sinon": "^2.3.5"
-  },
-  "optionalDependencies": {
-    "aws-sdk": "^2.78.0",
-    "rsmq": "^0.8.2"
   }
 }
