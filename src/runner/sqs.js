@@ -93,8 +93,8 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
   };
 
-  process(filterTopics: Array<string>) {
-    const subscriptions = this.activeSubscriptions(filterTopics);
+  process(topics: Array<string>) {
+    const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.info('initializing consumer', subscriptions);
     return Promise.all(subscriptions.map(async (topic) => {
       const queueURL = await getUrl(this.sqs, topic);

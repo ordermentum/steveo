@@ -1,7 +1,7 @@
 import difference from 'lodash.difference';
 
 class BaseRunner {
-  activeSubscriptions(topics) {
+  getActiveSubsciptions(topics) {
     const subscriptions = this.registry.getTopics();
     const filtered = difference(subscriptions, topics);
     return filtered;
