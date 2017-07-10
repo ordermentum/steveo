@@ -15,6 +15,7 @@ class Task implements ITask {
     this.subscribe = subscribe;
     this.producer = producer;
     this.topic = topic;
+
     const task = {
       topic,
       subscribe: this.subscribe,

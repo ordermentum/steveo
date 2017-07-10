@@ -24,7 +24,6 @@ class Registry implements IRegistry {
   }
 
   getTopics = () => Object.keys(this.registeredTasks);
-
   getTask = (topic: string) => this.registeredTasks[topic];
 }
 

@@ -7,6 +7,11 @@ class BaseRunner {
     return filtered;
   }
 
+  createQueues() {
+    const topics = this.registry.getTopics();
+    return Promise.all(topics.map((topic) => this.createQueue({ topic })));
+  }
+
   createQueue() {
     this.logger.info('createQueue API call');
     return true;
