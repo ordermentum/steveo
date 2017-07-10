@@ -40,10 +40,6 @@ const logger = console;
   }
   const steveo = Steveo(config, logger)();
 
-  await steveo.runner().createQueue({
-    topic: 'test-topic',
-  });
-
   steveo.events.on('producer_failure', (topic, ex) => {
     logger.log('Failed to produce message', topic, ex);
   });
@@ -59,6 +55,8 @@ const logger = console;
   }];
   // create first Task
   const firstTask = steveo.task('test-topic', () => {}, attributes);
+
+  const res = await steveo.runner().createQueues();
 
   // let it run & publish messages in every second
   function produceMessages(counter) {
