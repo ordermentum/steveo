@@ -46,7 +46,7 @@ Responsible for consuming messages,
     clientId: '1234-123',
   }, console);
 
-  const example = steveo.task('example-task', ({ name }) => {
+  const example = steveo.task('example-task', async ({ name }) => {
     console.log(`hello ${name}`);
   });
 

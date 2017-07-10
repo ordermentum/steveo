@@ -38,11 +38,11 @@
     "lazy-object": "^1.0.1",
     "lodash.difference": "^4.5.0",
     "moment": "^2.18.1",
+    "no-kafka": "^3.1.10",
     "null-logger": "^1.0.0",
     "uuid": "^3.1.0"
   },
   "optionalDependencies": {
-    "no-kafka": "^3.1.8",
     "aws-sdk": "^2.78.0",
     "rsmq": "^0.8.2"
   },
