@@ -91,7 +91,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         await this.receive(data.Messages, topic);
       }
       this.iterateOnQueue(params, topic);
-    }, 500);
+    }, this.config.consumerPollInterval);
   };
 
   process(topics: Array<string>) {

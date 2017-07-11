@@ -77,7 +77,7 @@ class RedisRunner extends BaseRunner implements IRunner {
         await this.receive([data], topic);
       }
       this.iterateOnQueue(topic);
-    }, 500);
+    }, this.config.consumerPollInterval);
   };
 
   process(topics: Array<string>) {

@@ -45,6 +45,7 @@ export type Configuration = {
   redisHost: string,
   redisPort: string,
   redisMessageMaxsize: number,
+  consumerPollInterval: number,
 };
 
 export type Attribute = {

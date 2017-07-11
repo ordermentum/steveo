@@ -25,6 +25,7 @@ export default class Config {
   redisHost: string;
   redisPort: string;
   redisMessageMaxsize: number;
+  consumerPollInterval: number;
 
   constructor(config: Configuration) {
     this.engine = config.engine || 'kafka';
@@ -37,6 +38,7 @@ export default class Config {
       this.kafkaSendAttempts = config.kafkaSendAttempts || 2;
       this.kafkaSendDelayMin = config.kafkaSendDelayMin || 100;
       this.kafkaSendDelayMax = config.kafkaSendDelayMax || 300;
+      this.consumerPollInterval = config.consumerPollInterval || 1000;
     } else if (config.engine === 'sqs') {
       this.region = config.region;
       this.apiVersion = config.apiVersion;
@@ -52,6 +54,7 @@ export default class Config {
       this.redisPort = config.redisPort;
       this.visibilityTimeout = config.visibilityTimeout || 604800;
       this.redisMessageMaxsize = config.redisMessageMaxsize || 65536;
+      this.consumerPollInterval = config.consumerPollInterval || 1000;
     }
   }
 }
