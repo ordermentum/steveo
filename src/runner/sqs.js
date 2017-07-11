@@ -88,7 +88,11 @@ class SqsRunner extends BaseRunner implements IRunner {
       const data = await this.sqs.receiveMessageAsync(params);
       if (data.Messages) {
         this.logger.info('Message from sqs', data);
-        await this.receive(data.Messages, topic);
+        try {
+          await this.receive(data.Messages, topic);
+        } catch (ex) {
+          this.logger.error('Error while invoking receive', ex);
+        }
       }
       this.iterateOnQueue(params, topic);
     }, this.config.consumerPollInterval);

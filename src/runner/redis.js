@@ -74,7 +74,11 @@ class RedisRunner extends BaseRunner implements IRunner {
       const data = await this.redis.receiveMessageAsync({ qname: topic });
       if (Object.keys(data).length) {
         this.logger.info('Message from redis', data);
-        await this.receive([data], topic);
+        try {
+          await this.receive([data], topic);
+        } catch (ex) {
+          this.logger.error('Error while invoking receive', ex);
+        }
       }
       this.iterateOnQueue(topic);
     }, this.config.consumerPollInterval);
