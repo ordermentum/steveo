@@ -84,13 +84,14 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
   /* istanbul ignore next */
   iterateOnQueue = async (params: Object, topic: string) => {
-    const data = await this.sqs.receiveMessageAsync(params);
-    try {
-      await this.receive(data.Messages, topic);
-      await this.iterateOnQueue(params, topic);
-    } catch (ex) {
-      await this.iterateOnQueue(params, topic);
-    }
+    setTimeout(async () => {
+      const data = await this.sqs.receiveMessageAsync(params);
+      if (data.Messages) {
+        this.logger.info('Message from sqs', data);
+        await this.receive(data.Messages, topic);
+      }
+      this.iterateOnQueue(params, topic);
+    }, 500);
   };
 
   process(topics: Array<string>) {
