@@ -98,10 +98,10 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
+    await this.getQueueUrls(subscriptions);
 
     for (const topic of subscriptions) { // eslint-disable-line
-      const queueURL = await getUrl(this.sqs, topic); //eslint-disable-line
-      this.sqsUrls[topic] = queueURL;
+      const queueURL = this.sqsUrls[topic];
 
       const params = {
         MaxNumberOfMessages: this.config.maxNumberOfMessages,
@@ -114,6 +114,20 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
 
     setTimeout(this.process.bind(this), this.config.consumerPollInterval);
+  }
+
+  async getQueueUrls(subscriptions: Array<string>) {
+    if (Object.keys(this.sqsUrls).length === subscriptions.length) {
+      return;
+    }
+
+    const urls = await Promise.all(subscriptions.map(topic => (
+      getUrl(this.sqs, topic).then(url => ([topic, url]))
+    )));
+
+    for (const [topic, url] of urls) {
+      this.sqsUrls[topic] = url;
+    }
   }
 
   async createQueue({ topic, receiveMessageWaitTimeSeconds = '20', messageRetentionPeriod = '604800' }: CreateSqsTopic) {

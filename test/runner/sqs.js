@@ -8,13 +8,20 @@ import sqsConf from '../../src/config/sqs';
 describe('SQS Runner', () => {
   let runner;
   let registry;
+  let sandbox;
   beforeEach(() => {
+    sandbox = sinon.sandbox.create();
+
     registry = new Registry({ publishCallback: {
       events: {
-        emit: sinon.stub(),
+        emit: sandbox.stub(),
       },
     } });
     runner = new Runner({}, registry, console);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it('should create an instance', () => {
@@ -23,18 +30,18 @@ describe('SQS Runner', () => {
   });
 
   it('should invoke callback when receives a message on topic', async () => {
-    const subscribeStub = sinon.stub().resolves({ some: 'success' });
+    const subscribeStub = sandbox.stub().resolves({ some: 'success' });
     const anotherRegistry = {
       getTask: () => ({
         publish: () => {},
         subscribe: subscribeStub,
       }),
       events: {
-        emit: sinon.stub(),
+        emit: sandbox.stub(),
       },
     };
-    const deleteMessageStub = sinon.stub().resolves();
-    sinon.stub(sqsConf, 'sqs').returns({
+    const deleteMessageStub = sandbox.stub().resolves();
+    sandbox.stub(sqsConf, 'sqs').returns({
       deleteMessageAsync: deleteMessageStub,
     });
     const anotherRunner = new Runner({}, anotherRegistry, console);
@@ -44,19 +51,74 @@ describe('SQS Runner', () => {
     sqsConf.sqs.restore();
   });
 
-  it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
-    const subscribeStub = sinon.stub().throws({ some: 'error' });
+  it('get all urls for queues', async () => {
+    const subscribeStub = sandbox.stub().resolves({ some: 'success' });
     const anotherRegistry = {
       getTask: () => ({
         publish: () => {},
         subscribe: subscribeStub,
       }),
       events: {
-        emit: sinon.stub(),
+        emit: sandbox.stub(),
       },
     };
-    const deleteMessageStub = sinon.stub().resolves();
-    sinon.stub(sqsConf, 'sqs').returns({
+
+    const getQueueUrlAsyncStub = sandbox.stub().resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
+    sandbox.stub(sqsConf, 'sqs').returns({
+      getQueueUrlAsync: getQueueUrlAsyncStub,
+    });
+
+    const anotherRunner = new Runner({}, anotherRegistry, console);
+    expect(anotherRunner.sqsUrls).to.deep.equal({});
+    await anotherRunner.getQueueUrls(['test']);
+    expect(anotherRunner.sqsUrls).to.deep.equal({ test: 'https://ap-southeast2.aws.com' });
+    await anotherRunner.getQueueUrls(['test']);
+    expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
+    sqsConf.sqs.restore();
+  });
+
+  it('process', async () => {
+    const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      getTopics: () => (['test']),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const getQueueUrlAsyncStub = sandbox.stub().resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
+    const receiveMessageAsyncStub = sandbox.stub().resolves([]);
+
+    sandbox.stub(sqsConf, 'sqs').returns({
+      getQueueUrlAsync: getQueueUrlAsyncStub,
+      receiveMessageAsync: receiveMessageAsyncStub,
+    });
+
+    const anotherRunner = new Runner({}, anotherRegistry, console);
+    await anotherRunner.process();
+    expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
+    expect(receiveMessageAsyncStub.calledOnce).to.equal(true);
+    sqsConf.sqs.restore();
+  });
+
+  it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
+    const subscribeStub = sandbox.stub().throws({ some: 'error' });
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+    const deleteMessageStub = sandbox.stub().resolves();
+    sandbox.stub(sqsConf, 'sqs').returns({
       deleteMessageAsync: deleteMessageStub,
     });
     const anotherRunner = new Runner({}, anotherRegistry, console);
