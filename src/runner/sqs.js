@@ -58,7 +58,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.sqs = sqsConf.sqs(config);
   }
 
-  receive = async (messages: Array<Object>, topic: string) => {
+  async receive(messages: Array<Object>, topic: string) {
     for (const m of messages) { // eslint-disable-line no-restricted-syntax
       let params = null;
       try {
@@ -82,9 +82,10 @@ class SqsRunner extends BaseRunner implements IRunner {
       }
     }
   }
-  /* istanbul ignore next */
-  iterateOnQueue = async (params: Object, topic: string) => {
+
+  async dequeue(topic: string, params: Object) {
     const data = await this.sqs.receiveMessageAsync(params);
+
     if (data.Messages) {
       this.logger.info('Message from sqs', data);
       try {
@@ -93,11 +94,12 @@ class SqsRunner extends BaseRunner implements IRunner {
         this.logger.error('Error while invoking receive', ex);
       }
     }
-  };
+  }
 
   async process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
-    for (const topic of subscriptions) { //eslint-disable-line
+
+    for (const topic of subscriptions) { // eslint-disable-line
       const queueURL = await getUrl(this.sqs, topic); //eslint-disable-line
       this.sqsUrls[topic] = queueURL;
 
@@ -107,8 +109,10 @@ class SqsRunner extends BaseRunner implements IRunner {
         VisibilityTimeout: this.config.visibilityTimeout,
         WaitTimeSeconds: this.config.waitTimeSeconds,
       };
-      await this.iterateOnQueue(params, topic); //eslint-disable-line
+
+      await this.dequeue(topic, params); // eslint-disable-line
     }
+
     setTimeout(this.process.bind(this), this.config.consumerPollInterval);
   }
 

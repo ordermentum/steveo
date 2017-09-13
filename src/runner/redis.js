@@ -68,29 +68,29 @@ class RedisRunner extends BaseRunner implements IRunner {
       }
     }
   }
-  /* istanbul ignore next */
-  iterateOnQueue = async (topic: string) => {
-    setTimeout(async () => {
-      const data = await this.redis.receiveMessageAsync({ qname: topic });
-      if (Object.keys(data).length) {
-        this.logger.info('Message from redis', data);
-        try {
-          await this.receive([data], topic);
-        } catch (ex) {
-          this.logger.error('Error while invoking receive', ex);
-        }
-      }
-      this.iterateOnQueue(topic);
-    }, this.config.consumerPollInterval);
-  };
 
-  process(topics: Array<string>) {
+  async dequeue(topic: string) {
+    const data = await this.redis.receiveMessageAsync({ qname: topic });
+
+    if (Object.keys(data).length) {
+      this.logger.info('Message from redis', data);
+      try {
+        await this.receive([data], topic);
+      } catch (ex) {
+        this.logger.error('Error while invoking receive', ex);
+      }
+    }
+  }
+
+  async process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.info('initializing consumer', subscriptions);
-    return Promise.all(subscriptions.map(async (topic) => {
-      this.logger.info('initializing consumer', topic);
-      return this.iterateOnQueue(topic);
-    }));
+
+    for (const topic of subscriptions) { // eslint-disable-line
+      await this.dequeue(topic); // eslint-disable-line
+    }
+
+    setTimeout(this.process.bind(this), this.config.consumerPollInterval);
   }
 
   async createQueue({ topic, visibilityTimeout = 604800, maxsize = -1 }: CreateRedisTopic) {
