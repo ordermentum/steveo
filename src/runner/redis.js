@@ -84,8 +84,6 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   async process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
-    this.logger.info('initializing consumer', subscriptions);
-
     for (const topic of subscriptions) { // eslint-disable-line
       await this.dequeue(topic); // eslint-disable-line
     }
