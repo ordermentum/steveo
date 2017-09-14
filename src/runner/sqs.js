@@ -125,7 +125,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       getUrl(this.sqs, topic).then(url => ([topic, url]))
     )));
 
-    for (const [topic, url] of urls) {
+    for (const [topic, url] of urls) { // eslint-disable-line
       this.sqsUrls[topic] = url;
     }
   }
