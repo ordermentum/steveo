@@ -55,21 +55,21 @@ const logger = console;
   }];
   // create first Task
   const firstTask = steveo.task('test-topic', () => {}, attributes);
-
-  const res = await steveo.runner().createQueues();
+  await steveo.runner().createQueues();
 
   // let it run & publish messages in every second
   function produceMessages(counter) {
-    if (counter < 1000) {
+    if (counter < 10000) {
       setTimeout(async () => {
         counter += 1; // eslint-disable-line
         logger.log('Produce: Message ', counter);
         await firstTask.publish([{ payload: `Message ${counter}` }]);
         produceMessages(counter);
-      }, 1000);
+      }, 100);
     }
   }
   produceMessages(0);
+
 })().catch((ex) => {
   logger.log('Exception', ex);
   process.exit();
