@@ -77,6 +77,32 @@ describe('SQS Runner', () => {
     sqsConf.sqs.restore();
   });
 
+  it('continues to work if queue does not exist', async () => {
+    const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const getQueueUrlAsyncStub = sandbox.stub().rejects();
+    sandbox.stub(sqsConf, 'sqs').returns({
+      getQueueUrlAsync: getQueueUrlAsyncStub,
+    });
+
+    const anotherRunner = new Runner({}, anotherRegistry, console);
+    expect(anotherRunner.sqsUrls).to.deep.equal({});
+    await anotherRunner.getQueueUrls(['test']);
+    expect(anotherRunner.sqsUrls).to.deep.equal({});
+    await anotherRunner.getQueueUrls(['test']);
+    expect(getQueueUrlAsyncStub.callCount).to.equal(2);
+    sqsConf.sqs.restore();
+  });
+
   it('process', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
 
@@ -99,7 +125,7 @@ describe('SQS Runner', () => {
       receiveMessageAsync: receiveMessageAsyncStub,
     });
 
-    const anotherRunner = new Runner({}, anotherRegistry, console);
+    const anotherRunner = new Runner({ shuffleQueue: true }, anotherRegistry, console);
     await anotherRunner.process();
     expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
     expect(receiveMessageAsyncStub.calledOnce).to.equal(true);

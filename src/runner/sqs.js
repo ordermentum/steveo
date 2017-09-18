@@ -3,15 +3,6 @@ import BaseRunner from '../base/base_runner';
 import sqsConf from '../config/sqs';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
 
-/* istanbul ignore next */
-const getUrl = (instance, topic) => {
-  const params = {
-    QueueName: topic,
-  };
-
-  return instance.getQueueUrlAsync(params).then(data => data && data.QueueUrl);
-};
-
 type DeleteMessage = {
   instance: Object,
   topic: string,
@@ -102,17 +93,16 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     for (const topic of subscriptions) { // eslint-disable-line
       const queueURL = this.sqsUrls[topic];
-
-      const params = {
-        MaxNumberOfMessages: this.config.maxNumberOfMessages,
-        QueueUrl: queueURL,
-        VisibilityTimeout: this.config.visibilityTimeout,
-        WaitTimeSeconds: this.config.waitTimeSeconds,
-      };
-
-      await this.dequeue(topic, params); // eslint-disable-line
+      if (queueURL) {
+        const params = {
+          MaxNumberOfMessages: this.config.maxNumberOfMessages,
+          QueueUrl: queueURL,
+          VisibilityTimeout: this.config.visibilityTimeout,
+          WaitTimeSeconds: this.config.waitTimeSeconds,
+        };
+        await this.dequeue(topic, params); // eslint-disable-line
+      }
     }
-
     setTimeout(this.process.bind(this), this.config.consumerPollInterval);
   }
 
@@ -122,12 +112,23 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
 
     const urls = await Promise.all(subscriptions.map(topic => (
-      getUrl(this.sqs, topic).then(url => ([topic, url]))
+      this.getUrl(topic).then(url => ([topic, url]))
     )));
 
     for (const [topic, url] of urls) { // eslint-disable-line
-      this.sqsUrls[topic] = url;
+      if (url) {
+        this.sqsUrls[topic] = url;
+      }
     }
+  }
+
+  getUrl(topic) {
+    return this.sqs.getQueueUrlAsync({ QueueName: topic })
+                 .then(data => data && data.QueueUrl)
+                 .catch((e) => {
+                   this.logger.error(e);
+                   return null;
+                 });
   }
 
   async createQueue({ topic, receiveMessageWaitTimeSeconds = '20', messageRetentionPeriod = '604800' }: CreateSqsTopic) {

@@ -1,9 +1,13 @@
 import difference from 'lodash.difference';
+import shuffle from 'lodash.shuffle';
 
 class BaseRunner {
   getActiveSubsciptions(topics) {
     const subscriptions = this.registry.getTopics();
     const filtered = difference(subscriptions, topics);
+    if (this.config.shuffleQueue) {
+      return shuffle(filtered);
+    }
     return filtered;
   }
 

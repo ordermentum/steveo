@@ -39,6 +39,7 @@ export type Configuration = {
   receiveMessageWaitTimeSeconds: string,
   accessKeyId: string,
   secretAccessKey: string,
+  shuffleQueue: boolean,
   maxNumberOfMessages: number,
   visibilityTimeout: number,
   waitTimeSeconds: number,
