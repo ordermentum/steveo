@@ -122,7 +122,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
   }
 
-  getUrl(topic) {
+  getUrl(topic: string) {
     return this.sqs.getQueueUrlAsync({ QueueName: topic })
                  .then(data => data && data.QueueUrl)
                  .catch((e) => {

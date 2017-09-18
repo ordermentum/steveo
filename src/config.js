@@ -18,6 +18,7 @@ export default class Config {
   messageRetentionPeriod: string;
   receiveMessageWaitTimeSeconds: string;
   accessKeyId: string;
+  shuffleQueue: boolean;
   secretAccessKey: string;
   maxNumberOfMessages: number;
   visibilityTimeout: number;
@@ -29,6 +30,7 @@ export default class Config {
 
   constructor(config: Configuration) {
     this.engine = config.engine || 'kafka';
+    this.shuffleQueue = false || config.shuffleQueue;
     if (this.engine === 'kafka') {
       this.kafkaConnection = config.kafkaConnection;
       this.clientId = config.clientId;
