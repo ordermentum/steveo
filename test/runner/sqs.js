@@ -17,7 +17,7 @@ describe('SQS Runner', () => {
         emit: sandbox.stub(),
       },
     } });
-    runner = new Runner({}, registry, console);
+    runner = new Runner({}, registry);
   });
 
   afterEach(() => {
@@ -44,7 +44,7 @@ describe('SQS Runner', () => {
     sandbox.stub(sqsConf, 'sqs').returns({
       deleteMessageAsync: deleteMessageStub,
     });
-    const anotherRunner = new Runner({}, anotherRegistry, console);
+    const anotherRunner = new Runner({}, anotherRegistry);
     await anotherRunner.receive(([{ Body: JSON.stringify({ data: 'Hello' }) }, { Body: JSON.stringify({ data: 'World' }) }]), 'a-topic');
     expect(subscribeStub.callCount).to.equal(2);
     expect(deleteMessageStub.callCount).to.equal(2);
@@ -68,7 +68,7 @@ describe('SQS Runner', () => {
       getQueueUrlAsync: getQueueUrlAsyncStub,
     });
 
-    const anotherRunner = new Runner({}, anotherRegistry, console);
+    const anotherRunner = new Runner({}, anotherRegistry);
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrls(['test']);
     expect(anotherRunner.sqsUrls).to.deep.equal({ test: 'https://ap-southeast2.aws.com' });
@@ -94,7 +94,7 @@ describe('SQS Runner', () => {
       getQueueUrlAsync: getQueueUrlAsyncStub,
     });
 
-    const anotherRunner = new Runner({}, anotherRegistry, console);
+    const anotherRunner = new Runner({}, anotherRegistry);
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrls(['test']);
     expect(anotherRunner.sqsUrls).to.deep.equal({});
@@ -125,7 +125,7 @@ describe('SQS Runner', () => {
       receiveMessageAsync: receiveMessageAsyncStub,
     });
 
-    const anotherRunner = new Runner({ shuffleQueue: true }, anotherRegistry, console);
+    const anotherRunner = new Runner({ shuffleQueue: true }, anotherRegistry);
     await anotherRunner.process();
     expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
     expect(receiveMessageAsyncStub.calledOnce).to.equal(true);
@@ -147,7 +147,7 @@ describe('SQS Runner', () => {
     sandbox.stub(sqsConf, 'sqs').returns({
       deleteMessageAsync: deleteMessageStub,
     });
-    const anotherRunner = new Runner({}, anotherRegistry, console);
+    const anotherRunner = new Runner({}, anotherRegistry);
     let error = false;
     try {
       await anotherRunner.receive(([{ Body: JSON.stringify({ data: 'Hello' }) }, { Body: JSON.stringify({ data: 'World' }) }]), 'a-topic');

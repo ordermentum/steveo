@@ -1,4 +1,6 @@
 // @flow
+import nullLogger from 'null-logger';
+
 import BaseRunner from '../base/base_runner';
 import sqsConf from '../config/sqs';
 import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
@@ -40,7 +42,7 @@ class SqsRunner extends BaseRunner implements IRunner {
   sqsUrls: Object;
   sqs: Object;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
+  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {
     super();
     this.config = config;
     this.registry = registry;
