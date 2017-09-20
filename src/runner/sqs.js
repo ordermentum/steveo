@@ -108,7 +108,7 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async getQueueUrls(subscriptions: Array<string>) {
-    this.logger.debug('getting queue urls ${subscriptions}', { subscriptions });
+    this.logger.debug('getting queue urls', { subscriptions });
     if (Object.keys(this.sqsUrls).length === subscriptions.length) {
       return;
     }
