@@ -103,7 +103,10 @@ class SqsRunner extends BaseRunner implements IRunner {
           VisibilityTimeout: this.config.visibilityTimeout,
           WaitTimeSeconds: this.config.waitTimeSeconds,
         };
-        await this.dequeue(topic, params); // eslint-disable-line
+        await this.dequeue(topic, params) // eslint-disable-line
+                  .catch(e => this.logger.error(e));
+      } else {
+        this.logger.error(`Queue URL ${topic} not found`);
       }
     }
     setTimeout(this.process.bind(this), this.config.consumerPollInterval);
