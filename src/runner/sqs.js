@@ -93,10 +93,11 @@ class SqsRunner extends BaseRunner implements IRunner {
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug('starting poll for messages');
 
-    await this.getQueueUrls(subscriptions);
-
     for (const topic of subscriptions) { // eslint-disable-line
-      const queueURL = this.sqsUrls[topic];
+      const queueURL = await this.getQueueUrl(topic); // eslint-disable-line
+
+      this.logger.info(`starting processing of ${topic} with ${queueURL}`);
+
       if (queueURL) {
         const params = {
           MaxNumberOfMessages: this.config.maxNumberOfMessages,
@@ -113,17 +114,16 @@ class SqsRunner extends BaseRunner implements IRunner {
     setTimeout(this.process.bind(this), this.config.consumerPollInterval);
   }
 
-  async getQueueUrls(subscriptions: Array<string>) {
-    this.logger.debug('getting queue urls', { subscriptions });
-
-    if (Object.keys(this.sqsUrls).length === subscriptions.length) {
-      return;
+  async getQueueUrl(topic: string) {
+    if (!this.sqsUrls[topic]) {
+      this.logger.debug(`url not cached for ${topic}`);
+      const url = await this.getUrl(topic);
+      if (url) {
+        this.sqsUrls[topic] = url;
+      }
     }
 
-    for (const topic of subscriptions) { // eslint-disable-line
-      const url = await this.getUrl(topic); // eslint-disable-line
-      if (url) this.sqsUrls[topic] = url;
-    }
+    return this.sqsUrls[topic];
   }
 
   getUrl(topic: string) {

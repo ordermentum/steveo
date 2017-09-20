@@ -70,9 +70,9 @@ describe('SQS Runner', () => {
 
     const anotherRunner = new Runner({}, anotherRegistry);
     expect(anotherRunner.sqsUrls).to.deep.equal({});
-    await anotherRunner.getQueueUrls(['test']);
+    await anotherRunner.getQueueUrl('test');
     expect(anotherRunner.sqsUrls).to.deep.equal({ test: 'https://ap-southeast2.aws.com' });
-    await anotherRunner.getQueueUrls(['test']);
+    await anotherRunner.getQueueUrl('test');
     expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
     sqsConf.sqs.restore();
   });
@@ -96,9 +96,9 @@ describe('SQS Runner', () => {
 
     const anotherRunner = new Runner({}, anotherRegistry);
     expect(anotherRunner.sqsUrls).to.deep.equal({});
-    await anotherRunner.getQueueUrls(['test']);
+    await anotherRunner.getQueueUrl('test');
     expect(anotherRunner.sqsUrls).to.deep.equal({});
-    await anotherRunner.getQueueUrls(['test']);
+    await anotherRunner.getQueueUrl('test');
     expect(getQueueUrlAsyncStub.callCount).to.equal(2);
     sqsConf.sqs.restore();
   });

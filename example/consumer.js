@@ -1,4 +1,7 @@
 const Steveo = require('steveo').default;
+const bunyan = require('bunyan');
+
+const logger = bunyan.createLogger({ name: 'consumer' });
 
 const sqsConfig = {
   region: process.env.AWS_REGION,
@@ -30,7 +33,6 @@ const steveoConfig = {
   redis: redisConfig,
 };
 
-const logger = console;
 
 (async () => {
   const config = steveoConfig[process.env.ENGINE];
