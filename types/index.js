@@ -10,6 +10,8 @@ export type getPayload = (msg: Object, topic: string) => {
 export type Logger = {
   logLevel: number,
   info(...any): void,
+  trace(...any): void,
+  debug(...any): void,
   error(...any): void,
 };
 

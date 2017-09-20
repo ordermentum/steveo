@@ -89,6 +89,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
+    this.logger.debug('starting poll for messages');
     await this.getQueueUrls(subscriptions);
 
     for (const topic of subscriptions) { // eslint-disable-line
@@ -107,6 +108,7 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async getQueueUrls(subscriptions: Array<string>) {
+    this.logger.debug('getting queue urls ${subscriptions}', { subscriptions });
     if (Object.keys(this.sqsUrls).length === subscriptions.length) {
       return;
     }
