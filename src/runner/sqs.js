@@ -92,6 +92,7 @@ class SqsRunner extends BaseRunner implements IRunner {
   async process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug('starting poll for messages');
+
     await this.getQueueUrls(subscriptions);
 
     for (const topic of subscriptions) { // eslint-disable-line
@@ -114,18 +115,14 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async getQueueUrls(subscriptions: Array<string>) {
     this.logger.debug('getting queue urls', { subscriptions });
+
     if (Object.keys(this.sqsUrls).length === subscriptions.length) {
       return;
     }
 
-    const urls = await Promise.all(subscriptions.map(topic => (
-      this.getUrl(topic).then(url => ([topic, url]))
-    )));
-
-    for (const [topic, url] of urls) { // eslint-disable-line
-      if (url) {
-        this.sqsUrls[topic] = url;
-      }
+    for (const topic of subscriptions) { // eslint-disable-line
+      const url = await this.getUrl(topic); // eslint-disable-line
+      if (url) this.sqsUrls[topic] = url;
     }
   }
 
