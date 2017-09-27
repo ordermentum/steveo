@@ -1,10 +1,10 @@
-import difference from 'lodash.difference';
+import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 
 class BaseRunner {
   getActiveSubsciptions(topics) {
     const subscriptions = this.registry.getTopics();
-    const filtered = difference(subscriptions, topics);
+    const filtered = intersection(topics, subscriptions);
     if (this.config.shuffleQueue) {
       return shuffle(filtered);
     }

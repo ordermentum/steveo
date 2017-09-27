@@ -91,7 +91,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
-    this.logger.debug('starting poll for messages');
+    this.logger.debug(`starting poll for messages ${topics}`);
 
     for (const topic of subscriptions) { // eslint-disable-line
       const queueURL = await this.getQueueUrl(topic); // eslint-disable-line
@@ -111,7 +111,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         this.logger.error(`Queue URL ${topic} not found`);
       }
     }
-    setTimeout(this.process.bind(this), this.config.consumerPollInterval);
+    setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
   }
 
   async getQueueUrl(topic: string) {

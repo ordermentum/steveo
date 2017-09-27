@@ -83,12 +83,13 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics: Array<string>) {
+    this.logger.debug(`starting poll for messages ${topics}`);
     const subscriptions = this.getActiveSubsciptions(topics);
     for (const topic of subscriptions) { // eslint-disable-line
       await this.dequeue(topic); // eslint-disable-line
     }
 
-    setTimeout(this.process.bind(this), this.config.consumerPollInterval);
+    setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
   }
 
   async createQueue({ topic, visibilityTimeout = 604800, maxsize = -1 }: CreateRedisTopic) {

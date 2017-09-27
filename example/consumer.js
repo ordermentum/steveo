@@ -1,4 +1,4 @@
-const Steveo = require('steveo').default;
+const Steveo = require('../lib').default;
 const bunyan = require('bunyan');
 
 const logger = bunyan.createLogger({ name: 'consumer' });
@@ -56,7 +56,7 @@ const steveoConfig = {
   steveo.task('test-topic', subscribe);
 
   // initialize consumer
-  await steveo.runner().process();
+  await steveo.runner().process(['test-topic']);
 })().catch((ex) => {
   logger.info('Exception', ex);
   process.exit();
