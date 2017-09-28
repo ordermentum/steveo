@@ -113,7 +113,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
   }
 
-  async getQueueUrl(topic: string) {
+  async getQueueUrl(topic: string) : ?string {
     if (!this.sqsUrls[topic]) {
       this.logger.debug(`url not cached for ${topic}`);
       const url = await this.getUrl(topic);
@@ -125,7 +125,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     return this.sqsUrls[topic];
   }
 
-  getUrl(topic: string) {
+  getUrl(topic: string) : Promise<?string> {
     return this.sqs.getQueueUrlAsync({ QueueName: topic })
                  .then(data => data && data.QueueUrl)
                  .catch((e) => {
