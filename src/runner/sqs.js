@@ -91,7 +91,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
-    this.logger.debug(`starting poll for messages ${topics}`);
+    this.logger.debug(`starting poll for messages ${topics.join(',')}`);
 
     for (const topic of subscriptions) { // eslint-disable-line
       const queueURL = await this.getQueueUrl(topic); // eslint-disable-line

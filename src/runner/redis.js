@@ -83,7 +83,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics: Array<string>) {
-    this.logger.debug(`starting poll for messages ${topics}`);
+    this.logger.debug(`starting poll for messages ${topics.join(',')}`);
     const subscriptions = this.getActiveSubsciptions(topics);
     for (const topic of subscriptions) { // eslint-disable-line
       await this.dequeue(topic); // eslint-disable-line
