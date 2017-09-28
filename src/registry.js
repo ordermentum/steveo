@@ -23,8 +23,12 @@ class Registry implements IRegistry {
     delete this.registeredTasks[task.topic];
   }
 
-  getTopics = () => Object.keys(this.registeredTasks);
-  getTask = (topic: string) => this.registeredTasks[topic];
+  getTopics() : Array<string> {
+    return Object.keys(this.registeredTasks);
+  }
+  getTask(topic: string) : Task {
+    return this.registeredTasks[topic];
+  }
 }
 
 export default Registry;
