@@ -31,7 +31,7 @@ class SqsProducer implements IProducer {
     return this.producer.createQueueAsync(params).then(data => data && data.QueueUrl);
   }
 
-  getPayload(msg: Object, topic: string) {
+  getPayload(msg: Object, topic: string) : Object {
     const timestamp = moment().unix();
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];

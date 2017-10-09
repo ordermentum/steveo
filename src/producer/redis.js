@@ -31,7 +31,7 @@ class RedisProducer implements IProducer {
     }
   }
 
-  getPayload(msg: Object, topic: string) {
+  getPayload(msg: Object, topic: string) : Object {
     const timestamp = moment().unix();
     const task = this.registry.getTask(topic);
     return {

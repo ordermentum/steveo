@@ -89,16 +89,15 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
   }
 
-  async process(topics: Array<string>) {
+  async process(topics: ?Array<string> = null) {
     const subscriptions = this.getActiveSubsciptions(topics);
-    this.logger.debug('starting poll for messages');
+    this.logger.debug(`starting poll for messages ${topics ? topics.join(',') : 'all'}`);
 
     for (const topic of subscriptions) { // eslint-disable-line
       const queueURL = await this.getQueueUrl(topic); // eslint-disable-line
 
-      this.logger.info(`starting processing of ${topic} with ${queueURL}`);
-
       if (queueURL) {
+        this.logger.info(`starting processing of ${topic} with ${queueURL}`);
         const params = {
           MaxNumberOfMessages: this.config.maxNumberOfMessages,
           QueueUrl: queueURL,
@@ -111,7 +110,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         this.logger.error(`Queue URL ${topic} not found`);
       }
     }
-    setTimeout(this.process.bind(this), this.config.consumerPollInterval);
+    setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
   }
 
   async getQueueUrl(topic: string) {

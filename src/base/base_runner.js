@@ -1,25 +1,30 @@
-import difference from 'lodash.difference';
+import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 
+import type { Logger, IRegistry } from '../../types';
+
 class BaseRunner {
-  getActiveSubsciptions(topics) {
+  registry: IRegistry;
+  logger: Logger;
+
+  getActiveSubsciptions(topics: Array<string> = null) : Array<string> {
     const subscriptions = this.registry.getTopics();
-    const filtered = difference(subscriptions, topics);
+    const filtered = topics ? intersection(topics, subscriptions) : subscriptions;
     if (this.config.shuffleQueue) {
       return shuffle(filtered);
     }
     return filtered;
   }
 
-  createQueues() {
+  createQueues() : Promise<any> {
     const topics = this.registry.getTopics();
     this.logger.info('creating queues:', topics);
     return Promise.all(topics.map(topic => this.createQueue({ topic })));
   }
 
-  createQueue() {
+  createQueue() : Promise<any> {
     this.logger.info('createQueue API call');
-    return true;
+    return Promise.resolve();
   }
 }
 

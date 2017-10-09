@@ -1,4 +1,4 @@
-const Steveo = require('steveo').default;
+const Steveo = require('../lib').default;
 
 const sqsConfig = {
   region: process.env.AWS_REGION,

@@ -63,6 +63,10 @@ export type Task = {
   attributes?: Array<Attribute>,
 }
 
+export type Registry = {
+
+};
+
 export interface IEvent {
   emit(eventName: string, ...any): any;
 }
