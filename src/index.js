@@ -9,8 +9,9 @@ import runner from './base/runner';
 import metric from './base/metric';
 import producer from './base/producer';
 import Config from './config';
+import { build } from './base/pool';
 
-import type { ITask, Configuration, Callback, Logger, ISteveo, IRegistry, IEvent, IMetric, Attribute } from '../types';
+import type { ITask, Configuration, Callback, Pool, Logger, ISteveo, IRegistry, IEvent, IMetric, Attribute } from '../types';
 
 class Steveo implements ISteveo {
   config: Configuration;
@@ -19,12 +20,14 @@ class Steveo implements ISteveo {
   getTopicName: Callback;
   metric: IMetric;
   events: IEvent;
+  pool: Pool;
 
   constructor(configuration: Configuration, logger :Logger = NULL_LOGGER) {
     this.logger = logger;
     this.registry = new Registry();
     this.config = new Config(configuration);
     this.metric = metric(this.config.engine, this.config, this.logger);
+    this.pool = build(undefined, { max: 500, min: 0 });
     this.events = this.registry.events;
   }
 
@@ -38,7 +41,7 @@ class Steveo implements ISteveo {
   }
 
   runner() {
-    return runner(this.config.engine, this.config, this.registry, this.logger);
+    return runner(this.config.engine, this.config, this.registry, this.pool, this.logger);
   }
 
   customTopicName = (cb: Callback) => {

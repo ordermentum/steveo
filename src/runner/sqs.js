@@ -3,7 +3,7 @@ import nullLogger from 'null-logger';
 
 import BaseRunner from '../base/base_runner';
 import sqsConf from '../config/sqs';
-import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
+import type { IRunner, Configuration, Pool, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
 
 type DeleteMessage = {
   instance: Object,
@@ -41,23 +41,26 @@ class SqsRunner extends BaseRunner implements IRunner {
   consumer: Consumer;
   sqsUrls: Object;
   sqs: Object;
+  pool: Pool;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {
+  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger = nullLogger) {
     super();
     this.config = config;
     this.registry = registry;
     this.logger = logger;
     this.sqsUrls = {};
     this.sqs = sqsConf.sqs(config);
+    this.pool = pool;
   }
 
   async receive(messages: Array<Object>, topic: string) {
-    for (const m of messages) { // eslint-disable-line no-restricted-syntax
+    return Promise.all(messages.map(async (m) => {
       let params = null;
       try {
         params = JSON.parse(m.Body);
         this.registry.events.emit('runner_receive', topic, params);
         this.logger.info('Deleting message', topic, params);
+        const resource = await this.pool.acquire();
         await deleteMessage({ // eslint-disable-line
           instance: this.sqs,
           topic,
@@ -69,11 +72,12 @@ class SqsRunner extends BaseRunner implements IRunner {
         this.logger.info('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
         this.registry.events.emit('runner_complete', topic, params);
+        this.pool.release(resource);
       } catch (ex) {
         this.logger.error('Error while executing consumer callback ', { params, topic, error: ex });
         this.registry.events.emit('runner_failure', topic, ex, params);
       }
-    }
+    }));
   }
 
   async dequeue(topic: string, params: Object) {
@@ -93,9 +97,8 @@ class SqsRunner extends BaseRunner implements IRunner {
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug(`starting poll for messages ${topics ? topics.join(',') : 'all'}`);
 
-    for (const topic of subscriptions) { // eslint-disable-line
-      const queueURL = await this.getQueueUrl(topic); // eslint-disable-line
-
+    await Promise.all(subscriptions.map(async (topic) => {
+      const queueURL = await this.getQueueUrl(topic);
       if (queueURL) {
         this.logger.info(`starting processing of ${topic} with ${queueURL}`);
         const params = {
@@ -104,12 +107,11 @@ class SqsRunner extends BaseRunner implements IRunner {
           VisibilityTimeout: this.config.visibilityTimeout,
           WaitTimeSeconds: this.config.waitTimeSeconds,
         };
-        await this.dequeue(topic, params) // eslint-disable-line
-                  .catch(e => this.logger.error(e));
+        await this.dequeue(topic, params);
       } else {
         this.logger.error(`Queue URL ${topic} not found`);
       }
-    }
+    }));
     setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
   }
 

@@ -1,7 +1,7 @@
 // @flow
 import BaseRunner from '../base/base_runner';
 import redisConf from '../config/redis';
-import type { IRunner, Configuration, Logger, Consumer, IRegistry, CreateRedisTopic } from '../../types';
+import type { IRunner, Configuration, Pool, Logger, Consumer, IRegistry, CreateRedisTopic } from '../../types';
 
 type DeleteMessage = {
   instance: Object,
@@ -36,18 +36,19 @@ class RedisRunner extends BaseRunner implements IRunner {
   registry: IRegistry;
   consumer: Consumer;
   redis: Object;
+  pool: Pool;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
+  constructor(config: Configuration, pool: Pool, registry: IRegistry, logger: Logger) {
     super();
     this.config = config;
     this.registry = registry;
     this.logger = logger;
     this.redis = redisConf.redis(config);
+    this.pool = pool;
   }
 
-  receive = async (messages: Array<Object>, topic: string) => {
-    for (const m of messages) { // eslint-disable-line no-restricted-syntax
-      let params = null;
+  async receive(messages: Array<Object>, topic: string) {
+    return Promise.all(messages.map(async (m) => {
       try {
         params = JSON.parse(m.message);
         this.registry.events.emit('runner_receive', topic, params);
@@ -58,15 +59,18 @@ class RedisRunner extends BaseRunner implements IRunner {
           messageId: m.id,
           logger: this.logger,
         });
+
+        const resource = await this.pool.acquire(); // eslint-disable-line
         const task = this.registry.getTask(topic);
         this.logger.info('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
         this.registry.events.emit('runner_complete', topic, params);
+        await this.pool.release(resource);// eslint-disable-line
       } catch (ex) {
         this.logger.error('Error while executing consumer callback ', { params, topic, error: ex });
         this.registry.events.emit('runner_failure', topic, ex, params);
       }
-    }
+    }));
   }
 
   async dequeue(topic: string) {
@@ -85,9 +89,10 @@ class RedisRunner extends BaseRunner implements IRunner {
   async process(topics: ?Array<string> = null) {
     this.logger.debug(`starting poll for messages ${topics ? topics.join(',') : 'all'}`);
     const subscriptions = this.getActiveSubsciptions(topics);
-    for (const topic of subscriptions) { // eslint-disable-line
-      await this.dequeue(topic); // eslint-disable-line
-    }
+
+    await Promise.all(subscriptions.map(async (topic) => {
+      await this.dequeue(topic);
+    }));
 
     setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
   }

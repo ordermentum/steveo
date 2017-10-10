@@ -57,6 +57,11 @@ export type Attribute = {
   value: string,
 }
 
+export type Pool = {
+  acquire(): Promise<any>;
+  release(): Promise<any>;
+};
+
 export type Task = {
   topic: string,
   subscribe(any): any,

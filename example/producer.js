@@ -55,6 +55,7 @@ const logger = console;
   }];
   // create first Task
   const firstTask = steveo.task('test-topic', () => {}, attributes);
+  const secondTask = steveo.task('test-spam', () => {}, attributes);
   await steveo.runner().createQueues();
 
   // let it run & publish messages in every second
@@ -64,6 +65,7 @@ const logger = console;
         counter += 1; // eslint-disable-line
         logger.log('Produce: Message ', counter);
         await firstTask.publish([{ payload: `Message ${counter}` }]);
+        await secondTask.publish([{ payload: `Message ${counter}` }]);
         produceMessages(counter);
       }, 100);
     }
