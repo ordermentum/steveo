@@ -27,7 +27,7 @@ class Steveo implements ISteveo {
     this.registry = new Registry();
     this.config = new Config(configuration);
     this.metric = metric(this.config.engine, this.config, this.logger);
-    this.pool = build(undefined, { max: 500, min: 0 });
+    this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
   }
 

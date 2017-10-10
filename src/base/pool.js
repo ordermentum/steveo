@@ -23,14 +23,10 @@ class Factory {
     this.bin.push(resource);
     return true;
   }
-
 }
 
-function build(factory = new Factory(), { max, min } = {}) {
-  return genericPool.createPool(factory, {
-    max,
-    min,
-  });
+function build(options = {}, factory = new Factory()) {
+  return genericPool.createPool(factory, options);
 }
 
 export {

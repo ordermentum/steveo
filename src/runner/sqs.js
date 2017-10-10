@@ -53,14 +53,14 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.pool = pool;
   }
 
-  async receive(messages: Array<Object>, topic: string) {
+  async receive(messages: Array<Object>, topic: string): Promise<any> {
     return Promise.all(messages.map(async (m) => {
       let params = null;
+      const resource = await this.pool.acquire();
       try {
         params = JSON.parse(m.Body);
         this.registry.events.emit('runner_receive', topic, params);
         this.logger.info('Deleting message', topic, params);
-        const resource = await this.pool.acquire();
         await deleteMessage({ // eslint-disable-line
           instance: this.sqs,
           topic,
@@ -72,11 +72,11 @@ class SqsRunner extends BaseRunner implements IRunner {
         this.logger.info('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
         this.registry.events.emit('runner_complete', topic, params);
-        this.pool.release(resource);
       } catch (ex) {
         this.logger.error('Error while executing consumer callback ', { params, topic, error: ex });
         this.registry.events.emit('runner_failure', topic, ex, params);
       }
+      this.pool.release(resource);
     }));
   }
 

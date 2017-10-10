@@ -47,9 +47,10 @@ class RedisRunner extends BaseRunner implements IRunner {
     this.pool = pool;
   }
 
-  async receive(messages: Array<Object>, topic: string) {
+  async receive(messages: Array<Object>, topic: string): Promise<any> {
     return Promise.all(messages.map(async (m) => {
       let params = null;
+      const resource = await this.pool.acquire();
       try {
         params = JSON.parse(m.message);
         this.registry.events.emit('runner_receive', topic, params);
@@ -61,18 +62,15 @@ class RedisRunner extends BaseRunner implements IRunner {
           logger: this.logger,
         });
 
-        const resource = await this.pool.acquire(); // eslint-disable-line
-        console.log('🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴');
-        console.log('resource:', resource);
         const task = this.registry.getTask(topic);
         this.logger.info('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
         this.registry.events.emit('runner_complete', topic, params);
-        await this.pool.release(resource);// eslint-disable-line
       } catch (ex) {
         this.logger.error('Error while executing consumer callback ', { params, topic, error: ex });
         this.registry.events.emit('runner_failure', topic, ex, params);
       }
+      await this.pool.release(resource);
     }));
   }
 
