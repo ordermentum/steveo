@@ -33,7 +33,7 @@ function build(factory = new Factory(), { max, min } = {}) {
   });
 }
 
-export default {
+export {
   Factory,
   build,
 };

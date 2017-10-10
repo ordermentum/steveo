@@ -38,7 +38,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   redis: Object;
   pool: Pool;
 
-  constructor(config: Configuration, pool: Pool, registry: IRegistry, logger: Logger) {
+  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger) {
     super();
     this.config = config;
     this.registry = registry;
@@ -49,6 +49,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   async receive(messages: Array<Object>, topic: string) {
     return Promise.all(messages.map(async (m) => {
+      let params = null;
       try {
         params = JSON.parse(m.message);
         this.registry.events.emit('runner_receive', topic, params);
@@ -61,6 +62,8 @@ class RedisRunner extends BaseRunner implements IRunner {
         });
 
         const resource = await this.pool.acquire(); // eslint-disable-line
+        console.log('🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴');
+        console.log('resource:', resource);
         const task = this.registry.getTask(topic);
         this.logger.info('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
