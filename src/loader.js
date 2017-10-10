@@ -18,6 +18,7 @@ class Loader {
       const task = require(file); // eslint-disable-line
       this.tasks[task.name] = task;
     });
+    return this.tasks;
   }
 }
 
