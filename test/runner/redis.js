@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
+import { build } from '../../src/base/pool';
 import Runner from '../../src/runner/redis';
 import Registry from '../../src/registry';
 import redisConf from '../../src/config/redis';
@@ -37,7 +38,7 @@ describe('Redis Runner', () => {
     sinon.stub(redisConf, 'redis').returns({
       deleteMessageAsync: deleteMessageStub,
     });
-    const anotherRunner = new Runner({}, anotherRegistry, console);
+    const anotherRunner = new Runner({}, anotherRegistry, build(), console);
     await anotherRunner.receive(([{ message: JSON.stringify({ data: 'Hello' }) }, { message: JSON.stringify({ data: 'World' }) }]), 'a-topic');
     expect(subscribeStub.callCount).to.equal(2);
     expect(deleteMessageStub.callCount).to.equal(2);
@@ -59,7 +60,7 @@ describe('Redis Runner', () => {
     sinon.stub(redisConf, 'redis').returns({
       deleteMessageAsync: deleteMessageStub,
     });
-    const anotherRunner = new Runner({}, anotherRegistry, console);
+    const anotherRunner = new Runner({}, anotherRegistry, build(), console);
     let error = false;
     try {
       await anotherRunner.receive(([{ Body: JSON.stringify({ data: 'Hello' }) }, { Body: JSON.stringify({ data: 'World' }) }]), 'a-topic');

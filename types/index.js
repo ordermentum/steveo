@@ -48,6 +48,7 @@ export type Configuration = {
   redisHost: string,
   redisPort: string,
   redisMessageMaxsize: number,
+  workerConfig: Object,
   consumerPollInterval: number,
 };
 
@@ -56,6 +57,11 @@ export type Attribute = {
   dataType: string,
   value: string,
 }
+
+export type Pool = {
+  acquire(): Promise<any>;
+  release(client: any): Promise<any>;
+};
 
 export type Task = {
   topic: string,

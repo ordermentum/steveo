@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import Runner from '../../src/runner/sqs';
+import { build } from '../../src/base/pool';
 import Registry from '../../src/registry';
 import sqsConf from '../../src/config/sqs';
 
@@ -44,7 +45,7 @@ describe('SQS Runner', () => {
     sandbox.stub(sqsConf, 'sqs').returns({
       deleteMessageAsync: deleteMessageStub,
     });
-    const anotherRunner = new Runner({}, anotherRegistry);
+    const anotherRunner = new Runner({}, anotherRegistry, build());
     await anotherRunner.receive(([{ Body: JSON.stringify({ data: 'Hello' }) }, { Body: JSON.stringify({ data: 'World' }) }]), 'a-topic');
     expect(subscribeStub.callCount).to.equal(2);
     expect(deleteMessageStub.callCount).to.equal(2);
@@ -68,7 +69,7 @@ describe('SQS Runner', () => {
       getQueueUrlAsync: getQueueUrlAsyncStub,
     });
 
-    const anotherRunner = new Runner({}, anotherRegistry);
+    const anotherRunner = new Runner({}, anotherRegistry, build());
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
     expect(anotherRunner.sqsUrls).to.deep.equal({ test: 'https://ap-southeast2.aws.com' });
@@ -94,7 +95,7 @@ describe('SQS Runner', () => {
       getQueueUrlAsync: getQueueUrlAsyncStub,
     });
 
-    const anotherRunner = new Runner({}, anotherRegistry);
+    const anotherRunner = new Runner({}, anotherRegistry, build());
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
     expect(anotherRunner.sqsUrls).to.deep.equal({});
@@ -125,7 +126,7 @@ describe('SQS Runner', () => {
       receiveMessageAsync: receiveMessageAsyncStub,
     });
 
-    const anotherRunner = new Runner({ shuffleQueue: true }, anotherRegistry);
+    const anotherRunner = new Runner({ shuffleQueue: true }, anotherRegistry, build());
     await anotherRunner.process();
     expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
     expect(receiveMessageAsyncStub.calledOnce).to.equal(true);
@@ -147,7 +148,7 @@ describe('SQS Runner', () => {
     sandbox.stub(sqsConf, 'sqs').returns({
       deleteMessageAsync: deleteMessageStub,
     });
-    const anotherRunner = new Runner({}, anotherRegistry);
+    const anotherRunner = new Runner({}, anotherRegistry, build());
     let error = false;
     try {
       await anotherRunner.receive(([{ Body: JSON.stringify({ data: 'Hello' }) }, { Body: JSON.stringify({ data: 'World' }) }]), 'a-topic');

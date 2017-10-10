@@ -1,19 +1,22 @@
 // @flow
+import nullLogger from 'null-logger';
 import Kafka from 'no-kafka';
 import BaseRunner from '../base/base_runner';
-import type { IRunner, Configuration, Logger, Consumer, IRegistry } from '../../types';
+import type { IRunner, Pool, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
 class KafkaRunner extends BaseRunner implements IRunner {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   consumer: Consumer;
+  pool: Pool;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
+  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger = nullLogger) {
     super();
     this.config = config;
     this.registry = registry;
     this.logger = logger;
+    this.pool = pool;
 
     this.consumer = new Kafka.GroupConsumer({
       groupId: config.kafkaGroupId,

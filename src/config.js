@@ -27,10 +27,13 @@ export default class Config {
   redisPort: string;
   redisMessageMaxsize: number;
   consumerPollInterval: number;
+  workerConfig: Object;
 
   constructor(config: Configuration) {
     this.engine = config.engine || 'kafka';
     this.shuffleQueue = false || config.shuffleQueue;
+    this.workerConfig = {} || config.workerConfig;
+
     if (this.engine === 'kafka') {
       this.kafkaConnection = config.kafkaConnection;
       this.clientId = config.clientId;

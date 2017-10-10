@@ -54,6 +54,7 @@ const steveoConfig = {
 
   // create first Task
   steveo.task('test-topic', subscribe);
+  steveo.task('test-spam', subscribe);
 
   // initialize consumer
   await steveo.runner().process(['test-topic']);
