@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+const program = require('commander');
+const { default: Loader } = require('../lib/loader');
+
+const handler = async (bootstrap, path, tasks = []) => {
+  if (!path || !bootstrap) {
+    return process.exit(1);
+  }
+
+  const taskList = Array.isArray(tasks) ? tasks : tasks.split(',');
+
+  const steveo = require(bootstrap); // eslint-disable-line
+  const loader = new Loader(bootstrap, path);
+  loader.load();
+  await steveo.runner().process(taskList);
+};
+
+program
+  .version('0.0.1')
+  .option('-p, --path', 'Path of tasks')
+  .option('-b, --bootstrap', 'Path to bootstrap steveo configuration')
+  .option('-t, --tasks', 'tasks to run')
+  .action(handler);
+
+program.parse(process.argv);
