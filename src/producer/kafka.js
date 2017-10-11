@@ -1,24 +1,19 @@
 // @flow
-
+import nullLogger from 'null-logger';
 import Kafka from 'no-kafka';
 import moment from 'moment';
 
-import type { Configuration, Logger, Producer, IProducer, IRegistry } from '../../types';
+import BaseProducer from './base';
 
-class KafkaProducer implements IProducer {
-  config: Configuration;
-  registry: IRegistry;
-  logger: Logger;
-  producer: Producer;
+import type { Configuration, Logger, IProducer, IRegistry } from '../../types';
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
-    this.config = config;
+class KafkaProducer extends BaseProducer implements IProducer {
+  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {
+    super(config, registry, logger);
     this.producer = new Kafka.Producer({
       connectionString: this.config.kafkaConnection,
       codec: this.config.kafkaCodec,
     });
-    this.logger = logger;
-    this.registry = registry;
   }
 
   initialize() {

@@ -87,12 +87,11 @@ export interface IRegistry {
 }
 
 export interface ITask {
-  config: Configuration;
-  registry: IRegistry;
   subscribe: Callback;
   topic: string;
+  name: string;
   producer: Object;
-  publish(payload: Object): Promise<void>;
+  publish(payload: Object | Array<Object>): Promise<void>;
 }
 
 export type Consumer = {
@@ -139,6 +138,7 @@ export interface IProducer {
   registry: IRegistry;
   producer: Producer;
   initialize(topic: ?string): ?Promise<void>;
+  publish(topic: string, params: Array<Object>): Promise<void>;
   getPayload(msg: Object, topic: string): Object;
   send(topic: string, payload: Object): Promise<void>;
 }

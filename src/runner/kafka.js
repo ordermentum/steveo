@@ -1,7 +1,7 @@
 // @flow
 import nullLogger from 'null-logger';
 import Kafka from 'no-kafka';
-import BaseRunner from '../base/base_runner';
+import BaseRunner from './base';
 import type { IRunner, Pool, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
 class KafkaRunner extends BaseRunner implements IRunner {

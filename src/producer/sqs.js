@@ -2,22 +2,15 @@
 import moment from 'moment';
 import sqsConf from '../config/sqs';
 
-import type { Configuration, Logger, Producer, IProducer, IRegistry, sqsUrls } from '../../types';
+import BaseProducer from './base';
+import type { Configuration, Logger, IProducer, IRegistry, sqsUrls } from '../../types';
 
-
-class SqsProducer implements IProducer {
-  config: Configuration;
-  registry: IRegistry;
-  logger: Logger;
-  producer: Producer;
+class SqsProducer extends BaseProducer implements IProducer {
   sqsUrls: sqsUrls;
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger) {
-    this.config = config;
-    this.producer = sqsConf.sqs(config);
-    this.logger = logger;
-    this.registry = registry;
-    this.sqsUrls = {};
+    super(config, registry, logger);
+    this.producer = sqsConf.sqs(this.config);
   }
 
   initialize(topic: ?string) {

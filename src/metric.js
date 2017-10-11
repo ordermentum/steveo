@@ -1,10 +1,10 @@
 // @flow
 
-import KafkaMetric from '../metric/kafka';
-import SqsMetric from '../metric/sqs';
-import RedisMetric from '../metric/redis';
+import KafkaMetric from './metric/kafka';
+import SqsMetric from './metric/sqs';
+import RedisMetric from './metric/redis';
 
-import type { IMetric, Configuration, Logger } from '../../types';
+import type { IMetric, Configuration, Logger } from '../types';
 
 type MetricType = {
   [key: string]: typeof KafkaMetric | typeof SqsMetric | typeof RedisMetric,

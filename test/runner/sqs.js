@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import Runner from '../../src/runner/sqs';
-import { build } from '../../src/base/pool';
+import { build } from '../../src/pool';
 import Registry from '../../src/registry';
 import sqsConf from '../../src/config/sqs';
 

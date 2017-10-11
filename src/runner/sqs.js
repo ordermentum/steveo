@@ -1,7 +1,7 @@
 // @flow
 import nullLogger from 'null-logger';
 
-import BaseRunner from '../base/base_runner';
+import BaseRunner from './base';
 import sqsConf from '../config/sqs';
 import type { IRunner, Configuration, Pool, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
 

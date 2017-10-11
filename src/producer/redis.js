@@ -1,22 +1,16 @@
 // @flow
-
+import nullLogger from 'null-logger';
 import moment from 'moment';
 import redisConf from '../config/redis';
 
-import type { Configuration, Logger, Producer, IProducer, IRegistry } from '../../types';
+import BaseProducer from './base';
 
+import type { Configuration, Logger, IProducer, IRegistry } from '../../types';
 
-class RedisProducer implements IProducer {
-  config: Configuration;
-  registry: IRegistry;
-  logger: Logger;
-  producer: Producer;
-
-  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
-    this.config = config;
-    this.producer = redisConf.redis(config);
-    this.logger = logger;
-    this.registry = registry;
+class RedisProducer extends BaseProducer implements IProducer {
+  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {
+    super(config, registry, logger);
+    this.producer = redisConf.redis(this.config);
   }
 
   async initialize(topic: ?string) {

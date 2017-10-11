@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import { build } from '../../src/base/pool';
+import { build } from '../../src/pool';
 import Runner from '../../src/runner/redis';
 import Registry from '../../src/registry';
 import redisConf from '../../src/config/redis';

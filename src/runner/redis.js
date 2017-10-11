@@ -1,5 +1,5 @@
 // @flow
-import BaseRunner from '../base/base_runner';
+import BaseRunner from './base';
 import redisConf from '../config/redis';
 import type { IRunner, Configuration, Pool, Logger, Consumer, IRegistry, CreateRedisTopic } from '../../types';
 

@@ -1,9 +1,9 @@
 // @flow
 
-import KafkaRunner from '../runner/kafka';
-import SqsRunner from '../runner/sqs';
-import RedisRunner from '../runner/redis';
-import type { IRunner, Pool, Configuration, IRegistry, Logger } from '../../types';
+import KafkaRunner from './runner/kafka';
+import SqsRunner from './runner/sqs';
+import RedisRunner from './runner/redis';
+import type { IRunner, Pool, Configuration, IRegistry, Logger } from '../types';
 
 type RunnersType = {
   [key: string]: typeof KafkaRunner | typeof SqsRunner | typeof RedisRunner,
