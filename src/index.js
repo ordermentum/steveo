@@ -25,7 +25,7 @@ class Steveo implements ISteveo {
 
   constructor(configuration: Configuration, logger :Logger = NULL_LOGGER) {
     this.logger = logger;
-    this.registry = new Registry();
+    this.registry = Registry.getInstance();
     this.config = new Config(configuration);
     this.metric = metric(this.config.engine, this.config, this.logger);
     this.pool = build(this.config.workerConfig);
@@ -61,7 +61,18 @@ class Steveo implements ISteveo {
   }
 }
 
-export default (config: Configuration, logger: Logger) => () => new Steveo(config, logger);
+export default Steveo;
+export const builder = (config: Configuration, logger: Logger) => new Steveo(config, logger);
+
+export const decorate = (handler: Callback) => {
+  const { taskName, topicName } = handler;
+  const task = new Task(producer, taskName, topicName, handler);
+  const method = handler;
+  method.task = task;
+  method.publish = handler.task.publish.bind(task);
+  method.subscribe = handler;
+  return method;
+};
 
 export const kafkaCompression = {
   SNAPPY: kafka.COMPRESSION_SNAPPY,

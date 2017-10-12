@@ -4,6 +4,8 @@ import events from 'events';
 
 import type { IRegistry, IEvent, Task } from '../types';
 
+let instance = null;
+
 class Registry implements IRegistry {
   registeredTasks: Object;
   events: IEvent;
@@ -16,6 +18,14 @@ class Registry implements IRegistry {
   addNewTask(task: Task) {
     this.events.emit('task_added', task);
     this.registeredTasks[task.topic] = task;
+  }
+
+  static getInstance() {
+    if (!instance) {
+      instance = new this();
+    }
+
+    return instance;
   }
 
   removeTask(task: Task) {

@@ -1,26 +1,40 @@
 #!/usr/bin/env node
 
 const program = require('commander');
+const path = require('path');
 const { default: Loader } = require('../lib/loader');
+const { default: Steveo } = require('../lib/');
 
-const handler = async (bootstrap, path, tasks = []) => {
-  if (!path || !bootstrap) {
+const handler = async (pattern, config) => {
+  const root = process.cwd();
+
+  let configPath = config;
+  if (!configPath) {
+    configPath = path.resolve(root, '.steveo.json');
+  }
+
+  const configuration = require(configPath); // eslint-disable-line
+  const searchPattern = pattern || configuration.pattern;
+  if (!searchPattern) {
     return process.exit(1);
   }
 
-  const taskList = Array.isArray(tasks) ? tasks : tasks.split(',');
-
-  const steveo = require(bootstrap); // eslint-disable-line
-  const loader = new Loader(bootstrap, path);
+  const steveo = new Steveo(configuration);
+  const loader = new Loader(steveo, root, searchPattern);
   loader.load();
-  await steveo.runner().process(taskList);
+
+  await steveo.runner().process();
+  return process.exit(0);
 };
 
 program
   .version('0.0.1')
-  .option('-p, --path', 'Path of tasks')
-  .option('-b, --bootstrap', 'Path to bootstrap steveo configuration')
-  .option('-t, --tasks', 'tasks to run')
-  .action(handler);
+  .option('-p, --pattern [pattern]', 'glob of tasks')
+  .option('-c, --config [config]', 'config to use')
+  .parse(process.argv);
 
-program.parse(process.argv);
+handler(program.pattern, program.config)
+.catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

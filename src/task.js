@@ -3,6 +3,7 @@ import type { ITask, Callback, IProducer, IRegistry, Attribute } from '../types'
 
 class Task implements ITask {
   subscribe: Callback;
+  handler: Callback;
   producer: IProducer;
   topic: string;
   name: string;
@@ -10,9 +11,10 @@ class Task implements ITask {
 
   constructor(producer: IProducer,
     name: string, topic: string,
-    subscribe: Callback,
+    handler: Callback,
     attributes: Array<Attribute> = []) {
-    this.subscribe = subscribe;
+    this.handler = handler;
+    this.subscribe = this.handler;
     this.producer = producer;
     this.name = name;
     this.topic = topic;
