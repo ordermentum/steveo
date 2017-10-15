@@ -3,37 +3,48 @@
 const program = require('commander');
 const path = require('path');
 const { default: Loader } = require('../lib/loader');
+const { default: Registry } = require('../lib/registry');
 const { default: Steveo } = require('../lib/');
 
-const handler = async (pattern, config) => {
+const handler = async (pattern, config, queues) => {
   const root = process.cwd();
 
   let configPath = config;
   if (!configPath) {
-    configPath = path.resolve(root, '.steveo.json');
+    configPath = path.join(root, '.steveo.json');
   }
 
+  configPath = path.resolve(configPath);
   const configuration = require(configPath); // eslint-disable-line
   const searchPattern = pattern || configuration.pattern;
   if (!searchPattern) {
+    console.error('Unknown Pattern');
     return process.exit(1);
   }
 
   const steveo = new Steveo(configuration);
+  const registry = Registry.getInstance();
+  registry.producer = steveo.producer;
   const loader = new Loader(steveo, root, searchPattern);
   loader.load();
 
-  await steveo.runner().process();
-  return process.exit(0);
+  const runner = steveo.runner();
+
+  if (queues) {
+    return runner.createQueues();
+  }
+
+  await runner.process();
 };
 
 program
   .version('0.0.1')
   .option('-p, --pattern [pattern]', 'glob of tasks')
   .option('-c, --config [config]', 'config to use')
+  .option('-q, --create-queues', 'create queues')
   .parse(process.argv);
 
-handler(program.pattern, program.config)
+handler(program.pattern, program.config, program.topics)
 .catch((e) => {
   console.error(e);
   process.exit(1);

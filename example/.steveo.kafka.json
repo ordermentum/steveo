@@ -1,0 +1,6 @@
+{
+  "engine": "kafka",
+  "kafkaConnection": "",
+  "clientId": "1234-123",
+  "pattern": "tasks/*_task.js"
+}

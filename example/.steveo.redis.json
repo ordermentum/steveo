@@ -1,0 +1,6 @@
+{
+  "engine": "redis",
+  "redisHost": "",
+  "redisPort": "",
+  "pattern": "tasks/*_task.js"
+}

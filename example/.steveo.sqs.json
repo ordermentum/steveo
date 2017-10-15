@@ -1,0 +1,13 @@
+{
+  "engine": "sqs",
+  "pattern": "tasks/*_task.js",
+  "region": "",
+  "apiVersion": "2012-11-05",
+  "receiveMessageWaitTimeSeconds": "20",
+  "messageRetentionPeriod": "604800",
+  "accessKeyId": "",
+  "secretAccessKey": "",
+  "maxNumberOfMessages": 1,
+  "visibilityTimeout": 180,
+  "waitTimeSeconds": 20
+}

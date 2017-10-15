@@ -1,3 +1,4 @@
+import nullLogger from 'null-logger';
 import type { Configuration, Producer, IProducer, Logger, IRegistry } from '../../types';
 
 class BaseProducer implements IProducer {
@@ -6,7 +7,7 @@ class BaseProducer implements IProducer {
   logger: Logger;
   producer: Producer;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
+  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {
     this.config = config;
     this.logger = logger;
     this.registry = registry;

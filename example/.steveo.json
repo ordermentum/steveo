@@ -1,0 +1,5 @@
+{
+  "engine": "redis",
+  "pattern": "tasks/*_task.js"
+}
+

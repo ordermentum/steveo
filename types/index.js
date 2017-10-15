@@ -77,20 +77,33 @@ export interface IEvent {
   emit(eventName: string, ...any): any;
 }
 
+export interface IProducer {
+  config: Configuration;
+  logger: Logger;
+  producer: Producer;
+  initialize(topic: ?string): ?Promise<void>;
+  publish(topic: string, params: Array<mixed> | mixed): Promise<void>;
+  getPayload(msg: Object, topic: string): Object;
+  send(topic: string, payload: Object): Promise<void>;
+}
+
 export interface IRegistry {
   registeredTasks: Object;
   events: IEvent;
+  producer: ?IProducer;
+
   addNewTask(task: Task): void;
   removeTask(task: Task): void;
+  publish(topic: string, payload: Object) : Promise<void>;
+  getTopicName(name: string) : string;
   getTopics(): Array<string>;
   getTask(topic: string): Task; //eslint-disable-line
 }
 
 export interface ITask {
-  subscribe: Callback;
+  handler: Callback;
   topic: string;
   name: string;
-  producer: Object;
   publish(payload: Object | Array<Object>): Promise<void>;
 }
 
@@ -131,17 +144,6 @@ export type Producer = {
   listQueuesAsync(): Array<string>;
   getQueueAttributesAsync(params: Object): Object;
 };
-
-export interface IProducer {
-  config: Configuration;
-  logger: Logger;
-  registry: IRegistry;
-  producer: Producer;
-  initialize(topic: ?string): ?Promise<void>;
-  publish(topic: string, params: Array<Object>): Promise<void>;
-  getPayload(msg: Object, topic: string): Object;
-  send(topic: string, payload: Object): Promise<void>;
-}
 
 export type sqsUrls = {
   [key: string]: ?Promise<void>,

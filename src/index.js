@@ -17,26 +17,24 @@ class Steveo implements ISteveo {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
-  topicName: Callback;
   producer: IProducer;
   metric: IMetric;
   events: IEvent;
   pool: Pool;
 
-  constructor(configuration: Configuration, logger :Logger = NULL_LOGGER) {
+  constructor(configuration: Configuration, logger: Logger = NULL_LOGGER) {
+    this.config = new Config(configuration);
     this.logger = logger;
     this.registry = Registry.getInstance();
-    this.config = new Config(configuration);
     this.metric = metric(this.config.engine, this.config, this.logger);
     this.pool = build(this.config.workerConfig);
     this.producer = producer(this.config.engine, this.config, this.registry, this.logger);
+    this.registry.producer = producer;
     this.events = this.registry.events;
   }
 
   task(name: string, callback: Callback, attributes: Array<Attribute> = []): ITask {
-    const topic = this.getTopicName(name);
-    const task = new Task(this.producer, name, topic, callback, attributes);
-    task.register(this.registry);
+    const task = new Task(name, callback, this.registry, attributes);
     return task;
   }
 
@@ -44,16 +42,8 @@ class Steveo implements ISteveo {
     return runner(this.config.engine, this.config, this.registry, this.pool, this.logger);
   }
 
-  getTopicName(topic: string): string {
-    let topicName = topic;
-    if (this.topicName && typeof this.topicName === 'function') {
-      topicName = this.getTopicName(topic);
-    }
-    return topicName;
-  }
-
   customTopicName = (callback: Callback) => {
-    this.topicName = callback;
+    Registry.getInstance().topicName = callback;
   };
 
   metric() {
@@ -65,9 +55,9 @@ export default Steveo;
 export const builder = (config: Configuration, logger: Logger) => new Steveo(config, logger);
 
 export const decorate = (handler: Callback) => {
-  const { taskName, topicName } = handler;
-  const task = new Task(producer, taskName, topicName, handler);
   const method = handler;
+  const { taskName } = method;
+  const task = new Task(taskName, handler, Registry.getInstance());
   method.task = task;
   method.publish = handler.task.publish.bind(task);
   method.subscribe = handler;
