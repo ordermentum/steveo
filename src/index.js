@@ -2,6 +2,7 @@
 import 'babel-polyfill';
 
 import kafka from 'no-kafka';
+import path from 'path';
 import NULL_LOGGER from 'null-logger';
 import Task from './task';
 import Registry from './registry';
@@ -9,6 +10,7 @@ import runner from './runner';
 import metric from './metric';
 import producerFactory from './producer';
 import Config from './config';
+import Loader from './loader';
 import { build } from './pool';
 
 import type { ITask, Configuration, Callback, Pool, Logger, ISteveo, IRegistry, IEvent, IMetric, Attribute } from '../types';
@@ -32,8 +34,28 @@ class Steveo implements ISteveo {
     this.events = this.registry.events;
   }
 
-  static build() {
+  static build(config: ?string = null, pattern: ?string = null) {
+    const root = process.cwd();
+    let configPath = config;
 
+    if (!configPath) {
+      configPath = path.join(root, '.steveo.json');
+    }
+
+    configPath = path.resolve(configPath);
+
+    // $FlowFixMe
+    const configuration = require(configPath); // eslint-disable-line
+
+    let searchPattern: string = pattern || configuration.pattern;
+    if (!searchPattern) {
+      searchPattern = `${root}/tasks/**/*.js`;
+    }
+
+    const steveo = new Steveo(configuration);
+    const loader = new Loader(steveo, root, searchPattern);
+    loader.load();
+    return steveo;
   }
 
   task(name: string, callback: Callback, attributes: Array<Attribute> = []): ITask {

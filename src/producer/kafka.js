@@ -20,9 +20,9 @@ class KafkaProducer extends BaseProducer implements IProducer {
     this.producer.init();
   }
 
-  getPayload(msg: Object, topic: string) {
-    const timestamp = moment().unix();
-    const payload = JSON.stringify(Object.assign({}, msg, { timestamp }));
+  getPayload(msg: Object, topic: string) : Object {
+    const timestamp: number = moment().unix();
+    const payload: string = JSON.stringify(Object.assign({}, msg, { timestamp }));
     const size = Buffer.from(payload, 'utf-8');
     this.logger.info('Payload Size:', topic, size.length);
     return {
@@ -34,7 +34,7 @@ class KafkaProducer extends BaseProducer implements IProducer {
     };
   }
 
-  async send(topic: string, payload: Object) {
+  async send(topic: string, payload: Object) : Promise<void> {
     const data = this.getPayload(payload, topic);
     const sendParams = {
       retries: {

@@ -101,10 +101,17 @@ export interface IRegistry {
   getTask(topic: string): Task; //eslint-disable-line
 }
 
+export interface IAttribute {
+  name: string;
+  value: string;
+  dataType: string;
+}
+
 export interface ITask {
   handler: Callback;
   topic: string;
   name: string;
+  attributes: Array<IAttribute>;
   publish(payload: Object | Array<Object>): Promise<void>;
 }
 

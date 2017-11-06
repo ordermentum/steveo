@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import sinon from 'sinon';
 import Steveo, { decorate } from '../src';
 
 describe('Index', () => {

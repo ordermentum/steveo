@@ -44,7 +44,7 @@ class Registry implements IRegistry {
   }
 
   getTopicName(topic: string): string {
-    let topicName = topic;
+    let topicName: string = topic;
 
     if (this.topicName && typeof this.topicName === 'function') {
       topicName = this.topicName(topic);
@@ -53,7 +53,7 @@ class Registry implements IRegistry {
     return topicName;
   }
 
-  removeTask(task: Task) {
+  removeTask(task: Task) : void {
     this.events.emit('task_removed', task);
     delete this.registeredTasks[task.topic];
   }

@@ -8,7 +8,7 @@ class Loader {
     this.instance = instance;
   }
 
-  load() {
+  load(): void {
     glob.sync(this.pattern).forEach((location) => {
       const handler = require(path.join(this.root, location)); // eslint-disable-line
       this.instance.registry.addNewTask({ task: handler.taskName, subscribe: handler });

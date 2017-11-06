@@ -7,6 +7,9 @@ const logger = console;
 (async () => {
   const steveo = Steveo.build();
 
+  console.log('🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴');
+  console.log('steveo:', steveo);
+
   steveo.events.on('producer_failure', (topic, ex) => {
     logger.log('Failed to produce message', topic, ex);
   });
@@ -22,8 +25,8 @@ const logger = console;
       setTimeout(async () => {
         counter += 1;
         logger.log('Produce: Message ', counter);
-        await exampleTask.publish([{ payload: `Message ${counter}` }]);
-        await spamTask.publish([{ payload: `Message ${counter}` }]);
+        await exampleTask.publish([{ payload: `Message ${counter}` }]).catch(console.error);
+        await spamTask.publish([{ payload: `Message ${counter}` }]).catch(console.error);
         produceMessages();
       }, 100);
     }

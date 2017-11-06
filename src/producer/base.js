@@ -9,11 +9,11 @@ class BaseProducer implements IProducer {
 
   constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {
     this.config = config;
-    this.logger = logger;
     this.registry = registry;
+    this.logger = logger;
   }
 
-  async publish(topic: string, payload: Object | Array<Object>) {
+  async publish(topic: string, payload: Object | Array<Object>) : Promise<void> {
     let params = payload;
     if (!Array.isArray(payload)) {
       params = [payload];

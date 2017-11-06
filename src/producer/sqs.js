@@ -3,7 +3,7 @@ import moment from 'moment';
 import sqsConf from '../config/sqs';
 
 import BaseProducer from './base';
-import type { Configuration, Logger, IProducer, IRegistry, sqsUrls } from '../../types';
+import type { Configuration, ITask, Logger, IProducer, IRegistry, sqsUrls } from '../../types';
 
 class SqsProducer extends BaseProducer implements IProducer {
   sqsUrls: sqsUrls;
@@ -25,8 +25,8 @@ class SqsProducer extends BaseProducer implements IProducer {
   }
 
   getPayload(msg: Object, topic: string) : Object {
-    const timestamp = moment().unix();
-    const task = this.registry.getTask(topic);
+    const timestamp: Number = moment().unix();
+    const task: ITask = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
     const messageAttributes = {
       Timestamp: {
@@ -50,7 +50,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     };
   }
 
-  async send(topic: string, payload: Object) {
+  async send(topic: string, payload: Object) : Promise<void> {
     try {
       if (!this.sqsUrls[topic]) {
         this.sqsUrls[topic] = await this.initialize(topic);

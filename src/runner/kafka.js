@@ -50,7 +50,7 @@ class KafkaRunner extends BaseRunner implements IRunner {
     }
   }
 
-  process(topics: Array<string>) {
+  process(topics: Array<string>) : Promise<void> {
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.info('initializing consumer', subscriptions);
     return this.consumer.init([{

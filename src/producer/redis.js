@@ -5,7 +5,7 @@ import redisConf from '../config/redis';
 
 import BaseProducer from './base';
 
-import type { Configuration, Logger, IProducer, IRegistry } from '../../types';
+import type { Configuration, ITask, Logger, IProducer, IRegistry } from '../../types';
 
 class RedisProducer extends BaseProducer implements IProducer {
   constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {
@@ -19,22 +19,24 @@ class RedisProducer extends BaseProducer implements IProducer {
       vt: this.config.visibilityTimeout,
       maxsize: this.config.redisMessageMaxsize,
     };
-    const queues = await this.producer.listQueuesAsync();
+    const queues: Array<string> = await this.producer.listQueuesAsync();
     if (!queues.find(q => q === topic)) {
-      this.producer.createQueueAsync(params);
+      await this.producer.createQueueAsync(params);
     }
   }
 
   getPayload(msg: Object, topic: string) : Object {
-    const timestamp = moment().unix();
-    const task = this.registry.getTask(topic);
+    const timestamp: Number = moment().unix();
+    const task: ITask = this.registry.getTask(topic);
+    console.log('🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴');
+    console.log('task:', task);
     return {
       qname: task.topic,
       message: JSON.stringify(Object.assign({}, msg, { timestamp })),
     };
   }
 
-  async send(topic: string, payload: Object) {
+  async send(topic: string, payload: Object) : Promise<void> {
     const redisData = this.getPayload(payload, topic);
     try {
       const data = await this.producer.sendMessageAsync(redisData);

@@ -1,33 +1,10 @@
 #!/usr/bin/env node
 
 const program = require('commander');
-const path = require('path');
-const { default: Loader } = require('../lib/loader');
-const { default: Registry } = require('../lib/registry');
 const { default: Steveo } = require('../lib/');
 
-const handler = async (pattern, config, queues) => {
-  const root = process.cwd();
-
-  let configPath = config;
-  if (!configPath) {
-    configPath = path.join(root, '.steveo.json');
-  }
-
-  configPath = path.resolve(configPath);
-  const configuration = require(configPath); // eslint-disable-line
-  const searchPattern = pattern || configuration.pattern;
-  if (!searchPattern) {
-    console.error('Unknown Pattern');
-    return process.exit(1);
-  }
-
-  const steveo = new Steveo(configuration);
-  const registry = Registry.getInstance();
-  registry.producer = steveo.producer;
-  const loader = new Loader(steveo, root, searchPattern);
-  loader.load();
-
+const handler = async (pattern = null, config = null, queues = false) => {
+  const steveo = Steveo.build(config, pattern);
   const runner = steveo.runner();
 
   if (queues) {
@@ -35,6 +12,7 @@ const handler = async (pattern, config, queues) => {
   }
 
   await runner.process();
+  return true;
 };
 
 program

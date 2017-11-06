@@ -74,7 +74,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     }));
   }
 
-  async dequeue(topic: string) {
+  async dequeue(topic: string) : Promise<void> {
     const data = await this.redis.receiveMessageAsync({ qname: topic });
 
     if (Object.keys(data).length) {
@@ -98,7 +98,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
   }
 
-  async createQueue({ topic, visibilityTimeout = 604800, maxsize = -1 }: CreateRedisTopic) {
+  async createQueue({ topic, visibilityTimeout = 604800, maxsize = -1 }: CreateRedisTopic) : Promise<void> {
     this.logger.info(`creating queue ${topic}`);
 
     const queues = await this.redis.listQueuesAsync();
