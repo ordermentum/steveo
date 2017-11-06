@@ -80,7 +80,6 @@ export interface IEvent {
 export interface IProducer {
   config: Configuration;
   logger: Logger;
-  producer: Producer;
   initialize(topic: ?string): ?Promise<void>;
   publish(topic: string, params: Array<mixed> | mixed): Promise<void>;
   getPayload(msg: Object, topic: string): Object;
@@ -91,10 +90,12 @@ export interface IRegistry {
   registeredTasks: Object;
   events: IEvent;
   producer: ?IProducer;
+  topicName: Callback;
 
+  setProducer(producer: IProducer): void;
   addNewTask(task: Task): void;
   removeTask(task: Task): void;
-  publish(topic: string, payload: Object) : Promise<void>;
+  publish(topic: string, payload: Array<mixed> | mixed) : Promise<void>;
   getTopicName(name: string) : string;
   getTopics(): Array<string>;
   getTask(topic: string): Task; //eslint-disable-line

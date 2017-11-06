@@ -1,12 +1,14 @@
 // @flow
 
+import BaseProducer from './producer/base';
 import KafkaProducer from './producer/kafka';
 import SqsProducer from './producer/sqs';
 import RedisProducer from './producer/redis';
+
 import type { IProducer, Configuration, IRegistry, Logger } from '../types';
 
 type ProducersType = {
-  [key: string]: typeof KafkaProducer | typeof SqsProducer | typeof RedisProducer,
+  [key: string]: BaseProducer,
 };
 
 const Producers: ProducersType = {
@@ -15,11 +17,14 @@ const Producers: ProducersType = {
   redis: RedisProducer,
 };
 
-const getProducer = (
+function getProducer(
   type: string,
   config: Configuration,
   registry: IRegistry,
   logger: Logger,
-): IProducer => new Producers[type](config, registry, logger);
+): IProducer {
+  const producer: IProducer = new Producers[type](config, registry, logger);
+  return producer;
+}
 
 export default getProducer;

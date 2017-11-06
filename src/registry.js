@@ -23,12 +23,16 @@ class Registry implements IRegistry {
     this.registeredTasks[task.topic] = task;
   }
 
-  static getInstance() {
+  static getInstance() : IRegistry {
     if (!instance) {
       instance = new Registry();
     }
 
     return instance;
+  }
+
+  setProducer(producer: IProducer) {
+    this.producer = producer;
   }
 
   publish(topic: string, payload: Array<mixed> | mixed) {

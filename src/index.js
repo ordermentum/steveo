@@ -7,17 +7,16 @@ import Task from './task';
 import Registry from './registry';
 import runner from './runner';
 import metric from './metric';
-import producer from './producer';
+import producerFactory from './producer';
 import Config from './config';
 import { build } from './pool';
 
-import type { ITask, Configuration, Callback, IProducer, Pool, Logger, ISteveo, IRegistry, IEvent, IMetric, Attribute } from '../types';
+import type { ITask, Configuration, Callback, Pool, Logger, ISteveo, IRegistry, IEvent, IMetric, Attribute } from '../types';
 
 class Steveo implements ISteveo {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
-  producer: IProducer;
   metric: IMetric;
   events: IEvent;
   pool: Pool;
@@ -25,11 +24,11 @@ class Steveo implements ISteveo {
   constructor(configuration: Configuration, logger: Logger = NULL_LOGGER) {
     this.config = new Config(configuration);
     this.logger = logger;
-    this.registry = Registry.getInstance();
     this.metric = metric(this.config.engine, this.config, this.logger);
     this.pool = build(this.config.workerConfig);
-    this.producer = producer(this.config.engine, this.config, this.registry, this.logger);
-    this.registry.producer = producer;
+    const producer = producerFactory(this.config.engine, this.config, this.registry, this.logger);
+    this.registry = Registry.getInstance();
+    this.registry.setProducer(producer);
     this.events = this.registry.events;
   }
 
