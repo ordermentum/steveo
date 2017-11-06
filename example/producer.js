@@ -5,7 +5,7 @@ const spamTask = require('./tasks/spam_task'); // eslint-disable-line
 const logger = console;
 
 (async () => {
-  const steveo = Steveo(config, logger)();
+  const steveo = Steveo.build();
 
   steveo.events.on('producer_failure', (topic, ex) => {
     logger.log('Failed to produce message', topic, ex);

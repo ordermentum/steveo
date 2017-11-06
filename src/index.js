@@ -32,6 +32,10 @@ class Steveo implements ISteveo {
     this.events = this.registry.events;
   }
 
+  static build() {
+
+  }
+
   task(name: string, callback: Callback, attributes: Array<Attribute> = []): ITask {
     const task = new Task(name, callback, this.registry, attributes);
     return task;
