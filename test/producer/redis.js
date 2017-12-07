@@ -49,7 +49,9 @@ describe('Redis Producer', () => {
     });
     const sendMessageStub = sinon.stub().resolves({ hi: 'hello' });
     sinon.stub(p, 'initialize').throws();
-    p.producer = { sendMessageAsync: sendMessageStub };
+    const getQueueAttributesAsyncStub = sinon.stub.resolves();
+    p.producer = { sendMessageAsync: sendMessageStub,
+      getQueueAttributesAsync: getQueueAttributesAsyncStub };
     p.sqsUrls = {};
     let err = false;
     try {
@@ -78,7 +80,10 @@ describe('Redis Producer', () => {
     });
     const sendMessageStub = sinon.stub().throws({ error: 'mate' });
     sinon.stub(p, 'initialize').resolves();
-    p.producer = { sendMessageAsync: sendMessageStub };
+    const getQueueAttributesAsyncStub = sinon.stub.resolves();
+    p.producer = { sendMessageAsync: sendMessageStub,
+      getQueueAttributesAsync: getQueueAttributesAsyncStub };
+    p.sqsUrls = {};
     p.sqsUrls = {};
     let err = false;
     try {
