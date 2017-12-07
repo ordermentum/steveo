@@ -18,12 +18,12 @@ class BaseRunner {
 
   createQueues() : Promise<any> {
     const topics = this.registry.getTopics();
-    this.logger.info('creating queues:', topics);
+    this.logger.debug('creating queues:', topics);
     return Promise.all(topics.map(topic => this.createQueue({ topic })));
   }
 
   createQueue() : Promise<any> {
-    this.logger.info('createQueue API call');
+    this.logger.debug('createQueue API call');
     return Promise.resolve();
   }
 }

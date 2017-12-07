@@ -44,9 +44,9 @@ class RedisProducer implements IProducer {
     const redisData = this.getPayload(payload, topic);
     try {
       const data = await this.producer.sendMessageAsync(redisData);
-      this.logger.info('Redis Publish Data', redisData, 'id', data);
+      this.logger.debug('Redis Publish Data', redisData, 'id', data);
       const queueAttributes = await this.producer.getQueueAttributesAsync({ qname: topic });
-      this.logger.info('Queue status', queueAttributes);
+      this.logger.debug('Queue status', queueAttributes);
       this.registry.events.emit('producer_success', topic, payload);
     } catch (ex) {
       this.logger.error('Error while sending Redis payload', topic, ex);

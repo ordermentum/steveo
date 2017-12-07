@@ -70,7 +70,7 @@ class SqsProducer implements IProducer {
     const sqsData = this.getPayload(payload, topic);
     try {
       const data = await this.producer.sendMessageAsync(sqsData);
-      this.logger.info('SQS Publish Data', data);
+      this.logger.debug('SQS Publish Data', data);
       this.registry.events.emit('producer_success', topic, payload);
     } catch (ex) {
       this.logger.error('Error while sending SQS payload', topic, ex);

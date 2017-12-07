@@ -29,7 +29,7 @@ class KafkaProducer implements IProducer {
     const timestamp = moment().unix();
     const payload = JSON.stringify(Object.assign({}, msg, { timestamp }));
     const size = Buffer.from(payload, 'utf-8');
-    this.logger.info('Payload Size:', topic, size.length);
+    this.logger.debug('Payload Size:', topic, size.length);
     return {
       timestamp,
       topic,

@@ -44,12 +44,12 @@ const steveoConfig = {
   const steveo = Steveo(config, logger)();
 
   steveo.events.on('runner_failure', (topic, ex) => {
-    logger.info('Failed to call subscribe', topic, ex);
+    logger.debug('Failed to call subscribe', topic, ex);
   });
 
   // subscribe Call for first task
   const subscribe = async (payload) => {
-    logger.info('Payload from producer', payload);
+    logger.debug('Payload from producer', payload);
   };
 
   // create first Task
@@ -59,6 +59,6 @@ const steveoConfig = {
   // initialize consumer
   await steveo.runner().process(['test-topic']);
 })().catch((ex) => {
-  logger.info('Exception', ex);
+  logger.debug('Exception', ex);
   process.exit();
 });

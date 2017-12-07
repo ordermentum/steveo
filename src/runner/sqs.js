@@ -29,7 +29,7 @@ const deleteMessage = async ({
     const data = await instance.deleteMessageAsync(deleteParams);
     return data;
   } catch (ex) {
-    logger.info('sqs deletion error', ex, topic, message);
+    logger.debug('sqs deletion error', ex, topic, message);
     throw ex;
   }
 };
@@ -60,7 +60,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       try {
         params = JSON.parse(m.Body);
         this.registry.events.emit('runner_receive', topic, params);
-        this.logger.info('Deleting message', topic, params);
+        this.logger.debug('Deleting message', topic, params);
         await deleteMessage({ // eslint-disable-line
           instance: this.sqs,
           topic,
@@ -69,7 +69,7 @@ class SqsRunner extends BaseRunner implements IRunner {
           logger: this.logger,
         });
         const task = this.registry.getTask(topic);
-        this.logger.info('Start subscribe', topic, params);
+        this.logger.debug('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
         this.registry.events.emit('runner_complete', topic, params);
       } catch (ex) {
@@ -84,7 +84,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     const data = await this.sqs.receiveMessageAsync(params);
 
     if (data.Messages) {
-      this.logger.info('Message from sqs', data);
+      this.logger.debug('Message from sqs', data);
       try {
         await this.receive(data.Messages, topic);
       } catch (ex) {
@@ -100,7 +100,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     await Promise.all(subscriptions.map(async (topic) => {
       const queueURL = await this.getQueueUrl(topic);
       if (queueURL) {
-        this.logger.info(`starting processing of ${topic} with ${queueURL}`);
+        this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
         const params = {
           MaxNumberOfMessages: this.config.maxNumberOfMessages,
           QueueUrl: queueURL,

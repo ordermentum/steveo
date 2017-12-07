@@ -25,7 +25,7 @@ const deleteMessage = async ({
     const data = await instance.deleteMessageAsync(deleteParams);
     return data;
   } catch (ex) {
-    logger.info('redis deletion error', ex, topic, messageId);
+    logger.debug('redis deletion error', ex, topic, messageId);
     throw ex;
   }
 };
@@ -54,7 +54,7 @@ class RedisRunner extends BaseRunner implements IRunner {
       try {
         params = JSON.parse(m.message);
         this.registry.events.emit('runner_receive', topic, params);
-        this.logger.info('Deleting message', topic, params);
+        this.logger.debug('Deleting message', topic, params);
         await deleteMessage({ // eslint-disable-line
           instance: this.redis,
           topic,
@@ -63,7 +63,7 @@ class RedisRunner extends BaseRunner implements IRunner {
         });
 
         const task = this.registry.getTask(topic);
-        this.logger.info('Start subscribe', topic, params);
+        this.logger.debug('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
         this.registry.events.emit('runner_complete', topic, params);
       } catch (ex) {
@@ -78,7 +78,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     const data = await this.redis.receiveMessageAsync({ qname: topic });
 
     if (Object.keys(data).length) {
-      this.logger.info('Message from redis', data);
+      this.logger.debug('Message from redis', data);
       try {
         await this.receive([data], topic);
       } catch (ex) {
@@ -99,13 +99,13 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async createQueue({ topic, visibilityTimeout = 604800, maxsize = -1 }: CreateRedisTopic) {
-    this.logger.info(`creating queue ${topic}`);
+    this.logger.debug(`creating queue ${topic}`);
 
     const queues = await this.redis.listQueuesAsync();
     const exists = queues.find(q => q === topic);
 
     if (exists) {
-      this.logger.info(`${topic} already exists`);
+      this.logger.debug(`${topic} already exists`);
       return true;
     }
 

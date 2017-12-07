@@ -13,7 +13,7 @@ class RedisMetric implements IMetric {
   }
 
   async initialize() {
-    this.logger.info('not implmented');
+    this.logger.debug('not implmented');
   }
 }
 

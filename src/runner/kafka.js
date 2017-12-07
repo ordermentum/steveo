@@ -39,9 +39,9 @@ class KafkaRunner extends BaseRunner implements IRunner {
         this.registry.events.emit('runner_receive', topic, params);
         await this.consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' }); // eslint-disable-line
         const task = this.registry.getTask(topic);
-        this.logger.info('Start subscribe', topic, params);
+        this.logger.debug('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
-        this.logger.info('Finish subscribe', topic, params);
+        this.logger.debug('Finish subscribe', topic, params);
         this.registry.events.emit('runner_complete', topic, params);
       } catch (ex) {
         this.logger.error('Error while executing consumer callback ', { params, topic, error: ex });
@@ -52,7 +52,7 @@ class KafkaRunner extends BaseRunner implements IRunner {
 
   process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
-    this.logger.info('initializing consumer', subscriptions);
+    this.logger.debug('initializing consumer', subscriptions);
     return this.consumer.init([{
       subscriptions,
       handler: this.receive,
