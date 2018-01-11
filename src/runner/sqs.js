@@ -26,10 +26,12 @@ const deleteMessage = async ({
     ReceiptHandle: message.ReceiptHandle,
   };
   try {
+    logger.debug('Deleting Message from Queue URL', deleteParams);
     const data = await instance.deleteMessageAsync(deleteParams);
+    logger.debug('returned data', data);
     return data;
   } catch (ex) {
-    logger.debug('sqs deletion error', ex, topic, message);
+    logger.error('sqs deletion error', ex, topic, message);
     throw ex;
   }
 };
@@ -68,9 +70,11 @@ class SqsRunner extends BaseRunner implements IRunner {
           sqsUrls: this.sqsUrls,
           logger: this.logger,
         });
+        this.logger.debug('Message Deleted', topic, params);
         const task = this.registry.getTask(topic);
         this.logger.debug('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
+        this.logger.debug('Completed subscribe', topic, params);
         this.registry.events.emit('runner_complete', topic, params);
       } catch (ex) {
         this.logger.error('Error while executing consumer callback ', { params, topic, error: ex });

@@ -1,4 +1,5 @@
 // @flow
+import crypto from 'crypto';
 import moment from 'moment';
 import sqsConf from '../config/sqs';
 
@@ -68,6 +69,10 @@ class SqsProducer implements IProducer {
     }
 
     const sqsData = this.getPayload(payload, topic);
+    const md5sum = crypto.createHash('md5');
+    const hash = md5sum.update(JSON.stringify(sqsData)).digest('hex');
+    this.logger.debug(`sending data: ${hash}`, sqsData);
+
     try {
       const data = await this.producer.sendMessageAsync(sqsData);
       this.logger.debug('SQS Publish Data', data);
