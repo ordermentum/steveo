@@ -99,7 +99,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async process(topics: ?Array<string> = null) {
     const subscriptions = this.getActiveSubsciptions(topics);
-    this.logger.debug(`starting poll for messages ${topics ? topics.join(',') : 'all'}`);
+    this.logger.debug(`Polling for messages (${topics ? topics.join(',') : 'all'})`);
 
     await Promise.all(subscriptions.map(async (topic) => {
       const queueURL = await this.getQueueUrl(topic);
