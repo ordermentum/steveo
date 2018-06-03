@@ -1,13 +1,16 @@
 import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 
-import type { Logger, IRegistry } from '../../types';
+import type {
+  Logger,
+  IRegistry,
+} from '../../types';
 
 class BaseRunner {
   registry: IRegistry;
   logger: Logger;
 
-  getActiveSubsciptions(topics: Array<string> = null) : Array<string> {
+  getActiveSubsciptions(topics: Array < string > = null): Array < string > {
     const subscriptions = this.registry.getTopics();
     const filtered = topics ? intersection(topics, subscriptions) : subscriptions;
     if (this.config.shuffleQueue) {
@@ -16,13 +19,17 @@ class BaseRunner {
     return filtered;
   }
 
-  createQueues() : Promise<any> {
+  createQueues(): Promise < any > {
     const topics = this.registry.getTopics();
     this.logger.debug('creating queues:', topics);
-    return Promise.all(topics.map(topic => this.createQueue({ topic })));
+    return Promise.all(topics.map(topic => this.createQueue({
+      topic,
+      receiveMessageWaitTimeSeconds: this.config.receiveMessageWaitTimeSeconds,
+      messageRetentionPeriod: this.config.messageRetentionPeriod,
+    })));
   }
 
-  createQueue() : Promise<any> {
+  createQueue(): Promise < any > {
     this.logger.debug('createQueue API call');
     return Promise.resolve();
   }
