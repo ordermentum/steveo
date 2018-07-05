@@ -47,6 +47,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger = nullLogger) {
     super();
+    this.errorCount = 0;
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -97,7 +98,22 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
   }
 
-  async process(topics: ?Array<string> = null) {
+  async process(topics: ?Array<string> = null, preprocess: any, healthCheck: any, terminationCheck: any) {
+    if (await terminationCheck()) {
+      process.exit(1);
+    }
+
+    try {
+      await healthCheck();
+    } catch (e) {
+      this.errorCount += 1;
+      if (this.errorcount > 5) {
+        return setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+      }
+    }
+
+    await preprocess();
+
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug(`Polling for messages (${topics ? topics.join(',') : 'all'})`);
 
