@@ -1,13 +1,13 @@
 import { expect } from 'chai';
-import BaseRunner from '../../src/base/base_runner';
 import sinon from 'sinon';
+import BaseRunner from '../../src/base/base_runner';
 
-describe('base_runner', function() {
+describe('base_runner', function () { // eslint-disable-line
   beforeEach(() => {
     this.sandbox = sinon.sandbox.create();
   });
 
-  afterEach(() => this.sandbox.restore())
+  afterEach(() => this.sandbox.restore());
 
   describe('checks', () => {
     it('resolves when there are no hooks', async () => {
