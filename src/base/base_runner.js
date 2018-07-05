@@ -4,13 +4,47 @@ import shuffle from 'lodash.shuffle';
 import type {
   Logger,
   IRegistry,
+  Hooks,
 } from '../../types';
 
 class BaseRunner {
+  preProcess: () => Promise<void>;
+  healthCheck: () => Promise<void>;
+  terminationCheck: () => Promise<boolean>;
+  errorCount: number;
   registry: IRegistry;
   logger: Logger;
 
-  getActiveSubsciptions(topics: Array < string > = null): Array < string > {
+  constructor(hooks: Hooks = {}) {
+    this.errorCount = 0;
+    this.preProcess = hooks.preProcess || function () { return Promise.resolve(); };
+    this.healthCheck = hooks.healthCheck || function () { return Promise.resolve(); };
+    this.terminationCheck = hooks.terminationCheck || function () { return Promise.resolve(false); };
+    this.logger = console.log.bind(console);
+  }
+
+  async checks() {
+    if (await this.terminationCheck()) {
+      this.logger.info('Terminating due to termination check');
+      process.exit(1);
+    }
+
+    try {
+      await this.healthCheck();
+    } catch (e) {
+      this.logger.info(`Encountered healthcheck errors: ${e}`);
+      this.errorCount += 1;
+      if (this.errorCount > 5) {
+        this.logger.info(`Terminating due to healthcheck count too high`);
+        process.exit(1);
+      }
+      return setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+    }
+
+    await this.preProcess();
+  }
+
+  getActiveSubsciptions(topics: ?Array < string > = null): Array < string > {
     const subscriptions = this.registry.getTopics();
     const filtered = topics ? intersection(topics, subscriptions) : subscriptions;
     if (this.config.shuffleQueue) {

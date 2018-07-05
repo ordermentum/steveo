@@ -2,7 +2,7 @@
 import nullLogger from 'null-logger';
 import Kafka from 'no-kafka';
 import BaseRunner from '../base/base_runner';
-import type { IRunner, Pool, Configuration, Logger, Consumer, IRegistry } from '../../types';
+import type { Hooks, IRunner, Pool, Configuration, Logger, Consumer, IRegistry } from '../../types';
 
 class KafkaRunner extends BaseRunner implements IRunner {
   config: Configuration;
@@ -11,8 +11,8 @@ class KafkaRunner extends BaseRunner implements IRunner {
   consumer: Consumer;
   pool: Pool;
 
-  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger = nullLogger) {
-    super();
+  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger = nullLogger, hooks: Hooks = {}) {
+    super(hooks);
     this.config = config;
     this.registry = registry;
     this.logger = logger;

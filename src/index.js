@@ -11,7 +11,7 @@ import producer from './base/producer';
 import Config from './config';
 import { build } from './base/pool';
 
-import type { ITask, Configuration, Callback, Pool, Logger, ISteveo, IRegistry, IEvent, IMetric, Attribute } from '../types';
+import type { Hooks, ITask, Configuration, Callback, Pool, Logger, ISteveo, IRegistry, IEvent, IMetric, Attribute } from '../types';
 
 class Steveo implements ISteveo {
   config: Configuration;
@@ -21,14 +21,16 @@ class Steveo implements ISteveo {
   metric: IMetric;
   events: IEvent;
   pool: Pool;
+  hooks: Hooks;
 
-  constructor(configuration: Configuration, logger :Logger = NULL_LOGGER) {
+  constructor(configuration: Configuration, logger :Logger = NULL_LOGGER, hooks: Hooks) {
     this.logger = logger;
     this.registry = new Registry();
     this.config = new Config(configuration);
     this.metric = metric(this.config.engine, this.config, this.logger);
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
+    this.hooks = hooks;
   }
 
   task(topic: string, callBack: Callback, attributes: Array<Attribute> = []): ITask {
@@ -41,7 +43,7 @@ class Steveo implements ISteveo {
   }
 
   runner() {
-    return runner(this.config.engine, this.config, this.registry, this.pool, this.logger);
+    return runner(this.config.engine, this.config, this.registry, this.pool, this.logger, this.hooks);
   }
 
   customTopicName = (cb: Callback) => {
@@ -53,7 +55,7 @@ class Steveo implements ISteveo {
   }
 }
 
-export default (config: Configuration, logger: Logger) => () => new Steveo(config, logger);
+export default (config: Configuration, logger: Logger, hooks: Hooks) => () => new Steveo(config, logger, hooks);
 
 export const kafkaCompression = {
   SNAPPY: kafka.COMPRESSION_SNAPPY,
