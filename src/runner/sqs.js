@@ -46,7 +46,13 @@ class SqsRunner extends BaseRunner implements IRunner {
   pool: Pool;
   errorCount: number;
 
-  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger = nullLogger, hooks: Hooks = {}) {
+  constructor(
+    config: Configuration,
+    registry: IRegistry,
+    pool: Pool,
+    logger: Logger = nullLogger,
+    hooks: Hooks = {},
+  ) {
     super(hooks);
     this.config = config;
     this.registry = registry;
@@ -99,7 +105,9 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics: ?Array<string> = null) {
-    await this.checks(() => setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval));
+    const loop =
+      () => setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+    await this.checks(loop);
 
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug(`Polling for messages (${topics ? topics.join(',') : 'all'})`);
@@ -119,7 +127,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         this.logger.error(`Queue URL ${topic} not found`);
       }
     }));
-    setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+    loop();
   }
 
   async getQueueUrl(topic: string) {

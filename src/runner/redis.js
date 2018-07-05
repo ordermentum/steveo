@@ -38,7 +38,13 @@ class RedisRunner extends BaseRunner implements IRunner {
   redis: Object;
   pool: Pool;
 
-  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger, hooks: Hooks = {}) {
+  constructor(
+    config: Configuration,
+    registry: IRegistry,
+    pool: Pool,
+    logger: Logger,
+    hooks: Hooks = {},
+  ) {
     super(hooks);
     this.config = config;
     this.registry = registry;
@@ -88,7 +94,9 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics: ?Array<string> = null) {
-    await this.checks(() => setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval));
+    const loop =
+      () => setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+    await this.checks(loop);
     this.logger.debug(`starting poll for messages ${topics ? topics.join(',') : 'all'}`);
     const subscriptions = this.getActiveSubsciptions(topics);
 
@@ -96,7 +104,7 @@ class RedisRunner extends BaseRunner implements IRunner {
       await this.dequeue(topic);
     }));
 
-    setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+    loop();
   }
 
   async createQueue({ topic, visibilityTimeout = 604800, maxsize = -1 }: CreateRedisTopic) {

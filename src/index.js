@@ -43,7 +43,14 @@ class Steveo implements ISteveo {
   }
 
   runner() {
-    return runner(this.config.engine, this.config, this.registry, this.pool, this.logger, this.hooks);
+    return runner(
+      this.config.engine,
+      this.config,
+      this.registry,
+      this.pool,
+      this.logger,
+      this.hooks,
+    );
   }
 
   customTopicName = (cb: Callback) => {
@@ -55,7 +62,11 @@ class Steveo implements ISteveo {
   }
 }
 
-export default (config: Configuration, logger: Logger, hooks: Hooks) => () => new Steveo(config, logger, hooks);
+export default (
+  config: Configuration,
+  logger: Logger,
+  hooks: Hooks,
+) => () => new Steveo(config, logger, hooks);
 
 export const kafkaCompression = {
   SNAPPY: kafka.COMPRESSION_SNAPPY,

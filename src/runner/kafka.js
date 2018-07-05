@@ -11,7 +11,13 @@ class KafkaRunner extends BaseRunner implements IRunner {
   consumer: Consumer;
   pool: Pool;
 
-  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger = nullLogger, hooks: Hooks = {}) {
+  constructor(
+    config: Configuration,
+    registry: IRegistry,
+    pool: Pool,
+    logger: Logger = nullLogger,
+    hooks: Hooks = {},
+  ) {
     super(hooks);
     this.config = config;
     this.registry = registry;

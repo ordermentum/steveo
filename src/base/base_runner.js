@@ -17,15 +17,17 @@ class BaseRunner {
 
   constructor(hooks: Hooks = {}) {
     this.errorCount = 0;
-    this.preProcess = hooks.preProcess || function () { return Promise.resolve(); };
-    this.healthCheck = hooks.healthCheck || function () { return Promise.resolve(); };
-    this.terminationCheck = hooks.terminationCheck || function () { return Promise.resolve(false); };
+    this.preProcess = hooks.preProcess || (() => Promise.resolve());
+    this.healthCheck = hooks.healthCheck || (() => Promise.resolve());
+    this.terminationCheck = hooks.terminationCheck || (() => Promise.resolve(false));
+    /* eslint-disable no-console */
     this.logger = {
       debug: console.log.bind(console),
       info: console.log.bind(console),
-      warn: console.log.bind(console),
+      trace: console.log.bind(console),
       error: console.log.bind(console),
     };
+    /* eslint-enable no-console */
   }
 
   async checks(onFail) {
@@ -40,13 +42,14 @@ class BaseRunner {
       this.logger.info(`Encountered healthcheck errors: ${e}`);
       this.errorCount += 1;
       if (this.errorCount > 5) {
-        this.logger.info(`Terminating due to healthcheck count too high`);
+        this.logger.info('Terminating due to healthcheck count too high');
         return process.exit(1);
       }
       return onFail();
     }
 
     await this.preProcess();
+    return undefined;
   }
 
   getActiveSubsciptions(topics: ?Array < string > = null): Array < string > {
