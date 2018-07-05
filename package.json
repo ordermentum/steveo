@@ -8,7 +8,7 @@
   "repository": "git@github.com:ordermentum/steveo.git",
   "scripts": {
     "test": "NODE_ENV=test nyc npm run spec",
-    "spec": "./node_modules/.bin/_mocha -R spec ./test/test_helper.js --compilers js:babel-core/register --recursive test/**/*",
+    "spec": "./node_modules/.bin/_mocha --recursive test/**/*",
     "lint": "./node_modules/.bin/eslint src test",
     "build:coverage": "nyc check-coverage --statements 70 --branches 70 --functions 60 --lines 70",
     "autotest": "./node_modules/.bin/_mocha --watch",

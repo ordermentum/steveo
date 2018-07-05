@@ -88,7 +88,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics: ?Array<string> = null) {
-    await this.checks()
+    await this.checks(() => setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval));
     this.logger.debug(`starting poll for messages ${topics ? topics.join(',') : 'all'}`);
     const subscriptions = this.getActiveSubsciptions(topics);
 

@@ -20,13 +20,18 @@ class BaseRunner {
     this.preProcess = hooks.preProcess || function () { return Promise.resolve(); };
     this.healthCheck = hooks.healthCheck || function () { return Promise.resolve(); };
     this.terminationCheck = hooks.terminationCheck || function () { return Promise.resolve(false); };
-    this.logger = console.log.bind(console);
+    this.logger = {
+      debug: console.log.bind(console),
+      info: console.log.bind(console),
+      warn: console.log.bind(console),
+      error: console.log.bind(console),
+    };
   }
 
-  async checks() {
+  async checks(onFail) {
     if (await this.terminationCheck()) {
       this.logger.info('Terminating due to termination check');
-      process.exit(1);
+      return process.exit(1);
     }
 
     try {
@@ -36,9 +41,9 @@ class BaseRunner {
       this.errorCount += 1;
       if (this.errorCount > 5) {
         this.logger.info(`Terminating due to healthcheck count too high`);
-        process.exit(1);
+        return process.exit(1);
       }
-      return setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+      return onFail();
     }
 
     await this.preProcess();
