@@ -1,5 +1,6 @@
 import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
+import logger from 'null-logger';
 
 import type {
   Logger,
@@ -21,23 +22,19 @@ class BaseRunner {
     this.healthCheck = hooks.healthCheck || (() => Promise.resolve());
     this.terminationCheck = hooks.terminationCheck || (() => Promise.resolve(false));
     /* eslint-disable no-console */
-    this.logger = {
-      debug: console.log.bind(console),
-      info: console.log.bind(console),
-      trace: console.log.bind(console),
-      error: console.log.bind(console),
-    };
+    this.logger = logger;
     /* eslint-enable no-console */
   }
 
   async checks(onFail) {
-    if (await this.terminationCheck()) {
-      this.logger.info('Terminating due to termination check');
-      return process.exit(1);
-    }
-
     try {
+      if (await this.terminationCheck()) {
+        this.logger.info('Terminating due to termination check');
+        return process.exit(1);
+      }
       await this.healthCheck();
+      await this.preProcess();
+      return undefined;
     } catch (e) {
       this.logger.info(`Encountered healthcheck errors: ${e}`);
       this.errorCount += 1;
@@ -47,9 +44,6 @@ class BaseRunner {
       }
       return onFail();
     }
-
-    await this.preProcess();
-    return undefined;
   }
 
   getActiveSubsciptions(topics: ?Array < string > = null): Array < string > {
