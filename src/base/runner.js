@@ -3,7 +3,7 @@
 import KafkaRunner from '../runner/kafka';
 import SqsRunner from '../runner/sqs';
 import RedisRunner from '../runner/redis';
-import type { IRunner, Pool, Configuration, IRegistry, Logger } from '../../types';
+import type { Hooks, IRunner, Pool, Configuration, IRegistry, Logger } from '../../types';
 
 type RunnersType = {
   [key: string]: typeof KafkaRunner | typeof SqsRunner | typeof RedisRunner,
@@ -20,6 +20,7 @@ const getRunner = (
   registry: IRegistry,
   pool: Pool,
   logger: Logger,
-): IRunner => new Runners[type](config, registry, pool, logger);
+  hooks: Hooks,
+): IRunner => new Runners[type](config, registry, pool, logger, hooks);
 
 export default getRunner;

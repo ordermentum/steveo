@@ -158,3 +158,12 @@ export type CreateSqsTopic = {
   messageRetentionPeriod: string,
   receiveMessageWaitTimeSeconds: string,
 };
+
+export type CreateQueueConfig = CreateRedisTopic | CreateSqsTopic;
+
+export type Hooks = {
+  preProcess?: () => Promise<void>,
+  healthCheck?: () => Promise<void>,
+  terminationCheck?: () => Promise<boolean>,
+};
+

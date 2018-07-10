@@ -1,7 +1,7 @@
 // @flow
 import BaseRunner from '../base/base_runner';
 import redisConf from '../config/redis';
-import type { IRunner, Configuration, Pool, Logger, Consumer, IRegistry, CreateRedisTopic } from '../../types';
+import type { Hooks, IRunner, Configuration, Pool, Logger, Consumer, IRegistry, CreateRedisTopic } from '../../types';
 
 type DeleteMessage = {
   instance: Object,
@@ -38,8 +38,14 @@ class RedisRunner extends BaseRunner implements IRunner {
   redis: Object;
   pool: Pool;
 
-  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger) {
-    super();
+  constructor(
+    config: Configuration,
+    registry: IRegistry,
+    pool: Pool,
+    logger: Logger,
+    hooks: Hooks = {},
+  ) {
+    super(hooks);
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -88,6 +94,9 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics: ?Array<string> = null) {
+    const loop =
+      () => setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+    await this.checks(loop);
     this.logger.debug(`starting poll for messages ${topics ? topics.join(',') : 'all'}`);
     const subscriptions = this.getActiveSubsciptions(topics);
 
@@ -95,7 +104,7 @@ class RedisRunner extends BaseRunner implements IRunner {
       await this.dequeue(topic);
     }));
 
-    setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+    loop();
   }
 
   async createQueue({ topic, visibilityTimeout = 604800, maxsize = -1 }: CreateRedisTopic) {

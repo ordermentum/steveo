@@ -3,7 +3,7 @@ import nullLogger from 'null-logger';
 
 import BaseRunner from '../base/base_runner';
 import sqsConf from '../config/sqs';
-import type { IRunner, Configuration, Pool, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
+import type { Hooks, IRunner, Configuration, Pool, Logger, Consumer, IRegistry, CreateSqsTopic } from '../../types';
 
 type DeleteMessage = {
   instance: Object,
@@ -44,9 +44,16 @@ class SqsRunner extends BaseRunner implements IRunner {
   sqsUrls: Object;
   sqs: Object;
   pool: Pool;
+  errorCount: number;
 
-  constructor(config: Configuration, registry: IRegistry, pool: Pool, logger: Logger = nullLogger) {
-    super();
+  constructor(
+    config: Configuration,
+    registry: IRegistry,
+    pool: Pool,
+    logger: Logger = nullLogger,
+    hooks: Hooks = {},
+  ) {
+    super(hooks);
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -98,6 +105,10 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics: ?Array<string> = null) {
+    const loop =
+      () => setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+    await this.checks(loop);
+
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug(`Polling for messages (${topics ? topics.join(',') : 'all'})`);
 
@@ -116,7 +127,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         this.logger.error(`Queue URL ${topic} not found`);
       }
     }));
-    setTimeout(this.process.bind(this, topics), this.config.consumerPollInterval);
+    loop();
   }
 
   async getQueueUrl(topic: string) {
