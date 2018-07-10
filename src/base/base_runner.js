@@ -21,9 +21,7 @@ class BaseRunner {
     this.preProcess = hooks.preProcess || (() => Promise.resolve());
     this.healthCheck = hooks.healthCheck || (() => Promise.resolve());
     this.terminationCheck = hooks.terminationCheck || (() => Promise.resolve(false));
-    /* eslint-disable no-console */
     this.logger = logger;
-    /* eslint-enable no-console */
   }
 
   async checks(onFail) {
