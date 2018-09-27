@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "1.0.28",
+  "version": "1.4.0",
   "description": "A Task Manager Library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -8,7 +8,7 @@
   "repository": "git@github.com:ordermentum/steveo.git",
   "scripts": {
     "test": "NODE_ENV=test nyc npm run spec",
-    "spec": "./node_modules/.bin/_mocha -R spec ./test/test_helper.js --compilers js:babel-core/register --recursive test/**/*",
+    "spec": "./node_modules/.bin/_mocha --recursive test/**/*",
     "lint": "./node_modules/.bin/eslint src test",
     "build:coverage": "nyc check-coverage --statements 70 --branches 70 --functions 60 --lines 70",
     "autotest": "./node_modules/.bin/_mocha --watch",
@@ -34,15 +34,24 @@
   "dependencies": {
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",
+    "bluebird": "^3.5.0",
+    "generic-pool": "^3.1.8",
     "lazy-object": "^1.0.1",
-    "moment": "^2.18.1",
-    "no-kafka": "^3.1.1",
+    "lodash.difference": "^4.5.0",
+    "lodash.intersection": "^4.4.0",
+    "lodash.shuffle": "^4.2.0",
+    "moment": "2.20.1",
+    "no-kafka": "^3.1.10",
     "null-logger": "^1.0.0",
-    "uuid": "^3.0.1"
+    "uuid": "^3.1.0"
+  },
+  "optionalDependencies": {
+    "aws-sdk": "^2.179.0",
+    "rsmq": "^0.8.2"
   },
   "devDependencies": {
     "babel-cli": "^6.24.0",
-    "babel-core": "^6.24.0",
+    "babel-core": "^6.25.0",
     "babel-eslint": "^7.2.0",
     "babel-istanbul": "^0.12.2",
     "babel-plugin-transform-async-to-generator": "^6.22.0",
@@ -54,13 +63,13 @@
     "chai": "^4.0.0",
     "eslint": "^3.18.0",
     "eslint-config-airbnb": "^15.0.1",
-    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-import": "^2.6.0",
     "eslint-plugin-jsx-a11y": "^5.0.1",
-    "eslint-plugin-react": "^7.0.0",
-    "flow-bin": "^0.47.0",
+    "eslint-plugin-react": "^7.1.0",
+    "flow-bin": "^0.48.0",
     "flow-coverage-report": "^0.3.0",
     "mocha": "^3.2.0",
     "nyc": "^11.0.0",
-    "sinon": "^2.1.0"
+    "sinon": "^2.3.5"
   }
 }

@@ -17,6 +17,9 @@ services:
       - KAFKA_CREATE_TOPICS="test-topic:1:1"
       - KAFKA_ADVERTISED_PORT=9092
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - AWS_ACCESS_KEY=AKKA
+      - AWS_SECRET_ACCESS_KEY=KEY
+      - AWS_REGION=ap-southeast-2
   app:
     build:
       context: .

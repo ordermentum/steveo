@@ -1,33 +1,34 @@
 // @flow
+
 import events from 'events';
 
-import type { Task } from '../types';
+import type { IRegistry, IEvent, Task } from '../types';
 
-const Registry = () => {
-  const registeredTasks = {};
-  const eventEmitter = new events.EventEmitter();
+class Registry implements IRegistry {
+  registeredTasks: Object;
+  events: IEvent;
 
-  const addNewTask = (task: Task) => {
-    eventEmitter.emit('task_added', task);
-    registeredTasks[task.topic] = task; // eslint-disable-line
-  };
+  constructor() {
+    this.registeredTasks = {};
+    this.events = new events.EventEmitter();
+  }
 
-  const removeTask = (task: Task) => {
-    eventEmitter.emit('task_removed', task);
-    delete registeredTasks[task.topic]; // eslint-disable-line
-  };
+  addNewTask(task: Task) {
+    this.events.emit('task_added', task);
+    this.registeredTasks[task.topic] = task;
+  }
 
-  const getTopics = () => Object.keys(registeredTasks);
+  removeTask(task: Task) {
+    this.events.emit('task_removed', task);
+    delete this.registeredTasks[task.topic];
+  }
 
-  const getTask = (topic: string) => registeredTasks[topic];
-
-  return {
-    addNewTask,
-    removeTask,
-    getTopics,
-    events: eventEmitter,
-    getTask,
-  };
-};
+  getTopics() : Array<string> {
+    return Object.keys(this.registeredTasks);
+  }
+  getTask(topic: string) : Task {
+    return this.registeredTasks[topic];
+  }
+}
 
 export default Registry;
