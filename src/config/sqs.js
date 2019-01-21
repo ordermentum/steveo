@@ -19,11 +19,11 @@ const sqs = (config: Configuration) => {
   const receiveMessage = instance.receiveMessage.bind(instance);
   const deleteMessage = instance.deleteMessage.bind(instance);
 
-  instance.createQueueAsync = () => createQueue(...arguments).promise();
-  instance.sendMessageAsync = () => sendMessage(...arguments).promise();
-  instance.receiveMessageAsync = () => receiveMessage(...arguments).promise();
-  instance.getQueueUrlAsync = () => getQueueUrl(...arguments).promise();
-  instance.deleteMessageAsync = () => deleteMessage(...arguments).promise();
+  instance.createQueueAsync = (...args) => createQueue(...args).promise();
+  instance.sendMessageAsync = (...args) => sendMessage(...args).promise();
+  instance.receiveMessageAsync = (...args) => receiveMessage(...args).promise();
+  instance.getQueueUrlAsync = (...args) => getQueueUrl(...args).promise();
+  instance.deleteMessageAsync = (...args) => deleteMessage(...args).promise();
 
   return instance;
 };
