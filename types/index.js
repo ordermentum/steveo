@@ -124,13 +124,20 @@ export interface ISteveo {
   customTopicName(cb: Callback): void;
 }
 
+export type AsyncWrapper = {
+  promise(): Promise<void>;
+}
+
 export type Producer = {
   send(data: Object, sendParams: Object): void;
   init() : void;
   createQueueAsync(params: Object): Promise<void>;
+  createQueue(params: Object): AsyncWrapper;
   sendMessageAsync(params: Object): Promise<void>;
+  sendMessage(params: Object): AsyncWrapper;
   listQueuesAsync(): Array<string>;
   getQueueAttributesAsync(params: Object): Object;
+  getQueueAttributes(params: Object): Object;
 };
 
 export interface IProducer {

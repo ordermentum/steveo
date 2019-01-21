@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A Task Manager Library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -46,7 +46,7 @@
     "uuid": "^3.1.0"
   },
   "optionalDependencies": {
-    "aws-sdk": "^2.179.0",
+    "aws-sdk": "^2.391.0",
     "rsmq": "^0.8.2"
   },
   "devDependencies": {
