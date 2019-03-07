@@ -1,5 +1,4 @@
 // @flow
-import bluebird from 'bluebird';
 import type { Configuration } from '../../types';
 
 const sqs = (config: Configuration) => {
@@ -13,7 +12,20 @@ const sqs = (config: Configuration) => {
     visibilityTimeout: config.visibilityTimeout,
     waitTimeSeconds: config.waitTimeSeconds,
   });
-  return bluebird.promisifyAll(instance);
+
+  const createQueue = instance.createQueue.bind(instance);
+  const sendMessage = instance.sendMessage.bind(instance);
+  const getQueueUrl = instance.getQueueUrl.bind(instance);
+  const receiveMessage = instance.receiveMessage.bind(instance);
+  const deleteMessage = instance.deleteMessage.bind(instance);
+
+  instance.createQueueAsync = (...args) => createQueue(...args).promise();
+  instance.sendMessageAsync = (...args) => sendMessage(...args).promise();
+  instance.receiveMessageAsync = (...args) => receiveMessage(...args).promise();
+  instance.getQueueUrlAsync = (...args) => getQueueUrl(...args).promise();
+  instance.deleteMessageAsync = (...args) => deleteMessage(...args).promise();
+
+  return instance;
 };
 
 export default {
