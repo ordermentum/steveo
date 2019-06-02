@@ -70,6 +70,6 @@
     "flow-coverage-report": "0.3.0",
     "mocha": "3.4.2",
     "nyc": "11.0.2",
-    "sinon": "2.3.5"
+    "sinon": "7.3.2"
   }
 }
