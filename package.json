@@ -69,7 +69,7 @@
     "flow-bin": "0.48.0",
     "flow-coverage-report": "0.3.0",
     "mocha": "3.4.2",
-    "nyc": "11.0.2",
+    "nyc": "14.1.1",
     "sinon": "2.3.5"
   }
 }
