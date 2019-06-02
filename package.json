@@ -68,7 +68,7 @@
     "eslint-plugin-react": "7.1.0",
     "flow-bin": "0.48.0",
     "flow-coverage-report": "0.3.0",
-    "mocha": "3.4.2",
+    "mocha": "3.5.3",
     "nyc": "11.0.2",
     "sinon": "2.3.5"
   }
