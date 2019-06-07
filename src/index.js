@@ -33,13 +33,27 @@ class Steveo implements ISteveo {
     this.hooks = hooks;
   }
 
-  task(topic: string, callBack: Callback, attributes: Array<Attribute> = []): ITask {
+  task(
+    topic: string,
+    callBack: Callback,
+    attributes: Array<Attribute> = [],
+    doNotRegister: boolean = false,
+  ): ITask {
     const prod = producer(this.config.engine, this.config, this.registry, this.logger);
     let topicName = topic;
     if (this.getTopicName && typeof this.getTopicName === 'function') {
       topicName = this.getTopicName(topic);
     }
-    return new Task(this.config, this.registry, prod, topicName, callBack, attributes);
+
+    return new Task(
+      this.config,
+      this.registry,
+      prod,
+      topicName,
+      callBack,
+      attributes,
+      doNotRegister,
+    );
   }
 
   runner() {
