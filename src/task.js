@@ -8,8 +8,15 @@ class Task implements ITask {
   producer: IProducer;
   topic: string;
 
-  constructor(config: Configuration, registry: IRegistry,
-    producer: IProducer, topic:string, subscribe: Callback, attributes: Array<Attribute> = []) {
+  constructor(
+    config: Configuration,
+    registry: IRegistry,
+    producer: IProducer,
+    topic:string,
+    subscribe: Callback,
+    attributes: Array<Attribute> = [],
+    doNotRegister: boolean = false,
+  ) {
     this.config = config;
     this.registry = registry;
     this.subscribe = subscribe;
@@ -21,7 +28,9 @@ class Task implements ITask {
       subscribe: this.subscribe,
       attributes,
     };
-    this.registry.addNewTask(task);
+    if (!doNotRegister) {
+      this.registry.addNewTask(task);
+    }
   }
 
   async publish(payload: Object) {
