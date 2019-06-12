@@ -47,7 +47,7 @@
   },
   "optionalDependencies": {
     "aws-sdk": "^2.473.0",
-    "rsmq": "^0.8.2"
+    "rsmq": "^0.11.0"
   },
   "devDependencies": {
     "babel-cli": "6.24.1",
