@@ -33,7 +33,6 @@ const steveoConfig = {
   redis: redisConfig,
 };
 
-
 (async () => {
   const config = steveoConfig[process.env.ENGINE];
 
@@ -48,7 +47,7 @@ const steveoConfig = {
   });
 
   // subscribe Call for first task
-  const subscribe = async (payload) => {
+  const subscribe = async payload => {
     logger.debug('Payload from producer', payload);
   };
 
@@ -58,7 +57,7 @@ const steveoConfig = {
 
   // initialize consumer
   await steveo.runner().process(['test-topic']);
-})().catch((ex) => {
+})().catch(ex => {
   logger.debug('Exception', ex);
   process.exit();
 });

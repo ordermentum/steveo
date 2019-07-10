@@ -44,7 +44,7 @@ Responsible for consuming messages,
   const steveo = Steveo({
     kafkaConnection: process.env.KAFKA_CONNECTION,
     clientId: '1234-123',
-  }, console);
+  });
 
   const example = steveo.task('example-task', async ({ name }) => {
     console.log(`hello ${name}`);
