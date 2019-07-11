@@ -1,7 +1,5 @@
 # Steveo - Task Framework for Node.js
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/ordermentum/steveo.svg)](https://greenkeeper.io/)
-
 [![npm version](https://badge.fury.io/js/steveo.svg)](https://badge.fury.io/js/steveo)
 [![Build Status](https://travis-ci.org/ordermentum/steveo.svg?branch=master)](https://travis-ci.org/ordermentum/steveo)
 [![npm](https://img.shields.io/npm/l/steveo.svg)](https://www.npmjs.com/package/steveo)
