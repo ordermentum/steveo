@@ -9,7 +9,7 @@ import {
   IProducer,
   IRegistry,
   sqsUrls,
-} from '../../types';
+} from '../common';
 
 class SqsProducer implements IProducer {
   config: Configuration;

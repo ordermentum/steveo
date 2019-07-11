@@ -4,10 +4,17 @@ import Producer from '../../src/producer/kafka';
 import Registry from '../../src/registry';
 
 describe('Kafka Producer', () => {
+  let sandbox;
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+  });
+
+  afterEach(() => sandbox.restore());
+
   it('should initialize', async () => {
     const registry = new Registry();
     const p = new Producer({}, registry);
-    const initStub = sinon.stub(p.producer, 'init').resolves();
+    const initStub = sandbox.stub(p.producer, 'init').resolves();
     await p.initialize();
     expect(initStub.callCount).to.equal(1);
   });
@@ -15,7 +22,7 @@ describe('Kafka Producer', () => {
   it('should send', async () => {
     const registry = new Registry();
     const p = new Producer({}, registry);
-    const sendStub = sinon.stub(p.producer, 'send').resolves();
+    const sendStub = sandbox.stub(p.producer, 'send').resolves();
     await p.send('test-topic', { a: 'payload' });
     expect(sendStub.callCount).to.equal(1);
   });
@@ -23,7 +30,7 @@ describe('Kafka Producer', () => {
   it('should logg error on failure', async () => {
     const registry = new Registry();
     const p = new Producer({}, registry);
-    const sendStub = sinon.stub(p.producer, 'send').throws();
+    const sendStub = sandbox.stub(p.producer, 'send').throws();
     let err;
     try {
       await p.send('test-topic', { a: 'payload' });
@@ -37,7 +44,7 @@ describe('Kafka Producer', () => {
   it('should send utf-8 strings', async () => {
     const registry = new Registry();
     const p = new Producer({}, registry);
-    const sendStub = sinon.stub(p.producer, 'send').resolves();
+    const sendStub = sandbox.stub(p.producer, 'send').resolves();
     await p.send('test-topic', { a: 'payload', b: '¼' });
     expect(sendStub.callCount).to.equal(1);
   });

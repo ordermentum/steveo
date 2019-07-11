@@ -1,4 +1,4 @@
-import { Configuration, Engine } from '../types';
+import { Configuration, Engine } from './common';
 import { kafkaCompression } from './index';
 
 export default class Config {

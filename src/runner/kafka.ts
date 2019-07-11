@@ -9,7 +9,7 @@ import {
   Logger,
   Consumer,
   IRegistry,
-} from '../../types';
+} from '../common';
 
 class KafkaRunner extends BaseRunner implements IRunner {
   config: Configuration;

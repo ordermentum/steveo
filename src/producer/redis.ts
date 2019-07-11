@@ -8,7 +8,7 @@ import {
   Producer,
   IProducer,
   IRegistry,
-} from '../../types';
+} from '../common';
 
 class RedisProducer implements IProducer {
   config: Configuration;

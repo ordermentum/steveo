@@ -1,6 +1,6 @@
 import events from 'events';
 
-import { IRegistry, IEvent, Task } from '../types';
+import { IRegistry, IEvent, Task } from './common';
 
 class Registry implements IRegistry {
   registeredTasks: any;

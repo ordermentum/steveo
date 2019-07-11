@@ -1,4 +1,4 @@
-import { Configuration, IMetric, Logger } from '../../types';
+import { Configuration, IMetric, Logger } from '../common';
 
 class SqsMetric implements IMetric {
   config: Configuration;

@@ -1,4 +1,4 @@
-import { Configuration } from '../../types';
+import { Configuration } from '../common';
 
 const redis = (config: Configuration) => {
   const RedisSMQ = require('rsmq'); //eslint-disable-line

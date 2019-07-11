@@ -9,29 +9,31 @@ import redisConf from '../../src/config/redis';
 describe('Redis Runner', () => {
   let runner;
   let registry;
+  let sandbox;
   beforeEach(() => {
+    sandbox = sinon.createSandbox();
     registry = new Registry();
     runner = new Runner({}, registry, build());
   });
-
+  afterEach(() => sandbox.restore());
   it('should create an instance', () => {
     expect(typeof runner).to.equal('object');
     expect(typeof runner.process).to.equal('function');
   });
 
   it('should invoke callback when receives a message on topic', async () => {
-    const subscribeStub = sinon.stub().resolves({ some: 'success' });
+    const subscribeStub = sandbox.stub().resolves({ some: 'success' });
     const anotherRegistry = {
       getTask: () => ({
         publish: () => {},
         subscribe: subscribeStub,
       }),
       events: {
-        emit: sinon.stub(),
+        emit: sandbox.stub(),
       },
     };
-    const deleteMessageStub = sinon.stub().resolves();
-    sinon.stub(redisConf, 'redis').returns({
+    const deleteMessageStub = sandbox.stub().resolves();
+    sandbox.stub(redisConf, 'redis').returns({
       deleteMessageAsync: deleteMessageStub,
     });
     const anotherRunner = new Runner({}, anotherRegistry, build());
@@ -44,22 +46,21 @@ describe('Redis Runner', () => {
     );
     expect(subscribeStub.callCount).to.equal(2);
     expect(deleteMessageStub.callCount).to.equal(2);
-    redisConf.redis.restore();
   });
 
   it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
-    const subscribeStub = sinon.stub().throws({ some: 'error' });
+    const subscribeStub = sandbox.stub().throws({ some: 'error' });
     const anotherRegistry = {
       getTask: () => ({
         publish: () => {},
         subscribe: subscribeStub,
       }),
       events: {
-        emit: sinon.stub(),
+        emit: sandbox.stub(),
       },
     };
-    const deleteMessageStub = sinon.stub().resolves();
-    sinon.stub(redisConf, 'redis').returns({
+    const deleteMessageStub = sandbox.stub().resolves();
+    sandbox.stub(redisConf, 'redis').returns({
       deleteMessageAsync: deleteMessageStub,
     });
     const anotherRunner = new Runner({}, anotherRegistry, build());
@@ -78,6 +79,5 @@ describe('Redis Runner', () => {
       expect(deleteMessageStub.callCount).to.equal(0);
     }
     expect(error);
-    redisConf.redis.restore();
   });
 });

@@ -11,7 +11,7 @@ import {
   Consumer,
   IRegistry,
   CreateSqsTopic,
-} from '../../types';
+} from '../common';
 
 type DeleteMessage = {
   instance: any;

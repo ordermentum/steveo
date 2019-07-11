@@ -2,7 +2,7 @@ import * as kafka from 'no-kafka';
 import nullLogger from 'null-logger';
 import moment from 'moment';
 
-import { Configuration, Logger, IProducer, IRegistry } from '../../types';
+import { Configuration, Logger, IProducer, IRegistry } from '../common';
 
 class KafkaProducer implements IProducer {
   config: Configuration;

@@ -2,7 +2,7 @@ import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 import logger from 'null-logger';
 
-import { Configuration, Logger, IRegistry, Hooks } from '../../types';
+import { Configuration, Logger, IRegistry, Hooks } from '../common';
 
 class BaseRunner {
   preProcess: () => Promise<void>;

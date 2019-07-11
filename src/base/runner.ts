@@ -1,7 +1,7 @@
 import KafkaRunner from '../runner/kafka';
 import SqsRunner from '../runner/sqs';
 import RedisRunner from '../runner/redis';
-import { Hooks, Pool, Configuration, IRegistry, Logger } from '../../types';
+import { Hooks, Pool, Configuration, IRegistry, Logger } from '../common';
 
 type RunnersType = {
   [key: string]: typeof KafkaRunner | typeof SqsRunner | typeof RedisRunner;

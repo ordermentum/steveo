@@ -1,6 +1,6 @@
 import * as Kafka from 'no-kafka';
 
-import { Configuration, IMetric, Logger } from '../../types';
+import { Configuration, IMetric, Logger } from '../common';
 
 class KafkaMetric implements IMetric {
   config: Configuration;

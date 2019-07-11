@@ -10,7 +10,7 @@ import {
   Consumer,
   IRegistry,
   CreateRedisTopic,
-} from '../../types';
+} from '../common';
 
 type DeleteMessage = {
   instance: any;

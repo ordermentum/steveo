@@ -9,17 +9,17 @@ describe('Task', () => {
   let subscribe;
   beforeEach(() => {
     producer = {
-      send: sinon.stub().resolves(),
-      initialize: sinon.stub().resolves(),
+      send: sandbox.stub().resolves(),
+      initialize: sandbox.stub().resolves(),
     };
     registry = {
-      addNewTask: sinon.stub(),
-      removeTask: sinon.stub(),
+      addNewTask: sandbox.stub(),
+      removeTask: sandbox.stub(),
       events: {
-        emit: sinon.stub(),
+        emit: sandbox.stub(),
       },
     };
-    subscribe = sinon.stub();
+    subscribe = sandbox.stub();
     task = new Task({}, registry, producer, 'a-simple-task', subscribe);
   });
 
@@ -53,8 +53,8 @@ describe('Task', () => {
 
   it('should be able to publish with callback on failure', async () => {
     const failureProducer = {
-      send: sinon.stub().throws(),
-      initialize: sinon.stub().resolves(),
+      send: sandbox.stub().throws(),
+      initialize: sandbox.stub().resolves(),
     };
     const failTask = new Task(
       {},

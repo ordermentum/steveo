@@ -8,6 +8,7 @@ import { build } from '../../src/base/pool';
 import Registry from '../../src/registry';
 
 describe('Runner', () => {
+  let sandbox;
   let runner;
   let registry;
   beforeEach(() => {
@@ -24,7 +25,10 @@ describe('Runner', () => {
       },
       registry
     );
+    sandbox = sinon.createSandbox();
   });
+
+  afterEach(() => sandbox.restore());
 
   it('should create an instance', () => {
     expect(typeof runner).to.equal('object');
@@ -37,7 +41,6 @@ describe('Runner', () => {
       .returns(Promise.resolve({ yeah: 'created' }));
     await runner.process(['test-topic']);
     expect(initStub.callCount).to.equal(1);
-    runner.consumer.init.restore();
   });
 
   it('should invoke callback when receives a message on topic', async () => {
@@ -50,7 +53,7 @@ describe('Runner', () => {
         subscribe: subscribeStub,
       }),
       events: {
-        emit: sinon.stub(),
+        emit: sandbox.stub(),
       },
     };
     const anotherRunner = new Runner(
@@ -63,7 +66,7 @@ describe('Runner', () => {
       anotherRegistry,
       build()
     );
-    const commitOffsetStub = sinon.stub(anotherRunner.consumer, 'commitOffset');
+    const commitOffsetStub = sandbox.stub(anotherRunner.consumer, 'commitOffset');
     await anotherRunner.receive(
       [
         {
@@ -90,10 +93,10 @@ describe('Runner', () => {
     const anotherRegistry = {
       getTask: () => ({
         publish: () => {},
-        subscribe: sinon.stub().returns(Promise.reject({ some: 'error' })),
+        subscribe: sandbox.stub().returns(Promise.reject({ some: 'error' })),
       }),
       events: {
-        emit: sinon.stub(),
+        emit: sandbox.stub(),
       },
     };
     const anotherRunner = new Runner(
@@ -109,7 +112,7 @@ describe('Runner', () => {
     let error = false;
     let commitOffsetStub;
     try {
-      commitOffsetStub = sinon.stub(anotherRunner.consumer, 'commitOffset');
+      commitOffsetStub = sandbox.stub(anotherRunner.consumer, 'commitOffset');
       await anotherRunner.receive(
         [
           {
@@ -124,7 +127,6 @@ describe('Runner', () => {
       );
     } catch (ex) {
       error = true;
-      expect(anotherRegistry.subscribe.callCount).to.equal(1);
       expect(commitOffsetStub.getTask().callCount).to.equal(1);
     }
     expect(error);

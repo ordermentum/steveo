@@ -26,7 +26,7 @@ describe('Index', () => {
 
   it('should accept callback for customizing topic name', () => {
     const steveo = Steveo({})();
-    const topicNameStub = sinon.stub();
+    const topicNameStub = sandbox.stub();
     steveo.customTopicName(topicNameStub);
     steveo.task('A_BIG_TOPIC', () => {});
     expect(topicNameStub.callCount).to.equal(1);

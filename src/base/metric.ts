@@ -2,7 +2,7 @@ import KafkaMetric from '../metric/kafka';
 import SqsMetric from '../metric/sqs';
 import RedisMetric from '../metric/redis';
 
-import { IMetric, Configuration, Logger } from '../../types';
+import { IMetric, Configuration, Logger } from '../common';
 
 type MetricType = {
   [key: string]: typeof KafkaMetric | typeof SqsMetric | typeof RedisMetric;

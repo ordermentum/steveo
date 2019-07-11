@@ -5,7 +5,7 @@ import {
   IProducer,
   IRegistry,
   Attribute,
-} from '../types';
+} from './common';
 
 class Task implements ITask {
   config: Configuration;

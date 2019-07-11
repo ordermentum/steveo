@@ -20,7 +20,7 @@ import {
   IEvent,
   IMetric,
   Attribute,
-} from '../types';
+} from './common';
 
 class Steveo implements ISteveo {
   config: Configuration;

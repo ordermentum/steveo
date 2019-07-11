@@ -1,5 +1,5 @@
 import * as AWS from 'aws-sdk';
-import { Configuration } from '../../types';
+import { Configuration } from '../common';
 
 const sqs = (config: Configuration) => {
   const instance = new AWS.SQS({
