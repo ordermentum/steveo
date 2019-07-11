@@ -160,7 +160,7 @@ export interface IProducer {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
-  producer: Producer;
+  producer: any;
   initialize(topic?: string): Promise<void>;
   getPayload(msg: any, topic: string): any;
   send(topic: string, payload: any): Promise<void>;

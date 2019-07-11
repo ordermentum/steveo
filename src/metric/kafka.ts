@@ -1,4 +1,4 @@
-import Kafka from 'no-kafka';
+import * as Kafka from 'no-kafka';
 
 import { Configuration, IMetric, Logger } from '../../types';
 

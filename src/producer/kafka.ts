@@ -1,14 +1,8 @@
-import { Producer } from 'no-kafka';
+import * as kafka from 'no-kafka';
 import nullLogger from 'null-logger';
 import moment from 'moment';
 
-import {
-  Configuration,
-  Logger,
-  Producer,
-  IProducer,
-  IRegistry,
-} from '../../types';
+import { Configuration, Logger, IProducer, IRegistry } from '../../types';
 
 class KafkaProducer implements IProducer {
   config: Configuration;
@@ -17,7 +11,7 @@ class KafkaProducer implements IProducer {
 
   logger: Logger;
 
-  producer: Producer;
+  producer: kafka.Producer;
 
   constructor(
     config: Configuration,
@@ -25,7 +19,7 @@ class KafkaProducer implements IProducer {
     logger: Logger = nullLogger
   ) {
     this.config = config;
-    this.producer = new Producer({
+    this.producer = new kafka.Producer({
       connectionString: this.config.kafkaConnection,
       codec: this.config.kafkaCodec,
     });
@@ -33,7 +27,7 @@ class KafkaProducer implements IProducer {
     this.registry = registry;
   }
 
-  initialize() {
+  async initialize() {
     this.producer.init();
   }
 
