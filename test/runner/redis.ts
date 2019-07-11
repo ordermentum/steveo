@@ -11,7 +11,7 @@ describe('Redis Runner', () => {
   let registry;
   beforeEach(() => {
     registry = new Registry();
-    runner = new Runner({}, registry);
+    runner = new Runner({}, registry, build()); 
   });
 
   it('should create an instance', () => {

@@ -167,7 +167,7 @@ export interface IProducer {
 }
 
 export type sqsUrls = {
-  [key: string]: Promise<void>;
+  [key: string]: any;
 };
 
 export type CreateRedisTopic = {

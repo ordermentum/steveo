@@ -39,6 +39,7 @@ class KafkaRunner extends BaseRunner implements IRunner {
       groupId: config.kafkaGroupId,
       clientId: config.clientId,
       connectionString: config.kafkaConnection,
+      // @ts-ignore
       codec: config.kafkaCodec,
       logger: {
         logLevel: config.logLevel,

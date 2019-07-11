@@ -113,7 +113,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     }
   }
 
-  async process(topics: string[] = null) {
+  async process(topics?: string[]) {
     const loop = () =>
       setTimeout(
         this.process.bind(this, topics),

@@ -5,9 +5,7 @@ import { Configuration, IMetric, Logger } from '../../types';
 class KafkaMetric implements IMetric {
   config: Configuration;
 
-  groupId: string;
-
-  admin: Kafka.GroupAdmin;
+  admin?: Kafka.GroupAdmin;
 
   logger: Logger;
 

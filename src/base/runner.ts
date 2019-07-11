@@ -3,7 +3,6 @@ import SqsRunner from '../runner/sqs';
 import RedisRunner from '../runner/redis';
 import {
   Hooks,
-  IRunner,
   Pool,
   Configuration,
   IRegistry,

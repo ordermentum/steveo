@@ -5,19 +5,16 @@ import Runner from '../../src/runner/sqs';
 import { build } from '../../src/base/pool';
 import Registry from '../../src/registry';
 import sqsConf from '../../src/config/sqs';
-import { IRegistry } from '../../types';
-
-const DummyRegistry = {};
 
 describe('SQS Runner', () => {
   let runner;
   let registry;
   let sandbox;
+
   beforeEach(() => {
     sandbox = sinon.createSandbox();
-
     registry = new Registry();
-    runner = new Runner({}, registry, null);
+    runner = new Runner({}, registry, build());
   });
 
   afterEach(() => {

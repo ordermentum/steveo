@@ -6,7 +6,6 @@ import sqsConf from '../config/sqs';
 import {
   Configuration,
   Logger,
-  Producer,
   IProducer,
   IRegistry,
   sqsUrls,
@@ -19,7 +18,7 @@ class SqsProducer implements IProducer {
 
   logger: Logger;
 
-  producer: Producer;
+  producer: any;
 
   sqsUrls: sqsUrls;
 

@@ -125,7 +125,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
   }
 
-  async process(topics: Array<string> = null) {
+  async process(topics?: string[]) {
     const loop = () =>
       setTimeout(
         this.process.bind(this, topics),

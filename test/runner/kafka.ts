@@ -4,6 +4,7 @@ import kafka from 'no-kafka';
 import sinon from 'sinon';
 
 import Runner from '../../src/runner/kafka';
+import { build } from '../../src/base/pool';
 import Registry from '../../src/registry';
 
 describe('Runner', () => {
@@ -59,7 +60,7 @@ describe('Runner', () => {
         kafkaGroupId: '123',
         logLevel: 1,
       },
-      anotherRegistry
+      anotherRegistry, build()
     );
     const commitOffsetStub = sinon.stub(anotherRunner.consumer, 'commitOffset');
     await anotherRunner.receive(
@@ -101,7 +102,7 @@ describe('Runner', () => {
         kafkaGroupId: '123',
         logLevel: 1,
       },
-      anotherRegistry
+      anotherRegistry, build()
     );
     let error = false;
     let commitOffsetStub;
