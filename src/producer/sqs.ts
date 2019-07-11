@@ -23,7 +23,12 @@ class SqsProducer implements IProducer {
 
   sqsUrls: sqsUrls;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {    this.config = config;
+  constructor(
+    config: Configuration,
+    registry: IRegistry,
+    logger: Logger = nullLogger
+  ) {
+    this.config = config;
     this.producer = sqsConf.sqs(config);
     this.logger = logger;
     this.registry = registry;

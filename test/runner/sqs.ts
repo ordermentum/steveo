@@ -5,6 +5,18 @@ import Runner from '../../src/runner/sqs';
 import { build } from '../../src/base/pool';
 import Registry from '../../src/registry';
 import sqsConf from '../../src/config/sqs';
+import { IRegistry } from '../../types';
+
+const anotherRegistry: IRegistry = {
+  registeredTasks: [],
+  addNewTask: () => {},
+  removeTask: () => {},
+  getTopics: () => {
+    return [];
+  },
+};
+
+const DummyRegistry = {};
 
 describe('SQS Runner', () => {
   let runner;
@@ -28,15 +40,7 @@ describe('SQS Runner', () => {
 
   it('should invoke callback when receives a message on topic', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
-    const anotherRegistry = {
-      getTask: () => ({
-        publish: () => {},
-        subscribe: subscribeStub,
-      }),
-      events: {
-        emit: sandbox.stub(),
-      },
-    };
+
     const deleteMessageStub = sandbox.stub().resolves();
     sandbox.stub(sqsConf, 'sqs').returns({
       deleteMessageAsync: deleteMessageStub,

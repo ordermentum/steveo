@@ -1,6 +1,6 @@
 import moment from 'moment';
-import redisConf from '../config/redis';
 import nullLogger from 'null-logger';
+import redisConf from '../config/redis';
 
 import {
   Configuration,
@@ -19,7 +19,12 @@ class RedisProducer implements IProducer {
 
   producer: Producer;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {    this.config = config;
+  constructor(
+    config: Configuration,
+    registry: IRegistry,
+    logger: Logger = nullLogger
+  ) {
+    this.config = config;
     this.producer = redisConf.redis(config);
     this.logger = logger;
     this.registry = registry;

@@ -19,7 +19,11 @@ class KafkaProducer implements IProducer {
 
   producer: Producer;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {
+  constructor(
+    config: Configuration,
+    registry: IRegistry,
+    logger: Logger = nullLogger
+  ) {
     this.config = config;
     this.producer = new Kafka.Producer({
       connectionString: this.config.kafkaConnection,

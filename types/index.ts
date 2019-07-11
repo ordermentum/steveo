@@ -89,8 +89,12 @@ export interface IEvent {
   emit(eventName: string, ...any): any;
 }
 
+export type TaskList = {
+  [key: string]: Task;
+};
+
 export interface IRegistry {
-  registeredTasks: Object;
+  registeredTasks: TaskList;
   events: IEvent;
   addNewTask(task: Task): void;
   removeTask(task: Task): void;
