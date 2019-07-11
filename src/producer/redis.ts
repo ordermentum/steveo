@@ -42,7 +42,7 @@ class RedisProducer implements IProducer {
     }
   }
 
-  getPayload(msg: Object, topic: string): Object {
+  getPayload(msg: any, topic: string): any {
     const timestamp = moment().unix();
     const task = this.registry.getTask(topic);
     return {
@@ -51,7 +51,7 @@ class RedisProducer implements IProducer {
     };
   }
 
-  async send(topic: string, payload: Object) {
+  async send(topic: string, payload: any) {
     const redisData = this.getPayload(payload, topic);
     try {
       const data = await this.producer.sendMessageAsync(redisData);

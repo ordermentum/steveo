@@ -49,7 +49,7 @@ class KafkaRunner extends BaseRunner implements IRunner {
   receive = async (messages: any[], topic: string, partition: string) => {
     for (const m of messages) {
       // eslint-disable-line no-restricted-syntax
-      let params: Object = {};
+      let params: any = {};
       try {
         // commit offset
         params = JSON.parse(m.message.value.toString('utf8'));

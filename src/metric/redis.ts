@@ -3,7 +3,7 @@ import { Configuration, IMetric, Logger } from '../../types';
 class RedisMetric implements IMetric {
   config: Configuration;
 
-  admin: Object;
+  admin: any;
 
   logger: Logger;
 

@@ -13,9 +13,9 @@ import {
 } from '../../types';
 
 type DeleteMessage = {
-  instance: Object;
+  instance: any;
   topic: string;
-  messageId: Object;
+  messageId: any;
   logger: Logger;
 };
 
@@ -48,7 +48,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   consumer: Consumer;
 
-  redis: Object;
+  redis: any;
 
   pool: Pool;
 

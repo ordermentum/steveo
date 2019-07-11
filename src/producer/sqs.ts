@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import moment from 'moment';
 import nullLogger from 'null-logger';
 import sqsConf from '../config/sqs';
@@ -49,7 +49,7 @@ class SqsProducer implements IProducer {
       .then(data => data && data.QueueUrl);
   }
 
-  getPayload(msg: Object, topic: string): Object {
+  getPayload(msg: any, topic: string): any {
     const timestamp = moment().unix();
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
@@ -75,7 +75,7 @@ class SqsProducer implements IProducer {
     };
   }
 
-  async send(topic: string, payload: Object) {
+  async send(topic: string, payload: any) {
     try {
       if (!this.sqsUrls[topic]) {
         this.sqsUrls[topic] = await this.initialize(topic);

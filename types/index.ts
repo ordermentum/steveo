@@ -1,12 +1,12 @@
 export type Callback = (x: any) => any;
 
 export type getPayload = (
-  msg: Object,
+  msg: any,
   topic: string
 ) => {
   timestamp: number;
   topic: string;
-  message: Object;
+  message: any;
 };
 
 export type Logger = {
@@ -54,7 +54,7 @@ export type RedisConfiguration = {
   redisHost: string;
   redisPort: string;
   redisMessageMaxsize: number;
-  workerConfig: Object;
+  workerConfig: any;
   consumerPollInterval: number;
 };
 
@@ -107,13 +107,13 @@ export interface ITask {
   registry: IRegistry;
   subscribe: Callback;
   topic: string;
-  producer: Object;
-  publish(payload: Object): Promise<void>;
+  producer: any;
+  publish(payload: any): Promise<void>;
 }
 
 export type Consumer = {
-  commitOffset(values: Object): void;
-  init(config: any[]): Object;
+  commitOffset(values: any): void;
+  init(config: any[]): any;
 };
 
 export interface IRunner {
@@ -145,15 +145,15 @@ export type AsyncWrapper = {
 };
 
 export type Producer = {
-  send(data: Object, sendParams: Object): void;
+  send(data: any, sendParams: any): void;
   init(): void;
-  createQueueAsync(params: Object): Promise<void>;
-  createQueue(params: Object): AsyncWrapper;
-  sendMessageAsync(params: Object): Promise<void>;
-  sendMessage(params: Object): AsyncWrapper;
+  createQueueAsync(params: any): Promise<void>;
+  createQueue(params: any): AsyncWrapper;
+  sendMessageAsync(params: any): Promise<void>;
+  sendMessage(params: any): AsyncWrapper;
   listQueuesAsync(): Array<string>;
-  getQueueAttributesAsync(params: Object): Object;
-  getQueueAttributes(params: Object): Object;
+  getQueueAttributesAsync(params: any): any;
+  getQueueAttributes(params: any): any;
 };
 
 export interface IProducer {
@@ -162,8 +162,8 @@ export interface IProducer {
   registry: IRegistry;
   producer: Producer;
   initialize(topic?: string): Promise<void>;
-  getPayload(msg: Object, topic: string): Object;
-  send(topic: string, payload: Object): Promise<void>;
+  getPayload(msg: any, topic: string): any;
+  send(topic: string, payload: any): Promise<void>;
 }
 
 export type sqsUrls = {

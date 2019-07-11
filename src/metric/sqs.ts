@@ -5,7 +5,7 @@ class SqsMetric implements IMetric {
 
   groupId: string;
 
-  admin: Object;
+  admin: any;
 
   logger: Logger;
 

@@ -48,7 +48,7 @@ export default class Config {
 
   consumerPollInterval: number;
 
-  workerConfig: Object;
+  workerConfig: any;
 
   constructor(config: Configuration) {
     this.engine = config.engine || 'kafka';

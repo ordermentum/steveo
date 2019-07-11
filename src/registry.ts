@@ -3,7 +3,7 @@ import events from 'events';
 import { IRegistry, IEvent, Task } from '../types';
 
 class Registry implements IRegistry {
-  registeredTasks: Object;
+  registeredTasks: any;
 
   events: IEvent;
 

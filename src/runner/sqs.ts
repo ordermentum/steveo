@@ -17,7 +17,7 @@ type DeleteMessage = {
   instance: any;
   topic: string;
   message: any;
-  sqsUrls: Object;
+  sqsUrls: any;
   logger: Logger;
 };
 
@@ -53,9 +53,9 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   consumer: Consumer;
 
-  sqsUrls: Object;
+  sqsUrls: any;
 
-  sqs: Object;
+  sqs: any;
 
   pool: Pool;
 
@@ -112,7 +112,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     );
   }
 
-  async dequeue(topic: string, params: Object) {
+  async dequeue(topic: string, params: any) {
     const data = await this.sqs.receiveMessageAsync(params);
 
     if (data.Messages) {

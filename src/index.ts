@@ -56,7 +56,7 @@ class Steveo implements ISteveo {
   task(
     topic: string,
     callBack: Callback,
-    attributes: Array<Attribute> = [],
+    attributes: Attribute[] = [],
     doNotRegister: boolean = false
   ): ITask {
     const prod = producer(

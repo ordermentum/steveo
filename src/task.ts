@@ -24,7 +24,7 @@ class Task implements ITask {
     producer: IProducer,
     topic: string,
     subscribe: Callback,
-    attributes: Array<Attribute> = [],
+    attributes: Attribute[] = [],
     doNotRegister: boolean = false
   ) {
     this.config = config;
@@ -43,7 +43,7 @@ class Task implements ITask {
     }
   }
 
-  async publish(payload: Object) {
+  async publish(payload: any) {
     let params;
     if (!Array.isArray(payload)) {
       params = [payload];

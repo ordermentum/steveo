@@ -1,4 +1,4 @@
-import Kafka from 'no-kafka';
+import { Producer } from 'no-kafka';
 import nullLogger from 'null-logger';
 import moment from 'moment';
 
@@ -25,7 +25,7 @@ class KafkaProducer implements IProducer {
     logger: Logger = nullLogger
   ) {
     this.config = config;
-    this.producer = new Kafka.Producer({
+    this.producer = new Producer({
       connectionString: this.config.kafkaConnection,
       codec: this.config.kafkaCodec,
     });
@@ -37,7 +37,7 @@ class KafkaProducer implements IProducer {
     this.producer.init();
   }
 
-  getPayload(msg: Object, topic: string) {
+  getPayload(msg: any, topic: string) {
     const timestamp = moment().unix();
     const payload = JSON.stringify(Object.assign({}, msg, { timestamp }));
     const size = Buffer.from(payload, 'utf-8');
@@ -51,7 +51,7 @@ class KafkaProducer implements IProducer {
     };
   }
 
-  async send(topic: string, payload: Object) {
+  async send(topic: string, payload: any) {
     const data = this.getPayload(payload, topic);
     const sendParams = {
       retries: {
