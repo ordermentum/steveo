@@ -4,6 +4,12 @@ import moment from 'moment';
 
 import { Configuration, Logger, IProducer, IRegistry } from '../common';
 
+export const kafkaCompression = {
+  SNAPPY: kafka.COMPRESSION_SNAPPY,
+  GZIP: kafka.COMPRESSION_GZIP,
+  NONE: kafka.COMPRESSION_NONE,
+};
+
 class KafkaProducer implements IProducer {
   config: Configuration;
 

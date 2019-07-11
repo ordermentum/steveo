@@ -119,7 +119,6 @@ export interface IRunner {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
-  consumer: Consumer;
   receive(messages: any[], topic: string, partition: string): Promise<void>;
   process(topics: Array<string>): Promise<any>;
 }

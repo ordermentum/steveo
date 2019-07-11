@@ -5,17 +5,20 @@ import logger from 'null-logger';
 import { Configuration, Logger, IRegistry, Hooks } from '../common';
 
 class BaseRunner {
-  preProcess: () => Promise<void>;
+  async preProcess() {}
 
-  createQueue: (data: any) => Promise<any>;
+  // @ts-ignore
+  async createQueue(...data: any[]) {}
 
-  healthCheck: () => Promise<void>;
+  async healthCheck() {}
 
-  terminationCheck: () => Promise<boolean>;
+  async terminationCheck(): Promise<boolean> { 
+    return true;
+  }
 
   errorCount: number;
 
-  registry: IRegistry;
+  registry?: IRegistry;
 
   config: Configuration;
 
@@ -52,6 +55,8 @@ class BaseRunner {
   }
 
   getActiveSubsciptions(topics?: string[]): string[] {
+    if (!this.registry) return [];
+
     const subscriptions = this.registry.getTopics();
     const filtered = topics
       ? intersection(topics, subscriptions)
@@ -62,7 +67,9 @@ class BaseRunner {
     return filtered;
   }
 
-  createQueues(): Promise<any> {
+  async createQueues(): Promise<any> {
+    if (!this.registry) return false;
+
     const topics = this.registry.getTopics();
     this.logger.debug('creating queues:', topics);
     return Promise.all(

@@ -1,11 +1,10 @@
-import kafka from 'no-kafka';
 import NULL_LOGGER from 'null-logger';
 import Task from './task';
 import Registry from './registry';
 import runner from './base/runner';
 import metric from './base/metric';
 import producer from './base/producer';
-import Config from './config';
+import getConfig from './config';
 import { build } from './base/pool';
 
 import {
@@ -29,7 +28,7 @@ class Steveo implements ISteveo {
 
   registry: IRegistry;
 
-  getTopicName: Callback;
+  getTopicName?: Callback;
 
   metric: IMetric;
 
@@ -46,7 +45,7 @@ class Steveo implements ISteveo {
   ) {
     this.logger = logger;
     this.registry = new Registry();
-    this.config = new Config(configuration);
+    this.config = getConfig(configuration);
     this.metric = metric(this.config.engine, this.config, this.logger);
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
@@ -99,9 +98,3 @@ class Steveo implements ISteveo {
 
 export default (config: Configuration, logger: Logger, hooks: Hooks) => () =>
   new Steveo(config, logger, hooks);
-
-export const kafkaCompression = {
-  SNAPPY: kafka.COMPRESSION_SNAPPY,
-  GZIP: kafka.COMPRESSION_GZIP,
-  NONE: kafka.COMPRESSION_NONE,
-};

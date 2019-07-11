@@ -7,7 +7,12 @@ describe('Task', () => {
   let task;
   let producer;
   let subscribe;
+  let sandbox;
+
+  afterEach(() => sandbox.restore());
+
   beforeEach(() => {
+    sandbox = sinon.createSandbox();
     producer = {
       send: sandbox.stub().resolves(),
       initialize: sandbox.stub().resolves(),

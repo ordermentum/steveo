@@ -7,7 +7,6 @@ import {
   Configuration,
   Pool,
   Logger,
-  Consumer,
   IRegistry,
   CreateRedisTopic,
 } from '../common';
@@ -45,8 +44,6 @@ class RedisRunner extends BaseRunner implements IRunner {
   logger: Logger;
 
   registry: IRegistry;
-
-  consumer: Consumer;
 
   redis: any;
 

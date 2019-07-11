@@ -8,7 +8,6 @@ import {
   Configuration,
   Pool,
   Logger,
-  Consumer,
   IRegistry,
   CreateSqsTopic,
 } from '../common';
@@ -50,8 +49,6 @@ class SqsRunner extends BaseRunner implements IRunner {
   logger: Logger;
 
   registry: IRegistry;
-
-  consumer: Consumer;
 
   sqsUrls: any;
 
