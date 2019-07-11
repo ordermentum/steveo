@@ -12,9 +12,9 @@
     "lint": "yarn eslint 'src/**/*.{ts,js}'",
     "lint:test": "yarn eslint 'test/**/*.{ts,js}'",
     "autotest": "yarn run mocha --watch",
-    "build": "yarn run typecheck && yarn run babel -Dd lib src --extensions \".js,.ts\"",
+    "build": "yarn typecheck && yarn run babel -Dd lib src --extensions \".js,.ts\"",
     "prepublish": "yarn run build",
-    "typecheck": "yarn run tsc --noEmit src/**/*",
+    "typecheck": "yarn run tsc --noEmit",
     "steveo": "node ./lib/cli-task.js",
     "flow:coverage": "yarn run flow-coverage-report -i 'src/**/*.js' -x 'src/test/**' -t html -t json -t text"
   },
