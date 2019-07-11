@@ -5,7 +5,7 @@ import BaseRunner from '../../src/base/base_runner';
 describe('base_runner', function () { // eslint-disable-line
   let sandbox;
   beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
   });
 
   afterEach(() => sandbox.restore());

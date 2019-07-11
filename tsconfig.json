@@ -3,16 +3,31 @@
     "lib": [
       "es2017"
     ],
-    "outDir": "build",
-    "declaration": false,
     "target": "es2017",
     "module": "commonjs",
+    "jsx": "react",
+    "allowJs": true,
+    "checkJs": false,
+    "declaration": false,
+    "outDir": "build",
+    "strict": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "resolveJsonModule": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
     "esModuleInterop": true
   },
   "include": [
-    "definitions",
     "src",
     "test"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

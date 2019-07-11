@@ -7,7 +7,7 @@ import sqsConf from '../../src/config/sqs';
 describe('SQS Producer', () => {
   let sandbox;
   beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
   });
 
   afterEach(() => sandbox.restore());

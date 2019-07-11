@@ -7,8 +7,6 @@ import Registry from '../../src/registry';
 import sqsConf from '../../src/config/sqs';
 import { IRegistry } from '../../types';
 
-
-
 const DummyRegistry = {};
 
 describe('SQS Runner', () => {
@@ -16,7 +14,7 @@ describe('SQS Runner', () => {
   let registry;
   let sandbox;
   beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 
     registry = new Registry();
     runner = new Runner({}, registry, null);
