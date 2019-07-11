@@ -11,6 +11,7 @@
   "plugins": [
     "prettier",
     "@typescript-eslint",
+    "unicorn"
   ],
   "rules": {
     "import/no-cycle": "off",
@@ -51,11 +52,11 @@
       "error",
       {
         "devDependencies": [
-          "test/**/*.{js,jsx,ts}",
-          "**/**/*.test.{js,jsx,ts}",
-          "**/**/*_test.{js,jsx,ts}",
-          "**/**/*.spec.{js,jsx,ts}",
-          "**/**/*.story.{js,jsx,ts}"
+          "test/**/*.{js,jsx}",
+          "**/**/*.test.{js,jsx}",
+          "**/**/*_test.{js,jsx}",
+          "**/**/*.spec.{js,jsx}",
+          "**/**/*.story.{js,jsx}"
         ]
       }
     ],

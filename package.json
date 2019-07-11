@@ -9,11 +9,11 @@
   "scripts": {
     "test": "NODE_ENV=test nyc npm run spec",
     "spec": "yarn run mocha --recursive test/**/*",
-    "lint": "yarn eslint '**/*.{ts,js}'",
+    "lint": "yarn eslint 'src/**/*.{ts,js}' 'test/**/*.{ts,js}'",
     "autotest": "yarn run mocha --watch",
     "build": "yarn run typecheck && yarn run babel -Dd lib src --extensions \".js,.ts\"",
     "prepublish": "yarn run build",
-    "typecheck": "yarn run tsc --noEmit",
+    "typecheck": "yarn run tsc --noEmit src/**/*",
     "steveo": "node ./lib/cli-task.js",
     "flow:coverage": "yarn run flow-coverage-report -i 'src/**/*.js' -x 'src/test/**' -t html -t json -t text"
   },
@@ -65,7 +65,7 @@
     "@typescript-eslint/parser": "^1.11.0",
     "babel-eslint": "^10.0.2",
     "babel-plugin-istanbul": "^5.1.4",
-    "chai": "4.2.0",
+    "chai": "^4.2.0",
     "cross-env": "^5.2.0",
     "eslint": "6.0.1",
     "eslint-config-airbnb": "^17.1.1",
@@ -76,12 +76,13 @@
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "7.14.2",
+    "eslint-plugin-unicorn": "^9.1.1",
     "flow-bin": "0.102.0",
     "flow-coverage-report": "0.6.1",
     "mocha": "6.1.4",
     "nyc": "14.1.1",
     "prettier": "^1.18.2",
-    "sinon": "7.3.2",
+    "sinon": "^7.3.2",
     "typescript": "^3.5.3",
     "typescript-eslint-parser": "^22.0.0"
   }

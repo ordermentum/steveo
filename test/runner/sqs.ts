@@ -7,14 +7,7 @@ import Registry from '../../src/registry';
 import sqsConf from '../../src/config/sqs';
 import { IRegistry } from '../../types';
 
-const anotherRegistry: IRegistry = {
-  registeredTasks: [],
-  addNewTask: () => {},
-  removeTask: () => {},
-  getTopics: () => {
-    return [];
-  },
-};
+
 
 const DummyRegistry = {};
 
@@ -40,6 +33,21 @@ describe('SQS Runner', () => {
 
   it('should invoke callback when receives a message on topic', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+    const anotherRegistry = {
+      registeredTasks: [],
+      addNewTask: () => {},
+      removeTask: () => {},
+      getTopics: () => {
+        return [];
+      },
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
 
     const deleteMessageStub = sandbox.stub().resolves();
     sandbox.stub(sqsConf, 'sqs').returns({
