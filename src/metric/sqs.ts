@@ -3,8 +3,6 @@ import { Configuration, IMetric, Logger } from '../../types';
 class SqsMetric implements IMetric {
   config: Configuration;
 
-  groupId: string;
-
   admin: any;
 
   logger: Logger;

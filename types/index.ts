@@ -9,8 +9,7 @@ export type getPayload = (
   message: any;
 };
 
-export type Logger = {
-  logLevel: number;
+export interface Logger = {
   info(...any): void;
   trace(...any): void;
   debug(...any): void;

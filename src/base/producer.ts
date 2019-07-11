@@ -1,7 +1,7 @@
 import KafkaProducer from '../producer/kafka';
 import SqsProducer from '../producer/sqs';
 import RedisProducer from '../producer/redis';
-import { IProducer, Configuration, IRegistry, Logger } from '../../types';
+import { Configuration, IRegistry, Logger } from '../../types';
 
 type ProducersType = {
   [key: string]:

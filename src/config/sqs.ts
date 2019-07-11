@@ -1,8 +1,8 @@
-import { SQS } from 'aws-sdk';
+import * as AWS from 'aws-sdk';
 import { Configuration } from '../../types';
 
 const sqs = (config: Configuration) => {
-  const instance = new SQS({
+  const instance = new AWS.SQS({
     region: config.region,
     apiVersion: config.apiVersion,
     accessKeyId: config.accessKeyId,

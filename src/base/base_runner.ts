@@ -46,11 +46,12 @@ class BaseRunner {
         this.logger.info('Terminating due to healthcheck count too high');
         return process.exit(1);
       }
-      return onFail();
+      if (onFail) return onFail();
     }
+    return null;
   }
 
-  getActiveSubsciptions(topics: string[] = null): Array<string> {
+  getActiveSubsciptions(topics?: string[]): string[] {
     const subscriptions = this.registry.getTopics();
     const filtered = topics
       ? intersection(topics, subscriptions)

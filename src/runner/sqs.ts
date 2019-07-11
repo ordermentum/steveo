@@ -59,10 +59,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   pool: Pool;
 
-  errorCount: number;
-
   constructor(
-    config?: Configuration,
+    config: Configuration,
     registry: IRegistry,
     pool: Pool,
     logger: Logger = nullLogger,

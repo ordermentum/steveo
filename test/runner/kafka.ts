@@ -60,7 +60,8 @@ describe('Runner', () => {
         kafkaGroupId: '123',
         logLevel: 1,
       },
-      anotherRegistry, build()
+      anotherRegistry,
+      build()
     );
     const commitOffsetStub = sinon.stub(anotherRunner.consumer, 'commitOffset');
     await anotherRunner.receive(
@@ -102,7 +103,8 @@ describe('Runner', () => {
         kafkaGroupId: '123',
         logLevel: 1,
       },
-      anotherRegistry, build()
+      anotherRegistry,
+      build()
     );
     let error = false;
     let commitOffsetStub;

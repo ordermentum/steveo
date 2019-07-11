@@ -1,5 +1,5 @@
 import nullLogger from 'null-logger';
-import Kafka from 'no-kafka';
+import * as Kafka from 'no-kafka';
 import BaseRunner from '../base/base_runner';
 import {
   Hooks,
