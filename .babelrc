@@ -1,4 +1,14 @@
 {
-  "presets": ["es2015", "stage-1"],
-  "plugins": ["transform-async-to-generator", "transform-flow-strip-types"]
+    "presets": [
+      "@babel/preset-typescript",
+      ["@babel/preset-env", {
+        "targets": {
+          "node": "8.9"
+        }
+      }],
+    ],
+    "plugins": [
+      "@babel/proposal-class-properties",
+      "@babel/proposal-object-rest-spread"
+    ]
 }

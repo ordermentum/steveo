@@ -48,11 +48,13 @@ const logger = console;
     logger.log('Failed task', topic, ex);
   });
 
-  const attributes = [{
-    name: 'Hello',
-    value: 'world',
-    dataType: 'String',
-  }];
+  const attributes = [
+    {
+      name: 'Hello',
+      value: 'world',
+      dataType: 'String',
+    },
+  ];
   // create first Task
   const firstTask = steveo.task('test-topic', () => {}, attributes);
   const secondTask = steveo.task('test-spam', () => {}, attributes);
@@ -71,8 +73,7 @@ const logger = console;
     }
   }
   produceMessages(0);
-
-})().catch((ex) => {
+})().catch(ex => {
   logger.log('Exception', ex);
   process.exit();
 });
