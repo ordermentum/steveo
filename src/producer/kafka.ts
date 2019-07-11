@@ -1,4 +1,5 @@
 import Kafka from 'no-kafka';
+import nullLogger from 'null-logger';
 import moment from 'moment';
 
 import {
@@ -18,7 +19,7 @@ class KafkaProducer implements IProducer {
 
   producer: Producer;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
+  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {
     this.config = config;
     this.producer = new Kafka.Producer({
       connectionString: this.config.kafkaConnection,

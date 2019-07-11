@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import moment from 'moment';
+import nullLogger from 'null-logger';
 import sqsConf from '../config/sqs';
 
 import {
@@ -22,8 +23,7 @@ class SqsProducer implements IProducer {
 
   sqsUrls: sqsUrls;
 
-  constructor(config: Configuration, registry: IRegistry, logger: Logger) {
-    this.config = config;
+  constructor(config: Configuration, registry: IRegistry, logger: Logger = nullLogger) {    this.config = config;
     this.producer = sqsConf.sqs(config);
     this.logger = logger;
     this.registry = registry;
