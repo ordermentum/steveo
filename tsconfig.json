@@ -9,7 +9,7 @@
     "allowJs": true,
     "checkJs": false,
     "declaration": false,
-    "outDir": "build",
+    "outDir": "lib",
     "strict": true,
     "alwaysStrict": true,
     "noUnusedLocals": true,

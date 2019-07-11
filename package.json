@@ -24,6 +24,7 @@
   "nyc": {
     "extends": "@istanbuljs/nyc-config-typescript",
     "all": true,
+     "exclude": ["coverage", "example", "test", "lib"],
     "reporter": [
       "text",
       "lcov"

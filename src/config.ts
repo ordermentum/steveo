@@ -21,7 +21,8 @@ export const getConfig = (config: Configuration): Configuration => {
     parameters.region = config.region;
     parameters.apiVersion = config.apiVersion;
     parameters.messageRetentionPeriod = config.messageRetentionPeriod;
-    parameters.receiveMessageWaitTimeSeconds = config.receiveMessageWaitTimeSeconds;
+    parameters.receiveMessageWaitTimeSeconds =
+      config.receiveMessageWaitTimeSeconds;
     parameters.accessKeyId = config.accessKeyId;
     parameters.secretAccessKey = config.secretAccessKey;
     parameters.maxNumberOfMessages = config.maxNumberOfMessages;

@@ -5,14 +5,20 @@ import logger from 'null-logger';
 import { Configuration, Logger, IRegistry, Hooks } from '../common';
 
 class BaseRunner {
-  async preProcess() {}
+  async preProcess() {
+    throw new Error('Unimplemented');
+  }
 
   // @ts-ignore
-  async createQueue(...data: any[]) {}
+  async createQueue(...data: any[]) {
+    throw new Error('Unimplemented');
+  }
 
-  async healthCheck() {}
+  async healthCheck() {
+    throw new Error('Unimplemented');
+  }
 
-  async terminationCheck(): Promise<boolean> { 
+  async terminationCheck(): Promise<boolean> {
     return true;
   }
 

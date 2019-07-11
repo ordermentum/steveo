@@ -10,8 +10,7 @@
   ],
   "plugins": [
     "prettier",
-    "@typescript-eslint",
-    "unicorn"
+    "@typescript-eslint"
   ],
   "rules": {
     "import/no-cycle": "off",
@@ -67,7 +66,6 @@
         "trailingComma": "es5"
       }
     ],
-    "unicorn/no-abusive-eslint-disable": "error"
   },
   "settings": {
     "import/parsers": {
