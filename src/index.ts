@@ -21,7 +21,7 @@ import {
   Attribute,
 } from './common';
 
-class Steveo implements ISteveo {
+export class Steveo implements ISteveo {
   config: Configuration;
 
   logger: Logger;

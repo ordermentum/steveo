@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "2.0.0-rc1",
+  "version": "2.0.0-rc2",
   "description": "A Task Manager Library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
