@@ -1,14 +1,11 @@
 {
   "compilerOptions": {
-    "lib": [
-      "es2017"
-    ],
+    "lib": ["es2017"],
     "target": "es2017",
     "module": "commonjs",
     "jsx": "react",
-    "allowJs": true,
     "checkJs": false,
-    "declaration": false,
+    "declaration": true,
     "outDir": "lib",
     "strict": true,
     "alwaysStrict": true,
@@ -23,11 +20,6 @@
     "moduleResolution": "node",
     "esModuleInterop": true
   },
-  "include": [
-    "src",
-  ],
-  "exclude": [
-    "test",
-    "node_modules"
-  ]
+  "include": ["src"],
+  "exclude": ["test", "node_modules"]
 }
