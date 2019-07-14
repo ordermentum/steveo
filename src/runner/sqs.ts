@@ -1,7 +1,9 @@
 import nullLogger from 'null-logger';
 
 import BaseRunner from '../base/base_runner';
+import { getContext } from './utils';
 import sqsConf from '../config/sqs';
+
 import {
   Hooks,
   IRunner,
@@ -79,9 +81,10 @@ class SqsRunner extends BaseRunner implements IRunner {
         const resource = await this.pool.acquire();
         try {
           params = JSON.parse(m.Body);
-          this.registry.events.emit('runner_receive', topic, params);
+          const context = getContext(params);
+          this.registry.events.emit('runner_receive', topic, params, context);
           this.logger.debug('Deleting message', topic, params);
-        await deleteMessage({ // eslint-disable-line
+          await deleteMessage({ // eslint-disable-line
             instance: this.sqs,
             topic,
             message: m,
@@ -91,9 +94,15 @@ class SqsRunner extends BaseRunner implements IRunner {
           this.logger.debug('Message Deleted', topic, params);
           const task = this.registry.getTask(topic);
           this.logger.debug('Start subscribe', topic, params);
-        await task.subscribe(params); // eslint-disable-line
+          await task.subscribe(params); // eslint-disable-line
           this.logger.debug('Completed subscribe', topic, params);
-          this.registry.events.emit('runner_complete', topic, params);
+          const completedContext = getContext(params);
+          this.registry.events.emit(
+            'runner_complete',
+            topic,
+            params,
+            completedContext
+          );
         } catch (ex) {
           this.logger.error('Error while executing consumer callback ', {
             params,

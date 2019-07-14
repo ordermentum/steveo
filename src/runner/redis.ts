@@ -1,5 +1,6 @@
 import nullLogger from 'null-logger';
 import BaseRunner from '../base/base_runner';
+import { getContext } from './utils';
 import redisConf from '../config/redis';
 import {
   Hooks,
@@ -71,9 +72,10 @@ class RedisRunner extends BaseRunner implements IRunner {
         const resource = await this.pool.acquire();
         try {
           params = JSON.parse(m.message);
-          this.registry.events.emit('runner_receive', topic, params);
+          const context = getContext(params);
+          this.registry.events.emit('runner_receive', topic, params, context);
           this.logger.debug('Deleting message', topic, params);
-        await deleteMessage({ // eslint-disable-line
+          await deleteMessage({ // eslint-disable-line
             instance: this.redis,
             topic,
             messageId: m.id,
@@ -82,8 +84,14 @@ class RedisRunner extends BaseRunner implements IRunner {
 
           const task = this.registry.getTask(topic);
           this.logger.debug('Start subscribe', topic, params);
-        await task.subscribe(params); // eslint-disable-line
-          this.registry.events.emit('runner_complete', topic, params);
+          await task.subscribe(params); // eslint-disable-line
+          const completedContext = getContext(params);
+          this.registry.events.emit(
+            'runner_complete',
+            topic,
+            params,
+            completedContext
+          );
         } catch (ex) {
           this.logger.error('Error while executing consumer callback ', {
             params,

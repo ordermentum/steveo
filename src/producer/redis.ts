@@ -9,7 +9,7 @@ import {
   IRegistry,
 } from '../common';
 
-import { getContext } from './utils';
+import { getMeta } from './utils';
 
 class RedisProducer implements IProducer {
   config: Configuration;
@@ -44,11 +44,11 @@ class RedisProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string): any {
-    const context = getContext(msg);
+    const context = getMeta(msg);
     const task = this.registry.getTask(topic);
     return {
       qname: task.topic,
-      message: JSON.stringify(Object.assign({}, msg, { _context: context })),
+      message: JSON.stringify(Object.assign({}, msg, { _meta: context })),
     };
   }
 

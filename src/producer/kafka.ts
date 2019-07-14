@@ -3,7 +3,7 @@ import nullLogger from 'null-logger';
 
 import { Configuration, Logger, IProducer, IRegistry } from '../common';
 
-import { getContext } from './utils';
+import { getMeta } from './utils';
 
 export const kafkaCompression = {
   SNAPPY: kafka.COMPRESSION_SNAPPY,
@@ -39,10 +39,8 @@ class KafkaProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string) {
-    const context = getContext(msg);
-    const payload = JSON.stringify(
-      Object.assign({}, msg, { _context: context })
-    );
+    const context = getMeta(msg);
+    const payload = JSON.stringify(Object.assign({}, msg, { _meta: context }));
     const size = Buffer.from(payload, 'utf-8');
     this.logger.debug('Payload Size:', topic, size.length);
     return {

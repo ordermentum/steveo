@@ -9,7 +9,7 @@ import {
   sqsUrls,
 } from '../common';
 
-import { getContext } from './utils';
+import { getMeta } from './utils';
 
 class SqsProducer implements IProducer {
   config: Configuration;
@@ -49,7 +49,7 @@ class SqsProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string): any {
-    const context = getContext(msg);
+    const context = getMeta(msg);
 
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
@@ -70,9 +70,7 @@ class SqsProducer implements IProducer {
 
     return {
       MessageAttributes: messageAttributes,
-      MessageBody: JSON.stringify(
-        Object.assign({}, msg, { _context: context })
-      ),
+      MessageBody: JSON.stringify(Object.assign({}, msg, { _meta: context })),
       QueueUrl: this.sqsUrls[topic],
     };
   }
