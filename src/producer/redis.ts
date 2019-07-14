@@ -1,4 +1,3 @@
-import moment from 'moment';
 import nullLogger from 'null-logger';
 import redisConf from '../config/redis';
 
@@ -9,6 +8,8 @@ import {
   IProducer,
   IRegistry,
 } from '../common';
+
+import { getContext } from './utils';
 
 class RedisProducer implements IProducer {
   config: Configuration;
@@ -43,19 +44,19 @@ class RedisProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string): any {
-    const timestamp = moment().unix();
+    const context = getContext(msg);
     const task = this.registry.getTask(topic);
     return {
       qname: task.topic,
-      message: JSON.stringify(Object.assign({}, msg, { timestamp })),
+      message: JSON.stringify(Object.assign({}, msg, { _context: context })),
     };
   }
 
   async send(topic: string, payload: any) {
-    const redisData = this.getPayload(payload, topic);
+    const data = this.getPayload(payload, topic);
     try {
-      const data = await this.producer.sendMessageAsync(redisData);
-      this.logger.debug('Redis Publish Data', redisData, 'id', data);
+      const response = await this.producer.sendMessageAsync(data);
+      this.logger.debug('Redis Publish Data', data, 'id', response);
       const queueAttributes = await this.producer.getQueueAttributesAsync({
         qname: topic,
       });
@@ -63,7 +64,7 @@ class RedisProducer implements IProducer {
       this.registry.events.emit('producer_success', topic, payload);
     } catch (ex) {
       this.logger.error('Error while sending Redis payload', topic, ex);
-      this.registry.events.emit('producer_failure', topic, ex);
+      this.registry.events.emit('producer_failure', topic, ex, data);
       throw ex;
     }
   }

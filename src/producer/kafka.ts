@@ -1,8 +1,9 @@
 import * as kafka from 'no-kafka';
 import nullLogger from 'null-logger';
-import moment from 'moment';
 
 import { Configuration, Logger, IProducer, IRegistry } from '../common';
+
+import { getContext } from './utils';
 
 export const kafkaCompression = {
   SNAPPY: kafka.COMPRESSION_SNAPPY,
@@ -38,12 +39,14 @@ class KafkaProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string) {
-    const timestamp = moment().unix();
-    const payload = JSON.stringify(Object.assign({}, msg, { timestamp }));
+    const context = getContext(msg);
+    const payload = JSON.stringify(
+      Object.assign({}, msg, { _context: context })
+    );
     const size = Buffer.from(payload, 'utf-8');
     this.logger.debug('Payload Size:', topic, size.length);
     return {
-      timestamp,
+      context,
       topic,
       message: {
         value: payload,

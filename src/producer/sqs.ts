@@ -1,5 +1,3 @@
-import * as crypto from 'crypto';
-import moment from 'moment';
 import nullLogger from 'null-logger';
 import sqsConf from '../config/sqs';
 
@@ -10,6 +8,8 @@ import {
   IRegistry,
   sqsUrls,
 } from '../common';
+
+import { getContext } from './utils';
 
 class SqsProducer implements IProducer {
   config: Configuration;
@@ -49,13 +49,14 @@ class SqsProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string): any {
-    const timestamp = moment().unix();
+    const context = getContext(msg);
+
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
     const messageAttributes = {
       Timestamp: {
         DataType: 'Number',
-        StringValue: timestamp.toString(),
+        StringValue: context.timestamp.toString(),
       },
     };
     if (attributes) {
@@ -69,7 +70,9 @@ class SqsProducer implements IProducer {
 
     return {
       MessageAttributes: messageAttributes,
-      MessageBody: JSON.stringify(Object.assign({}, msg, { timestamp })),
+      MessageBody: JSON.stringify(
+        Object.assign({}, msg, { _context: context })
+      ),
       QueueUrl: this.sqsUrls[topic],
     };
   }
@@ -84,18 +87,15 @@ class SqsProducer implements IProducer {
       throw ex;
     }
 
-    const sqsData = this.getPayload(payload, topic);
-    const md5sum = crypto.createHash('md5');
-    const hash = md5sum.update(JSON.stringify(sqsData)).digest('hex');
-    this.logger.debug(`sending data: ${hash}`, sqsData);
+    const data = this.getPayload(payload, topic);
 
     try {
-      const data = await this.producer.sendMessageAsync(sqsData);
-      this.logger.debug('SQS Publish Data', data);
-      this.registry.events.emit('producer_success', topic, payload);
+      const response = await this.producer.sendMessageAsync(data);
+      this.logger.debug('SQS Publish Data', response);
+      this.registry.events.emit('producer_success', topic, data);
     } catch (ex) {
       this.logger.error('Error while sending SQS payload', topic, ex);
-      this.registry.events.emit('producer_failure', topic, ex);
+      this.registry.events.emit('producer_failure', topic, ex, data);
       throw ex;
     }
   }

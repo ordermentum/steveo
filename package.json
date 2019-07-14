@@ -1,7 +1,7 @@
 {
   "name": "steveo",
-  "version": "2.0.0-rc2",
-  "description": "A Task Manager Library",
+  "version": "2.0.0-rc3",
+  "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
   "license": "Apache-2.0",
