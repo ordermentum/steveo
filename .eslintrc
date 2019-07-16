@@ -1,16 +1,96 @@
 {
   "parser": "babel-eslint",
-  "extends": "airbnb",
-  "rules": {
-    "indent": 2,
-    "jsx-a11y/img-has-alt": 0
+  "env": {
+    "node": true
   },
-  "globals": {
-    "describe": true,
-    "it": false,
-    "beforeEach": true,
-    "before": true,
-    "xit": false,
-    "afterEach": true
-  }
+  "extends": [
+    "eslint-config-airbnb-base",
+    "eslint-config-airbnb-base/rules/strict",
+    "prettier"
+  ],
+  "plugins": [
+    "prettier",
+    "@typescript-eslint"
+  ],
+  "rules": {
+    "import/no-cycle": "off",
+    "import/no-useless-path-segments": "warn",
+    "import/order": "warn",
+    "lines-between-class-members": "warn",
+    "no-else-return": "warn",
+    "class-methods-use-this": "off",
+    "func-names": "off",
+    "no-bitwise": "warn",
+    "no-fallthrough": "warn",
+    "no-multi-assign": "warn",
+    "no-plusplus": "warn",
+    "no-restricted-syntax": "off",
+    "no-return-await": "warn",
+    "no-template-curly-in-string": "warn",
+    "no-undef": "error",
+    "no-useless-escape": "warn",
+    "no-useless-return": "warn",
+    "space-before-function-paren": "off",
+    "no-await-in-loop": "warn",
+    "prefer-destructuring": "warn",
+    "prefer-promise-reject-errors": "warn",
+    "no-buffer-constructor": "warn",
+    "no-restricted-globals": "warn",
+    "no-useless-constructor": "off",
+    "import/extensions": ["error", {
+      "json": "always",
+      "ts": "never"
+    }],
+    "import/first": "warn",
+    "import/newline-after-import": "warn",
+    "import/no-named-as-default": "off",
+    "import/no-named-as-default-member": "warn",
+    "import/prefer-default-export": "off",
+    "import/no-unresolved": "error",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "test/**/*.{js,jsx}",
+          "**/**/*.test.{js,jsx}",
+          "**/**/*_test.{js,jsx}",
+          "**/**/*.spec.{js,jsx}",
+          "**/**/*.story.{js,jsx}"
+        ]
+      }
+    ],
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "trailingComma": "es5"
+      }
+    ],
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {}
+    }
+  },
+  "overrides": [
+    {
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "sourceType": "module"
+      },
+      "files": [
+        "**/*.ts",
+        "**/*.tsx"
+      ],
+      "rules": {
+        "no-undef": "warn",
+        "no-unused-vars": "off",
+        "import/no-unresolved": "error",
+        "import/named": "off"
+      }
+    }
+  ]
 }
