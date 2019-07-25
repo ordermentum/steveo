@@ -1929,7 +1929,7 @@ escape-string-regexp@1.0.5, escape-string-regexp@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
 
-eslint-ast-utils@^1.0.0:
+eslint-ast-utils@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/eslint-ast-utils/-/eslint-ast-utils-1.1.0.tgz#3d58ba557801cfb1c941d68131ee9f8c34bd1586"
   integrity sha512-otzzTim2/1+lVrlH19EfQQJEhVJSu0zOb9ygb3iapN6UlyaDtyRq4b5U1FuW0v1lRa9Fp/GJyHkSwm6NqABgCA==
@@ -2016,23 +2016,23 @@ eslint-plugin-prettier@3.1.0:
   dependencies:
     prettier-linter-helpers "^1.0.0"
 
-eslint-plugin-unicorn@9.1.1:
-  version "9.1.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-unicorn/-/eslint-plugin-unicorn-9.1.1.tgz#1588a0473f9a0e37cfbbcf7552065a0b0a96ce26"
-  integrity sha512-SHh/N54pRu5KXlS4Boa1qbWM7yTNl6VpuYJ8Qc1O3TJDr+CDUwEEdUtVlVSV/dBUE97BC8Xk0+Y5zphn21qlCA==
+eslint-plugin-unicorn@10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-unicorn/-/eslint-plugin-unicorn-10.0.0.tgz#f3815a759f76dd490dbb5a560e3805e0556aff17"
+  integrity sha512-hJaDsoquO+2UMtxmURXA/6VNH+sNS4kyO5aaal8fEis7pdCuErwRsGzhhI9fOYmA7985M3XADPEWmK+29T525w==
   dependencies:
     clean-regexp "^1.0.0"
-    eslint-ast-utils "^1.0.0"
+    eslint-ast-utils "^1.1.0"
     import-modules "^1.1.0"
-    lodash.camelcase "^4.1.1"
+    lodash.camelcase "^4.3.0"
     lodash.defaultsdeep "^4.6.0"
-    lodash.kebabcase "^4.0.1"
-    lodash.snakecase "^4.0.1"
+    lodash.kebabcase "^4.1.1"
+    lodash.snakecase "^4.1.1"
     lodash.topairs "^4.3.0"
-    lodash.upperfirst "^4.2.0"
+    lodash.upperfirst "^4.3.1"
     regexpp "^2.0.1"
     reserved-words "^0.1.2"
-    safe-regex "^2.0.1"
+    safe-regex "^2.0.2"
 
 eslint-scope@3.7.1:
   version "3.7.1"
@@ -3219,7 +3219,7 @@ locate-path@^3.0.0:
     p-locate "^3.0.0"
     path-exists "^3.0.0"
 
-lodash.camelcase@^4.1.1:
+lodash.camelcase@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz#b28aa6288a2b9fc651035c7711f65ab6190331a6"
   integrity sha1-soqmKIorn8ZRA1x3EfZathkDMaY=
@@ -3247,7 +3247,7 @@ lodash.intersection@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/lodash.intersection/-/lodash.intersection-4.4.0.tgz#0a11ba631d0e95c23c7f2f4cbb9a692ed178e705"
 
-lodash.kebabcase@^4.0.1:
+lodash.kebabcase@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.kebabcase/-/lodash.kebabcase-4.1.1.tgz#8489b1cb0d29ff88195cceca448ff6d6cc295c36"
   integrity sha1-hImxyw0p/4gZXM7KRI/21swpXDY=
@@ -3256,7 +3256,7 @@ lodash.shuffle@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/lodash.shuffle/-/lodash.shuffle-4.2.0.tgz#145b5053cf875f6f5c2a33f48b6e9948c6ec7b4b"
 
-lodash.snakecase@^4.0.1:
+lodash.snakecase@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.snakecase/-/lodash.snakecase-4.1.1.tgz#39d714a35357147837aefd64b5dcbb16becd8f8d"
   integrity sha1-OdcUo1NXFHg3rv1ktdy7Fr7Nj40=
@@ -3271,7 +3271,7 @@ lodash.unescape@4.0.1:
   resolved "https://registry.yarnpkg.com/lodash.unescape/-/lodash.unescape-4.0.1.tgz#bf2249886ce514cda112fae9218cdc065211fc9c"
   integrity sha1-vyJJiGzlFM2hEvrpIYzcBlIR/Jw=
 
-lodash.upperfirst@^4.2.0:
+lodash.upperfirst@^4.3.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/lodash.upperfirst/-/lodash.upperfirst-4.3.1.tgz#1365edf431480481ef0d1c68957a5ed99d49f7ce"
   integrity sha1-E2Xt9DFIBIHvDRxolXpe2Z1J984=
@@ -4475,7 +4475,7 @@ safe-regex@^1.1.0:
   dependencies:
     ret "~0.1.10"
 
-safe-regex@^2.0.1:
+safe-regex@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/safe-regex/-/safe-regex-2.0.2.tgz#3601b28d3aefe4b963d42f6c2cdb241265cbd63c"
   integrity sha512-rRALJT0mh4qVFIJ9HvfjKDN77F9vp7kltOpFFI/8e6oKyHFmmxz4aSkY/YVauRDe7U0RrHdw9Lsxdel3E19s0A==
