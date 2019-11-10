@@ -83,7 +83,7 @@
     "eslint-plugin-unicorn": "9.1.1",
     "flow-bin": "0.103.0",
     "flow-coverage-report": "0.6.1",
-    "mocha": "6.2.0",
+    "mocha": "6.2.2",
     "nyc": "14.1.1",
     "prettier": "1.18.2",
     "sinon": "7.3.2",
