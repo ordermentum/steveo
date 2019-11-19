@@ -2129,10 +2129,10 @@ eslint-config-ordermentum@0.1.0:
   resolved "https://registry.yarnpkg.com/eslint-config-ordermentum/-/eslint-config-ordermentum-0.1.0.tgz#0eb0b0e7271121f70b16ed6ccfabc5b594ebbe9b"
   integrity sha512-x+QiyqUMpayO4Mxdn/D7njSMd7ZzeVdzIKUOWsvvYP66fmo3y9MKjKSXly8BCdkH6bHA7f604fOkCWZVMKHcWg==
 
-eslint-config-prettier@6.6.0:
-  version "6.6.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-6.6.0.tgz#4e039f65af8245e32d8fba4a2f5b83ed7186852e"
-  integrity sha512-6RGaj7jD+HeuSVHoIT6A0WkBhVEk0ULg74kp2FAWIwkYrOERae0TjIO09Cw33oN//gJWmt7aFhVJErEVta7uvA==
+eslint-config-prettier@6.7.0:
+  version "6.7.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-6.7.0.tgz#9a876952e12df2b284adbd3440994bf1f39dfbb9"
+  integrity sha512-FamQVKM3jjUVwhG4hEMnbtsq7xOIDm+SY5iBPfR8gKsJoAB2IQnNF+bk1+8Fy44Nq7PPJaLvkRxILYdJWoguKQ==
   dependencies:
     get-stdin "^6.0.0"
 
