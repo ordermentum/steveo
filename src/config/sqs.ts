@@ -1,12 +1,23 @@
 import * as AWS from 'aws-sdk';
+import https from 'https';
 import { Configuration } from '../common';
 
 const sqs = (config: Configuration) => {
+  if (process.env.NODE_ENV === 'development') {
+    AWS.config.update({
+      httpOptions: {
+        agent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+      },
+    });
+  }
   const instance = new AWS.SQS({
     region: config.region,
     apiVersion: config.apiVersion,
     accessKeyId: config.accessKeyId,
     secretAccessKey: config.secretAccessKey,
+    endpoint: config.endpoint,
   });
 
   const createQueue = instance.createQueue.bind(instance);
