@@ -47,6 +47,7 @@ export type SQSConfiguration = {
   maxNumberOfMessages: number;
   visibilityTimeout: number;
   waitTimeSeconds: number;
+  endPoint?: string;
 };
 
 export type RedisConfiguration = {
