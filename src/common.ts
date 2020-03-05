@@ -1,3 +1,5 @@
+import { HTTPOptions } from 'aws-sdk';
+
 export type Callback = (x: any) => any;
 
 export type getPayload = (
@@ -47,6 +49,8 @@ export type SQSConfiguration = {
   maxNumberOfMessages: number;
   visibilityTimeout: number;
   waitTimeSeconds: number;
+  endPoint?: string;
+  httpOptions?: HTTPOptions;
 };
 
 export type RedisConfiguration = {
