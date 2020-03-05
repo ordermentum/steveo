@@ -18,10 +18,29 @@ describe('SQS Producer', () => {
       createQueueAsync: sandbox
         .stub()
         .resolves({ data: { QueueUrl: 'kjsdkh' } }),
+      listQueuesAsync: sandbox.stub().resolves({QueueUrls: null})
     });
     const p = new Producer({}, registry);
     await p.initialize('test');
     expect(initStub.callCount).to.equal(1);
+  });
+
+  it('should not recreate queue and send from cached object', async () => {
+    const registry = new Registry();
+    const createQueueAsyncStub = sandbox
+      .stub()
+      .resolves({ data: { QueueUrl: 'kjsdkh' } });
+    const listQueuesAsyncStub = sandbox.stub()
+    sandbox.stub(sqsConf, 'sqs').returns({
+      createQueueAsync: createQueueAsyncStub,
+      listQueuesAsync: listQueuesAsyncStub.resolves({QueueUrls: []})
+    });
+    const p = new Producer({}, registry);
+    await p.initialize('test');
+    expect(createQueueAsyncStub.callCount).to.equal(1);
+    listQueuesAsyncStub.resolves({QueueUrls: ['test']});
+    await p.initialize('test');
+    expect(createQueueAsyncStub.callCount).to.equal(1); //Should remain 1, not create queue again
   });
 
   it('should initialize & send if no sqsUrls ', async () => {
@@ -42,17 +61,19 @@ describe('SQS Producer', () => {
 
   it('should send without initialize if sqsUrls are present', async () => {
     const registry = new Registry();
-
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
-    const initializeStub = sandbox.stub(p, 'initialize').resolves();
-    p.producer = { sendMessageAsync: sendMessageStub };
+    const listQueuesAsyncStub = sandbox.stub().resolves({QueueUrls: ['test-topic']})
+    const createQueueAsyncStub = sandbox
+      .stub()
+      .resolves({ data: { QueueUrl: 'kjsdkh' } });
+    p.producer = {  createQueueAsync: createQueueAsyncStub, sendMessageAsync: sendMessageStub, listQueuesAsync: listQueuesAsyncStub };
     p.sqsUrls = {
       'test-topic': 'asdasd',
     };
     await p.send('test-topic', { a: 'payload' });
-    expect(initializeStub.callCount).to.equal(0);
+    expect(createQueueAsyncStub.callCount).to.equal(0);
     expect(sendMessageStub.callCount).to.equal(1);
   });
 
@@ -63,7 +84,7 @@ describe('SQS Producer', () => {
     sandbox.spy(p, 'getPayload');
     registry.addNewTask({
       topic: 'test-topic',
-      subscribe: () => {},
+      subscribe: () => { },
       attributes: [
         {
           name: 'Hello',
@@ -73,13 +94,16 @@ describe('SQS Producer', () => {
       ],
     });
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
-    const initializeStub = sandbox.stub(p, 'initialize').resolves();
-    p.producer = { sendMessageAsync: sendMessageStub };
+    const listQueuesAsyncStub = sandbox.stub().resolves({QueueUrls: ['test-topic']});
+    const createQueueAsyncStub = sandbox
+      .stub()
+      .resolves({ data: { QueueUrl: 'kjsdkh' } });
+    p.producer = {  createQueueAsync: createQueueAsyncStub, sendMessageAsync: sendMessageStub,  listQueuesAsync: listQueuesAsyncStub };
     p.sqsUrls = {
       'test-topic': 'asdasd',
     };
     await p.send('test-topic', { a: 'payload' });
-    expect(initializeStub.callCount).to.equal(0);
+    expect(createQueueAsyncStub.callCount).to.equal(0);
     expect(sendMessageStub.callCount).to.equal(1);
   });
 
@@ -90,7 +114,7 @@ describe('SQS Producer', () => {
     sandbox.spy(p, 'getPayload');
     registry.addNewTask({
       topic: 'test-topic',
-      subscribe: () => {},
+      subscribe: () => { },
       attributes: [
         {
           name: 'Hello',
@@ -126,7 +150,7 @@ describe('SQS Producer', () => {
     sandbox.spy(p, 'getPayload');
     registry.addNewTask({
       topic: 'test-topic',
-      subscribe: () => {},
+      subscribe: () => { },
       attributes: [
         {
           name: 'Hello',

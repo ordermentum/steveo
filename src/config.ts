@@ -29,6 +29,7 @@ export const getConfig = (config: Configuration): Configuration => {
     parameters.visibilityTimeout = config.visibilityTimeout;
     parameters.waitTimeSeconds = config.waitTimeSeconds;
     parameters.endpoint = config.endpoint;
+    parameters.httpOptions = config.httpOptions;
   } else if (parameters.engine === 'redis') {
     parameters.redisHost = config.redisHost;
     parameters.redisPort = config.redisPort;
