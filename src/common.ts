@@ -1,4 +1,4 @@
-import { HTTPOptions } from "aws-sdk";
+import { HTTPOptions } from 'aws-sdk';
 
 export type Callback = (x: any) => any;
 
@@ -50,7 +50,7 @@ export type SQSConfiguration = {
   visibilityTimeout: number;
   waitTimeSeconds: number;
   endPoint?: string;
-  httpOptions?: HTTPOptions
+  httpOptions?: HTTPOptions;
 };
 
 export type RedisConfiguration = {

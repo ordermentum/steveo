@@ -4,7 +4,7 @@ import { Configuration } from '../common';
 const sqs = (config: Configuration) => {
   if (config.httpOptions) {
     AWS.config.update({
-      httpOptions: config.httpOptions
+      httpOptions: config.httpOptions,
     });
   }
   const instance = new AWS.SQS({
@@ -27,7 +27,7 @@ const sqs = (config: Configuration) => {
     receiveMessageAsync: (...args) => receiveMessage(...args).promise(),
     getQueueUrlAsync: (...args) => getQueueUrl(...args).promise(),
     deleteMessageAsync: (...args) => deleteMessage(...args).promise(),
-    listQueuesAsync: (...args) => listQueues(...args).promise()
+    listQueuesAsync: (...args) => listQueues(...args).promise(),
   };
   return Object.assign(instance, dummy);
 };
