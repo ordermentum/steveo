@@ -85,6 +85,8 @@ class BaseRunner {
           receiveMessageWaitTimeSeconds: this.config
             .receiveMessageWaitTimeSeconds,
           messageRetentionPeriod: this.config.messageRetentionPeriod,
+        }).catch(er => {
+          this.logger.debug('error creating queue for topic:', er);
         })
       )
     );
