@@ -38,8 +38,10 @@ class SqsProducer implements IProducer {
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
-    const { QueueUrls } = await this.producer.listQueuesAsync();
-    const queue = (QueueUrls ?? []).find(queueUrl => queueUrl.includes(topic));
+    const data = await this.producer
+      .getQueueUrlAsync({ QueueName: topic })
+      .catch(_ => null);
+    const queue = data?.QueueUrl;
     if (queue) {
       this.sqsUrls[topic] = queue;
       return queue;
@@ -52,11 +54,9 @@ class SqsProducer implements IProducer {
         MessageRetentionPeriod: this.config.messageRetentionPeriod,
       },
     };
-    const {
-      data: { QueueUrl },
-    } = await this.producer.createQueueAsync(params);
-    this.sqsUrls[topic] = QueueUrl;
-    return QueueUrl;
+    const createResponse = await this.producer.createQueueAsync(params);
+    this.sqsUrls[topic] = createResponse?.QueueUrl;
+    return this.sqsUrls[topic];
   }
 
   getPayload(msg: any, topic: string): any {
