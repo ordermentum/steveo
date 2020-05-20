@@ -44,7 +44,7 @@
     "lodash.difference": "^4.5.0",
     "lodash.intersection": "^4.4.0",
     "lodash.shuffle": "^4.2.0",
-    "moment": "2.25.3",
+    "moment": "2.26.0",
     "null-logger": "^1.0.0",
     "uuid": "^3.1.0"
   },
