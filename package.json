@@ -80,7 +80,7 @@
     "eslint-import-resolver-typescript": "2.3.0",
     "eslint-plugin-import": "2.22.1",
     "eslint-plugin-prettier": "3.3.1",
-    "eslint-plugin-unicorn": "14.0.1",
+    "eslint-plugin-unicorn": "26.0.1",
     "flow-bin": "0.143.0",
     "flow-coverage-report": "0.8.0",
     "mocha": "6.2.3",
