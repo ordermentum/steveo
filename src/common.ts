@@ -90,6 +90,7 @@ export type Registry = {};
 
 export interface IEvent {
   emit(eventName: string, ...any): any;
+  on(eventName: string, ...any): any;
 }
 
 export type TaskList = {
