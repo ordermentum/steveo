@@ -634,14 +634,14 @@
   dependencies:
     "@types/node" "*"
 
-"@types/rsmq@^0.8.4":
+"@types/rsmq@0.8.4":
   version "0.8.4"
   resolved "https://registry.yarnpkg.com/@types/rsmq/-/rsmq-0.8.4.tgz#85a2f51b9e7cfc2de5271874b5f43c86eb590d8f"
   integrity sha512-pvwcrxRqpxnmIOsfalUxwR9mcT+PuiAY17FvFu2P/gR1BPEOzA7/3X6nNUHFsoszfSFxXmLAImLdLE9X5jpJ8g==
   dependencies:
     rsmq "*"
 
-"@types/sinon@^9.0.11":
+"@types/sinon@9.0.11":
   version "9.0.11"
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-9.0.11.tgz#7af202dda5253a847b511c929d8b6dda170562eb"
   integrity sha512-PwP4UY33SeeVKodNE37ZlOsR9cReypbMJOhZ7BVE0lB+Hix3efCOxiJWiE5Ia+yL9Cn2Ch72EjFTRze8RZsNtg==
@@ -653,7 +653,7 @@
   resolved "https://registry.yarnpkg.com/@types/sinonjs__fake-timers/-/sinonjs__fake-timers-6.0.2.tgz#3a84cf5ec3249439015e14049bd3161419bf9eae"
   integrity sha512-dIPoZ3g5gcx9zZEszaxLSVTvMReD3xxyyDnQUjA6IYDG9Ba2AV0otMPs+77sG9ojB4Qr2N2Vk5RnKeuA0X/0bg==
 
-"@typescript-eslint/eslint-plugin@^4.13.0", "@typescript-eslint/eslint-plugin@^4.20.0":
+"@typescript-eslint/eslint-plugin@4.20.0", "@typescript-eslint/eslint-plugin@^4.13.0":
   version "4.20.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-4.20.0.tgz#9d8794bd99aad9153092ad13c96164e3082e9a92"
   integrity sha512-sw+3HO5aehYqn5w177z2D82ZQlqHCwcKSMboueo7oE4KU9QiC0SAgfS/D4z9xXvpTc8Bt41Raa9fBR8T2tIhoQ==
@@ -1585,7 +1585,7 @@ eslint-config-airbnb@^18.2.1:
     object.assign "^4.1.2"
     object.entries "^1.1.2"
 
-eslint-config-ordermentum@^1.0.1:
+eslint-config-ordermentum@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/eslint-config-ordermentum/-/eslint-config-ordermentum-1.0.1.tgz#986af493d5a1ee44c25450c82edf3107233a50e3"
   integrity sha512-WJHO7OFcFvl8hfM0NWH4LC9hPrt6P1n0soLTR9c2hb7+tSsIyFYXhI2VCd8e+GItKgtxSbwgPiiwHZeZKxQXUw==
@@ -1640,7 +1640,7 @@ eslint-plugin-flowtype@^5.2.0:
     lodash "^4.17.15"
     string-natural-compare "^3.0.1"
 
-eslint-plugin-import@^2.22.1:
+eslint-plugin-import@2.22.1, eslint-plugin-import@^2.22.1:
   version "2.22.1"
   resolved "https://registry.yarnpkg.com/eslint-plugin-import/-/eslint-plugin-import-2.22.1.tgz#0896c7e6a0cf44109a2d97b95903c2bb689d7702"
   integrity sha512-8K7JjINHOpH64ozkAhpT3sd+FswIZTfMZTjdx052pnWrgRCVfp8op9tbjpAk3DdUeI/Ba4C8OjdC0r90erHEOw==
@@ -1676,7 +1676,7 @@ eslint-plugin-jsx-a11y@^6.4.1:
     jsx-ast-utils "^3.1.0"
     language-tags "^1.0.5"
 
-eslint-plugin-mocha@^8.0.0, eslint-plugin-mocha@^8.1.0:
+eslint-plugin-mocha@8.1.0, eslint-plugin-mocha@^8.0.0:
   version "8.1.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-mocha/-/eslint-plugin-mocha-8.1.0.tgz#b9aebbede46a808e46e622c8fd99d2a2f353e725"
   integrity sha512-1EgHvXKRl7W3mq3sntZAi5T24agRMyiTPL4bSXe+B4GksYOjAPEWYx+J3eJg4It1l2NMNZJtk0gQyQ6mfiPhQg==
@@ -1684,7 +1684,7 @@ eslint-plugin-mocha@^8.0.0, eslint-plugin-mocha@^8.1.0:
     eslint-utils "^2.1.0"
     ramda "^0.27.1"
 
-eslint-plugin-prettier@^3.3.1:
+eslint-plugin-prettier@3.3.1, eslint-plugin-prettier@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/eslint-plugin-prettier/-/eslint-plugin-prettier-3.3.1.tgz#7079cfa2497078905011e6f82e8dd8453d1371b7"
   integrity sha512-Rq3jkcFY8RYeQLgk2cCwuc0P7SEFwDravPhsJZOQ5N4YI4DSg50NyqJ/9gdZHzQlHf8MvafSesbNJCcP/FF6pQ==
@@ -1709,6 +1709,25 @@ eslint-plugin-react@^7.22.0:
     resolve "^2.0.0-next.3"
     string.prototype.matchall "^4.0.4"
 
+eslint-plugin-unicorn@29.0.0:
+  version "29.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-unicorn/-/eslint-plugin-unicorn-29.0.0.tgz#7c97cdb5afe932e9f8dc34108e4a5a2a2fbb1906"
+  integrity sha512-R9jGLKb2p6LuOixviByGlH2mkfY72EBELXAPeUufveebN0M2Woa7B7dUO3gN2xPn/+eGjrIm4I2u7dDtr9G4iA==
+  dependencies:
+    ci-info "^3.1.1"
+    clean-regexp "^1.0.0"
+    eslint-template-visitor "^2.3.2"
+    eslint-utils "^2.1.0"
+    eslint-visitor-keys "^2.0.0"
+    import-modules "^2.1.0"
+    lodash "^4.17.20"
+    pluralize "^8.0.0"
+    read-pkg-up "^7.0.1"
+    regexp-tree "^0.1.23"
+    reserved-words "^0.1.2"
+    safe-regex "^2.1.1"
+    semver "^7.3.4"
+
 eslint-plugin-unicorn@^26.0.1:
   version "26.0.1"
   resolved "https://registry.yarnpkg.com/eslint-plugin-unicorn/-/eslint-plugin-unicorn-26.0.1.tgz#65f476bb7624beb417066259dc14c7ebb21eb6fc"
@@ -1724,25 +1743,6 @@ eslint-plugin-unicorn@^26.0.1:
     pluralize "^8.0.0"
     read-pkg-up "^7.0.1"
     regexp-tree "^0.1.21"
-    reserved-words "^0.1.2"
-    safe-regex "^2.1.1"
-    semver "^7.3.4"
-
-eslint-plugin-unicorn@^29.0.0:
-  version "29.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-unicorn/-/eslint-plugin-unicorn-29.0.0.tgz#7c97cdb5afe932e9f8dc34108e4a5a2a2fbb1906"
-  integrity sha512-R9jGLKb2p6LuOixviByGlH2mkfY72EBELXAPeUufveebN0M2Woa7B7dUO3gN2xPn/+eGjrIm4I2u7dDtr9G4iA==
-  dependencies:
-    ci-info "^3.1.1"
-    clean-regexp "^1.0.0"
-    eslint-template-visitor "^2.3.2"
-    eslint-utils "^2.1.0"
-    eslint-visitor-keys "^2.0.0"
-    import-modules "^2.1.0"
-    lodash "^4.17.20"
-    pluralize "^8.0.0"
-    read-pkg-up "^7.0.1"
-    regexp-tree "^0.1.23"
     reserved-words "^0.1.2"
     safe-regex "^2.1.1"
     semver "^7.3.4"
@@ -3034,7 +3034,7 @@ mkdirp@^0.5.0, mkdirp@^0.5.1:
   dependencies:
     minimist "0.0.8"
 
-mocha@^8.3.2:
+mocha@8.3.2:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-8.3.2.tgz#53406f195fa86fbdebe71f8b1c6fb23221d69fcc"
   integrity sha512-UdmISwr/5w+uXLPKspgoV7/RXZwKRTiTjJ2/AC5ZiEztIoOYdfKb19+9jNmEInzx5pBsCyJQzarAxqIGBNYJhg==
@@ -4361,7 +4361,7 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
 
-ts-node@^9.1.1:
+ts-node@9.1.1:
   version "9.1.1"
   resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-9.1.1.tgz#51a9a450a3e959401bda5f004a72d54b936d376d"
   integrity sha512-hPlt7ZACERQGf03M253ytLY3dHbGNGrAq9qIHWUY9XHYl1z7wYngSr3OQ5xmui8o2AaxsONxIzjafLUiWBo1Fg==
