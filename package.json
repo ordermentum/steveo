@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -8,7 +8,7 @@
   "repository": "git@github.com:ordermentum/steveo.git",
   "scripts": {
     "test": "NODE_ENV=test nyc npm run spec",
-    "spec": "yarn run mocha -r ts-node/register --recursive test/**/*_test.ts",
+    "spec": "yarn run mocha -r ts-node/register --recursive test/**/*_test.ts test/task_test.ts",
     "lint": "yarn eslint 'src/**/*.{ts,js}'",
     "lint:test": "yarn eslint 'test/**/*.{ts,js}'",
     "autotest": "yarn run mocha --watch",

@@ -7,12 +7,12 @@ import {
   Attribute,
 } from './common';
 
-class Task<T = any> implements ITask<T> {
+class Task<T = any, R = any> implements ITask<T, R> {
   config: Configuration;
 
   registry: IRegistry;
 
-  subscribe: Callback<T>;
+  subscribe: Callback<T, R>;
 
   producer: IProducer;
 
@@ -23,7 +23,7 @@ class Task<T = any> implements ITask<T> {
     registry: IRegistry,
     producer: IProducer,
     topic: string,
-    subscribe: Callback<T>,
+    subscribe: Callback<T, R>,
     attributes: Attribute[] = [],
     doNotRegister: boolean = false
   ) {

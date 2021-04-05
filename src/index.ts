@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import NULL_LOGGER from 'null-logger';
 import Task from './task';
 import Registry from './registry';
@@ -16,6 +17,8 @@ import {
   Logger,
   ISteveo,
   IRegistry,
+  CustomTopicFunction,
+  IProducer,
   IEvent,
   IMetric,
   Attribute,
@@ -28,9 +31,11 @@ export class Steveo implements ISteveo {
 
   registry: IRegistry;
 
-  getTopicName?: Callback;
+  getTopicName?: CustomTopicFunction;
 
   metric: IMetric;
+
+  _producer?: IProducer;
 
   events: IEvent;
 
@@ -52,32 +57,43 @@ export class Steveo implements ISteveo {
     this.hooks = hooks;
   }
 
-  task<T = any>(
-    topic: string,
-    callBack: Callback<T>,
-    attributes: Attribute[] = [],
-    doNotRegister: boolean = false
-  ): ITask<T> {
-    const prod = producer(
-      this.config.engine,
-      this.config,
-      this.registry,
-      this.logger
-    );
+  getTopic(topic: string) {
     let topicName = topic;
     if (this.getTopicName && typeof this.getTopicName === 'function') {
       topicName = this.getTopicName(topic);
     }
+    return topicName;
+  }
 
-    return new Task<T>(
+  task<T = any, R = any>(
+    topic: string,
+    callBack: Callback<T, R>,
+    attributes: Attribute[] = [],
+    doNotRegister: boolean = false
+  ): ITask<T> {
+    const topicName = this.getTopic(topic);
+
+    return new Task<T, R>(
       this.config,
       this.registry,
-      prod,
+      this.producer,
       topicName,
       callBack,
       attributes,
       doNotRegister
     );
+  }
+
+  get producer() {
+    if (!this._producer) {
+      this._producer = producer(
+        this.config.engine,
+        this.config,
+        this.registry,
+        this.logger
+      );
+    }
+    return this._producer;
   }
 
   runner() {
@@ -91,7 +107,7 @@ export class Steveo implements ISteveo {
     );
   }
 
-  customTopicName = (cb: Callback) => {
+  customTopicName = (cb: CustomTopicFunction) => {
     this.getTopicName = cb;
   };
 }

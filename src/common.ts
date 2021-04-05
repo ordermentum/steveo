@@ -1,6 +1,10 @@
 import { HTTPOptions } from 'aws-sdk';
 
-export type Callback<T = any> = (payload: T) => any;
+/**
+ * FIXME: We should remove the default T = any and require for task
+ * creation to avoid payload?
+ */
+export type Callback<T = any, R = Promise<any>> = (payload?: T) => R;
 
 export type getPayload = (
   msg: any,
@@ -80,9 +84,9 @@ export type Pool = {
   release(client: any): Promise<any>;
 };
 
-export type Task = {
+export type Task<T = any, R = any> = {
   topic: string;
-  subscribe(any): any;
+  subscribe: Callback<T, R>;
   attributes?: Attribute[];
 };
 
@@ -106,10 +110,10 @@ export interface IRegistry {
   getTask(topic: string): Task; //eslint-disable-line
 }
 
-export interface ITask<T = any> {
+export interface ITask<T = any, R = any> {
   config: Configuration;
   registry: IRegistry;
-  subscribe: Callback<T>;
+  subscribe: Callback<T, R>;
   topic: string;
   producer: any;
   publish(payload: T | T[]): Promise<void>;
@@ -134,13 +138,16 @@ export interface IMetric {
   initialize(): Promise<void>;
 }
 
+export type CustomTopicFunction = (topic: string) => string;
 export interface ISteveo {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
+  producer: IProducer;
+  getTopicName?: CustomTopicFunction;
   task(topic: string, callBack: Callback): ITask;
   runner(): IRunner;
-  customTopicName(cb: Callback): void;
+  customTopicName(cb: CustomTopicFunction): void;
 }
 
 export type AsyncWrapper = {
