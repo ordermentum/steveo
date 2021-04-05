@@ -36,6 +36,7 @@ describe('Redis Runner', () => {
     sandbox.stub(redisConf, 'redis').returns({
       deleteMessageAsync: deleteMessageStub,
     });
+    // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
     await anotherRunner.receive(
       [
@@ -63,6 +64,7 @@ describe('Redis Runner', () => {
     sandbox.stub(redisConf, 'redis').returns({
       deleteMessageAsync: deleteMessageStub,
     });
+    // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
     let error = false;
     try {

@@ -81,7 +81,7 @@ class SqsProducer implements IProducer {
 
     return {
       MessageAttributes: messageAttributes,
-      MessageBody: JSON.stringify(Object.assign({}, msg, { _meta: context })),
+      MessageBody: JSON.stringify({ ...msg, _meta: context }),
       QueueUrl: this.sqsUrls[topic],
     };
   }

@@ -4,7 +4,7 @@ import Task from '../src/task';
 
 describe('Task', () => {
   let registry;
-  let task;
+  let task: Task<{ payload: string }>;
   let producer;
   let subscribe;
   let sandbox;
@@ -25,7 +25,13 @@ describe('Task', () => {
       },
     };
     subscribe = sandbox.stub();
-    task = new Task({}, registry, producer, 'a-simple-task', subscribe);
+    task = new Task<{ payload: string }>(
+      {},
+      registry,
+      producer,
+      'a-simple-task',
+      subscribe
+    );
   });
 
   it('should create a new task instance', () => {
@@ -48,9 +54,15 @@ describe('Task', () => {
 
   it('should accept non-promise methods', async () => {
     let x = null;
-    const functionTask = new Task({}, registry, producer, 'test', () => {
-      x = 1;
-    });
+    const functionTask = new Task<{ payload: string }>(
+      {},
+      registry,
+      producer,
+      'test',
+      () => {
+        x = 1;
+      }
+    );
 
     await functionTask.subscribe({ payload: 'something-big' });
     expect(x).to.equal(1);
@@ -61,9 +73,10 @@ describe('Task', () => {
       send: sandbox.stub().throws(),
       initialize: sandbox.stub().resolves(),
     };
-    const failTask = new Task(
+    const failTask = new Task<{ payload: string }>(
       {},
       registry,
+      // @ts-ignore
       failureProducer,
       'a-simple-task',
       subscribe

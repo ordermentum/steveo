@@ -18,7 +18,7 @@ describe('SQS Producer', () => {
       createQueueAsync: sandbox
         .stub()
         .resolves({ data: { QueueUrl: 'kjsdkh' } }),
-        getQueueUrlAsync: sandbox.stub().resolves({QueueUrl: null})
+      getQueueUrlAsync: sandbox.stub().resolves({ QueueUrl: null }),
     });
     const p = new Producer({}, registry);
     await p.initialize('test');
@@ -30,17 +30,17 @@ describe('SQS Producer', () => {
     const createQueueAsyncStub = sandbox
       .stub()
       .resolves({ data: { QueueUrl: 'kjsdkh' } });
-    const getQueueUrlAsyncStub = sandbox.stub()
+    const getQueueUrlAsyncStub = sandbox.stub();
     sandbox.stub(sqsConf, 'sqs').returns({
       createQueueAsync: createQueueAsyncStub,
-      getQueueUrlAsync: getQueueUrlAsyncStub.resolves({QueueUrl: null})
+      getQueueUrlAsync: getQueueUrlAsyncStub.resolves({ QueueUrl: null }),
     });
     const p = new Producer({}, registry);
     await p.initialize('test');
     expect(createQueueAsyncStub.callCount).to.equal(1);
-    getQueueUrlAsyncStub.resolves({QueueUrl: 'test'});
+    getQueueUrlAsyncStub.resolves({ QueueUrl: 'test' });
     await p.initialize('test');
-    expect(createQueueAsyncStub.callCount).to.equal(1); //Should remain 1, not create queue again
+    expect(createQueueAsyncStub.callCount).to.equal(1); // Should remain 1, not create queue again
   });
 
   it('should initialize & send if no sqsUrls ', async () => {
@@ -64,11 +64,17 @@ describe('SQS Producer', () => {
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
-    const getQueueUrlAsyncStub = sandbox.stub().resolves({QueueUrl: 'test-topic'})
+    const getQueueUrlAsyncStub = sandbox
+      .stub()
+      .resolves({ QueueUrl: 'test-topic' });
     const createQueueAsyncStub = sandbox
       .stub()
       .resolves({ data: { QueueUrl: 'kjsdkh' } });
-    p.producer = {  createQueueAsync: createQueueAsyncStub, sendMessageAsync: sendMessageStub, getQueueUrlAsync: getQueueUrlAsyncStub };
+    p.producer = {
+      createQueueAsync: createQueueAsyncStub,
+      sendMessageAsync: sendMessageStub,
+      getQueueUrlAsync: getQueueUrlAsyncStub,
+    };
     p.sqsUrls = {
       'test-topic': 'asdasd',
     };
@@ -84,7 +90,7 @@ describe('SQS Producer', () => {
     sandbox.spy(p, 'getPayload');
     registry.addNewTask({
       topic: 'test-topic',
-      subscribe: () => { },
+      subscribe: () => {},
       attributes: [
         {
           name: 'Hello',
@@ -94,11 +100,17 @@ describe('SQS Producer', () => {
       ],
     });
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
-    const getQueueUrlAsyncStub = sandbox.stub().resolves({QueueUrl: 'test-topic'});
+    const getQueueUrlAsyncStub = sandbox
+      .stub()
+      .resolves({ QueueUrl: 'test-topic' });
     const createQueueAsyncStub = sandbox
       .stub()
       .resolves({ data: { QueueUrl: 'kjsdkh' } });
-    p.producer = {  createQueueAsync: createQueueAsyncStub, sendMessageAsync: sendMessageStub,  getQueueUrlAsync: getQueueUrlAsyncStub };
+    p.producer = {
+      createQueueAsync: createQueueAsyncStub,
+      sendMessageAsync: sendMessageStub,
+      getQueueUrlAsync: getQueueUrlAsyncStub,
+    };
     p.sqsUrls = {
       'test-topic': 'asdasd',
     };
@@ -114,7 +126,7 @@ describe('SQS Producer', () => {
     sandbox.spy(p, 'getPayload');
     registry.addNewTask({
       topic: 'test-topic',
-      subscribe: () => { },
+      subscribe: () => {},
       attributes: [
         {
           name: 'Hello',
@@ -150,7 +162,7 @@ describe('SQS Producer', () => {
     sandbox.spy(p, 'getPayload');
     registry.addNewTask({
       topic: 'test-topic',
-      subscribe: () => { },
+      subscribe: () => {},
       attributes: [
         {
           name: 'Hello',

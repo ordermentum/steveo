@@ -1,6 +1,6 @@
 import { HTTPOptions } from 'aws-sdk';
 
-export type Callback = (x: any) => any;
+export type Callback<T = any> = (payload: T) => any;
 
 export type getPayload = (
   msg: any,
@@ -106,13 +106,13 @@ export interface IRegistry {
   getTask(topic: string): Task; //eslint-disable-line
 }
 
-export interface ITask {
+export interface ITask<T = any> {
   config: Configuration;
   registry: IRegistry;
-  subscribe: Callback;
+  subscribe: Callback<T>;
   topic: string;
   producer: any;
-  publish(payload: any): Promise<void>;
+  publish(payload: T | T[]): Promise<void>;
 }
 
 export type Consumer = {

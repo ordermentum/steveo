@@ -52,12 +52,12 @@ export class Steveo implements ISteveo {
     this.hooks = hooks;
   }
 
-  task(
+  task<T = any>(
     topic: string,
-    callBack: Callback,
+    callBack: Callback<T>,
     attributes: Attribute[] = [],
     doNotRegister: boolean = false
-  ): ITask {
+  ): ITask<T> {
     const prod = producer(
       this.config.engine,
       this.config,
@@ -69,7 +69,7 @@ export class Steveo implements ISteveo {
       topicName = this.getTopicName(topic);
     }
 
-    return new Task(
+    return new Task<T>(
       this.config,
       this.registry,
       prod,

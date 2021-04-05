@@ -7,12 +7,12 @@ import {
   Attribute,
 } from './common';
 
-class Task implements ITask {
+class Task<T = any> implements ITask<T> {
   config: Configuration;
 
   registry: IRegistry;
 
-  subscribe: Callback;
+  subscribe: Callback<T>;
 
   producer: IProducer;
 
@@ -23,7 +23,7 @@ class Task implements ITask {
     registry: IRegistry,
     producer: IProducer,
     topic: string,
-    subscribe: Callback,
+    subscribe: Callback<T>,
     attributes: Attribute[] = [],
     doNotRegister: boolean = false
   ) {
@@ -43,7 +43,7 @@ class Task implements ITask {
     }
   }
 
-  async publish(payload: any) {
+  async publish(payload: T | T[]) {
     let params;
     if (!Array.isArray(payload)) {
       params = [payload];

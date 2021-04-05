@@ -13,6 +13,7 @@ describe('Runner', () => {
   let registry;
   beforeEach(() => {
     registry = new Registry();
+    // @ts-ignore
     runner = new Runner(
       {
         clientId: uuid.v4(),
@@ -63,10 +64,14 @@ describe('Runner', () => {
         kafkaGroupId: '123',
         logLevel: 1,
       },
+      // @ts-ignore
       anotherRegistry,
       build()
     );
-    const commitOffsetStub = sandbox.stub(anotherRunner.consumer, 'commitOffset');
+    const commitOffsetStub = sandbox.stub(
+      anotherRunner.consumer,
+      'commitOffset'
+    );
     await anotherRunner.receive(
       [
         {
@@ -83,6 +88,7 @@ describe('Runner', () => {
         },
       ],
       'a-topic',
+      // @ts-ignore
       0
     );
     expect(commitOffsetStub.callCount).to.equal(2);
@@ -106,6 +112,7 @@ describe('Runner', () => {
         kafkaGroupId: '123',
         logLevel: 1,
       },
+      // @ts-ignore
       anotherRegistry,
       build()
     );
@@ -123,6 +130,7 @@ describe('Runner', () => {
           },
         ],
         'a-topic',
+        // @ts-ignore
         0
       );
     } catch (ex) {

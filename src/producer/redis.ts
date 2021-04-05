@@ -48,7 +48,7 @@ class RedisProducer implements IProducer {
     const task = this.registry.getTask(topic);
     return {
       qname: task.topic,
-      message: JSON.stringify(Object.assign({}, msg, { _meta: context })),
+      message: JSON.stringify({ ...msg, _meta: context }),
     };
   }
 

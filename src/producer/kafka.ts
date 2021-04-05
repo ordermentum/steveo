@@ -40,7 +40,7 @@ class KafkaProducer implements IProducer {
 
   getPayload(msg: any, topic: string) {
     const context = getMeta(msg);
-    const payload = JSON.stringify(Object.assign({}, msg, { _meta: context }));
+    const payload = JSON.stringify({ ...msg, _meta: context });
     const size = Buffer.from(payload, 'utf-8');
     this.logger.debug('Payload Size:', topic, size.length);
     return {

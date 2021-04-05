@@ -3,6 +3,7 @@ import Config from '../src/config';
 
 describe('Config', () => {
   it('default values', () => {
+    // @ts-ignore
     const config = new Config({
       kafkaConnection: 'kakfa://kafka:9200',
       clientId: 'test',
@@ -15,6 +16,7 @@ describe('Config', () => {
   });
 
   it('sets values', () => {
+    // @ts-ignore
     const config = new Config({
       kafkaConnection: 'kakfa://kafka:9200',
       clientId: 'test',
@@ -32,6 +34,7 @@ describe('Config', () => {
   });
 
   it('checks engine values', () => {
+    // @ts-ignore
     const config = new Config({
       kafkaConnection: 'kakfa://kafka:9200',
       clientId: 'test',
