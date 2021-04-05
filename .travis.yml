@@ -1,7 +1,8 @@
 language: node_js
 node_js:
-  - "8"
-  - "10"
+  - '10'
+  - '12'
+  - '14'
 script:
   - npm run lint
   - npm run test
@@ -14,4 +15,4 @@ branches:
     - /^greenkeeper/.*$/
 cache:
   directories:
-  - $HOME/.npm
+    - $HOME/.npm
