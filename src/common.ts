@@ -1,10 +1,10 @@
 import { HTTPOptions } from 'aws-sdk';
 
 /**
- * FIXME: We should remove the default T = any and require for task
- * creation to avoid payload?
+ * FIXME: for callbacks that don't take an argument, need to specify
+ * T = void to make the parameter optional
  */
-export type Callback<T = any, R = Promise<any>> = (payload?: T) => R;
+export type Callback<T = any, R = Promise<any>> = (payload: T) => R;
 
 export type getPayload = (
   msg: any,
