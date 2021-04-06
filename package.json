@@ -13,8 +13,7 @@
     "lint:test": "yarn eslint 'test/**/*.{ts,js}'",
     "autotest": "yarn run mocha --watch",
     "prepublish": "yarn run build",
-    "build:ts": "yarn run tsc",
-    "build": "yarn build:ts",
+    "build": "yarn run tsc",
     "typecheck": "yarn run tsc --noEmit",
     "steveo": "node ./lib/cli-task.js"
   },
