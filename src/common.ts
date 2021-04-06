@@ -104,6 +104,7 @@ export type TaskList = {
 export interface IRegistry {
   registeredTasks: TaskList;
   events: IEvent;
+  topics: Set<string>;
   addNewTask(task: Task): void;
   removeTask(task: Task): void;
   getTopics(): string[];

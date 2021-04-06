@@ -66,26 +66,35 @@ export class Steveo implements ISteveo {
   }
 
   task<T = any, R = any>(
-    topic: string,
-    callBack: Callback<T, R>,
+    name: string,
+    callback: Callback<T, R>,
     attributes: Attribute[] = [],
     doNotRegister: boolean = false
   ): ITask<T> {
-    const topicName = this.getTopic(topic);
+    const topic = this.getTopic(name);
 
-    return new Task<T, R>(
+    const task = new Task<T, R>(
       this.config,
       this.registry,
       this.producer,
-      topicName,
-      callBack,
-      attributes,
-      doNotRegister
+      topic,
+      callback,
+      attributes
     );
+
+    if (!doNotRegister) {
+      this.registry.addNewTask(task);
+    }
+
+    return task;
   }
 
   async publish<T = any>(topic: string, payload: T) {
     return this.producer.send<T>(topic, payload);
+  }
+
+  async registerTopic(topic: string) {
+    this.registry.topics.add(topic);
   }
 
   get producer() {

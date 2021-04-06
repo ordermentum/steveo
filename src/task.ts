@@ -18,29 +18,22 @@ class Task<T = any, R = any> implements ITask<T, R> {
 
   topic: string;
 
+  attributes: Attribute[];
+
   constructor(
     config: Configuration,
     registry: IRegistry,
     producer: IProducer,
     topic: string,
     subscribe: Callback<T, R>,
-    attributes: Attribute[] = [],
-    doNotRegister: boolean = false
+    attributes: Attribute[] = []
   ) {
     this.config = config;
     this.registry = registry;
     this.subscribe = subscribe;
     this.producer = producer;
     this.topic = topic;
-
-    const task = {
-      topic,
-      subscribe: this.subscribe,
-      attributes,
-    };
-    if (!doNotRegister) {
-      this.registry.addNewTask(task);
-    }
+    this.attributes = attributes;
   }
 
   async publish(payload: T | T[]) {

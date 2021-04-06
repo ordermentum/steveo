@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import Task from '../src/task';
+import Task from '../../src/task';
 
 describe('Task', () => {
   let registry;

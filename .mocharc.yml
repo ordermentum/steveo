@@ -4,4 +4,8 @@ parallel: true
 retries: 1
 exit: true
 bail: true
+colors: true
 max-http-header-size: 16384
+require:
+  - 'ts-node/register'
+  - 'source-map-support/register'

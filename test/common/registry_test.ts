@@ -1,9 +1,9 @@
 import { expect } from 'chai';
-import Registry from '../src/registry';
+import Registry from '../../src/registry';
 
 describe('Registry', () => {
-  let registry;
-  let runner;
+  let registry: Registry;
+
   beforeEach(() => {
     registry = new Registry();
   });
@@ -23,13 +23,10 @@ describe('Registry', () => {
       topic: 'hello',
       subscribe: () => {},
     });
-    await registry.addNewTask(
-      {
-        topic: 'hello',
-        subscribe: () => {},
-      },
-      runner
-    );
+    await registry.addNewTask({
+      topic: 'hello',
+      subscribe: () => {},
+    });
     expect(registry.getTopics().length).to.equal(1);
   });
 
@@ -60,6 +57,8 @@ describe('Registry', () => {
 
     expect(registry.getTopics().length).to.equal(1);
     expect(registry.getTask('hello').topic).to.equal('hello');
+    expect(registry.topics.size).to.equal(1);
+    expect(registry.topics.has('hello')).to.equal(true);
     expect(registry.getTask('hello').attributes).to.deep.equal([
       { name: 'An Attribute', dataType: 'string', value: 'aaaaa' },
     ]);

@@ -1,10 +1,9 @@
 import { expect } from 'chai';
-import Config from '../src/config';
+import Config from '../../src/config';
 
 describe('Config', () => {
   it('default values', () => {
-    // @ts-ignore
-    const config = new Config({
+    const config = Config({
       kafkaConnection: 'kakfa://kafka:9200',
       clientId: 'test',
     });
@@ -16,8 +15,7 @@ describe('Config', () => {
   });
 
   it('sets values', () => {
-    // @ts-ignore
-    const config = new Config({
+    const config = Config({
       kafkaConnection: 'kakfa://kafka:9200',
       clientId: 'test',
       kafkaGroupId: 'test',
@@ -34,8 +32,7 @@ describe('Config', () => {
   });
 
   it('checks engine values', () => {
-    // @ts-ignore
-    const config = new Config({
+    const config = Config({
       kafkaConnection: 'kakfa://kafka:9200',
       clientId: 'test',
       kafkaGroupId: 'test',

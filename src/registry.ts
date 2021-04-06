@@ -1,29 +1,34 @@
 import events from 'events';
 
-import { IRegistry, IEvent, Task } from './common';
+import { IRegistry, IEvent, Task, TaskList } from './common';
 
 class Registry implements IRegistry {
-  registeredTasks: any;
+  registeredTasks: TaskList;
 
   events: IEvent;
+
+  topics: Set<string>;
 
   constructor() {
     this.registeredTasks = {};
     this.events = new events.EventEmitter();
+    this.topics = new Set<string>();
   }
 
   addNewTask(task: Task) {
     this.events.emit('task_added', task);
+    this.topics.add(task.topic);
     this.registeredTasks[task.topic] = task;
   }
 
   removeTask(task: Task) {
     this.events.emit('task_removed', task);
     delete this.registeredTasks[task.topic];
+    this.topics.delete(task.topic);
   }
 
   getTopics(): Array<string> {
-    return Object.keys(this.registeredTasks);
+    return [...this.topics];
   }
 
   getTask(topic: string): Task {

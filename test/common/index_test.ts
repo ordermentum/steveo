@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import Steveo from '../src';
+import Steveo from '../../src';
 
 describe('Index', () => {
   let sandbox: sinon.SinonSandbox;
