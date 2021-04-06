@@ -86,7 +86,7 @@ class SqsProducer implements IProducer {
     };
   }
 
-  async send(topic: string, payload: any) {
+  async send<T = any>(topic: string, payload: T) {
     try {
       await this.initialize(topic);
     } catch (ex) {

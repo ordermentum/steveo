@@ -52,6 +52,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
     }
 
     try {
+      // sqs calls this method twice
       await this.producer.initialize(this.topic);
       await Promise.all(
         params.map(data => {

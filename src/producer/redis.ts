@@ -52,7 +52,7 @@ class RedisProducer implements IProducer {
     };
   }
 
-  async send(topic: string, payload: any) {
+  async send<T = any>(topic: string, payload: T) {
     const data = this.getPayload(payload, topic);
     try {
       const response = await this.producer.sendMessageAsync(data);

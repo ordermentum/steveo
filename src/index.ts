@@ -84,6 +84,10 @@ export class Steveo implements ISteveo {
     );
   }
 
+  async publish<T = any>(topic: string, payload: T) {
+    return this.producer.send<T>(topic, payload);
+  }
+
   get producer() {
     if (!this._producer) {
       this._producer = producer(

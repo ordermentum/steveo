@@ -173,7 +173,7 @@ export interface IProducer {
   producer: any;
   initialize(topic?: string): Promise<void>;
   getPayload(msg: any, topic: string): any;
-  send(topic: string, payload: any): Promise<void>;
+  send<T = any>(topic: string, payload: T): Promise<void>;
 }
 
 export type sqsUrls = {
