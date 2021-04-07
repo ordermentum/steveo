@@ -1,9 +1,19 @@
-# Steveo - Task Framework for Node.js
+<h1 align="center">Welcome to steveo 👋</h1>
+<p>
+  <a href="https://www.npmjs.com/package/steveo" target="_blank">
+    <img alt="Version" src="https://img.shields.io/npm/v/steveo.svg">
+  </a>
+  <a href="#" target="_blank">
+    <img alt="License: Apache--2.0" src="https://img.shields.io/badge/License-Apache--2.0-yellow.svg" />
+  </a>
+</p>
 
 [![npm version](https://badge.fury.io/js/steveo.svg)](https://badge.fury.io/js/steveo)
 [![Build Status](https://travis-ci.org/ordermentum/steveo.svg?branch=master)](https://travis-ci.org/ordermentum/steveo)
 [![npm](https://img.shields.io/npm/l/steveo.svg)](https://www.npmjs.com/package/steveo)
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
+
+> A Task Pub/Sub Background processing library ( Task Framework for Node.js)
 
 Steveo is a task management library that supports Kafka, SQS and Redis.
 
@@ -18,12 +28,28 @@ PUBLISH ----->|   TASK    |     | REGISTRY  |     |   RUNNER  |-----> RECEIVE
               +-----------+     +-----------+     +-----------+
 ```
 
+## Install
+
+```sh
+yarn install
+```
+
+## Run tests
+
+```sh
+yarn run test
+```
+
+## Author
+
+👤 **engineering@ordermentum.com**
+
 ### Task
 
 Holds the information about the type of task. It has below methods,
 
-- publish
-- subscribe function
+- publish - send a message onto a queue
+- subscribe - process a message
 
 ### Registry
 
