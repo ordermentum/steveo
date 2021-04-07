@@ -33,7 +33,7 @@ export class Steveo implements ISteveo {
 
   getTopicName?: CustomTopicFunction;
 
-  metric: IMetric;
+  metric: IMetric | null;
 
   _producer?: IProducer;
 
@@ -95,7 +95,7 @@ export class Steveo implements ISteveo {
   }
 
   async registerTopic(topic: string) {
-    this.registry.topics.add(topic);
+    this.registry.addTopic(topic);
     await this.producer.initialize(topic);
   }
 

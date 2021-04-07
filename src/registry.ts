@@ -31,6 +31,10 @@ class Registry implements IRegistry {
     return [...this.topics];
   }
 
+  addTopic(topic: string) {
+    this.topics.add(topic);
+  }
+
   getTask(topic: string): Task | null {
     return this.registeredTasks[topic] ? this.registeredTasks[topic] : null;
   }

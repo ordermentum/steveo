@@ -108,6 +108,7 @@ export interface IRegistry {
   addNewTask(task: Task): void;
   removeTask(task: Task): void;
   getTopics(): string[];
+  addTopic(topic: string): void;
   getTask(topic: string): Task | null;
 }
 
@@ -171,7 +172,7 @@ export interface IProducer {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
-  producer: any;
+  producer?: any;
   initialize(topic?: string): Promise<void>;
   getPayload(msg: any, topic: string): any;
   send<T = any>(topic: string, payload: T): Promise<void>;
