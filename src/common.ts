@@ -108,7 +108,7 @@ export interface IRegistry {
   addNewTask(task: Task): void;
   removeTask(task: Task): void;
   getTopics(): string[];
-  getTask(topic: string): Task; //eslint-disable-line
+  getTask(topic: string): Task | null;
 }
 
 export interface ITask<T = any, R = any> {

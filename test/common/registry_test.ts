@@ -15,7 +15,7 @@ describe('Registry', () => {
     });
 
     expect(registry.getTopics().length).to.equal(1);
-    expect(registry.getTask('hello').topic).to.equal('hello');
+    expect(registry.getTask('hello')?.topic).to.equal('hello');
   });
 
   it('should not duplicate tasks', async () => {
@@ -56,10 +56,10 @@ describe('Registry', () => {
     });
 
     expect(registry.getTopics().length).to.equal(1);
-    expect(registry.getTask('hello').topic).to.equal('hello');
+    expect(registry.getTask('hello')?.topic).to.equal('hello');
     expect(registry.topics.size).to.equal(1);
     expect(registry.topics.has('hello')).to.equal(true);
-    expect(registry.getTask('hello').attributes).to.deep.equal([
+    expect(registry.getTask('hello')?.attributes).to.deep.equal([
       { name: 'An Attribute', dataType: 'string', value: 'aaaaa' },
     ]);
   });
