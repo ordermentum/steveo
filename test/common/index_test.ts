@@ -17,8 +17,8 @@ describe('Index', () => {
     const dummy = new DummyProducer({}, steveo.registry, NULL_LOGGER);
     const initializeStub = sandbox.stub(dummy, 'initialize').resolves();
     steveo._producer = dummy;
-    await steveo.registerTopic('TEST_TOPIC');
-    expect(steveo.registry.topics.size).to.equal(1);
+    await steveo.registerTopic('TEST_TOPIC', 'TEST_TOPIC');
+    expect(steveo.registry.items.size).to.equal(1);
     expect(initializeStub.calledOnce).to.equal(true);
   });
   it('handles registering topics', async () => {
@@ -29,10 +29,24 @@ describe('Index', () => {
   });
   it('handles publishing topics', async () => {
     const steveo = Steveo({ engine: 'dummy' }, NULL_LOGGER, {})();
+    steveo.registry.addTopic('TEST_TOPIC');
     const dummy = new DummyProducer({}, steveo.registry, NULL_LOGGER);
-    const initializeStub = sandbox.stub(dummy, 'initialize').resolves();
+    const sendStub = sandbox.stub(dummy, 'send').resolves();
     steveo._producer = dummy;
     await steveo.publish('TEST_TOPIC', {});
-    expect(initializeStub.calledOnce).to.equal(true);
+    expect(sendStub.calledOnce).to.equal(true);
+  });
+
+  it('handles publishing to named topics', async () => {
+    const steveo = Steveo({ engine: 'dummy' }, NULL_LOGGER, {})();
+    steveo.registry.addTopic('TEST_TOPIC', 'PRODUCTION_TEST_TOPIC');
+    const dummy = new DummyProducer({}, steveo.registry, NULL_LOGGER);
+    const sendStub = sandbox.stub(dummy, 'send').resolves();
+    steveo._producer = dummy;
+    await steveo.publish('TEST_TOPIC', { hello: 'world' });
+    expect(sendStub.calledOnce).to.equal(true);
+    expect(
+      sendStub.calledWith('PRODUCTION_TEST_TOPIC', { hello: 'world' })
+    ).to.equal(true);
   });
 });

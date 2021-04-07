@@ -30,7 +30,9 @@ describe('Redis Producer', () => {
 
     const p = new Producer({}, registry);
     sinon.spy(p, 'getPayload');
+    // @ts-ignore
     registry.addNewTask({
+      name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
     });
@@ -53,7 +55,9 @@ describe('Redis Producer', () => {
 
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
+    // @ts-ignore
     registry.addNewTask({
+      name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
     });
@@ -79,7 +83,9 @@ describe('Redis Producer', () => {
 
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
+    // @ts-ignore
     registry.addNewTask({
+      name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
       attributes: [

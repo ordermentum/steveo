@@ -45,7 +45,7 @@ describe('SQS Producer', () => {
 
   it('should initialize & send if no sqsUrls ', async () => {
     const registry = new Registry();
-
+    registry.addTopic('test-topic');
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
@@ -61,6 +61,7 @@ describe('SQS Producer', () => {
 
   it('should send without initialize if sqsUrls are present', async () => {
     const registry = new Registry();
+    registry.addTopic('test-topic');
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
@@ -88,7 +89,9 @@ describe('SQS Producer', () => {
 
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
+    // @ts-ignore
     registry.addNewTask({
+      name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
       attributes: [
@@ -124,7 +127,9 @@ describe('SQS Producer', () => {
 
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
+    // @ts-ignore
     registry.addNewTask({
+      name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
       attributes: [
@@ -160,7 +165,9 @@ describe('SQS Producer', () => {
 
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
+    // @ts-ignore
     registry.addNewTask({
+      name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
       attributes: [

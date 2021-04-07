@@ -38,6 +38,7 @@ class SqsProducer implements IProducer {
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
+
     const data = await this.producer
       .getQueueUrlAsync({ QueueName: topic })
       .catch(_ => null);

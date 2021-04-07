@@ -72,11 +72,11 @@ export class Steveo implements ISteveo {
     doNotRegister: boolean = false
   ): ITask<T> {
     const topic = this.getTopic(name);
-
     const task = new Task<T, R>(
       this.config,
       this.registry,
       this.producer,
+      name,
       topic,
       callback,
       attributes
@@ -89,14 +89,15 @@ export class Steveo implements ISteveo {
     return task;
   }
 
-  async publish<T = any>(topic: string, payload: T) {
-    await this.producer.initialize(topic);
+  async publish<T = any>(name: string, payload: T) {
+    const topic = this.registry.getTopic(name);
     return this.producer.send<T>(topic, payload);
   }
 
-  async registerTopic(topic: string) {
-    this.registry.addTopic(topic);
-    await this.producer.initialize(topic);
+  async registerTopic(name: string, topic?: string) {
+    const topicName = topic ?? name;
+    this.registry.addTopic(name, topic);
+    await this.producer.initialize(topicName);
   }
 
   get producer() {

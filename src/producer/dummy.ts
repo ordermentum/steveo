@@ -28,6 +28,7 @@ class DummyProducer implements IProducer {
     if (!topic) {
       return;
     }
+
     if (!this.queues.has(topic)) {
       this.queues.add(topic);
     }

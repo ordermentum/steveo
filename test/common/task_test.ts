@@ -20,6 +20,7 @@ describe('Task', () => {
     registry = {
       addNewTask: sandbox.stub(),
       removeTask: sandbox.stub(),
+      getTopic: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },
@@ -29,6 +30,7 @@ describe('Task', () => {
       {},
       registry,
       producer,
+      'a-simple-task',
       'a-simple-task',
       subscribe
     );
@@ -59,6 +61,7 @@ describe('Task', () => {
       registry,
       producer,
       'test',
+      'test',
       () => {
         x = 1;
       }
@@ -78,6 +81,7 @@ describe('Task', () => {
       registry,
       // @ts-ignore
       failureProducer,
+      'a-simple-task',
       'a-simple-task',
       subscribe
     );

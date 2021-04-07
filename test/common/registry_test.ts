@@ -9,21 +9,27 @@ describe('Registry', () => {
   });
 
   it('should add new tasks', () => {
+    // @ts-ignore
     registry.addNewTask({
+      name: 'hello',
       topic: 'hello',
       subscribe: () => {},
     });
 
     expect(registry.getTopics().length).to.equal(1);
-    expect(registry.getTask('hello')?.topic).to.equal('hello');
+    expect(registry.getTask('hello')?.name).to.equal('hello');
   });
 
   it('should not duplicate tasks', async () => {
+    // @ts-ignore
     await registry.addNewTask({
+      name: 'hello',
       topic: 'hello',
       subscribe: () => {},
     });
+    // @ts-ignore
     await registry.addNewTask({
+      name: 'hello',
       topic: 'hello',
       subscribe: () => {},
     });
@@ -31,11 +37,15 @@ describe('Registry', () => {
   });
 
   it('should remove tasks', async () => {
+    // @ts-ignore
     await registry.addNewTask({
+      name: 'hello',
       topic: 'hello',
       subscribe: () => {},
     });
+    // @ts-ignore
     await registry.removeTask({
+      name: 'hello',
       topic: 'hello',
       subscribe: () => {},
     });
@@ -43,7 +53,9 @@ describe('Registry', () => {
   });
 
   it('should add new tasks with attributes', () => {
+    // @ts-ignore
     registry.addNewTask({
+      name: 'hello',
       topic: 'hello',
       subscribe: () => {},
       attributes: [
@@ -56,9 +68,9 @@ describe('Registry', () => {
     });
 
     expect(registry.getTopics().length).to.equal(1);
-    expect(registry.getTask('hello')?.topic).to.equal('hello');
-    expect(registry.topics.size).to.equal(1);
-    expect(registry.topics.has('hello')).to.equal(true);
+    expect(registry.getTask('hello')?.name).to.equal('hello');
+    expect(registry.items.size).to.equal(1);
+    expect(registry.items.has('hello')).to.equal(true);
     expect(registry.getTask('hello')?.attributes).to.deep.equal([
       { name: 'An Attribute', dataType: 'string', value: 'aaaaa' },
     ]);

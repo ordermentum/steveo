@@ -84,12 +84,6 @@ export type Pool = {
   release(client: any): Promise<any>;
 };
 
-export type Task<T = any, R = any> = {
-  topic: string;
-  subscribe: Callback<T, R>;
-  attributes?: Attribute[];
-};
-
 export type Registry = {};
 
 export interface IEvent {
@@ -98,25 +92,28 @@ export interface IEvent {
 }
 
 export type TaskList = {
-  [key: string]: Task;
+  [key: string]: ITask;
 };
 
 export interface IRegistry {
   registeredTasks: TaskList;
   events: IEvent;
-  topics: Set<string>;
-  addNewTask(task: Task): void;
-  removeTask(task: Task): void;
+  items: Map<string, string>;
+  addNewTask(task: ITask, topic?: string): void;
+  removeTask(task: ITask): void;
   getTopics(): string[];
-  addTopic(topic: string): void;
-  getTask(topic: string): Task | null;
+  getTopic(name: string): string;
+  addTopic(name: string, topic?: string): void;
+  getTask(topic: string): ITask | null;
 }
 
 export interface ITask<T = any, R = any> {
   config: Configuration;
   registry: IRegistry;
   subscribe: Callback<T, R>;
+  name: string;
   topic: string;
+  attributes: Attribute[];
   producer: any;
   publish(payload: T | T[]): Promise<void>;
 }

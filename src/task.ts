@@ -9,21 +9,18 @@ import {
 
 class Task<T = any, R = any> implements ITask<T, R> {
   config: Configuration;
-
   registry: IRegistry;
-
   subscribe: Callback<T, R>;
-
   producer: IProducer;
-
+  name: string;
   topic: string;
-
   attributes: Attribute[];
 
   constructor(
     config: Configuration,
     registry: IRegistry,
     producer: IProducer,
+    name: string,
     topic: string,
     subscribe: Callback<T, R>,
     attributes: Attribute[] = []
@@ -32,6 +29,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
     this.registry = registry;
     this.subscribe = subscribe;
     this.producer = producer;
+    this.name = name;
     this.topic = topic;
     this.attributes = attributes;
   }
