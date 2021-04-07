@@ -96,6 +96,7 @@ export class Steveo implements ISteveo {
 
   async registerTopic(topic: string) {
     this.registry.topics.add(topic);
+    await this.producer.initialize(topic);
   }
 
   get producer() {
