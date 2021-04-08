@@ -102,6 +102,7 @@ export interface IRegistry {
   addNewTask(task: ITask, topic?: string): void;
   removeTask(task: ITask): void;
   getTopics(): string[];
+  getTaskTopics(): string[];
   getTopic(name: string): string;
   addTopic(name: string, topic?: string): void;
   getTask(topic: string): ITask | null;

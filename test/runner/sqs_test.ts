@@ -124,6 +124,7 @@ describe('SQS Runner', () => {
         subscribe: subscribeStub,
       }),
       getTopics: () => ['test'],
+      getTaskTopics: () => ['test'],
       events: {
         emit: sandbox.stub(),
       },

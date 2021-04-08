@@ -37,6 +37,10 @@ class Registry implements IRegistry {
     return [...this.items.values()];
   }
 
+  getTaskTopics(): Array<string> {
+    return Object.keys(this.registeredTasks);
+  }
+
   addTopic(name: string, topic?: string) {
     this.items.set(name, topic ?? name);
   }
