@@ -46,7 +46,7 @@
     "uuid": "^3.1.0"
   },
   "optionalDependencies": {
-    "aws-sdk": "^2.473.0",
+    "aws-sdk": "^2.489.0",
     "no-kafka": "^3.1.10",
     "rsmq": "^0.12.0"
   },
