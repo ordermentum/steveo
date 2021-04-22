@@ -1,7 +1,0 @@
--R spec
---timeout 100000
---require test/test_helper
---require source-map-support/register
---full-trace
---bail
---exit

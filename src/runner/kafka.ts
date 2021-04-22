@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 import nullLogger from 'null-logger';
 import * as Kafka from 'no-kafka';
 import BaseRunner from '../base/base_runner';
@@ -60,6 +61,11 @@ class KafkaRunner extends BaseRunner implements IRunner {
         this.registry.events.emit('runner_receive', topic, params, context);
         await this.consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' }); // eslint-disable-line
         const task = this.registry.getTask(topic);
+        if (!task) {
+          this.logger.error(`Unknown Task ${topic}`);
+          continue;
+        }
+
         this.logger.debug('Start subscribe', topic, params);
         await task.subscribe(params); // eslint-disable-line
         this.logger.debug('Finish subscribe', topic, params);

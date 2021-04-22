@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import NULL_LOGGER from 'null-logger';
 import Task from './task';
 import Registry from './registry';
@@ -16,6 +17,8 @@ import {
   Logger,
   ISteveo,
   IRegistry,
+  CustomTopicFunction,
+  IProducer,
   IEvent,
   IMetric,
   Attribute,
@@ -28,9 +31,11 @@ export class Steveo implements ISteveo {
 
   registry: IRegistry;
 
-  getTopicName?: Callback;
+  getTopicName?: CustomTopicFunction;
 
-  metric: IMetric;
+  metric: IMetric | null;
+
+  _producer?: IProducer;
 
   events: IEvent;
 
@@ -52,32 +57,59 @@ export class Steveo implements ISteveo {
     this.hooks = hooks;
   }
 
-  task(
-    topic: string,
-    callBack: Callback,
-    attributes: Attribute[] = [],
-    doNotRegister: boolean = false
-  ): ITask {
-    const prod = producer(
-      this.config.engine,
-      this.config,
-      this.registry,
-      this.logger
-    );
+  getTopic(topic: string) {
     let topicName = topic;
     if (this.getTopicName && typeof this.getTopicName === 'function') {
       topicName = this.getTopicName(topic);
     }
+    return topicName;
+  }
 
-    return new Task(
+  task<T = any, R = any>(
+    name: string,
+    callback: Callback<T, R>,
+    attributes: Attribute[] = [],
+    doNotRegister: boolean = false
+  ): ITask<T> {
+    const topic = this.getTopic(name);
+    const task = new Task<T, R>(
       this.config,
       this.registry,
-      prod,
-      topicName,
-      callBack,
-      attributes,
-      doNotRegister
+      this.producer,
+      name,
+      topic,
+      callback,
+      attributes
     );
+
+    if (!doNotRegister) {
+      this.registry.addNewTask(task);
+    }
+
+    return task;
+  }
+
+  async publish<T = any>(name: string, payload: T) {
+    const topic = this.registry.getTopic(name);
+    return this.producer.send<T>(topic, payload);
+  }
+
+  async registerTopic(name: string, topic?: string) {
+    const topicName = topic ?? name;
+    this.registry.addTopic(name, topic);
+    await this.producer.initialize(topicName);
+  }
+
+  get producer() {
+    if (!this._producer) {
+      this._producer = producer(
+        this.config.engine,
+        this.config,
+        this.registry,
+        this.logger
+      );
+    }
+    return this._producer;
   }
 
   runner() {
@@ -91,7 +123,7 @@ export class Steveo implements ISteveo {
     );
   }
 
-  customTopicName = (cb: Callback) => {
+  customTopicName = (cb: CustomTopicFunction) => {
     this.getTopicName = cb;
   };
 }

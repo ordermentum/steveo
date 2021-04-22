@@ -94,6 +94,10 @@ class SqsRunner extends BaseRunner implements IRunner {
           this.logger.debug('Message Deleted', topic, params);
           const task = this.registry.getTask(topic);
           this.logger.debug('Start subscribe', topic, params);
+          if (!task) {
+            this.logger.error(`Unknown Task ${topic}`);
+            return;
+          }
           await task.subscribe(params); // eslint-disable-line
           this.logger.debug('Completed subscribe', topic, params);
           const completedContext = getContext(params);

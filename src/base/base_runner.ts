@@ -63,7 +63,8 @@ class BaseRunner {
   getActiveSubsciptions(topics?: string[]): string[] {
     if (!this.registry) return [];
 
-    const subscriptions = this.registry.getTopics();
+    // We get the topics that we know how to process
+    const subscriptions = this.registry.getTaskTopics();
     const filtered = topics
       ? intersection(topics, subscriptions)
       : subscriptions;
@@ -85,6 +86,8 @@ class BaseRunner {
           receiveMessageWaitTimeSeconds: this.config
             .receiveMessageWaitTimeSeconds,
           messageRetentionPeriod: this.config.messageRetentionPeriod,
+        }).catch(er => {
+          this.logger.debug('error creating queue for topic:', er);
         })
       )
     );

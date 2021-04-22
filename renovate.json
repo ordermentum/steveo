@@ -1,5 +1,12 @@
 {
   "extends": [
-    "config:base"
-  ]
+    "config:base",
+    "schedule:nonOfficeHours"
+  ],
+  "timezone": "Australia/Sydney",
+  "updateNotScheduled": false,
+  "automerge": true,
+  "major": {
+    "automerge": false
+  }
 }

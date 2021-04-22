@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 import nullLogger from 'null-logger';
 import BaseRunner from '../base/base_runner';
 import { getContext } from './utils';
@@ -83,6 +84,10 @@ class RedisRunner extends BaseRunner implements IRunner {
           });
 
           const task = this.registry.getTask(topic);
+          if (!task) {
+            this.logger.error(`Unknown Task ${topic}`);
+            return;
+          }
           this.logger.debug('Start subscribe', topic, params);
           await task.subscribe(params); // eslint-disable-line
           const completedContext = getContext(params);

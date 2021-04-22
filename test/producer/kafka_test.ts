@@ -13,6 +13,7 @@ describe('Kafka Producer', () => {
 
   it('should initialize', async () => {
     const registry = new Registry();
+    registry.addTopic('test-topic');
     const p = new Producer({}, registry);
     const initStub = sandbox.stub(p.producer, 'init').resolves();
     await p.initialize();
@@ -21,6 +22,7 @@ describe('Kafka Producer', () => {
 
   it('should send', async () => {
     const registry = new Registry();
+    registry.addTopic('test-topic');
     const p = new Producer({}, registry);
     const sendStub = sandbox.stub(p.producer, 'send').resolves();
     await p.send('test-topic', { a: 'payload' });
@@ -29,6 +31,7 @@ describe('Kafka Producer', () => {
 
   it('should logg error on failure', async () => {
     const registry = new Registry();
+    registry.addTopic('test-topic');
     const p = new Producer({}, registry);
     const sendStub = sandbox.stub(p.producer, 'send').throws();
     let err;
@@ -44,6 +47,7 @@ describe('Kafka Producer', () => {
   it('should send utf-8 strings', async () => {
     const registry = new Registry();
     const p = new Producer({}, registry);
+    registry.addTopic('test-topic');
     const sendStub = sandbox.stub(p.producer, 'send').resolves();
     await p.send('test-topic', { a: 'payload', b: '¼' });
     expect(sendStub.callCount).to.equal(1);

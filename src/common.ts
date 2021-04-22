@@ -1,4 +1,10 @@
-export type Callback = (x: any) => any;
+import { HTTPOptions } from 'aws-sdk';
+
+/**
+ * FIXME: for callbacks that don't take an argument, need to specify
+ * T = void to make the parameter optional
+ */
+export type Callback<T = any, R = Promise<any>> = (payload: T) => R;
 
 export type getPayload = (
   msg: any,
@@ -47,6 +53,8 @@ export type SQSConfiguration = {
   maxNumberOfMessages: number;
   visibilityTimeout: number;
   waitTimeSeconds: number;
+  endPoint?: string;
+  httpOptions?: HTTPOptions;
 };
 
 export type RedisConfiguration = {
@@ -76,38 +84,39 @@ export type Pool = {
   release(client: any): Promise<any>;
 };
 
-export type Task = {
-  topic: string;
-  subscribe(any): any;
-  attributes?: Attribute[];
-};
-
 export type Registry = {};
 
 export interface IEvent {
   emit(eventName: string, ...any): any;
+  on(eventName: string, ...any): any;
 }
 
 export type TaskList = {
-  [key: string]: Task;
+  [key: string]: ITask;
 };
 
 export interface IRegistry {
   registeredTasks: TaskList;
   events: IEvent;
-  addNewTask(task: Task): void;
-  removeTask(task: Task): void;
+  items: Map<string, string>;
+  addNewTask(task: ITask, topic?: string): void;
+  removeTask(task: ITask): void;
   getTopics(): string[];
-  getTask(topic: string): Task; //eslint-disable-line
+  getTaskTopics(): string[];
+  getTopic(name: string): string;
+  addTopic(name: string, topic?: string): void;
+  getTask(topic: string): ITask | null;
 }
 
-export interface ITask {
+export interface ITask<T = any, R = any> {
   config: Configuration;
   registry: IRegistry;
-  subscribe: Callback;
+  subscribe: Callback<T, R>;
+  name: string;
   topic: string;
+  attributes: Attribute[];
   producer: any;
-  publish(payload: any): Promise<void>;
+  publish(payload: T | T[]): Promise<void>;
 }
 
 export type Consumer = {
@@ -129,13 +138,16 @@ export interface IMetric {
   initialize(): Promise<void>;
 }
 
+export type CustomTopicFunction = (topic: string) => string;
 export interface ISteveo {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
+  producer: IProducer;
+  getTopicName?: CustomTopicFunction;
   task(topic: string, callBack: Callback): ITask;
   runner(): IRunner;
-  customTopicName(cb: Callback): void;
+  customTopicName(cb: CustomTopicFunction): void;
 }
 
 export type AsyncWrapper = {
@@ -158,10 +170,10 @@ export interface IProducer {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
-  producer: any;
+  producer?: any;
   initialize(topic?: string): Promise<void>;
   getPayload(msg: any, topic: string): any;
-  send(topic: string, payload: any): Promise<void>;
+  send<T = any>(topic: string, payload: T): Promise<void>;
 }
 
 export type sqsUrls = {

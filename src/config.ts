@@ -28,6 +28,9 @@ export const getConfig = (config: Configuration): Configuration => {
     parameters.maxNumberOfMessages = config.maxNumberOfMessages;
     parameters.visibilityTimeout = config.visibilityTimeout;
     parameters.waitTimeSeconds = config.waitTimeSeconds;
+    parameters.endpoint = config.endpoint;
+    parameters.httpOptions = config.httpOptions;
+    parameters.consumerPollInterval = config.consumerPollInterval || 1000;
   } else if (parameters.engine === 'redis') {
     parameters.redisHost = config.redisHost;
     parameters.redisPort = config.redisPort;

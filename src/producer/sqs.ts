@@ -34,7 +34,19 @@ class SqsProducer implements IProducer {
     this.sqsUrls = {};
   }
 
-  initialize(topic?: string) {
+  async initialize(topic?: string) {
+    if (!topic) {
+      throw new Error('Topic cannot be empty');
+    }
+
+    const data = await this.producer
+      .getQueueUrlAsync({ QueueName: topic })
+      .catch(_ => null);
+    const queue = data?.QueueUrl;
+    if (queue) {
+      this.sqsUrls[topic] = queue;
+      return queue;
+    }
     const params = {
       QueueName: topic,
       Attributes: {
@@ -43,9 +55,9 @@ class SqsProducer implements IProducer {
         MessageRetentionPeriod: this.config.messageRetentionPeriod,
       },
     };
-    return this.producer
-      .createQueueAsync(params)
-      .then(data => data && data.QueueUrl);
+    const createResponse = await this.producer.createQueueAsync(params);
+    this.sqsUrls[topic] = createResponse?.QueueUrl;
+    return this.sqsUrls[topic];
   }
 
   getPayload(msg: any, topic: string): any {
@@ -70,16 +82,14 @@ class SqsProducer implements IProducer {
 
     return {
       MessageAttributes: messageAttributes,
-      MessageBody: JSON.stringify(Object.assign({}, msg, { _meta: context })),
+      MessageBody: JSON.stringify({ ...msg, _meta: context }),
       QueueUrl: this.sqsUrls[topic],
     };
   }
 
-  async send(topic: string, payload: any) {
+  async send<T = any>(topic: string, payload: T) {
     try {
-      if (!this.sqsUrls[topic]) {
-        this.sqsUrls[topic] = await this.initialize(topic);
-      }
+      await this.initialize(topic);
     } catch (ex) {
       this.logger.error('Error in initalizing sqs', ex);
       throw ex;

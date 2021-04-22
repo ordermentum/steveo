@@ -30,18 +30,22 @@ describe('Redis Producer', () => {
 
     const p = new Producer({}, registry);
     sinon.spy(p, 'getPayload');
+    // @ts-ignore
     registry.addNewTask({
+      name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
     });
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
     const getQueueAttributesAsyncStub = sandbox.stub().resolves();
     sandbox.stub(p, 'initialize').resolves();
+    // @ts-ignore
     p.producer = {
       sendMessageAsync: sendMessageStub,
       getQueueAttributesAsync: getQueueAttributesAsyncStub,
     };
     await p.send('test-topic', { a: 'payload' });
+    // @ts-ignore
     expect(p.initialize.callCount).to.equal(0);
     expect(sendMessageStub.callCount).to.equal(1);
   });
@@ -51,13 +55,17 @@ describe('Redis Producer', () => {
 
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
+    // @ts-ignore
     registry.addNewTask({
+      name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
     });
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
     sandbox.stub(p, 'initialize').throws();
+    // @ts-ignore
     p.producer = { sendMessageAsync: sendMessageStub };
+    // @ts-ignore
     p.sqsUrls = {};
     let err = false;
     try {
@@ -75,7 +83,9 @@ describe('Redis Producer', () => {
 
     const p = new Producer({}, registry);
     sandbox.spy(p, 'getPayload');
+    // @ts-ignore
     registry.addNewTask({
+      name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
       attributes: [
@@ -88,7 +98,9 @@ describe('Redis Producer', () => {
     });
     const sendMessageStub = sandbox.stub().throws({ error: 'mate' });
     sandbox.stub(p, 'initialize').resolves();
+    // @ts-ignore
     p.producer = { sendMessageAsync: sendMessageStub };
+    // @ts-ignore
     p.sqsUrls = {};
     let err = false;
     try {

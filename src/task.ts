@@ -7,43 +7,34 @@ import {
   Attribute,
 } from './common';
 
-class Task implements ITask {
+class Task<T = any, R = any> implements ITask<T, R> {
   config: Configuration;
-
   registry: IRegistry;
-
-  subscribe: Callback;
-
+  subscribe: Callback<T, R>;
   producer: IProducer;
-
+  name: string;
   topic: string;
+  attributes: Attribute[];
 
   constructor(
     config: Configuration,
     registry: IRegistry,
     producer: IProducer,
+    name: string,
     topic: string,
-    subscribe: Callback,
-    attributes: Attribute[] = [],
-    doNotRegister: boolean = false
+    subscribe: Callback<T, R>,
+    attributes: Attribute[] = []
   ) {
     this.config = config;
     this.registry = registry;
     this.subscribe = subscribe;
     this.producer = producer;
+    this.name = name;
     this.topic = topic;
-
-    const task = {
-      topic,
-      subscribe: this.subscribe,
-      attributes,
-    };
-    if (!doNotRegister) {
-      this.registry.addNewTask(task);
-    }
+    this.attributes = attributes;
   }
 
-  async publish(payload: any) {
+  async publish(payload: T | T[]) {
     let params;
     if (!Array.isArray(payload)) {
       params = [payload];
@@ -52,6 +43,7 @@ class Task implements ITask {
     }
 
     try {
+      // sqs calls this method twice
       await this.producer.initialize(this.topic);
       await Promise.all(
         params.map(data => {

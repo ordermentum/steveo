@@ -32,9 +32,7 @@ describe('SQS Runner', () => {
       registeredTasks: [],
       addNewTask: () => {},
       removeTask: () => {},
-      getTopics: () => {
-        return [];
-      },
+      getTopics: () => [],
       getTask: () => ({
         publish: () => {},
         subscribe: subscribeStub,
@@ -48,6 +46,7 @@ describe('SQS Runner', () => {
     sandbox.stub(sqsConf, 'sqs').returns({
       deleteMessageAsync: deleteMessageStub,
     });
+    // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
     await anotherRunner.receive(
       [
@@ -79,6 +78,7 @@ describe('SQS Runner', () => {
       getQueueUrlAsync: getQueueUrlAsyncStub,
     });
 
+    // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
@@ -106,6 +106,7 @@ describe('SQS Runner', () => {
       getQueueUrlAsync: getQueueUrlAsyncStub,
     });
 
+    // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
@@ -123,6 +124,7 @@ describe('SQS Runner', () => {
         subscribe: subscribeStub,
       }),
       getTopics: () => ['test'],
+      getTaskTopics: () => ['test'],
       events: {
         emit: sandbox.stub(),
       },
@@ -140,6 +142,7 @@ describe('SQS Runner', () => {
 
     const anotherRunner = new Runner(
       { shuffleQueue: true },
+      // @ts-ignore
       anotherRegistry,
       build()
     );
@@ -163,6 +166,7 @@ describe('SQS Runner', () => {
     sandbox.stub(sqsConf, 'sqs').returns({
       deleteMessageAsync: deleteMessageStub,
     });
+    // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
     let error = false;
     try {
