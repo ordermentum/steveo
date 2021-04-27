@@ -22,24 +22,22 @@ export interface Logger {
   error(format: any, ...params: any[]): void;
 }
 
-export type KafkaParams = {
-  kafkaConnection: string;
-  kafkaGroupId: string;
-  clientId?: string;
-  kafkaCodec: string;
-  logger: Logger;
-};
-
 export type Engine = 'kafka' | 'sqs' | 'redis';
 export type KafkaConfiguration = {
-  kafkaConnection: string;
-  clientId: string;
-  kafkaGroupId: string;
-  logLevel: number;
-  kafkaCodec: number | string;
-  kafkaSendAttempts: number;
-  kafkaSendDelayMin: number;
-  kafkaSendDelayMax: number;
+  groupId: string;
+  bootstrapServers: string;
+  /**
+   * @description Wait for commiting the message? True - wait, False - immediate commit, Default - True
+   */
+  waitToCommit?: boolean; 
+  /**
+   * @description Compression codec to use for compressing message sets. Default is gzip.
+   */
+  compressionCodec?: 'none' | 'gzip' | 'snappy' | 'lz4' | 'zstd';
+  /**
+   * @description Consumer/Producer connection ready timeout
+   */
+  connectionTimeout?: number;
 };
 
 export type SQSConfiguration = {
@@ -119,17 +117,12 @@ export interface ITask<T = any, R = any> {
   publish(payload: T | T[]): Promise<void>;
 }
 
-export type Consumer = {
-  commitOffset(values: any): void;
-  init(config: any[]): any;
-};
-
-export interface IRunner {
+export interface IRunner<T = any, M = any> {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
-  receive(messages: any[], topic: string, partition: string): Promise<void>;
-  process(topics: Array<string>): Promise<any>;
+  receive(messages: M, topic: string, partition: number): Promise<void>;
+  process(topics: Array<string>): Promise<T>;
 }
 
 export interface IMetric {

@@ -1,5 +1,5 @@
-export const getDuration = start => {
-  const durationComponents = process.hrtime(start);
+export const getDuration = (start = undefined) => {
+  const durationComponents = process.hrtime();
   const seconds = durationComponents[0];
   const nanoseconds = durationComponents[1];
   const duration = seconds * 1000 + nanoseconds / 1e6;

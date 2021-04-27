@@ -1,5 +1,4 @@
 import { Configuration } from './common';
-import { kafkaCompression } from './producer/kafka';
 
 export const getConfig = (config: Configuration): Configuration => {
   const parameters: any = {};
@@ -8,15 +7,11 @@ export const getConfig = (config: Configuration): Configuration => {
   parameters.workerConfig = {} || config.workerConfig;
 
   if (parameters.engine === 'kafka') {
-    parameters.kafkaConnection = config.kafkaConnection;
-    parameters.clientId = config.clientId;
-    parameters.kafkaGroupId = config.kafkaGroupId || 'STEVEO_TASKS';
-    parameters.kafkaCodec = config.kafkaCodec || kafkaCompression.GZIP;
-    parameters.logLevel = config.logLevel || 5;
-    parameters.kafkaSendAttempts = config.kafkaSendAttempts || 2;
-    parameters.kafkaSendDelayMin = config.kafkaSendDelayMin || 100;
-    parameters.kafkaSendDelayMax = config.kafkaSendDelayMax || 300;
-    parameters.consumerPollInterval = config.consumerPollInterval || 1000;
+    parameters.groupdId = config.groupdId ?? '';
+    parameters.bootstrapServers = config.bootstrapServers;
+    parameters.compressionCodec = config.compressionCodec ?? 'gzip';
+    parameters.connectionTimeout = config.connectionTimeout ?? 30000; // 30 seconds
+    parameters.waitToCommit = config.waitToCommit ?? true;
   } else if (parameters.engine === 'sqs') {
     parameters.region = config.region;
     parameters.apiVersion = config.apiVersion;

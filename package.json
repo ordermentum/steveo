@@ -47,8 +47,8 @@
   },
   "optionalDependencies": {
     "aws-sdk": "^2.489.0",
-    "no-kafka": "^3.1.10",
-    "rsmq": "^0.12.0"
+    "rsmq": "^0.12.0",
+    "node-rdkafka": "^2.10.1"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "0.1.3",
