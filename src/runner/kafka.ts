@@ -1,4 +1,3 @@
-import { KafkaConfiguration } from './../common';
 import nullLogger from 'null-logger';
 import Kafka, { KafkaConsumer, Message } from 'node-rdkafka';
 import BaseRunner from '../base/base_runner';
@@ -9,6 +8,7 @@ import {
   Pool,
   Logger,
   IRegistry,
+  KafkaConfiguration
 } from '../common';
 class KafkaRunner extends BaseRunner implements IRunner<KafkaConsumer, Message> {
   config: KafkaConfiguration;
@@ -38,13 +38,14 @@ class KafkaRunner extends BaseRunner implements IRunner<KafkaConsumer, Message> 
       'group.id': this.config.groupId,
       'bootstrap.servers': this.config.bootstrapServers,
       'socket.keepalive.enable': true,
-      'enable.auto.commit': false
+      'enable.auto.commit': false,
     }, {});
 
     this.consumer.on('event.error', function(err) {
       this.log.error('Error from consumer', err);
     });
   }
+  
 
   receive = async (message: Message) => {
     const { topic} = message;
@@ -101,15 +102,18 @@ class KafkaRunner extends BaseRunner implements IRunner<KafkaConsumer, Message> 
         return reject();
       }, this.config.connectionTimeout!);
       this.consumer.connect({}, (err) => {
-        this.logger.debug('Consumer ready');
         clearTimeout(timeoutId);
         if (err) {
           this.logger.error('Error initializing consumer');
           return reject();
         };
+        this.logger.debug('Consumer ready');
         this.consumer.subscribe(topics);
         this.consumer.consume();
         this.consumer.on('data', this.receive);
+        this.consumer.on('disconnected', () => {
+          this.logger.debug('Consumer disconnected');
+        });
         resolve(this.consumer);
       });
     });

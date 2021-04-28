@@ -12,6 +12,7 @@ export const getConfig = (config: Configuration): Configuration => {
     parameters.compressionCodec = config.compressionCodec ?? 'gzip';
     parameters.connectionTimeout = config.connectionTimeout ?? 30000; // 30 seconds
     parameters.waitToCommit = config.waitToCommit ?? true;
+    parameters.producerAcks = config.producerAcks ?? -1;
   } else if (parameters.engine === 'sqs') {
     parameters.region = config.region;
     parameters.apiVersion = config.apiVersion;

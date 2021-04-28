@@ -1,84 +1,72 @@
-import * as kafka from 'no-kafka';
 import nullLogger from 'null-logger';
+import { HighLevelProducer } from 'node-rdkafka';
 
-import { Configuration, Logger, IProducer, IRegistry } from '../common';
+import { KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
 
-import { getMeta } from './utils';
-
-export const kafkaCompression = {
-  SNAPPY: kafka.COMPRESSION_SNAPPY,
-  GZIP: kafka.COMPRESSION_GZIP,
-  NONE: kafka.COMPRESSION_NONE,
-};
-
-class KafkaProducer implements IProducer {
-  config: Configuration;
+class KafkaProducer implements IProducer<HighLevelProducer, string> {
+  config: KafkaConfiguration;
 
   registry: IRegistry;
 
   logger: Logger;
 
-  producer: kafka.Producer;
+  producer: HighLevelProducer;
 
   constructor(
-    config: Configuration,
+    config: KafkaConfiguration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
     this.config = config;
-    this.producer = new kafka.Producer({
-      connectionString: this.config.kafkaConnection,
-      codec: this.config.kafkaCodec,
+    this.producer = new HighLevelProducer({
+      'bootstrap.servers': this.config.bootstrapServers,
+      'compression.codec': this.config.compressionCodec
+    }, {
+      "acks": this.config.producerAcks
     });
     this.logger = logger;
     this.registry = registry;
   }
 
   async initialize() {
-    this.producer.init();
+    return new Promise<HighLevelProducer>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        this.logger.error('Connection timed out')
+        reject();
+      }, this.config.connectionTimeout!);
+      this.producer.connect({}, (err) => {
+        clearTimeout(timeoutId);
+        if (err) {
+          this.logger.error('Error initializing producer');
+          return reject();
+        };
+        this.logger.debug('producer ready');
+        resolve(this.producer);
+      });
+    });
   }
 
-  getPayload(msg: any, topic: string) {
-    const context = getMeta(msg);
-    const payload = JSON.stringify({ ...msg, _meta: context });
-    const size = Buffer.from(payload, 'utf-8');
-    this.logger.debug('Payload Size:', topic, size.length);
-    return {
-      context,
-      topic,
-      message: {
-        value: payload,
-      },
-    };
-  }
+  getPayload = (payload: string) => Buffer.from(payload, 'utf-8');
 
-  async send<T = any>(topic: string, payload: T) {
-    const data = this.getPayload(payload, topic);
-    const sendParams = {
-      retries: {
-        attempts: this.config.kafkaSendAttempts,
-        delay: {
-          min: this.config.kafkaSendDelayMin,
-          max: this.config.kafkaSendDelayMax,
-        },
-      },
-    };
-
-    try {
-      await this.producer.send(data, sendParams);
+  async send(topic: string, payload: string, key: string | null = null) {
+    return new Promise<void>((resolve, reject) => {
+      this.producer.produce(topic, null, this.getPayload(payload), key, Date.now(), (err) => {
+        if(err) {
+          this.logger.error(
+            'Error while sending payload:',
+            JSON.stringify(payload, null, 2),
+            'topic :',
+            topic,
+            'Error :',
+            err
+          );
+          this.registry.events.emit('producer_failure', topic, err);
+          return reject();
+        }
+      });
       this.registry.events.emit('producer_success', topic, payload);
-    } catch (ex) {
-      this.logger.error(
-        'Error while sending payload:',
-        JSON.stringify(payload, null, 2),
-        'topic :',
-        topic,
-        'Error :',
-        ex
-      );
-      this.registry.events.emit('producer_failure', topic, ex);
-      throw ex;
-    }
+      resolve();
+    });
   }
 }
 

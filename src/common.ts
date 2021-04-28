@@ -29,7 +29,7 @@ export type KafkaConfiguration = {
   /**
    * @description Wait for commiting the message? True - wait, False - immediate commit, Default - True
    */
-  waitToCommit?: boolean; 
+  waitToCommit?: boolean;
   /**
    * @description Compression codec to use for compressing message sets. Default is gzip.
    */
@@ -38,6 +38,10 @@ export type KafkaConfiguration = {
    * @description Consumer/Producer connection ready timeout
    */
   connectionTimeout?: number;
+  /**
+  * @description This field indicates the number of acknowledgements the leader broker must receive from ISR brokers before responding to the request. Default -1, all brokers
+  */
+  producerAcks?: number;
 };
 
 export type SQSConfiguration = {
@@ -159,14 +163,14 @@ export type Producer = {
   getQueueAttributes(params: any): any;
 };
 
-export interface IProducer {
+export interface IProducer<P = any, PayloadType = any> {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   producer?: any;
-  initialize(topic?: string): Promise<void>;
+  initialize(topic?: string): Promise<P>;
   getPayload(msg: any, topic: string): any;
-  send<T = any>(topic: string, payload: T): Promise<void>;
+  send(topic: string, payload: PayloadType, key?: string): Promise<void>;
 }
 
 export type sqsUrls = {
