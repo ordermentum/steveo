@@ -8,9 +8,11 @@ import {
   Pool,
   Logger,
   IRegistry,
-  KafkaConfiguration
+  KafkaConfiguration,
 } from '../common';
-class KafkaRunner extends BaseRunner implements IRunner<KafkaConsumer, Message> {
+
+class KafkaRunner extends BaseRunner
+  implements IRunner<KafkaConsumer, Message> {
   config: KafkaConfiguration;
 
   logger: Logger;
@@ -34,29 +36,29 @@ class KafkaRunner extends BaseRunner implements IRunner<KafkaConsumer, Message> 
     this.logger = logger;
     this.pool = pool;
 
-    this.consumer = new Kafka.KafkaConsumer({
-      'group.id': this.config.groupId,
-      'bootstrap.servers': this.config.bootstrapServers,
-      'socket.keepalive.enable': true,
-      'enable.auto.commit': false,
-    }, {});
+    this.consumer = new Kafka.KafkaConsumer(
+      {
+        'bootstrap.servers': this.config.bootstrapServers,
+        ...(this.config.consumer?.global ?? {}),
+      },
+      this.config.consumer?.topic ?? {}
+    );
 
     this.consumer.on('event.error', function(err) {
       this.log.error('Error from consumer', err);
     });
   }
-  
 
   receive = async (message: Message) => {
-    const { topic} = message;
+    const { topic } = message;
     try {
       const parsed = {
         ...message,
-        value: message.value?.toString()
-      }
+        value: message.value?.toString(),
+      };
       this.registry.events.emit('runner_receive', topic, parsed, {
         ...message,
-        start: getDuration()
+        start: getDuration(),
       });
       const task = this.registry.getTask(topic);
       if (!task) {
@@ -64,25 +66,20 @@ class KafkaRunner extends BaseRunner implements IRunner<KafkaConsumer, Message> 
         this.consumer.commit(message);
         return;
       }
-      
-      if(!this.config.waitToCommit) {
+
+      if (!this.config.waitToCommit) {
         this.consumer.commit(message);
       }
       this.logger.debug('Start subscribe', topic, message);
       await task.subscribe(message);
-      if(this.config.waitToCommit) {
+      if (this.config.waitToCommit) {
         this.consumer.commit(message);
       }
       this.logger.debug('Finish subscribe', topic, message);
-      this.registry.events.emit(
-        'runner_complete',
-        topic,
-        parsed,
-        {
-          ...message,
-          end: getDuration()
-        }
-      );
+      this.registry.events.emit('runner_complete', topic, parsed, {
+        ...message,
+        end: getDuration(),
+      });
     } catch (ex) {
       this.logger.error('Error while executing consumer callback ', {
         message,
@@ -98,15 +95,15 @@ class KafkaRunner extends BaseRunner implements IRunner<KafkaConsumer, Message> 
     this.logger.debug('initializing consumer', subscriptions);
     return new Promise<KafkaConsumer>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        this.logger.error('Connection timed out')
+        this.logger.error('Connection timed out');
         return reject();
       }, this.config.connectionTimeout!);
-      this.consumer.connect({}, (err) => {
+      this.consumer.connect({}, err => {
         clearTimeout(timeoutId);
         if (err) {
           this.logger.error('Error initializing consumer');
           return reject();
-        };
+        }
         this.logger.debug('Consumer ready');
         this.consumer.subscribe(topics);
         this.consumer.consume();

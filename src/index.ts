@@ -89,9 +89,9 @@ export class Steveo implements ISteveo {
     return task;
   }
 
-  async publish<T = any>(name: string, payload: T) {
+  async publish<T = any>(name: string, payload: T, key?: string) {
     const topic = this.registry.getTopic(name);
-    return this.producer.send<T>(topic, payload);
+    return this.producer.send<T>(topic, payload, key);
   }
 
   async registerTopic(name: string, topic?: string) {

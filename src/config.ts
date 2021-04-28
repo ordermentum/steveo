@@ -1,4 +1,22 @@
-import { Configuration } from './common';
+import {
+  Configuration,
+  KafkaConsumerConfig,
+  KafkaProducerConfig,
+  KafkaConfiguration,
+} from './common';
+
+const KafkaConsumerDefault: KafkaConsumerConfig = {
+  global: {
+    'socket.keepalive.enable': true,
+    'enable.auto.commit': false,
+  },
+  topic: {},
+};
+
+const KafkaProducerDefault: KafkaProducerConfig = {
+  global: {},
+  topic: {},
+};
 
 export const getConfig = (config: Configuration): Configuration => {
   const parameters: any = {};
@@ -7,12 +25,18 @@ export const getConfig = (config: Configuration): Configuration => {
   parameters.workerConfig = {} || config.workerConfig;
 
   if (parameters.engine === 'kafka') {
-    parameters.groupdId = config.groupdId ?? '';
-    parameters.bootstrapServers = config.bootstrapServers;
-    parameters.compressionCodec = config.compressionCodec ?? 'gzip';
-    parameters.connectionTimeout = config.connectionTimeout ?? 30000; // 30 seconds
-    parameters.waitToCommit = config.waitToCommit ?? true;
-    parameters.producerAcks = config.producerAcks ?? -1;
+    const kafkaConfig = config as KafkaConfiguration;
+    parameters.bootstrapServers = kafkaConfig.bootstrapServers;
+    parameters.connectionTimeout = kafkaConfig.connectionTimeout ?? 30000; // 30 seconds
+    parameters.waitToCommit = kafkaConfig.waitToCommit ?? true;
+    parameters.consumer = {
+      ...KafkaConsumerDefault,
+      ...(kafkaConfig.consumer ?? {}),
+    };
+    parameters.producer = {
+      ...KafkaProducerDefault,
+      ...(kafkaConfig.producer ?? {}),
+    };
   } else if (parameters.engine === 'sqs') {
     parameters.region = config.region;
     parameters.apiVersion = config.apiVersion;

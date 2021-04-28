@@ -9,11 +9,17 @@ import {
 
 class Task<T = any, R = any> implements ITask<T, R> {
   config: Configuration;
+
   registry: IRegistry;
+
   subscribe: Callback<T, R>;
+
   producer: IProducer;
+
   name: string;
+
   topic: string;
+
   attributes: Attribute[];
 
   constructor(

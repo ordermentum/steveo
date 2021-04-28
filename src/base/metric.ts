@@ -1,4 +1,3 @@
-import KafkaMetric from '../metric/kafka';
 import SqsMetric from '../metric/sqs';
 import RedisMetric from '../metric/redis';
 import DummyMetric from '../metric/dummy';
@@ -6,15 +5,10 @@ import DummyMetric from '../metric/dummy';
 import { IMetric, Configuration, Logger } from '../common';
 
 type MetricType = {
-  [key: string]:
-    | typeof KafkaMetric
-    | typeof SqsMetric
-    | typeof RedisMetric
-    | typeof DummyMetric;
+  [key: string]: typeof SqsMetric | typeof RedisMetric | typeof DummyMetric;
 };
 
 const Metrics: MetricType = {
-  kafka: KafkaMetric,
   sqs: SqsMetric,
   dummy: DummyMetric,
   redis: RedisMetric,

@@ -1,4 +1,10 @@
 import { HTTPOptions } from 'aws-sdk';
+import {
+  ConsumerGlobalConfig,
+  ConsumerTopicConfig,
+  ProducerGlobalConfig,
+  ProducerTopicConfig,
+} from 'node-rdkafka';
 
 /**
  * FIXME: for callbacks that don't take an argument, need to specify
@@ -23,25 +29,29 @@ export interface Logger {
 }
 
 export type Engine = 'kafka' | 'sqs' | 'redis';
+
+export type KafkaConsumerConfig = {
+  global: ConsumerGlobalConfig;
+  topic: ConsumerTopicConfig;
+};
+
+export type KafkaProducerConfig = {
+  global: ProducerGlobalConfig;
+  topic: ProducerTopicConfig;
+};
+
 export type KafkaConfiguration = {
-  groupId: string;
   bootstrapServers: string;
   /**
    * @description Wait for commiting the message? True - wait, False - immediate commit, Default - True
    */
   waitToCommit?: boolean;
   /**
-   * @description Compression codec to use for compressing message sets. Default is gzip.
-   */
-  compressionCodec?: 'none' | 'gzip' | 'snappy' | 'lz4' | 'zstd';
-  /**
    * @description Consumer/Producer connection ready timeout
    */
   connectionTimeout?: number;
-  /**
-  * @description This field indicates the number of acknowledgements the leader broker must receive from ISR brokers before responding to the request. Default -1, all brokers
-  */
-  producerAcks?: number;
+  consumer?: KafkaConsumerConfig;
+  producer?: KafkaProducerConfig;
 };
 
 export type SQSConfiguration = {
@@ -163,14 +173,14 @@ export type Producer = {
   getQueueAttributes(params: any): any;
 };
 
-export interface IProducer<P = any, PayloadType = any> {
+export interface IProducer<P = any> {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   producer?: any;
   initialize(topic?: string): Promise<P>;
   getPayload(msg: any, topic: string): any;
-  send(topic: string, payload: PayloadType, key?: string): Promise<void>;
+  send<T = void>(topic: string, payload: T | string, key?: string): Promise<void>;
 }
 
 export type sqsUrls = {
