@@ -7,6 +7,7 @@ import metric from './base/metric';
 import producer from './base/producer';
 import getConfig from './config';
 import { build } from './base/pool';
+import KafkaAdminClientFactory from './adminClient/kafka';
 
 import {
   Hooks,
@@ -121,6 +122,15 @@ export class Steveo implements ISteveo {
       this.logger,
       this.hooks
     );
+  }
+
+  adminClient() {
+    if (this.config.engine !== 'kafka') {
+      throw new Error(
+        'Admin client is only meant to be used with kafka, please use "steveo.runner().createQueues()" for other engines'
+      );
+    }
+    return KafkaAdminClientFactory(this.config);
   }
 
   customTopicName = (cb: CustomTopicFunction) => {

@@ -37,6 +37,7 @@ export const getConfig = (config: Configuration): Configuration => {
       ...KafkaProducerDefault,
       ...(kafkaConfig.producer ?? {}),
     };
+    parameters.admin = kafkaConfig.admin ?? {};
   } else if (parameters.engine === 'sqs') {
     parameters.region = config.region;
     parameters.apiVersion = config.apiVersion;

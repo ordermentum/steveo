@@ -39,10 +39,11 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
         clearTimeout(timeoutId);
         if (err) {
           this.logger.error('Error initializing producer');
-          return reject();
+          reject();
+        } else {
+          this.logger.debug('producer ready');
+          resolve(this.producer);
         }
-        this.logger.debug('producer ready');
-        resolve(this.producer);
       });
     });
   }
@@ -68,7 +69,7 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
               err
             );
             this.registry.events.emit('producer_failure', topic, err);
-            return reject();
+            reject();
           }
         }
       );

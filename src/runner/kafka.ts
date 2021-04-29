@@ -111,7 +111,7 @@ class KafkaRunner extends BaseRunner
         this.consumer.on('disconnected', () => {
           this.logger.debug('Consumer disconnected');
         });
-        resolve(this.consumer);
+        return resolve(this.consumer);
       });
     });
   }

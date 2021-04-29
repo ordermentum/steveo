@@ -1,7 +1,9 @@
 import { HTTPOptions } from 'aws-sdk';
 import {
+  IAdminClient,
   ConsumerGlobalConfig,
   ConsumerTopicConfig,
+  GlobalConfig,
   ProducerGlobalConfig,
   ProducerTopicConfig,
 } from 'node-rdkafka';
@@ -52,6 +54,7 @@ export type KafkaConfiguration = {
   connectionTimeout?: number;
   consumer?: KafkaConsumerConfig;
   producer?: KafkaProducerConfig;
+  admin?: GlobalConfig;
 };
 
 export type SQSConfiguration = {
@@ -151,6 +154,7 @@ export interface ISteveo {
   logger: Logger;
   registry: IRegistry;
   producer: IProducer;
+  adminClient(): IAdminClient;
   getTopicName?: CustomTopicFunction;
   task(topic: string, callBack: Callback): ITask;
   runner(): IRunner;
@@ -180,7 +184,11 @@ export interface IProducer<P = any> {
   producer?: any;
   initialize(topic?: string): Promise<P>;
   getPayload(msg: any, topic: string): any;
-  send<T = any>(topic: string, payload: T | string, key?: string): Promise<void>;
+  send<T = any>(
+    topic: string,
+    payload: T | string,
+    key?: string
+  ): Promise<void>;
 }
 
 export type sqsUrls = {
