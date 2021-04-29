@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "2.3.2",
+  "version": "3.0.0-beta1",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -47,8 +47,8 @@
   },
   "optionalDependencies": {
     "aws-sdk": "^2.489.0",
-    "rsmq": "^0.12.0",
-    "node-rdkafka": "^2.10.1"
+    "node-rdkafka": "^2.10.1",
+    "rsmq": "^0.12.0"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "0.1.3",
