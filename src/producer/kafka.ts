@@ -35,8 +35,8 @@ class KafkaProducer implements IProducer<Producer> {
         this.logger.error('Connection timed out');
         reject();
       }, this.config.connectionTimeout!);
-      this.producer.connect({}, (err) => {
-        if(err) {
+      this.producer.connect({}, err => {
+        if (err) {
           clearTimeout(timeoutId);
           this.logger.error('Error initializing producer', err);
           reject(err);
@@ -65,7 +65,7 @@ class KafkaProducer implements IProducer<Producer> {
         Date.now()
       );
       this.registry.events.emit('producer_success', topic, payload);
-    } catch(err) {
+    } catch (err) {
       this.logger.error(
         'Error while sending payload:',
         JSON.stringify(payload, null, 2),
