@@ -186,7 +186,7 @@ export interface IProducer<P = any> {
   getPayload(msg: any, topic: string): any;
   send<T = any>(
     topic: string,
-    payload: T | string,
+    payload: T,
     key?: string
   ): Promise<void>;
 }

@@ -43,13 +43,11 @@ class KafkaRunner extends BaseRunner
       },
       this.config.consumer?.topic ?? {}
     );
-
-    this.consumer.on('event.error', function(err) {
-      this.log.error('Error from consumer', err);
-    });
   }
 
   receive = async (message: Message) => {
+    console.log('📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙');
+    console.log('message:', message);
     const { topic } = message;
     try {
       const parsed = {
@@ -98,16 +96,10 @@ class KafkaRunner extends BaseRunner
         this.logger.error('Connection timed out');
         reject();
       }, this.config.connectionTimeout!);
-      this.consumer.connect({}, err => {
-        clearTimeout(timeoutId);
-        if (err) {
-          this.logger.error('Error initializing consumer');
-          reject();
-        }
-      });
+
       this.consumer.on('ready', () => {
         clearTimeout(timeoutId);
-        this.logger.debug('Consumer ready');
+        this.logger.info('Consumer ready');
         this.consumer.subscribe(topics);
         this.consumer.consume();
         resolve(this.consumer);
@@ -115,6 +107,18 @@ class KafkaRunner extends BaseRunner
       this.consumer.on('data', this.receive);
       this.consumer.on('disconnected', () => {
         this.logger.debug('Consumer disconnected');
+      });
+      this.consumer.on('event.error', (err) => {
+        this.logger.error('Error from consumer', err);
+      });
+      this.consumer.connect({}, err => {
+        clearTimeout(timeoutId);
+        console.log('🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰');
+        console.log('err:', err);
+        if (err) {
+          this.logger.error('Error initializing consumer', err);
+          reject();
+        }
       });
     });
   }

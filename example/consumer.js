@@ -1,4 +1,4 @@
-const Steveo = require('../lib').default;
+const Steveo = require('./lib').default;
 const bunyan = require('bunyan');
 
 const logger = bunyan.createLogger({ name: 'consumer' });
@@ -17,8 +17,7 @@ const sqsConfig = {
 };
 
 const kafkaConfig = {
-  kafkaConnection: process.env.KAFKA_CONNECTION,
-  clientId: '1234-123',
+  kafkaConnection: process.env.KAFKA_BROKERS,
 };
 
 const redisConfig = {

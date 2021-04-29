@@ -1,16 +1,16 @@
 import nullLogger from 'null-logger';
-import { Producer } from 'node-rdkafka';
+import { HighLevelProducer } from 'node-rdkafka';
 
 import { KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
 
-class KafkaProducer implements IProducer<Producer> {
+class KafkaProducer implements IProducer<HighLevelProducer> {
   config: KafkaConfiguration;
 
   registry: IRegistry;
 
   logger: Logger;
 
-  producer: Producer;
+  producer: HighLevelProducer;
 
   constructor(
     config: KafkaConfiguration,
@@ -18,7 +18,7 @@ class KafkaProducer implements IProducer<Producer> {
     logger: Logger = nullLogger
   ) {
     this.config = config;
-    this.producer = new Producer(
+    this.producer = new HighLevelProducer(
       {
         'bootstrap.servers': this.config.bootstrapServers,
         ...(this.config.producer?.global ?? {}),
@@ -30,7 +30,10 @@ class KafkaProducer implements IProducer<Producer> {
   }
 
   async initialize() {
-    return new Promise<Producer>((resolve, reject) => {
+    if(this.producer.isConnected()) {
+      return this.producer;
+    }
+    return new Promise<HighLevelProducer>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         this.logger.error('Connection timed out');
         reject();
@@ -53,29 +56,39 @@ class KafkaProducer implements IProducer<Producer> {
     });
   }
 
-  getPayload = (payload: string) => Buffer.from(payload, 'utf-8');
+  getPayload = <T>(payload: T) => { 
+    if(typeof payload === 'string') {
+      return Buffer.from(payload, 'utf-8')
+    }
+    return Buffer.from(JSON.stringify(payload), 'utf-8')
+  }
 
-  async send(topic: string, payload: string, key: string | null = null) {
-    try {
+  async send<T>(topic: string, payload: T, key: string | null = null) {
+    return new Promise<void>((resolve, reject) => {
       this.producer.produce(
         topic,
         null,
-        this.getPayload(payload),
+        this.getPayload<T>(payload),
         key,
-        Date.now()
+        Date.now(),
+        err => {
+          if (err) {
+            this.logger.error(
+              'Error while sending payload:',
+              JSON.stringify(payload, null, 2),
+              'topic :',
+              topic,
+              'Error :',
+              err
+            );
+            this.registry.events.emit('producer_failure', topic, err);
+            reject();
+          }
+        }
       );
       this.registry.events.emit('producer_success', topic, payload);
-    } catch (err) {
-      this.logger.error(
-        'Error while sending payload:',
-        JSON.stringify(payload, null, 2),
-        'topic :',
-        topic,
-        'Error :',
-        err
-      );
-      this.registry.events.emit('producer_failure', topic, err);
-    }
+      resolve();
+    });
   }
 }
 

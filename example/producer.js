@@ -1,4 +1,4 @@
-const Steveo = require('../lib').default;
+const Steveo = require('./lib').default;
 
 const sqsConfig = {
   region: process.env.AWS_REGION,
@@ -14,8 +14,7 @@ const sqsConfig = {
 };
 
 const kafkaConfig = {
-  kafkaConnection: process.env.KAFKA_CONNECTION,
-  clientId: '1234-123',
+  bootstrapServers: process.env.KAFKA_BROKERS,
 };
 
 const redisConfig = {
@@ -44,6 +43,10 @@ const logger = console;
     logger.log('Failed to produce message', topic, ex);
   });
 
+  steveo.events.on('producer_success', (topic, data) => {
+    logger.log('Message succesfully produced', topic, data);
+  });
+
   steveo.events.on('task_failure', (topic, ex) => {
     logger.log('Failed task', topic, ex);
   });
@@ -58,7 +61,9 @@ const logger = console;
   // create first Task
   const firstTask = steveo.task('test-topic', () => {}, attributes);
   const secondTask = steveo.task('test-spam', () => {}, attributes);
-  await steveo.runner().createQueues();
+  if(process.env.ENGINE !== 'kafka') {
+    await steveo.runner().createQueues();
+  }
 
   // let it run & publish messages in every second
   function produceMessages(counter) {

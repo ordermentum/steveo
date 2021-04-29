@@ -1,26 +1,22 @@
 ## Example app for testing Steveo
 
-It creates a docker app which is using a node application.
-
-It also has containers for `kafka` and `zookeeper`
+It creates a docker app which is using a node application (with running kafka).
 
 #### Build docker container
   - Run `docker-compose build app`
-  - Run `docker-compose up app` (it will exit but will link zookeeper, kafka & app)
-
+  - Run `docker-compose up app`
 
 ### `Kafka` Engine
 
 #### Create topic in `Kafka`
 
-  - Run `docker-compose run kafka bash`
-  - Navigate to `opt/kafka-<version>/bin`
-  - Run
-    ```shell
-    ./kafka-topics.sh --topic test-topic --create --zookeeper zookeeper:2181 --partitions 2 --replication-factor 1
-    ```
+  - Run `docker-compose run app bash`
+  - ```shell
+  root@57f35557fe6b:/usr/src/app# ENGINE=kafka node createKafkaTopics.js
+  Produce: Message  1
+  Payload Size: test-topic 49
+  ```
   - Above steps will create topic `test-topic` with 2 partitions
-  - Exit from kafka
 
 #### Connect to container
   - Run `docker-compose run app bash`

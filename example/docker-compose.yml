@@ -1,36 +1,37 @@
-version: '2'
-
+version: "3"
 services:
-  zookeeper:
-    image: wurstmeister/zookeeper
-    ports:
-      - 2181:2181
   kafka:
-    image: wurstmeister/kafka:0.11.0.1
+    hostname: 'kafka'
+    image: 'bitnami/kafka:2.8.0'
     ports:
-      - 9092:9092
-    command: start-kafka.sh
+      - '9093:9093'
+      - '29092:29092'
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
     depends_on:
       - zookeeper
+  zookeeper:
+    image: 'bitnami/zookeeper:3.7.0'
+    ports:
+      - '2181:2181'
     environment:
-      - KAFKA_ADVERTISED_HOST_NAME=kafka
-      - KAFKA_CREATE_TOPICS="test-topic:1:1"
-      - KAFKA_ADVERTISED_PORT=9092
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - AWS_ACCESS_KEY=AKKA
-      - AWS_SECRET_ACCESS_KEY=KEY
-      - AWS_REGION=ap-southeast-2
+      - ALLOW_ANONYMOUS_LOGIN=yes
   app:
     build:
       context: .
     links:
-      - zookeeper
       - kafka
     depends_on:
-      - zookeeper
       - kafka
     volumes:
       - .:/usr/src/app
+      - ../lib:/usr/src/app/lib
     environment:
-      - KAFKA_CONNECTION=kafka://kafka:9092
-      - CLIENT_ID='1234-234'
+      - KAFKA_BROKERS=kafka:9092
+      - AWS_ACCESS_KEY=AKKA
+      - AWS_SECRET_ACCESS_KEY=KEY
+      - AWS_REGION=ap-southeast-2
