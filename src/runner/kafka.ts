@@ -44,7 +44,7 @@ class KafkaRunner extends BaseRunner
       this.config.consumer?.topic ?? {}
     );
 
-    this.consumer.on('event.error', function(err) {
+    this.consumer.on('event.error', function (err) {
       this.log.error('Error from consumer', err);
     });
   }
@@ -104,14 +104,17 @@ class KafkaRunner extends BaseRunner
           this.logger.error('Error initializing consumer');
           return reject();
         }
+      });
+      this.consumer.on('ready', () => {
+        clearTimeout(timeoutId);
         this.logger.debug('Consumer ready');
         this.consumer.subscribe(topics);
         this.consumer.consume();
-        this.consumer.on('data', this.receive);
-        this.consumer.on('disconnected', () => {
-          this.logger.debug('Consumer disconnected');
-        });
         return resolve(this.consumer);
+      });
+      this.consumer.on('data', this.receive);
+      this.consumer.on('disconnected', () => {
+        this.logger.debug('Consumer disconnected');
       });
     });
   }
