@@ -1,5 +1,11 @@
 import nullLogger from 'null-logger';
-import Kafka, { AdminClient, CODES, IAdminClient, KafkaConsumer, Message } from 'node-rdkafka';
+import Kafka, {
+  AdminClient,
+  CODES,
+  IAdminClient,
+  KafkaConsumer,
+  Message,
+} from 'node-rdkafka';
 import BaseRunner from '../base/base_runner';
 import { getDuration } from './utils';
 import {
@@ -11,7 +17,12 @@ import {
   KafkaConfiguration,
 } from '../common';
 
-const FATAL_ERROR_CODES = [CODES.ERRORS.ERR_UNKNOWN, CODES.ERRORS.ERR__TRANSPORT, CODES.ERRORS.ERR_BROKER_NOT_AVAILABLE, CODES.ERRORS.ERR__ALL_BROKERS_DOWN];
+const FATAL_ERROR_CODES = [
+  CODES.ERRORS.ERR_UNKNOWN,
+  CODES.ERRORS.ERR__TRANSPORT,
+  CODES.ERRORS.ERR_BROKER_NOT_AVAILABLE,
+  CODES.ERRORS.ERR__ALL_BROKERS_DOWN,
+];
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
   config: KafkaConfiguration;
@@ -49,7 +60,7 @@ class KafkaRunner extends BaseRunner
       },
       this.config.consumer?.topic ?? {}
     );
-    
+
     this.adminClient = AdminClient.create({
       'bootstrap.servers': this.config.bootstrapServers,
       ...this.config.admin,
@@ -111,12 +122,7 @@ class KafkaRunner extends BaseRunner
   consumeCallback = async (err, messages) => {
     if (err) {
       this.logger.error(`Error while consumption - ${err}`);
-      if (
-        err.origin === 'local' &&
-        FATAL_ERROR_CODES.includes(
-          err.code
-        )
-      ) {
+      if (err.origin === 'local' && FATAL_ERROR_CODES.includes(err.code)) {
         this.logger.info('Reconnecting consumer');
         this.reconnect();
         return;
@@ -162,26 +168,29 @@ class KafkaRunner extends BaseRunner
     });
   }
 
-
-  async createQueue({
-    topic
-  }) {
+  async createQueue({ topic }) {
     const task = this.registry.getTask(topic);
     return new Promise<void>((resolve, reject) => {
-      if(!task) {
-        reject(new Error("Task missing"));
+      if (!task) {
+        reject(new Error('Task missing'));
       }
-      const options = task?.attributes ?? { }
-      this.adminClient.createTopic({
-        topic,
-        num_partitions: options.num_partitions ?? this.config.defaultTopicParitions,
-        replication_factor: options.replication_factor ?? this.config.defaultTopicReplicationFactor
-      }, (err) => {
-        if(err) {
-          reject(err);
+      const options = task?.attributes ?? {};
+      this.adminClient.createTopic(
+        {
+          topic,
+          num_partitions:
+            options.num_partitions ?? this.config.defaultTopicParitions,
+          replication_factor:
+            options.replication_factor ??
+            this.config.defaultTopicReplicationFactor,
+        },
+        err => {
+          if (err) {
+            reject(err);
+          }
+          resolve();
         }
-        resolve();
-      });
+      );
     });
   }
 

@@ -43,7 +43,8 @@ export const getConfig = (config: Configuration): Configuration => {
     };
     parameters.admin = kafkaConfig.admin ?? {};
     parameters.defaultTopicParitions = kafkaConfig.defaultTopicParitions ?? 6;
-    parameters.defaultTopicReplicationFactor = kafkaConfig.defaultTopicReplicationFactor ?? 3;
+    parameters.defaultTopicReplicationFactor =
+      kafkaConfig.defaultTopicReplicationFactor ?? 3;
   } else if (parameters.engine === 'sqs') {
     parameters.region = config.region;
     parameters.apiVersion = config.apiVersion;
