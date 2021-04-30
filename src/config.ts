@@ -1,4 +1,3 @@
-import { v4 } from 'uuid';
 import {
   Configuration,
   KafkaConsumerConfig,
@@ -10,7 +9,7 @@ const KafkaConsumerDefault: KafkaConsumerConfig = {
   global: {
     'socket.keepalive.enable': true,
     'enable.auto.commit': false,
-    'group.id': `consumer-${v4()}`,
+    'group.id': 'KAFKA_CONSUMERS',
   },
   topic: {
     'auto.offset.reset': 'earliest',
