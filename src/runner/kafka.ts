@@ -98,12 +98,17 @@ class KafkaRunner extends BaseRunner
         }
       });
     });
-  }
+  };
 
   consumeCallback = async (err, messages) => {
     if (err) {
       this.logger.error(`Error while consumption - ${err}`);
-      if( err.origin === 'local' && [CODES.ERRORS.ERR_UNKNOWN, CODES.ERRORS.ERR__TRANSPORT].includes(err.code)) {
+      if (
+        err.origin === 'local' &&
+        [CODES.ERRORS.ERR_UNKNOWN, CODES.ERRORS.ERR__TRANSPORT].includes(
+          err.code
+        )
+      ) {
         this.logger.info('Reconnecting consumer');
         this.reconnect();
         return;
