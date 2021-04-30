@@ -23,6 +23,8 @@ class KafkaRunner extends BaseRunner
 
   pool: Pool;
 
+  paused: boolean;
+
   constructor(
     config: KafkaConfiguration,
     registry: IRegistry,
@@ -35,6 +37,7 @@ class KafkaRunner extends BaseRunner
     this.registry = registry;
     this.logger = logger;
     this.pool = pool;
+    this.paused = false;
 
     this.consumer = new Kafka.KafkaConsumer(
       {
@@ -59,17 +62,17 @@ class KafkaRunner extends BaseRunner
       const task = this.registry.getTask(topic);
       if (!task) {
         this.logger.error(`Unknown Task ${topic}`);
-        this.consumer.commitMessageSync(message);
+        this.consumer.commitMessage(message);
         return;
       }
 
       if (!this.config.waitToCommit) {
-        this.consumer.commitMessageSync(message);
+        this.consumer.commitMessage(message);
       }
       this.logger.debug('Start subscribe', topic, message);
       await task.subscribe(message);
       if (this.config.waitToCommit) {
-        this.consumer.commitMessageSync(message);
+        this.consumer.commitMessage(message);
       }
       this.logger.debug('Finish subscribe', topic, message);
       this.registry.events.emit('runner_complete', topic, parsed, {
@@ -84,11 +87,19 @@ class KafkaRunner extends BaseRunner
       });
       this.registry.events.emit('runner_failure', topic, ex, message);
     }
-    await new Promise((resolve) => {
-      setTimeout(resolve, 3000);
-    })
-    console.log('🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐 ');
-    console.log(':', );
+  };
+
+  consumeCallback = async (err, messages) => {
+    if (err) {
+      this.logger.error(`Error while consumption - ${err}`);
+    }
+    try {
+      if (messages?.length) {
+        await this.receive(messages[0]);
+      }
+    } finally {
+      this.consumer.consume(1, this.consumeCallback);
+    }
   };
 
   process(topics: Array<string>) {
@@ -106,7 +117,6 @@ class KafkaRunner extends BaseRunner
           reject();
         }
       });
-      this.consumer.on('data', this.receive);
       this.consumer.on('disconnected', () => {
         this.logger.debug('Consumer disconnected');
       });
@@ -114,19 +124,17 @@ class KafkaRunner extends BaseRunner
         this.logger.error('Error from consumer', err);
       });
       this.consumer.on('ready', () => {
-        console.log('📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙');
-        console.log(':', topics);
         clearTimeout(timeoutId);
         this.consumer.subscribe(topics);
         this.logger.info('Consumer ready', this.consumer.getMetadata());
-        this.consumer.consume();
+        this.consumer.consume(1, this.consumeCallback);
         resolve(this.consumer);
       });
     });
   }
 
   async disconnect() {
-    this.consumer?.disconnect();
+    this.consumer.disconnect();
   }
 }
 

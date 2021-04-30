@@ -38,7 +38,6 @@ const logger = console;
         throw new Error("Invalid engine");
     }
     const steveo = Steveo(config, logger)();
-
     steveo.adminClient().createTopic({
         topic: 'test-topic',
         num_partitions: 2,

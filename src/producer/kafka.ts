@@ -64,8 +64,6 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
   };
 
   async send<T>(topic: string, payload: T, key: string | null = null) {
-    console.log('🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝');
-    console.log('topic, payload:', topic, payload);
     return new Promise<void>((resolve, reject) => {
       this.producer.produce(
         topic,
@@ -74,8 +72,6 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
         key,
         Date.now(),
         err => {
-          console.log('🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰');
-          console.log(':', );
           if (err) {
             this.logger.error(
               'Error while sending payload:',
@@ -96,7 +92,7 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
   }
 
   async disconnect() {
-    this.producer?.disconnect();
+    this.producer.disconnect();
   }
 }
 

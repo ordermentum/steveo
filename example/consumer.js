@@ -18,6 +18,11 @@ const sqsConfig = {
 
 const kafkaConfig = {
   bootstrapServers: process.env.KAFKA_BROKERS,
+  consumer: {
+    global: {
+      "group.id": "STEVEO_TASKS"
+    }
+  }
 };
 
 const redisConfig = {

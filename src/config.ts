@@ -13,7 +13,7 @@ const KafkaConsumerDefault: KafkaConsumerConfig = {
     'group.id': `consumer-${v4()}`,
   },
   topic: {
-    'auto.offset.reset': 'earliest'
+    'auto.offset.reset': 'earliest',
   },
 };
 

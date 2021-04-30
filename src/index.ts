@@ -63,9 +63,11 @@ export class Steveo implements ISteveo {
     if (!this.hooks?.healthCheck && !this.hooks?.terminationCheck) {
       for (const signal of ['SIGTERM', 'SIGINT'] as const) {
         process.on(signal, async () => {
-          this.logger.info(`Received ${signal} -- Disconnecting and terminating`);
+          this.logger.info(
+            `Received ${signal} -- Disconnecting and terminating`
+          );
+          setTimeout(() => process.exit(0), 100);
           this.disconnect();
-          process.exit(0);
         });
       }
     }
@@ -127,8 +129,8 @@ export class Steveo implements ISteveo {
   }
 
   runner() {
-    if(!this._runner) {
-      this._runner =  runner(
+    if (!this._runner) {
+      this._runner = runner(
         this.config.engine,
         this.config,
         this.registry,
@@ -154,13 +156,8 @@ export class Steveo implements ISteveo {
   };
 
   disconnect() {
-    try {
-      this._producer?.disconnect();
-    } catch(err) {}
-
-    try {
-      this._runner?.disconnect();
-    } catch(err) {} 
+    this._producer?.disconnect();
+    this._runner?.disconnect();
   }
 }
 
