@@ -26,7 +26,7 @@ class RedisProducer implements IProducer {
     this.registry = registry;
   }
 
-  async initialize(topic?: string) {
+  async initialize(topic: string) {
     const params = {
       qname: topic,
       vt: this.config.visibilityTimeout,
@@ -34,7 +34,6 @@ class RedisProducer implements IProducer {
     };
     const queues = await this.producer.listQueuesAsync();
     if (!queues.find(q => q === topic)) {
-      // @ts-ignore
       this.producer.createQueueAsync(params);
     }
   }

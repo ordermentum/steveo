@@ -61,9 +61,7 @@ const logger = console;
   // create first Task
   const firstTask = steveo.task('test-topic', () => {}, attributes);
   const secondTask = steveo.task('test-spam', () => {}, attributes);
-  if(process.env.ENGINE !== 'kafka') {
-    await steveo.runner().createQueues();
-  }
+  await steveo.runner().createQueues();
 
   // let it run & publish messages in every second
   function produceMessages(counter) {

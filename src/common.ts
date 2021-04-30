@@ -1,6 +1,5 @@
 import { HTTPOptions } from 'aws-sdk';
 import {
-  IAdminClient,
   ConsumerGlobalConfig,
   ConsumerTopicConfig,
   GlobalConfig,
@@ -44,6 +43,8 @@ export type KafkaProducerConfig = {
 
 export type KafkaConfiguration = {
   bootstrapServers: string;
+  defaultTopicParitions?: number;
+  defaultTopicReplicationFactor?: number;
   /**
    * @description Wait for commiting the message? True - wait, False - immediate commit, Default - True
    */
@@ -129,7 +130,7 @@ export interface ITask<T = any, R = any> {
   subscribe: Callback<T, R>;
   name: string;
   topic: string;
-  attributes: Attribute[];
+  attributes: any;
   producer: any;
   publish(payload: T | T[]): Promise<void>;
 }
@@ -143,21 +144,14 @@ export interface IRunner<T = any, M = any> {
   disconnect(): Promise<void>;
 }
 
-export interface IMetric {
-  config: Configuration;
-  groupId?: string;
-  initialize(): Promise<void>;
-}
-
 export type CustomTopicFunction = (topic: string) => string;
 export interface ISteveo {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   producer: IProducer;
-  adminClient(): IAdminClient;
   getTopicName?: CustomTopicFunction;
-  task(topic: string, callBack: Callback): ITask;
+  task(topic: string, callBack: Callback, opts?: any): ITask;
   runner(): IRunner;
   customTopicName(cb: CustomTopicFunction): void;
   disconnect(): void;

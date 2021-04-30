@@ -12,18 +12,14 @@ import {
   CustomTopicFunction,
   IProducer,
   IEvent,
-  IMetric,
-  Attribute,
 } from './common';
 /* eslint-disable no-underscore-dangle */
 import Task from './task';
 import Registry from './registry';
 import runner from './base/runner';
-import metric from './base/metric';
 import producer from './base/producer';
 import getConfig from './config';
 import { build } from './base/pool';
-import KafkaAdminClientFactory from './adminClient/kafka';
 
 export class Steveo implements ISteveo {
   config: Configuration;
@@ -33,8 +29,6 @@ export class Steveo implements ISteveo {
   registry: IRegistry;
 
   getTopicName?: CustomTopicFunction;
-
-  metric: IMetric | null;
 
   _producer?: IProducer;
 
@@ -54,12 +48,14 @@ export class Steveo implements ISteveo {
     this.logger = logger;
     this.registry = new Registry();
     this.config = getConfig(configuration);
-    this.metric = metric(this.config.engine, this.config, this.logger);
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
     this.hooks = hooks;
+    this.checkHooks();
+  }
 
-    // Add a termination check when no hooks are present
+  checkHooks() {
+    // Add a termination event callback when no hooks are present
     if (!this.hooks?.healthCheck && !this.hooks?.terminationCheck) {
       for (const signal of ['SIGTERM', 'SIGINT'] as const) {
         process.on(signal, async () => {
@@ -84,8 +80,7 @@ export class Steveo implements ISteveo {
   task<T = any, R = any>(
     name: string,
     callback: Callback<T, R>,
-    attributes: Attribute[] = [],
-    doNotRegister: boolean = false
+    attributes: any = {}
   ): ITask<T> {
     const topic = this.getTopic(name);
     const task = new Task<T, R>(
@@ -97,10 +92,7 @@ export class Steveo implements ISteveo {
       callback,
       attributes
     );
-
-    if (!doNotRegister) {
-      this.registry.addNewTask(task);
-    }
+    this.registry.addNewTask(task);
 
     return task;
   }
@@ -140,15 +132,6 @@ export class Steveo implements ISteveo {
       );
     }
     return this._runner;
-  }
-
-  adminClient() {
-    if (this.config.engine !== 'kafka') {
-      throw new Error(
-        'Admin client is only meant to be used with kafka, please use "steveo.runner().createQueues()" for other engines'
-      );
-    }
-    return KafkaAdminClientFactory(this.config);
   }
 
   customTopicName = (cb: CustomTopicFunction) => {

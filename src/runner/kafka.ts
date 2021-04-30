@@ -1,5 +1,5 @@
 import nullLogger from 'null-logger';
-import Kafka, { CODES, KafkaConsumer, Message } from 'node-rdkafka';
+import Kafka, { AdminClient, CODES, IAdminClient, KafkaConsumer, Message } from 'node-rdkafka';
 import BaseRunner from '../base/base_runner';
 import { getDuration } from './utils';
 import {
@@ -11,6 +11,7 @@ import {
   KafkaConfiguration,
 } from '../common';
 
+const FATAL_ERROR_CODES = [CODES.ERRORS.ERR_UNKNOWN, CODES.ERRORS.ERR__TRANSPORT, CODES.ERRORS.ERR_BROKER_NOT_AVAILABLE, CODES.ERRORS.ERR__ALL_BROKERS_DOWN];
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
   config: KafkaConfiguration;
@@ -24,6 +25,8 @@ class KafkaRunner extends BaseRunner
   pool: Pool;
 
   paused: boolean;
+
+  adminClient: IAdminClient;
 
   constructor(
     config: KafkaConfiguration,
@@ -46,6 +49,11 @@ class KafkaRunner extends BaseRunner
       },
       this.config.consumer?.topic ?? {}
     );
+    
+    this.adminClient = AdminClient.create({
+      'bootstrap.servers': this.config.bootstrapServers,
+      ...this.config.admin,
+    });
   }
 
   receive = async (message: Message) => {
@@ -105,7 +113,7 @@ class KafkaRunner extends BaseRunner
       this.logger.error(`Error while consumption - ${err}`);
       if (
         err.origin === 'local' &&
-        [CODES.ERRORS.ERR_UNKNOWN, CODES.ERRORS.ERR__TRANSPORT, CODES.ERRORS.ERR_BROKER_NOT_AVAILABLE, CODES.ERRORS.ERR__ALL_BROKERS_DOWN].includes(
+        FATAL_ERROR_CODES.includes(
           err.code
         )
       ) {
@@ -147,15 +155,39 @@ class KafkaRunner extends BaseRunner
       this.consumer.on('ready', () => {
         clearTimeout(timeoutId);
         this.consumer.subscribe(topics);
-        this.logger.info('Consumer ready', this.consumer.getMetadata());
+        this.logger.info('Consumer ready');
         this.consumer.consume(1, this.consumeCallback);
         resolve(this.consumer);
       });
     });
   }
 
+
+  async createQueue({
+    topic
+  }) {
+    const task = this.registry.getTask(topic);
+    return new Promise<void>((resolve, reject) => {
+      if(!task) {
+        reject(new Error("Task missing"));
+      }
+      const options = task?.attributes ?? { }
+      this.adminClient.createTopic({
+        topic,
+        num_partitions: options.num_partitions ?? this.config.defaultTopicParitions,
+        replication_factor: options.replication_factor ?? this.config.defaultTopicReplicationFactor
+      }, (err) => {
+        if(err) {
+          reject(err);
+        }
+        resolve();
+      });
+    });
+  }
+
   async disconnect() {
     this.consumer.disconnect();
+    this.adminClient.disconnect();
   }
 }
 
