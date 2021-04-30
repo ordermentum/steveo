@@ -51,22 +51,6 @@ export class Steveo implements ISteveo {
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
     this.hooks = hooks;
-    this.checkHooks();
-  }
-
-  checkHooks() {
-    // Add a termination event callback when no hooks are present
-    if (!this.hooks?.healthCheck && !this.hooks?.terminationCheck) {
-      for (const signal of ['SIGTERM', 'SIGINT'] as const) {
-        process.on(signal, async () => {
-          this.logger.info(
-            `Received ${signal} -- Disconnecting and terminating`
-          );
-          setTimeout(() => process.exit(0), 100);
-          this.disconnect();
-        });
-      }
-    }
   }
 
   getTopic(topic: string) {
