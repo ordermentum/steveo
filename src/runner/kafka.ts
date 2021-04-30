@@ -105,7 +105,7 @@ class KafkaRunner extends BaseRunner
       this.logger.error(`Error while consumption - ${err}`);
       if (
         err.origin === 'local' &&
-        [CODES.ERRORS.ERR_UNKNOWN, CODES.ERRORS.ERR__TRANSPORT].includes(
+        [CODES.ERRORS.ERR_UNKNOWN, CODES.ERRORS.ERR__TRANSPORT, CODES.ERRORS.ERR_BROKER_NOT_AVAILABLE, CODES.ERRORS.ERR__ALL_BROKERS_DOWN].includes(
           err.code
         )
       ) {
