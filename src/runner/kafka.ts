@@ -1,5 +1,5 @@
 import nullLogger from 'null-logger';
-import Kafka, { KafkaConsumer, Message } from 'node-rdkafka';
+import Kafka, { CODES, KafkaConsumer, Message } from 'node-rdkafka';
 import BaseRunner from '../base/base_runner';
 import { getDuration } from './utils';
 import {
@@ -89,9 +89,25 @@ class KafkaRunner extends BaseRunner
     }
   };
 
+  reconnect = () => {
+    this.consumer.disconnect(() => {
+      this.consumer.connect({}, err => {
+        if (err) {
+          this.logger.error('Error reconnecting consumer', err);
+          process.exit(1);
+        }
+      });
+    });
+  }
+
   consumeCallback = async (err, messages) => {
     if (err) {
       this.logger.error(`Error while consumption - ${err}`);
+      if( err.origin === 'local' && [CODES.ERRORS.ERR_UNKNOWN, CODES.ERRORS.ERR__TRANSPORT].includes(err.code)) {
+        this.logger.info('Reconnecting consumer');
+        this.reconnect();
+        return;
+      }
     }
     try {
       if (messages?.length) {
