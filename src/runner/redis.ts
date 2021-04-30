@@ -1,5 +1,6 @@
 /* eslint-disable no-continue */
 import nullLogger from 'null-logger';
+import RedisSMQ from 'rsmq';
 import BaseRunner from '../base/base_runner';
 import { getContext } from './utils';
 import redisConf from '../config/redis';
@@ -47,7 +48,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   registry: IRegistry;
 
-  redis: any;
+  redis: RedisSMQ;
 
   pool: Pool;
 
@@ -156,7 +157,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
     if (exists) {
       this.logger.debug(`${topic} already exists`);
-      return true;
+      return;
     }
 
     const params = {
@@ -164,7 +165,11 @@ class RedisRunner extends BaseRunner implements IRunner {
       vt: visibilityTimeout,
       maxsize,
     };
-    return this.redis.createQueueAsync(params);
+    await this.redis.createQueueAsync(params);
+  }
+
+  async disconnect() {
+    this.redis?.quit();
   }
 }
 

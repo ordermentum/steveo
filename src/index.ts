@@ -1,15 +1,6 @@
-/* eslint-disable no-underscore-dangle */
 import NULL_LOGGER from 'null-logger';
-import Task from './task';
-import Registry from './registry';
-import runner from './base/runner';
-import metric from './base/metric';
-import producer from './base/producer';
-import getConfig from './config';
-import { build } from './base/pool';
-import KafkaAdminClientFactory from './adminClient/kafka';
-
 import {
+  IRunner,
   Hooks,
   ITask,
   Configuration,
@@ -24,6 +15,15 @@ import {
   IMetric,
   Attribute,
 } from './common';
+/* eslint-disable no-underscore-dangle */
+import Task from './task';
+import Registry from './registry';
+import runner from './base/runner';
+import metric from './base/metric';
+import producer from './base/producer';
+import getConfig from './config';
+import { build } from './base/pool';
+import KafkaAdminClientFactory from './adminClient/kafka';
 
 export class Steveo implements ISteveo {
   config: Configuration;
@@ -37,6 +37,8 @@ export class Steveo implements ISteveo {
   metric: IMetric | null;
 
   _producer?: IProducer;
+
+  _runner?: IRunner;
 
   events: IEvent;
 
@@ -56,6 +58,17 @@ export class Steveo implements ISteveo {
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
     this.hooks = hooks;
+
+    // Add a termination check when no hooks are present
+    if (!this.hooks?.healthCheck && !this.hooks?.terminationCheck) {
+      for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+        process.on(signal, async () => {
+          this.logger.info(`Received ${signal} -- Disconnecting and terminating`);
+          this.disconnect();
+          process.exit(0);
+        });
+      }
+    }
   }
 
   getTopic(topic: string) {
@@ -114,14 +127,17 @@ export class Steveo implements ISteveo {
   }
 
   runner() {
-    return runner(
-      this.config.engine,
-      this.config,
-      this.registry,
-      this.pool,
-      this.logger,
-      this.hooks
-    );
+    if(!this._runner) {
+      this._runner =  runner(
+        this.config.engine,
+        this.config,
+        this.registry,
+        this.pool,
+        this.logger,
+        this.hooks
+      );
+    }
+    return this._runner;
   }
 
   adminClient() {
@@ -136,6 +152,16 @@ export class Steveo implements ISteveo {
   customTopicName = (cb: CustomTopicFunction) => {
     this.getTopicName = cb;
   };
+
+  disconnect() {
+    try {
+      this._producer?.disconnect();
+    } catch(err) {}
+
+    try {
+      this._runner?.disconnect();
+    } catch(err) {} 
+  }
 }
 
 export default (config: Configuration, logger: Logger, hooks: Hooks) => () =>

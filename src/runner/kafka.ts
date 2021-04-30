@@ -46,8 +46,6 @@ class KafkaRunner extends BaseRunner
   }
 
   receive = async (message: Message) => {
-    console.log('📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙');
-    console.log('message:', message);
     const { topic } = message;
     try {
       const parsed = {
@@ -61,17 +59,17 @@ class KafkaRunner extends BaseRunner
       const task = this.registry.getTask(topic);
       if (!task) {
         this.logger.error(`Unknown Task ${topic}`);
-        this.consumer.commit(message);
+        this.consumer.commitMessageSync(message);
         return;
       }
 
       if (!this.config.waitToCommit) {
-        this.consumer.commit(message);
+        this.consumer.commitMessageSync(message);
       }
       this.logger.debug('Start subscribe', topic, message);
       await task.subscribe(message);
       if (this.config.waitToCommit) {
-        this.consumer.commit(message);
+        this.consumer.commitMessageSync(message);
       }
       this.logger.debug('Finish subscribe', topic, message);
       this.registry.events.emit('runner_complete', topic, parsed, {
@@ -86,6 +84,11 @@ class KafkaRunner extends BaseRunner
       });
       this.registry.events.emit('runner_failure', topic, ex, message);
     }
+    await new Promise((resolve) => {
+      setTimeout(resolve, 3000);
+    })
+    console.log('🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐🚐 ');
+    console.log(':', );
   };
 
   process(topics: Array<string>) {
@@ -96,31 +99,34 @@ class KafkaRunner extends BaseRunner
         this.logger.error('Connection timed out');
         reject();
       }, this.config.connectionTimeout!);
-
-      this.consumer.on('ready', () => {
-        clearTimeout(timeoutId);
-        this.logger.info('Consumer ready');
-        this.consumer.subscribe(topics);
-        this.consumer.consume();
-        resolve(this.consumer);
-      });
-      this.consumer.on('data', this.receive);
-      this.consumer.on('disconnected', () => {
-        this.logger.debug('Consumer disconnected');
-      });
-      this.consumer.on('event.error', (err) => {
-        this.logger.error('Error from consumer', err);
-      });
       this.consumer.connect({}, err => {
         clearTimeout(timeoutId);
-        console.log('🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰');
-        console.log('err:', err);
         if (err) {
           this.logger.error('Error initializing consumer', err);
           reject();
         }
       });
+      this.consumer.on('data', this.receive);
+      this.consumer.on('disconnected', () => {
+        this.logger.debug('Consumer disconnected');
+      });
+      this.consumer.on('event.error', err => {
+        this.logger.error('Error from consumer', err);
+      });
+      this.consumer.on('ready', () => {
+        console.log('📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙');
+        console.log(':', topics);
+        clearTimeout(timeoutId);
+        this.consumer.subscribe(topics);
+        this.logger.info('Consumer ready', this.consumer.getMetadata());
+        this.consumer.consume();
+        resolve(this.consumer);
+      });
     });
+  }
+
+  async disconnect() {
+    this.consumer?.disconnect();
   }
 }
 

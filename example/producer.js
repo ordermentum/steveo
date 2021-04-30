@@ -67,7 +67,7 @@ const logger = console;
 
   // let it run & publish messages in every second
   function produceMessages(counter) {
-    if (counter < 10000) {
+    if (counter < 100) {
       setTimeout(async () => {
         counter += 1; // eslint-disable-line
         logger.log('Produce: Message ', counter);
@@ -75,6 +75,8 @@ const logger = console;
         await secondTask.publish([{ payload: `Message ${counter}` }]);
         produceMessages(counter);
       }, 100);
+    } else {
+      process.exit(0);
     }
   }
   produceMessages(0);

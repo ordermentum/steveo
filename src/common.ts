@@ -140,6 +140,7 @@ export interface IRunner<T = any, M = any> {
   registry: IRegistry;
   receive(messages: M, topic: string, partition: number): Promise<void>;
   process(topics: Array<string>): Promise<T>;
+  disconnect(): Promise<void>;
 }
 
 export interface IMetric {
@@ -159,6 +160,7 @@ export interface ISteveo {
   task(topic: string, callBack: Callback): ITask;
   runner(): IRunner;
   customTopicName(cb: CustomTopicFunction): void;
+  disconnect(): void;
 }
 
 export type AsyncWrapper = {
@@ -184,11 +186,8 @@ export interface IProducer<P = any> {
   producer?: any;
   initialize(topic?: string): Promise<P>;
   getPayload(msg: any, topic: string): any;
-  send<T = any>(
-    topic: string,
-    payload: T,
-    key?: string
-  ): Promise<void>;
+  send<T = any>(topic: string, payload: T, key?: string): Promise<void>;
+  disconnect(): Promise<void>;
 }
 
 export type sqsUrls = {

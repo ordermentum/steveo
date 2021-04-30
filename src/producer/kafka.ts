@@ -30,7 +30,7 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
   }
 
   async initialize() {
-    if(this.producer.isConnected()) {
+    if (this.producer.isConnected()) {
       return this.producer;
     }
     return new Promise<HighLevelProducer>((resolve, reject) => {
@@ -56,14 +56,16 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
     });
   }
 
-  getPayload = <T>(payload: T) => { 
-    if(typeof payload === 'string') {
-      return Buffer.from(payload, 'utf-8')
+  getPayload = <T>(payload: T) => {
+    if (typeof payload === 'string') {
+      return Buffer.from(payload, 'utf-8');
     }
-    return Buffer.from(JSON.stringify(payload), 'utf-8')
-  }
+    return Buffer.from(JSON.stringify(payload), 'utf-8');
+  };
 
   async send<T>(topic: string, payload: T, key: string | null = null) {
+    console.log('🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝🗝');
+    console.log('topic, payload:', topic, payload);
     return new Promise<void>((resolve, reject) => {
       this.producer.produce(
         topic,
@@ -72,6 +74,8 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
         key,
         Date.now(),
         err => {
+          console.log('🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰');
+          console.log(':', );
           if (err) {
             this.logger.error(
               'Error while sending payload:',
@@ -89,6 +93,10 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
       this.registry.events.emit('producer_success', topic, payload);
       resolve();
     });
+  }
+
+  async disconnect() {
+    this.producer?.disconnect();
   }
 }
 

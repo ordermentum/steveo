@@ -107,6 +107,8 @@ class SqsProducer implements IProducer {
       throw ex;
     }
   }
+
+  async disconnect() {}
 }
 
 export default SqsProducer;

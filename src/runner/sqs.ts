@@ -202,6 +202,8 @@ class SqsRunner extends BaseRunner implements IRunner {
     };
     return this.sqs.createQueueAsync(params);
   }
+
+  async disconnect() {}
 }
 
 export default SqsRunner;
