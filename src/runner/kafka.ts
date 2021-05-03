@@ -84,7 +84,6 @@ class KafkaRunner extends BaseRunner
         this.consumer.commitMessage(message);
         return;
       }
-
       if (!this.config.waitToCommit) {
         this.consumer.commitMessage(message);
       }

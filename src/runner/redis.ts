@@ -169,7 +169,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async disconnect() {
-    this.redis?.quit();
+    this.redis?.quit(() => {});
   }
 }
 

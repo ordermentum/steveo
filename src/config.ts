@@ -1,3 +1,4 @@
+import merge from 'lodash.merge';
 import {
   Configuration,
   KafkaConsumerConfig,
@@ -32,14 +33,12 @@ export const getConfig = (config: Configuration): Configuration => {
     parameters.bootstrapServers = kafkaConfig.bootstrapServers;
     parameters.connectionTimeout = kafkaConfig.connectionTimeout ?? 30000; // 30 seconds
     parameters.waitToCommit = kafkaConfig.waitToCommit ?? true;
-    parameters.consumer = {
-      ...KafkaConsumerDefault,
+    parameters.consumer = merge(KafkaConsumerDefault, {
       ...(kafkaConfig.consumer ?? {}),
-    };
-    parameters.producer = {
-      ...KafkaProducerDefault,
+    });
+    parameters.producer = merge(KafkaProducerDefault, {
       ...(kafkaConfig.producer ?? {}),
-    };
+    });
     parameters.admin = kafkaConfig.admin ?? {};
     parameters.defaultTopicParitions = kafkaConfig.defaultTopicParitions ?? 6;
     parameters.defaultTopicReplicationFactor =
