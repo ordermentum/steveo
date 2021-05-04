@@ -2,7 +2,7 @@ import nullLogger from 'null-logger';
 import RedisSMQ from 'rsmq';
 import redisConf from '../config/redis';
 
-import { Configuration, Logger, IProducer, IRegistry } from '../common';
+import { Configuration, Logger, IProducer, IRegistry, RedisConfiguration } from '../common';
 
 import { getMeta } from './utils';
 
@@ -29,8 +29,8 @@ class RedisProducer implements IProducer {
   async initialize(topic: string) {
     const params = {
       qname: topic,
-      vt: this.config.visibilityTimeout,
-      maxsize: this.config.redisMessageMaxsize,
+      vt: (this.config as RedisConfiguration).visibilityTimeout,
+      maxsize: (this.config as RedisConfiguration).redisMessageMaxsize,
     };
     const queues = await this.producer.listQueuesAsync();
     if (!queues.find(q => q === topic)) {

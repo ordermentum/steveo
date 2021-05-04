@@ -12,6 +12,7 @@ import {
   Logger,
   IRegistry,
   CreateSqsTopic,
+  SQSConfiguration
 } from '../common';
 
 type DeleteMessage = {
@@ -56,12 +57,12 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   sqs: any;
 
-  pool: Pool;
+  pool: Pool<any>;
 
   constructor(
     config: Configuration,
     registry: IRegistry,
-    pool: Pool,
+    pool: Pool<any>,
     logger: Logger = nullLogger,
     hooks: Hooks = {}
   ) {
@@ -137,7 +138,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     const loop = () =>
       setTimeout(
         this.process.bind(this, topics),
-        this.config.consumerPollInterval
+        (this.config as SQSConfiguration).consumerPollInterval ?? 1000
       );
     await this.checks(loop);
 
@@ -152,10 +153,10 @@ class SqsRunner extends BaseRunner implements IRunner {
         if (queueURL) {
           this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
           const params = {
-            MaxNumberOfMessages: this.config.maxNumberOfMessages,
+            MaxNumberOfMessages: (this.config as SQSConfiguration).maxNumberOfMessages,
             QueueUrl: queueURL,
-            VisibilityTimeout: this.config.visibilityTimeout,
-            WaitTimeSeconds: this.config.waitTimeSeconds,
+            VisibilityTimeout: (this.config as SQSConfiguration).visibilityTimeout,
+            WaitTimeSeconds: (this.config as SQSConfiguration).waitTimeSeconds,
           };
           await this.dequeue(topic, params);
         } else {

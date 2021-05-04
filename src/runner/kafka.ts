@@ -15,6 +15,7 @@ import {
   Logger,
   IRegistry,
   KafkaConfiguration,
+  Configuration
 } from '../common';
 
 const FATAL_ERROR_CODES = [
@@ -25,7 +26,7 @@ const FATAL_ERROR_CODES = [
 ];
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
-  config: KafkaConfiguration;
+  config: Configuration;
 
   logger: Logger;
 
@@ -33,16 +34,16 @@ class KafkaRunner extends BaseRunner
 
   consumer: KafkaConsumer;
 
-  pool: Pool;
+  pool: Pool<any>;
 
   paused: boolean;
 
   adminClient: IAdminClient;
 
   constructor(
-    config: KafkaConfiguration,
+    config: Configuration,
     registry: IRegistry,
-    pool: Pool,
+    pool: Pool<any>,
     logger: Logger = nullLogger,
     hooks: Hooks = {}
   ) {
@@ -55,15 +56,15 @@ class KafkaRunner extends BaseRunner
 
     this.consumer = new Kafka.KafkaConsumer(
       {
-        'bootstrap.servers': this.config.bootstrapServers,
-        ...(this.config.consumer?.global ?? {}),
+        'bootstrap.servers': (this.config as KafkaConfiguration).bootstrapServers,
+        ...((this.config as KafkaConfiguration).consumer?.global ?? {}),
       },
-      this.config.consumer?.topic ?? {}
+      (this.config as KafkaConfiguration).consumer?.topic ?? {}
     );
 
     this.adminClient = AdminClient.create({
-      'bootstrap.servers': this.config.bootstrapServers,
-      ...this.config.admin,
+      'bootstrap.servers': (this.config as KafkaConfiguration).bootstrapServers,
+      ...(this.config as KafkaConfiguration).admin,
     });
   }
 
@@ -84,12 +85,12 @@ class KafkaRunner extends BaseRunner
         this.consumer.commitMessage(message);
         return;
       }
-      if (!this.config.waitToCommit) {
+      if (!(this.config as KafkaConfiguration).waitToCommit) {
         this.consumer.commitMessage(message);
       }
       this.logger.debug('Start subscribe', topic, message);
       await task.subscribe(message);
-      if (this.config.waitToCommit) {
+      if ((this.config as KafkaConfiguration).waitToCommit) {
         this.consumer.commitMessage(message);
       }
       this.logger.debug('Finish subscribe', topic, message);
@@ -143,7 +144,7 @@ class KafkaRunner extends BaseRunner
       const timeoutId = setTimeout(() => {
         this.logger.error('Connection timed out');
         reject();
-      }, this.config.connectionTimeout!);
+      }, (this.config as KafkaConfiguration).connectionTimeout!);
       this.consumer.connect({}, err => {
         clearTimeout(timeoutId);
         if (err) {
@@ -178,10 +179,10 @@ class KafkaRunner extends BaseRunner
         {
           topic,
           num_partitions:
-            options.num_partitions ?? this.config.defaultTopicParitions,
+            options.num_partitions ?? (this.config as KafkaConfiguration).defaultTopicParitions,
           replication_factor:
             options.replication_factor ??
-            this.config.defaultTopicReplicationFactor,
+            (this.config as KafkaConfiguration).defaultTopicReplicationFactor,
         },
         err => {
           if (err) {

@@ -1,3 +1,4 @@
+import { SQSConfiguration } from './../common';
 import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 import logger from 'null-logger';
@@ -26,6 +27,7 @@ class BaseRunner {
 
   registry?: IRegistry;
 
+  // @ts-ignore
   config: Configuration;
 
   logger: Logger;
@@ -83,9 +85,9 @@ class BaseRunner {
       topics.map(topic =>
         this.createQueue({
           topic,
-          receiveMessageWaitTimeSeconds: this.config
+          receiveMessageWaitTimeSeconds: (this.config as SQSConfiguration)
             .receiveMessageWaitTimeSeconds,
-          messageRetentionPeriod: this.config.messageRetentionPeriod,
+          messageRetentionPeriod: (this.config as SQSConfiguration).messageRetentionPeriod,
         }).catch(er => {
           this.logger.debug('error creating queue for topic:', er);
         })

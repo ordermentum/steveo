@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@types/generic-pool@^3.1.9":
+  version "3.1.9"
+  resolved "https://registry.yarnpkg.com/@types/generic-pool/-/generic-pool-3.1.9.tgz#cc82ee0d92561fce713f8f9a7b2380eda8a89dcb"
+  integrity sha512-IkXMs8fhV6+E4J8EWv8iL7mLvApcLLQUH4m1Rex3KCPRqT+Xya0DDHIeGAokk/6VXe9zg8oTWyr+FGyeuimEYQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/node@*":
   version "15.0.1"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-15.0.1.tgz#ef34dea0881028d11398be5bf4e856743e3dc35a"

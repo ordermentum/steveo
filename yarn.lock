@@ -570,6 +570,13 @@
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.17.tgz#85f9f0610f514b22a94125d441f73eef65bde5cc"
   integrity sha512-LaiwWNnYuL8xJlQcE91QB2JoswWZckq9A4b+nMPq8dt8AP96727Nb3X4e74u+E3tm4NLTILNI9MYFsyVc30wSA==
 
+"@types/generic-pool@^3.1.9":
+  version "3.1.9"
+  resolved "https://registry.yarnpkg.com/@types/generic-pool/-/generic-pool-3.1.9.tgz#cc82ee0d92561fce713f8f9a7b2380eda8a89dcb"
+  integrity sha512-IkXMs8fhV6+E4J8EWv8iL7mLvApcLLQUH4m1Rex3KCPRqT+Xya0DDHIeGAokk/6VXe9zg8oTWyr+FGyeuimEYQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/json-schema@^7.0.3":
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.3.tgz#bdfd69d61e464dcc81b25159c270d75a73c1a636"

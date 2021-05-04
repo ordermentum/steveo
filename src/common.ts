@@ -1,4 +1,5 @@
 import { HTTPOptions } from 'aws-sdk';
+import {Pool as GenericPool, Options} from 'generic-pool';
 import {
   ConsumerGlobalConfig,
   ConsumerTopicConfig,
@@ -69,25 +70,28 @@ export type SQSConfiguration = {
   maxNumberOfMessages: number;
   visibilityTimeout: number;
   waitTimeSeconds: number;
-  endPoint?: string;
+  endpoint?: string;
   httpOptions?: HTTPOptions;
+  consumerPollInterval?: number;
 };
 
 export type RedisConfiguration = {
   redisHost: string;
-  redisPort: string;
-  redisMessageMaxsize: number;
+  redisPort: number;
+  redisMessageMaxsize?: number;
   workerConfig: any;
-  consumerPollInterval: number;
+  consumerPollInterval?: number;
+  visibilityTimeout?: number;
 };
 
 export type DummyConfiguration = any;
 
 export type Configuration =
-  | SQSConfiguration
-  | KafkaConfiguration
-  | RedisConfiguration
-  | any;
+  (SQSConfiguration | KafkaConfiguration | RedisConfiguration) & {
+    engine: 'sqs' | 'kafka' | 'redis',
+    shuffleQueue?: boolean;
+    workerConfig?: Options;
+  };
 
 export type Attribute = {
   name: string;
@@ -95,10 +99,7 @@ export type Attribute = {
   value: string;
 };
 
-export type Pool = {
-  acquire(): Promise<any>;
-  release(client: any): Promise<any>;
-};
+export type Pool<T> = GenericPool<T>;
 
 export type Registry = {};
 

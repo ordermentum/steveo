@@ -1,10 +1,10 @@
 import nullLogger from 'null-logger';
 import { HighLevelProducer } from 'node-rdkafka';
 
-import { KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
+import { Configuration, KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
 
 class KafkaProducer implements IProducer<HighLevelProducer> {
-  config: KafkaConfiguration;
+  config: Configuration;
 
   registry: IRegistry;
 
@@ -13,17 +13,17 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
   producer: HighLevelProducer;
 
   constructor(
-    config: KafkaConfiguration,
+    config: Configuration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
     this.config = config;
     this.producer = new HighLevelProducer(
       {
-        'bootstrap.servers': this.config.bootstrapServers,
-        ...(this.config.producer?.global ?? {}),
+        'bootstrap.servers': (this.config as KafkaConfiguration).bootstrapServers,
+        ...((this.config as KafkaConfiguration).producer?.global ?? {}),
       },
-      this.config.producer?.topic ?? {}
+      (this.config as KafkaConfiguration).producer?.topic ?? {}
     );
     this.logger = logger;
     this.registry = registry;
@@ -37,7 +37,7 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
       const timeoutId = setTimeout(() => {
         this.logger.error('Connection timed out');
         reject();
-      }, this.config.connectionTimeout!);
+      }, (this.config as KafkaConfiguration).connectionTimeout!);
       this.producer.connect({}, err => {
         if (err) {
           clearTimeout(timeoutId);

@@ -36,7 +36,7 @@ export class Steveo implements ISteveo {
 
   events: IEvent;
 
-  pool: Pool;
+  pool: Pool<any>;
 
   hooks: Hooks;
 

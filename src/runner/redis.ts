@@ -12,6 +12,7 @@ import {
   Logger,
   IRegistry,
   CreateRedisTopic,
+  RedisConfiguration
 } from '../common';
 
 type DeleteMessage = {
@@ -50,12 +51,12 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   redis: RedisSMQ;
 
-  pool: Pool;
+  pool: Pool<any>;
 
   constructor(
     config: Configuration,
     registry: IRegistry,
-    pool: Pool,
+    pool: Pool<any>,
     logger: Logger = nullLogger,
     hooks: Hooks = {}
   ) {
@@ -128,7 +129,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     const loop = () =>
       setTimeout(
         this.process.bind(this, topics),
-        this.config.consumerPollInterval
+        (this.config as RedisConfiguration).consumerPollInterval ?? 1000
       );
     await this.checks(loop);
     this.logger.debug(

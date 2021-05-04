@@ -16,7 +16,7 @@ const getRunner = (
   type: string,
   config: Configuration,
   registry: IRegistry,
-  pool: Pool,
+  pool: Pool<any>,
   logger: Logger,
   hooks: Hooks
 ) => new Runners[type](config, registry, pool, logger, hooks);

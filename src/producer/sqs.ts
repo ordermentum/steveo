@@ -7,6 +7,7 @@ import {
   IProducer,
   IRegistry,
   sqsUrls,
+  SQSConfiguration,
 } from '../common';
 
 import { getMeta } from './utils';
@@ -50,9 +51,9 @@ class SqsProducer implements IProducer {
     const params = {
       QueueName: topic,
       Attributes: {
-        ReceiveMessageWaitTimeSeconds: this.config
+        ReceiveMessageWaitTimeSeconds: (this.config as SQSConfiguration)
           .receiveMessageWaitTimeSeconds,
-        MessageRetentionPeriod: this.config.messageRetentionPeriod,
+        MessageRetentionPeriod: (this.config as SQSConfiguration).messageRetentionPeriod,
       },
     };
     const createResponse = await this.producer.createQueueAsync(params);
