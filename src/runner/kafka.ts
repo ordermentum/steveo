@@ -58,8 +58,6 @@ class KafkaRunner extends BaseRunner
       {
         'bootstrap.servers': (this.config as KafkaConfiguration)
           .bootstrapServers,
-        'security.protocol': 'ssl',
-        debug: 'all',
         ...((this.config as KafkaConfiguration).consumer?.global ?? {}),
       },
       (this.config as KafkaConfiguration).consumer?.topic ?? {}
