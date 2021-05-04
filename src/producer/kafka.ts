@@ -28,7 +28,8 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
       {
         'bootstrap.servers': (this.config as KafkaConfiguration)
           .bootstrapServers,
-        'debug': 'all',
+        'security.protocol': 'ssl',
+        debug: 'all',
         ...((this.config as KafkaConfiguration).producer?.global ?? {}),
       },
       (this.config as KafkaConfiguration).producer?.topic ?? {}
