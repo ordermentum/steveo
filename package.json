@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "3.0.0-beta4",
+  "version": "3.0.0-beta5",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -36,6 +36,7 @@
     ]
   },
   "dependencies": {
+    "@types/generic-pool": "^3.1.9",
     "bluebird": "^3.7.2",
     "generic-pool": "^3.7.2",
     "lazy-object": "^1.0.1",
@@ -51,9 +52,6 @@
     "aws-sdk": "^2.489.0",
     "node-rdkafka": "^2.10.1",
     "rsmq": "^0.12.3"
-  },
-  "peerDependencies": {
-    "@types/generic-pool": "^3.1.9"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "0.1.3",
