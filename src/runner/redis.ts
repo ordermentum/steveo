@@ -12,7 +12,7 @@ import {
   Logger,
   IRegistry,
   CreateRedisTopic,
-  RedisConfiguration
+  RedisConfiguration,
 } from '../common';
 
 type DeleteMessage = {

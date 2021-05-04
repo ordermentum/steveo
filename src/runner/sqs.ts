@@ -12,7 +12,7 @@ import {
   Logger,
   IRegistry,
   CreateSqsTopic,
-  SQSConfiguration
+  SQSConfiguration,
 } from '../common';
 
 type DeleteMessage = {
@@ -153,9 +153,11 @@ class SqsRunner extends BaseRunner implements IRunner {
         if (queueURL) {
           this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
           const params = {
-            MaxNumberOfMessages: (this.config as SQSConfiguration).maxNumberOfMessages,
+            MaxNumberOfMessages: (this.config as SQSConfiguration)
+              .maxNumberOfMessages,
             QueueUrl: queueURL,
-            VisibilityTimeout: (this.config as SQSConfiguration).visibilityTimeout,
+            VisibilityTimeout: (this.config as SQSConfiguration)
+              .visibilityTimeout,
             WaitTimeSeconds: (this.config as SQSConfiguration).waitTimeSeconds,
           };
           await this.dequeue(topic, params);

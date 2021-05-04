@@ -1,9 +1,13 @@
-import { SQSConfiguration } from './../common';
 import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 import logger from 'null-logger';
-
-import { Configuration, Logger, IRegistry, Hooks } from '../common';
+import {
+  SQSConfiguration,
+  Configuration,
+  Logger,
+  IRegistry,
+  Hooks,
+} from '../common';
 
 class BaseRunner {
   async preProcess() {
@@ -87,7 +91,8 @@ class BaseRunner {
           topic,
           receiveMessageWaitTimeSeconds: (this.config as SQSConfiguration)
             .receiveMessageWaitTimeSeconds,
-          messageRetentionPeriod: (this.config as SQSConfiguration).messageRetentionPeriod,
+          messageRetentionPeriod: (this.config as SQSConfiguration)
+            .messageRetentionPeriod,
         }).catch(er => {
           this.logger.debug('error creating queue for topic:', er);
         })

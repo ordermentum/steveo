@@ -1,5 +1,5 @@
 import { HTTPOptions } from 'aws-sdk';
-import {Pool as GenericPool, Options} from 'generic-pool';
+import { Pool as GenericPool, Options } from 'generic-pool';
 import {
   ConsumerGlobalConfig,
   ConsumerTopicConfig,
@@ -86,12 +86,15 @@ export type RedisConfiguration = {
 
 export type DummyConfiguration = any;
 
-export type Configuration =
-  (SQSConfiguration | KafkaConfiguration | RedisConfiguration) & {
-    engine: 'sqs' | 'kafka' | 'redis',
-    shuffleQueue?: boolean;
-    workerConfig?: Options;
-  };
+export type Configuration = (
+  | SQSConfiguration
+  | KafkaConfiguration
+  | RedisConfiguration
+) & {
+  engine: 'sqs' | 'kafka' | 'redis';
+  shuffleQueue?: boolean;
+  workerConfig?: Options;
+};
 
 export type Attribute = {
   name: string;

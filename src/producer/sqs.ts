@@ -53,7 +53,8 @@ class SqsProducer implements IProducer {
       Attributes: {
         ReceiveMessageWaitTimeSeconds: (this.config as SQSConfiguration)
           .receiveMessageWaitTimeSeconds,
-        MessageRetentionPeriod: (this.config as SQSConfiguration).messageRetentionPeriod,
+        MessageRetentionPeriod: (this.config as SQSConfiguration)
+          .messageRetentionPeriod,
       },
     };
     const createResponse = await this.producer.createQueueAsync(params);

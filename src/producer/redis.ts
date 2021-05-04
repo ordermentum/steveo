@@ -2,7 +2,13 @@ import nullLogger from 'null-logger';
 import RedisSMQ from 'rsmq';
 import redisConf from '../config/redis';
 
-import { Configuration, Logger, IProducer, IRegistry, RedisConfiguration } from '../common';
+import {
+  Configuration,
+  Logger,
+  IProducer,
+  IRegistry,
+  RedisConfiguration,
+} from '../common';
 
 import { getMeta } from './utils';
 

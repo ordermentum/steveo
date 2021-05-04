@@ -15,7 +15,7 @@ import {
   Logger,
   IRegistry,
   KafkaConfiguration,
-  Configuration
+  Configuration,
 } from '../common';
 
 const FATAL_ERROR_CODES = [
@@ -56,7 +56,8 @@ class KafkaRunner extends BaseRunner
 
     this.consumer = new Kafka.KafkaConsumer(
       {
-        'bootstrap.servers': (this.config as KafkaConfiguration).bootstrapServers,
+        'bootstrap.servers': (this.config as KafkaConfiguration)
+          .bootstrapServers,
         ...((this.config as KafkaConfiguration).consumer?.global ?? {}),
       },
       (this.config as KafkaConfiguration).consumer?.topic ?? {}
@@ -179,7 +180,8 @@ class KafkaRunner extends BaseRunner
         {
           topic,
           num_partitions:
-            options.num_partitions ?? (this.config as KafkaConfiguration).defaultTopicParitions,
+            options.num_partitions ??
+            (this.config as KafkaConfiguration).defaultTopicParitions,
           replication_factor:
             options.replication_factor ??
             (this.config as KafkaConfiguration).defaultTopicReplicationFactor,

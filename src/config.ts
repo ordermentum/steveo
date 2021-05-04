@@ -5,7 +5,7 @@ import {
   KafkaProducerConfig,
   KafkaConfiguration,
   SQSConfiguration,
-  RedisConfiguration
+  RedisConfiguration,
 } from './common';
 
 const KafkaConsumerDefault: KafkaConsumerConfig = {

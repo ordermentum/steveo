@@ -1,7 +1,13 @@
 import nullLogger from 'null-logger';
 import { HighLevelProducer } from 'node-rdkafka';
 
-import { Configuration, KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
+import {
+  Configuration,
+  KafkaConfiguration,
+  Logger,
+  IProducer,
+  IRegistry,
+} from '../common';
 
 class KafkaProducer implements IProducer<HighLevelProducer> {
   config: Configuration;
@@ -20,7 +26,8 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
     this.config = config;
     this.producer = new HighLevelProducer(
       {
-        'bootstrap.servers': (this.config as KafkaConfiguration).bootstrapServers,
+        'bootstrap.servers': (this.config as KafkaConfiguration)
+          .bootstrapServers,
         ...((this.config as KafkaConfiguration).producer?.global ?? {}),
       },
       (this.config as KafkaConfiguration).producer?.topic ?? {}
