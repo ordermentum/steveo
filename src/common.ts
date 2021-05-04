@@ -64,8 +64,8 @@ export type SQSConfiguration = {
   apiVersion: string;
   messageRetentionPeriod: string;
   receiveMessageWaitTimeSeconds: string;
-  accessKeyId: string;
-  secretAccessKey: string;
+  accessKeyId?: string;
+  secretAccessKey?: string;
   shuffleQueue: boolean;
   maxNumberOfMessages: number;
   visibilityTimeout: number;
