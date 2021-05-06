@@ -125,6 +125,8 @@ class KafkaRunner extends BaseRunner
   };
 
   async healthCheck() {
+    console.log('🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶');
+    console.log('this.consumer.isConnected():', this.consumer.isConnected());
     if(!this.consumer.isConnected()){
       throw new Error("Consumer not connected")
     }
