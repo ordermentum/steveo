@@ -60,7 +60,7 @@ export class Steveo implements ISteveo {
   ): ITask<T> {
     const topic =
       attributes.queueName ??
-      (this.config.queuePrefix ? `${this.config.queuePrefix}_name` : name);
+      (this.config.queuePrefix ? `${this.config.queuePrefix}_${name}` : name);
     const task = new Task<T, R>(
       this.config,
       this.registry,
