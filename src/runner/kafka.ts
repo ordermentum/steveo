@@ -18,12 +18,13 @@ import {
   Configuration,
 } from '../common';
 
-const FATAL_ERROR_CODES = [
+const RECONNECTION_ERR_CODES = [
   CODES.ERRORS.ERR_UNKNOWN,
   CODES.ERRORS.ERR__TRANSPORT,
   CODES.ERRORS.ERR_BROKER_NOT_AVAILABLE,
   CODES.ERRORS.ERR__ALL_BROKERS_DOWN,
 ];
+
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
   config: Configuration;
@@ -39,6 +40,8 @@ class KafkaRunner extends BaseRunner
   paused: boolean;
 
   adminClient: IAdminClient;
+
+  healthCheckIntervalId?: NodeJS.Timeout;
 
   constructor(
     config: Configuration,
@@ -116,19 +119,26 @@ class KafkaRunner extends BaseRunner
       this.consumer.connect({}, err => {
         if (err) {
           this.logger.error('Error reconnecting consumer', err);
-          process.exit(1);
         }
       });
     });
   };
 
+  async healthCheck() {
+    if(!this.consumer.isConnected()){
+      throw new Error("Consumer not connected")
+    }
+  }
+
   consumeCallback = async (err, messages) => {
     if (err) {
       this.logger.error(`Error while consumption - ${err}`);
-      if (err.origin === 'local' && FATAL_ERROR_CODES.includes(err.code)) {
+      if (err.origin === 'local' && RECONNECTION_ERR_CODES.includes(err.code)) {
         this.logger.info('Reconnecting consumer');
         this.reconnect();
         return;
+      } else {
+        this.consumer.disconnect();
       }
     }
     try {
@@ -162,6 +172,7 @@ class KafkaRunner extends BaseRunner
         this.logger.error('Error from consumer', err);
       });
       this.consumer.on('ready', () => {
+        this.healthCheckIntervalId = setInterval(() => this.checks(), 3000);
         clearTimeout(timeoutId);
         this.logger.info('Kafka consumer ready');
         if (topics.length) {
@@ -201,6 +212,7 @@ class KafkaRunner extends BaseRunner
   }
 
   async disconnect() {
+    this.healthCheckIntervalId?.unref();
     this.consumer.disconnect();
     this.adminClient.disconnect();
   }
