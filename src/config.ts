@@ -30,6 +30,7 @@ export const getConfig = (config: Configuration): Configuration => {
   parameters.shuffleQueue = !!config.shuffleQueue;
   parameters.workerConfig = config.workerConfig ?? {};
   parameters.queuePrefix = config.queuePrefix ?? '';
+  parameters.upperCaseNames = config.upperCaseNames ?? true;
 
   if (parameters.engine === 'kafka') {
     const kafkaConfig = config as KafkaConfiguration;

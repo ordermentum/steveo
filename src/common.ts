@@ -94,6 +94,10 @@ export type Configuration = (
   queuePrefix?: string;
   shuffleQueue?: boolean;
   workerConfig?: Options;
+  /**
+   * @description Uppercase topic names
+   */
+  upperCaseNames?: boolean;
 };
 
 export type Attribute = {

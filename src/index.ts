@@ -61,12 +61,13 @@ export class Steveo implements ISteveo {
     const topic =
       attributes.queueName ??
       (this.config.queuePrefix ? `${this.config.queuePrefix}_${name}` : name);
+
     const task = new Task<T, R>(
       this.config,
       this.registry,
       this.producer,
       name,
-      topic,
+      this.config.upperCaseNames ? topic.toUpperCase() : topic,
       callback,
       sqsAttributes
     );
