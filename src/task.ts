@@ -20,7 +20,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
 
   topic: string;
 
-  attributes: any;
+  attributes: Attribute[];
 
   constructor(
     config: Configuration,

@@ -91,6 +91,7 @@ export type Configuration = (
   | RedisConfiguration
 ) & {
   engine: 'sqs' | 'kafka' | 'redis';
+  queuePrefix?: string;
   shuffleQueue?: boolean;
   workerConfig?: Options;
 };
@@ -148,15 +149,22 @@ export interface IRunner<T = any, M = any> {
 }
 
 export type CustomTopicFunction = (topic: string) => string;
+
+export type TaskOpts = {
+  queueName?: string;
+};
 export interface ISteveo {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   producer: IProducer;
-  getTopicName?: CustomTopicFunction;
-  task(topic: string, callBack: Callback, opts?: any): ITask;
+  task(
+    topic: string,
+    callBack: Callback,
+    attributes?: Attribute[],
+    opts?: TaskOpts
+  ): ITask;
   runner(): IRunner;
-  customTopicName(cb: CustomTopicFunction): void;
   disconnect(): void;
 }
 

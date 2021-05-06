@@ -58,7 +58,7 @@ class KafkaRunner extends BaseRunner
       {
         'bootstrap.servers': (this.config as KafkaConfiguration)
           .bootstrapServers,
-          'security.protocol': 'ssl',
+        'security.protocol': 'ssl',
         ...((this.config as KafkaConfiguration).consumer?.global ?? {}),
       },
       (this.config as KafkaConfiguration).consumer?.topic ?? {}
@@ -164,7 +164,7 @@ class KafkaRunner extends BaseRunner
       this.consumer.on('ready', () => {
         clearTimeout(timeoutId);
         this.logger.info('Kafka consumer ready');
-        if(topics.length) {
+        if (topics.length) {
           this.consumer.subscribe(topics);
           this.consumer.consume(1, this.consumeCallback);
         }

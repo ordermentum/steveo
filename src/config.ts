@@ -26,9 +26,10 @@ const KafkaProducerDefault: KafkaProducerConfig = {
 
 export const getConfig = (config: Configuration): Configuration => {
   const parameters: any = {};
-  parameters.engine = config.engine || 'kafka';
-  parameters.shuffleQueue = false || config.shuffleQueue;
-  parameters.workerConfig = {} || config.workerConfig;
+  parameters.engine = config.engine ?? 'kafka';
+  parameters.shuffleQueue = !!config.shuffleQueue;
+  parameters.workerConfig = config.workerConfig ?? {};
+  parameters.queuePrefix = config.queuePrefix ?? '';
 
   if (parameters.engine === 'kafka') {
     const kafkaConfig = config as KafkaConfiguration;

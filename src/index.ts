@@ -9,9 +9,10 @@ import {
   Logger,
   ISteveo,
   IRegistry,
-  CustomTopicFunction,
   IProducer,
   IEvent,
+  Attribute,
+  TaskOpts,
 } from './common';
 /* eslint-disable no-underscore-dangle */
 import Task from './task';
@@ -27,8 +28,6 @@ export class Steveo implements ISteveo {
   logger: Logger;
 
   registry: IRegistry;
-
-  getTopicName?: CustomTopicFunction;
 
   _producer?: IProducer;
 
@@ -53,20 +52,15 @@ export class Steveo implements ISteveo {
     this.hooks = hooks;
   }
 
-  getTopic(topic: string) {
-    let topicName = topic;
-    if (this.getTopicName && typeof this.getTopicName === 'function') {
-      topicName = this.getTopicName(topic);
-    }
-    return topicName;
-  }
-
   task<T = any, R = any>(
     name: string,
     callback: Callback<T, R>,
-    attributes: any = {}
+    sqsAttributes: Attribute[] = [],
+    attributes: TaskOpts = {}
   ): ITask<T> {
-    const topic = this.getTopic(name);
+    const topic =
+      attributes.queueName ??
+      (this.config.queuePrefix ? `${this.config.queuePrefix}_name` : name);
     const task = new Task<T, R>(
       this.config,
       this.registry,
@@ -74,7 +68,7 @@ export class Steveo implements ISteveo {
       name,
       topic,
       callback,
-      attributes
+      sqsAttributes
     );
     this.registry.addNewTask(task);
 
@@ -117,10 +111,6 @@ export class Steveo implements ISteveo {
     }
     return this._runner;
   }
-
-  customTopicName = (cb: CustomTopicFunction) => {
-    this.getTopicName = cb;
-  };
 
   disconnect() {
     this._producer?.disconnect();
