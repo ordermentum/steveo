@@ -37,7 +37,6 @@ class KafkaRunner extends BaseRunner
 
   pool: Pool<any>;
 
-  paused: boolean;
 
   adminClient: IAdminClient;
 
@@ -53,7 +52,6 @@ class KafkaRunner extends BaseRunner
     this.registry = registry;
     this.logger = logger;
     this.pool = pool;
-    this.paused = false;
 
     this.consumer = new Kafka.KafkaConsumer(
       {
