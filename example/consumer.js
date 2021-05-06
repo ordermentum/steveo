@@ -20,7 +20,8 @@ const kafkaConfig = {
   bootstrapServers: process.env.KAFKA_BROKERS,
   consumer: {
     global: {
-      "group.id": "STEVEO_TASKS"
+      "group.id": "STEVEO_TASKS",
+      "security.protocol": "plaintext"
     }
   }
 };

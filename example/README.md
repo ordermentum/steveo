@@ -8,13 +8,6 @@ It creates a docker app which is using a node application (with running kafka).
 
 ### `Kafka` Engine
 
-#### Create topic in `Kafka`
-
-  - Run `docker-compose run app bash`
-  - ```shell
-  root@57f35557fe6b:/usr/src/app# ENGINE=kafka node createKafkaTopics.js
-  ```
-  - Above steps will create topic `test-topic` with 2 partitions
 
 #### Connect to container
   - Run `docker-compose run app bash`

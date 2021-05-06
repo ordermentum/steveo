@@ -46,8 +46,6 @@ class BaseRunner {
   }
 
   async checks(onFail?: () => void, additionalCheck?: () => void) {
-    console.log('🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰');
-    console.log(':', );
     try {
       if (await this.terminationCheck()) {
         this.logger.info('Terminating due to termination check');
@@ -55,7 +53,7 @@ class BaseRunner {
       }
       await this.healthCheck();
       await this.preProcess();
-      if(additionalCheck) {
+      if (additionalCheck) {
         await additionalCheck();
       }
       return undefined;
