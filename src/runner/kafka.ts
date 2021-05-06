@@ -125,15 +125,25 @@ class KafkaRunner extends BaseRunner
 
   async healthCheck() {
     console.log('📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙📙');
-    console.log('this.consumer.isConnected():', this.consumer.isConnected());
-    if(!this.consumer.isConnected()){
-      throw new Error("Consumer not connected");
-    }
+    console.log(':', );
+    return new Promise<void>((resolve, reject) => {
+      /**
+       * if you are concerned about potential performance issues,
+       * don't be, it returns early if it has a local connection status
+       * only fallsback to the kafka client if the local connection status is missing
+       */
+      this.consumer.getMetadata({}, err => {
+        if(err) {
+          return reject();
+        }
+        return resolve();
+      });
+    });
   }
 
   consumeCallback = async (err, messages) => {
     this.logger.info('Consumer callback');
-    await this.checks();
+    await this.checks(()=> {}, this.healthCheck);
     if (err) {
       this.logger.error(`Error while consumption - ${err}`);
       if (err.origin === 'local' && RECONNECTION_ERR_CODES.includes(err.code)) {

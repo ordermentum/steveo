@@ -45,9 +45,9 @@ class BaseRunner {
     this.logger = logger;
   }
 
-  async checks(onFail?: () => void) {
+  async checks(onFail?: () => void, additionalCheck?: () => void) {
     console.log('🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰');
-    console.log(':', await this.healthCheck());
+    console.log(':', );
     try {
       if (await this.terminationCheck()) {
         this.logger.info('Terminating due to termination check');
@@ -55,6 +55,9 @@ class BaseRunner {
       }
       await this.healthCheck();
       await this.preProcess();
+      if(additionalCheck) {
+        await additionalCheck();
+      }
       return undefined;
     } catch (e) {
       this.logger.info(`Encountered healthcheck errors: ${e}`);
