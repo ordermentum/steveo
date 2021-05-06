@@ -46,6 +46,8 @@ class BaseRunner {
   }
 
   async checks(onFail?: () => void) {
+    console.log('🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰🐰');
+    console.log(':', await this.healthCheck());
     try {
       if (await this.terminationCheck()) {
         this.logger.info('Terminating due to termination check');
