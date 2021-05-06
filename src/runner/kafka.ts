@@ -41,8 +41,6 @@ class KafkaRunner extends BaseRunner
 
   adminClient: IAdminClient;
 
-  healthCheckIntervalId?: NodeJS.Timeout;
-
   constructor(
     config: Configuration,
     registry: IRegistry,
@@ -119,28 +117,27 @@ class KafkaRunner extends BaseRunner
       this.consumer.connect({}, err => {
         if (err) {
           this.logger.error('Error reconnecting consumer', err);
+          process.exit(1);
         }
       });
     });
   };
 
   async healthCheck() {
-    console.log('🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶🌶');
-    console.log('this.consumer.isConnected():', this.consumer.isConnected());
     if(!this.consumer.isConnected()){
-      throw new Error("Consumer not connected")
+      throw new Error("Consumer not connected");
     }
   }
 
   consumeCallback = async (err, messages) => {
+    this.logger.info('Consumer callback');
+    await this.checks();
     if (err) {
       this.logger.error(`Error while consumption - ${err}`);
       if (err.origin === 'local' && RECONNECTION_ERR_CODES.includes(err.code)) {
         this.logger.info('Reconnecting consumer');
         this.reconnect();
         return;
-      } else {
-        this.consumer.disconnect();
       }
     }
     try {
@@ -174,7 +171,6 @@ class KafkaRunner extends BaseRunner
         this.logger.error('Error from consumer', err);
       });
       this.consumer.on('ready', () => {
-        this.healthCheckIntervalId = setInterval(() => this.checks(), 3000);
         clearTimeout(timeoutId);
         this.logger.info('Kafka consumer ready');
         if (topics.length) {
@@ -214,7 +210,6 @@ class KafkaRunner extends BaseRunner
   }
 
   async disconnect() {
-    this.healthCheckIntervalId?.unref();
     this.consumer.disconnect();
     this.adminClient.disconnect();
   }
