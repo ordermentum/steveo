@@ -13,7 +13,7 @@
 [![npm](https://img.shields.io/npm/l/steveo.svg)](https://www.npmjs.com/package/steveo)
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
 
-> A Task Pub/Sub Background processing library ( Task Framework for Node.js)
+> A Task Pub/Sub Background processing library (Task Framework for Node.js)
 
 Steveo is a task management library that supports Kafka, SQS and Redis.
 
