@@ -15,7 +15,7 @@ const KafkaConsumerDefault: KafkaConsumerConfig = {
     'group.id': 'KAFKA_CONSUMERS',
   },
   topic: {
-    'auto.offset.reset': 'earliest',
+    'auto.offset.reset': 'latest',
   },
 };
 
