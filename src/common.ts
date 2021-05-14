@@ -44,6 +44,12 @@ export type KafkaProducerConfig = {
 
 export type KafkaConfiguration = {
   bootstrapServers: string;
+  securityProtocol?:
+    | 'plaintext'
+    | 'ssl'
+    | 'sasl_plaintext'
+    | 'sasl_ssl'
+    | undefined;
   defaultTopicParitions?: number;
   defaultTopicReplicationFactor?: number;
   /**

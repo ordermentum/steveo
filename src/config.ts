@@ -35,6 +35,7 @@ export const getConfig = (config: Configuration): Configuration => {
   if (parameters.engine === 'kafka') {
     const kafkaConfig = config as KafkaConfiguration;
     parameters.bootstrapServers = kafkaConfig.bootstrapServers;
+    parameters.securityProtocol = kafkaConfig.securityProtocol ?? 'ssl';
     parameters.connectionTimeout = kafkaConfig.connectionTimeout ?? 30000; // 30 seconds
     parameters.waitToCommit = kafkaConfig.waitToCommit ?? true;
     parameters.consumer = merge(KafkaConsumerDefault, {

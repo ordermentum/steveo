@@ -37,7 +37,6 @@ class KafkaRunner extends BaseRunner
 
   pool: Pool<any>;
 
-
   adminClient: IAdminClient;
 
   constructor(
@@ -57,7 +56,8 @@ class KafkaRunner extends BaseRunner
       {
         'bootstrap.servers': (this.config as KafkaConfiguration)
           .bootstrapServers,
-        'security.protocol': 'ssl',
+        'security.protocol': (this.config as KafkaConfiguration)
+          .securityProtocol,
         ...((this.config as KafkaConfiguration).consumer?.global ?? {}),
       },
       (this.config as KafkaConfiguration).consumer?.topic ?? {}
@@ -65,7 +65,7 @@ class KafkaRunner extends BaseRunner
 
     this.adminClient = AdminClient.create({
       'bootstrap.servers': (this.config as KafkaConfiguration).bootstrapServers,
-      'security.protocol': 'ssl',
+      'security.protocol': (this.config as KafkaConfiguration).securityProtocol,
       ...(this.config as KafkaConfiguration).admin,
     });
   }
