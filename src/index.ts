@@ -89,7 +89,7 @@ export class Steveo implements ISteveo {
     const uppercased = this.config.upperCaseNames
       ? withOrWithoutPrefix.toUpperCase()
       : withOrWithoutPrefix;
-    this.registry.addTopic(name, topic);
+    this.registry.addTopic(name, uppercased);
     await this.producer.initialize(uppercased);
   }
 
