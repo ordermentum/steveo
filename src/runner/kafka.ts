@@ -102,8 +102,8 @@ class KafkaRunner extends BaseRunner
     }
   };
 
-  reconnect = async () => {
-    return new Promise<void>((resolve, reject) => {
+  reconnect = async () =>
+    new Promise<void>((resolve, reject) => {
       this.consumer.disconnect(() => {
         this.consumer.connect({}, err => {
           if (err) {
@@ -115,7 +115,6 @@ class KafkaRunner extends BaseRunner
         });
       });
     });
-  };
 
   /**
    *

@@ -112,7 +112,7 @@ class SqsProducer implements IProducer {
 
   async disconnect() {}
 
-async reconnect() {}
+  async reconnect() {}
 }
 
 export default SqsProducer;
