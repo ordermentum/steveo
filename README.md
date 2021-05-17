@@ -60,6 +60,11 @@ Responsible for keeping the inventory of tasks & event manager. Whenever a new t
 Responsible for consuming messages,
 
 - `process` method initialize group consumers and start to consume the messages. It will then call the subscribe callback set on the task
+- Emitting events based on success/failures
+-- runner_receive -> Received a message
+-- runner_complete -> Completed running the associated task
+-- runner_failure -> Failed running the associated task
+-- runner_connection_failure -> Error while polling for message (Kafka only)
 
 ### Example
 

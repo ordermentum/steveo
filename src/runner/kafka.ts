@@ -145,7 +145,7 @@ class KafkaRunner extends BaseRunner
     if (err) {
       const message = 'Error while consumption';
       this.logger.error(`${message} - ${err}`);
-      this.registry.events.emit('runner_failure', null, err, message); // keeping the argument order - (eventName, topicName, error, message)
+      this.registry.events.emit('runner_connection_failure', null, err, message); // keeping the argument order - (eventName, topicName, error, message)
       this.consumer.consume(1, this.consumeCallback);
       return;
     }
