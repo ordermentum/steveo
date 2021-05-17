@@ -1,3 +1,4 @@
+
 <h1 align="center">Welcome to steveo 👋</h1>
 <p>
   <a href="https://www.npmjs.com/package/steveo" target="_blank">
@@ -61,10 +62,10 @@ Responsible for consuming messages,
 
 - `process` method initialize group consumers and start to consume the messages. It will then call the subscribe callback set on the task
 - Emitting events based on success/failures
--- runner_receive -> Received a message
--- runner_complete -> Completed running the associated task
--- runner_failure -> Failed running the associated task
--- runner_connection_failure -> Error while polling for message (Kafka only)
+	- runner_receive -> Received a message
+	- runner_complete -> Completed running the associated task
+	- runner_failure -> Failed running the associated task
+	- runner_connection_failure -> Error while polling for message (Kafka only)
 
 ### Example
 
