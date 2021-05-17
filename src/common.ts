@@ -157,6 +157,7 @@ export interface IRunner<T = any, M = any> {
   process(topics: Array<string>): Promise<T>;
   disconnect(): Promise<void>;
   reconnect(): Promise<void>;
+  createQueues(): Promise<void>;
 }
 
 export type CustomTopicFunction = (topic: string) => string;
@@ -222,7 +223,14 @@ export type CreateSqsTopic = {
   receiveMessageWaitTimeSeconds: string;
 };
 
-export type CreateQueueConfig = CreateRedisTopic | CreateSqsTopic;
+export type CreateKafkaTopic = {
+  topic: string;
+};
+
+export type CreateQueueConfig =
+  | CreateRedisTopic
+  | CreateSqsTopic
+  | CreateKafkaTopic;
 
 export type Hooks = {
   preProcess?: () => Promise<void>;
