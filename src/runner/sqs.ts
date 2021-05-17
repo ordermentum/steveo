@@ -207,6 +207,8 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async disconnect() {}
+
+async reconnect() {}
 }
 
 export default SqsRunner;

@@ -172,6 +172,8 @@ class RedisRunner extends BaseRunner implements IRunner {
   async disconnect() {
     this.redis?.quit(() => {});
   }
+
+  async reconnect() {}
 }
 
 export default RedisRunner;

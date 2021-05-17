@@ -156,6 +156,7 @@ export interface IRunner<T = any, M = any> {
   receive(messages: M, topic: string, partition: number): Promise<void>;
   process(topics: Array<string>): Promise<T>;
   disconnect(): Promise<void>;
+  reconnect(): Promise<void>;
 }
 
 export type CustomTopicFunction = (topic: string) => string;

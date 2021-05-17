@@ -70,6 +70,8 @@ class RedisProducer implements IProducer {
   }
 
   async disconnect() {}
+
+async reconnect() {}
 }
 
 export default RedisProducer;

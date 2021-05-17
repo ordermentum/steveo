@@ -1,7 +1,6 @@
 import nullLogger from 'null-logger';
 import Kafka, {
   AdminClient,
-  CODES,
   IAdminClient,
   KafkaConsumer,
   Message,
@@ -17,13 +16,6 @@ import {
   KafkaConfiguration,
   Configuration,
 } from '../common';
-
-const RECONNECTION_ERR_CODES = [
-  CODES.ERRORS.ERR_UNKNOWN,
-  CODES.ERRORS.ERR__TRANSPORT,
-  CODES.ERRORS.ERR_BROKER_NOT_AVAILABLE,
-  CODES.ERRORS.ERR__ALL_BROKERS_DOWN,
-];
 
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
@@ -110,13 +102,17 @@ class KafkaRunner extends BaseRunner
     }
   };
 
-  reconnect = () => {
-    this.consumer.disconnect(() => {
-      this.consumer.connect({}, err => {
-        if (err) {
-          this.logger.error('Error reconnecting consumer', err);
-          process.exit(1);
-        }
+  reconnect = async () => {
+    return new Promise<void>((resolve, reject) => {
+      this.consumer.disconnect(() => {
+        this.consumer.connect({}, err => {
+          if (err) {
+            this.logger.error('Error reconnecting consumer', err);
+            reject();
+          }
+          this.logger.info('Reconnected successfully');
+          resolve();
+        });
       });
     });
   };
@@ -148,12 +144,11 @@ class KafkaRunner extends BaseRunner
       () => this.healthCheck
     );
     if (err) {
-      this.logger.error(`Error while consumption - ${err}`);
-      if (err.origin === 'local' && RECONNECTION_ERR_CODES.includes(err.code)) {
-        this.logger.info('Reconnecting consumer');
-        this.reconnect();
-        return;
-      }
+      const message = 'Error while consumption';
+      this.logger.error(`${message} - ${err}`);
+      this.registry.events.emit('runner_failure', null, err, message); // keeping the argument order - (eventName, topicName, error, message)
+      this.consumer.consume(1, this.consumeCallback);
+      return;
     }
     try {
       if (messages?.length) {

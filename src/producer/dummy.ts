@@ -54,6 +54,8 @@ class DummyProducer implements IProducer {
   }
 
   async disconnect() {}
+
+async reconnect() {}
 }
 
 export default DummyProducer;
