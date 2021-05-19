@@ -97,7 +97,8 @@ class BaseRunner {
           messageRetentionPeriod: (this.config as SQSConfiguration)
             .messageRetentionPeriod,
         }).catch(er => {
-          this.logger.debug('error creating queue for topic:', er);
+          this.logger.error('error creating queue for topic:', er);
+          throw er;
         })
       )
     );
