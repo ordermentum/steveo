@@ -108,7 +108,7 @@ class KafkaRunner extends BaseRunner
         this.consumer.connect({}, err => {
           if (err) {
             this.logger.error('Error reconnecting consumer', err);
-            reject();
+            return reject();
           }
           this.logger.info('Reconnected successfully');
           resolve();
@@ -199,9 +199,6 @@ class KafkaRunner extends BaseRunner
   async createQueue({ topic }) {
     const task = this.registry.getTask(topic);
     return new Promise<void>((resolve, reject) => {
-      if (!task) {
-        reject(new Error('Task missing'));
-      }
       const options = task?.attributes ?? {};
       this.adminClient.createTopic(
         {
@@ -215,7 +212,7 @@ class KafkaRunner extends BaseRunner
         },
         err => {
           if (err) {
-            reject(err);
+            return reject(err);
           }
           resolve();
         }
