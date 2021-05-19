@@ -98,7 +98,6 @@ class BaseRunner {
             .messageRetentionPeriod,
         }).catch(er => {
           this.logger.error('error creating queue for topic:', er);
-          throw er;
         })
       )
     );
