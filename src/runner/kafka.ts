@@ -83,7 +83,7 @@ class KafkaRunner extends BaseRunner
         this.consumer.commitMessage(message);
       }
       this.logger.debug('Start subscribe', topic, message);
-      await task.subscribe(message);
+      await task.subscribe(parsed);
       if ((this.config as KafkaConfiguration).waitToCommit) {
         this.consumer.commitMessage(message);
       }
