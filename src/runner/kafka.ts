@@ -68,6 +68,7 @@ class KafkaRunner extends BaseRunner
       const parsed = {
         ...message,
         value: message.value?.toString(),
+        key: message.key?.toString()
       };
       this.registry.events.emit('runner_receive', topic, parsed, {
         ...message,
