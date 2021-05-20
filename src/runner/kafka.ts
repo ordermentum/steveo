@@ -187,8 +187,9 @@ class KafkaRunner extends BaseRunner
       this.consumer.on('ready', () => {
         clearTimeout(timeoutId);
         this.logger.info('Kafka consumer ready');
-        if (topics.length) {
-          this.consumer.subscribe(topics);
+        const topicsWithTasks = topics.filter(topic => !!this.registry.getTask(topic));
+        if (topicsWithTasks.length) {
+          this.consumer.subscribe(topicsWithTasks);
           this.consumer.consume(1, this.consumeCallback);
         }
         resolve(this.consumer);
