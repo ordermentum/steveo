@@ -1,6 +1,4 @@
 import { expect } from 'chai';
-import uuid from 'uuid';
-import kafka from 'no-kafka';
 import sinon from 'sinon';
 
 import Runner from '../../src/runner/kafka';
@@ -16,13 +14,7 @@ describe('Runner', () => {
     // @ts-ignore
     runner = new Runner(
       {
-        clientId: uuid.v4(),
-        kafkaCodec: kafka.COMPRESSION_GZIP,
-        kafkaGroupId: '123',
-        logLevel: 1,
-        kafkaSendAttempts: 1,
-        kafkaSendDelayMin: 100,
-        kafkaSendDelayMax: 300,
+        bootstrapServers: "kafka:9200"
       },
       registry
     );
@@ -36,12 +28,23 @@ describe('Runner', () => {
     expect(typeof runner.process).to.equal('function');
   });
 
-  it('should initialize consumer', async () => {
+  it('should initialize consumer, subscribe and consume the first message', async () => {
     const initStub = sinon
-      .stub(runner.consumer, 'init')
-      .returns(Promise.resolve({ yeah: 'created' }));
+      .stub(runner.consumer, 'connect')
+      .callsArgWith(1, null);
+    sinon
+      .stub(runner.consumer, 'on')
+      .callsArgWith(1, 'ready', null, null);
+    const subscribeStub = sinon
+      .stub(runner.consumer, 'subscribe').returns({});
+    const consumeStub = sinon
+      .stub(runner.consumer, 'consume').returns({});
     await runner.process(['test-topic']);
     expect(initStub.callCount).to.equal(1);
+    expect(subscribeStub.callCount).to.equal(1);
+    expect(consumeStub.callCount).to.equal(1);
+    expect(subscribeStub.args[0][0]).to.eqls(["test-topic"]);
+    expect(consumeStub.args[0][0]).to.eqls(1);
   });
 
   it('should invoke callback when receives a message on topic', async () => {
@@ -50,7 +53,7 @@ describe('Runner', () => {
       .returns(Promise.resolve({ some: 'success' }));
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
+        publish: () => { },
         subscribe: subscribeStub,
       }),
       events: {
@@ -59,10 +62,7 @@ describe('Runner', () => {
     };
     const anotherRunner = new Runner(
       {
-        clientId: uuid.v4(),
-        kafkaCoded: kafka.COMPRESSION_GZIP,
-        kafkaGroupId: '123',
-        logLevel: 1,
+        bootstrapServers: "kafka:9200"
       },
       // @ts-ignore
       anotherRegistry,
@@ -70,35 +70,64 @@ describe('Runner', () => {
     );
     const commitOffsetStub = sandbox.stub(
       anotherRunner.consumer,
-      'commitOffset'
+      'commitMessage'
     );
     await anotherRunner.receive(
-      [
-        {
-          message: {
-            value: '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D',
-          },
-          offset: 1,
-        },
-        {
-          message: {
-            value: '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D',
-          },
-          offset: 2,
-        },
-      ],
-      'a-topic',
-      // @ts-ignore
-      0
+      {
+        value: Buffer.from('\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'),
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1
+      }
     );
-    expect(commitOffsetStub.callCount).to.equal(2);
-    expect(subscribeStub.callCount).to.equal(2);
+    expect(commitOffsetStub.callCount).to.equal(1);
+    expect(subscribeStub.callCount).to.equal(1);
+  });
+
+  it('should not commit when the subsribe fails and wait to commit config is true', async () => {
+    const subscribeStub = sinon
+      .stub()
+      .rejects();
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => { },
+        subscribe: subscribeStub,
+      }),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+    const anotherRunner = new Runner(
+      {
+        bootstrapServers: "kafka:9200",
+        waitToCommit: true
+      },
+      // @ts-ignore
+      anotherRegistry,
+      build()
+    );
+    const commitOffsetStub = sandbox.stub(
+      anotherRunner.consumer,
+      'commitMessage'
+    );
+    await anotherRunner.receive(
+      {
+        value: Buffer.from('\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'),
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1
+      }
+    );
+    expect(commitOffsetStub.callCount).to.equal(0);
+    expect(subscribeStub.callCount).to.equal(1);
   });
 
   it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
+        publish: () => { },
         subscribe: sandbox.stub().returns(Promise.reject({ some: 'error' })),
       }),
       events: {
@@ -107,10 +136,7 @@ describe('Runner', () => {
     };
     const anotherRunner = new Runner(
       {
-        clientId: uuid.v4(),
-        kafkaCodec: kafka.COMPRESSION_GZIP,
-        kafkaGroupId: '123',
-        logLevel: 1,
+        bootstrapServers: "kafka:9200"
       },
       // @ts-ignore
       anotherRegistry,
@@ -119,19 +145,15 @@ describe('Runner', () => {
     let error = false;
     let commitOffsetStub;
     try {
-      commitOffsetStub = sandbox.stub(anotherRunner.consumer, 'commitOffset');
+      commitOffsetStub = sandbox.stub(anotherRunner.consumer, 'commitMessage');
       await anotherRunner.receive(
-        [
-          {
-            message: {
-              value: '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D',
-            },
-            offset: 1,
-          },
-        ],
-        'a-topic',
-        // @ts-ignore
-        0
+        {
+          value: Buffer.from('\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'),
+          size: 1000,
+          offset: 0,
+          topic: 'a-topic',
+          partition: 1
+        }
       );
     } catch (ex) {
       error = true;

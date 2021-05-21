@@ -1,18 +1,19 @@
 import * as AWS from 'aws-sdk';
-import { Configuration } from '../common';
+import { Configuration, SQSConfiguration } from '../common';
 
 const sqs = (config: Configuration) => {
-  if (config.httpOptions) {
+  const sqsConfig = config as SQSConfiguration;
+  if (sqsConfig.httpOptions) {
     AWS.config.update({
-      httpOptions: config.httpOptions,
+      httpOptions: sqsConfig.httpOptions,
     });
   }
   const instance = new AWS.SQS({
-    region: config.region,
-    apiVersion: config.apiVersion,
-    accessKeyId: config.accessKeyId,
-    secretAccessKey: config.secretAccessKey,
-    endpoint: config.endpoint,
+    region: sqsConfig.region,
+    apiVersion: sqsConfig.apiVersion,
+    accessKeyId: sqsConfig.accessKeyId,
+    secretAccessKey: sqsConfig.secretAccessKey,
+    endpoint: sqsConfig.endpoint,
   });
 
   const createQueue = instance.createQueue.bind(instance);

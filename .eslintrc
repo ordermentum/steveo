@@ -4,5 +4,9 @@
   ],
   "globals": {
     "SequelizeAttributes": "readonly"
+  },
+  "rules": {
+    "no-unused-expressions": "off",
+    "no-empty-function": "off"
   }
 }

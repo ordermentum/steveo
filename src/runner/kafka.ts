@@ -1,33 +1,40 @@
-/* eslint-disable no-continue */
 import nullLogger from 'null-logger';
-import * as Kafka from 'no-kafka';
+import Kafka, {
+  AdminClient,
+  IAdminClient,
+  KafkaConsumer,
+  Message,
+} from 'node-rdkafka';
 import BaseRunner from '../base/base_runner';
-import { getContext } from './utils';
+import { getDuration } from './utils';
 import {
   Hooks,
   IRunner,
   Pool,
-  Configuration,
   Logger,
-  Consumer,
   IRegistry,
+  KafkaConfiguration,
+  Configuration,
 } from '../common';
 
-class KafkaRunner extends BaseRunner implements IRunner {
+class KafkaRunner extends BaseRunner
+  implements IRunner<KafkaConsumer, Message> {
   config: Configuration;
 
   logger: Logger;
 
   registry: IRegistry;
 
-  consumer: Consumer;
+  consumer: KafkaConsumer;
 
-  pool: Pool;
+  pool: Pool<any>;
+
+  adminClient: IAdminClient;
 
   constructor(
     config: Configuration,
     registry: IRegistry,
-    pool: Pool,
+    pool: Pool<any>,
     logger: Logger = nullLogger,
     hooks: Hooks = {}
   ) {
@@ -37,65 +44,187 @@ class KafkaRunner extends BaseRunner implements IRunner {
     this.logger = logger;
     this.pool = pool;
 
-    this.consumer = new Kafka.GroupConsumer({
-      groupId: config.kafkaGroupId,
-      clientId: config.clientId,
-      connectionString: config.kafkaConnection,
-      // @ts-ignore
-      codec: config.kafkaCodec,
-      logger: {
-        logLevel: config.logLevel,
+    this.consumer = new Kafka.KafkaConsumer(
+      {
+        'bootstrap.servers': (this.config as KafkaConfiguration)
+          .bootstrapServers,
+        'security.protocol': (this.config as KafkaConfiguration)
+          .securityProtocol,
+        ...((this.config as KafkaConfiguration).consumer?.global ?? {}),
       },
+      (this.config as KafkaConfiguration).consumer?.topic ?? {}
+    );
+
+    this.adminClient = AdminClient.create({
+      'bootstrap.servers': (this.config as KafkaConfiguration).bootstrapServers,
+      'security.protocol': (this.config as KafkaConfiguration).securityProtocol,
+      ...(this.config as KafkaConfiguration).admin,
     });
   }
 
-  receive = async (messages: any[], topic: string, partition: string) => {
-    for (const m of messages) {
-      // eslint-disable-line no-restricted-syntax
-      let params: any = {};
-      try {
-        // commit offset
-        params = JSON.parse(m.message.value.toString('utf8'));
-        const context = getContext(params);
-
-        this.registry.events.emit('runner_receive', topic, params, context);
-        await this.consumer.commitOffset({ topic, partition, offset: m.offset, metadata: 'optional' }); // eslint-disable-line
-        const task = this.registry.getTask(topic);
-        if (!task) {
-          this.logger.error(`Unknown Task ${topic}`);
-          continue;
-        }
-
-        this.logger.debug('Start subscribe', topic, params);
-        await task.subscribe(params); // eslint-disable-line
-        this.logger.debug('Finish subscribe', topic, params);
-        const completedContext = getContext(params);
-        this.registry.events.emit(
-          'runner_complete',
-          topic,
-          params,
-          completedContext
-        );
-      } catch (ex) {
-        this.logger.error('Error while executing consumer callback ', {
-          params,
-          topic,
-          error: ex,
-        });
-        this.registry.events.emit('runner_failure', topic, ex, params);
+  receive = async (message: Message) => {
+    const { topic } = message;
+    try {
+      const parsed = {
+        ...message,
+        value: message.value?.toString(),
+        key: message.key?.toString()
+      };
+      this.registry.events.emit('runner_receive', topic, parsed, {
+        ...message,
+        start: getDuration(),
+      });
+      const task = this.registry.getTask(topic);
+      if (!task) {
+        this.logger.error(`Unknown Task ${topic}`);
+        this.consumer.commitMessage(message);
+        return;
       }
+      if (!(this.config as KafkaConfiguration).waitToCommit) {
+        this.consumer.commitMessage(message);
+      }
+      this.logger.debug('Start subscribe', topic, message);
+      await task.subscribe(parsed);
+      if ((this.config as KafkaConfiguration).waitToCommit) {
+        this.consumer.commitMessage(message);
+      }
+      this.logger.debug('Finish subscribe', topic, message);
+      this.registry.events.emit('runner_complete', topic, parsed, {
+        ...message,
+        end: getDuration(),
+      });
+    } catch (ex) {
+      this.logger.error('Error while executing consumer callback ', {
+        message,
+        topic,
+        error: ex,
+      });
+      this.registry.events.emit('runner_failure', topic, ex, message);
+    }
+  };
+
+  reconnect = async () =>
+    new Promise<void>((resolve, reject) => {
+      this.consumer.disconnect(() => {
+        this.consumer.connect({}, err => {
+          if (err) {
+            this.logger.error('Error reconnecting consumer', err);
+            return reject();
+          }
+          this.logger.info('Reconnected successfully');
+          resolve();
+        });
+      });
+    });
+
+  /**
+   *
+   * @description It's a bound function to avoid binding when passing as callback to the checker function
+   */
+  healthCheck = async function() {
+    return new Promise<void>((resolve, reject) => {
+      /**
+       * if you are concerned about potential performance issues,
+       * don't be, it returns early if it has a local connection status
+       * only fallsback to the kafka client if the local connection status is missing
+       */
+      this.consumer.getMetadata({}, err => {
+        if (err) {
+          return reject();
+        }
+        return resolve();
+      });
+    });
+  };
+
+  consumeCallback = async (err, messages) => {
+    this.logger.debug('Consumer callback');
+    await this.checks(
+      () => {},
+      () => this.healthCheck
+    );
+    if (err) {
+      const message = 'Error while consumption';
+      this.logger.error(`${message} - ${err}`);
+      this.registry.events.emit(
+        'runner_connection_failure',
+        null,
+        err,
+        message
+      ); // keeping the argument order - (eventName, topicName, error, message)
+      this.consumer.consume(1, this.consumeCallback);
+      return;
+    }
+    try {
+      if (messages?.length) {
+        await this.receive(messages[0]);
+      }
+    } finally {
+      this.consumer.consume(1, this.consumeCallback);
     }
   };
 
   process(topics: Array<string>) {
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug('initializing consumer', subscriptions);
-    return this.consumer.init([
-      {
-        subscriptions,
-        handler: this.receive,
-      },
-    ]);
+    return new Promise<KafkaConsumer>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        this.logger.error('Connection timed out');
+        reject();
+      }, (this.config as KafkaConfiguration).connectionTimeout!);
+      this.consumer.connect({}, err => {
+        clearTimeout(timeoutId);
+        if (err) {
+          this.logger.error('Error initializing consumer', err);
+          reject();
+        }
+      });
+      this.consumer.on('disconnected', () => {
+        this.logger.debug('Consumer disconnected');
+      });
+      this.consumer.on('event.error', err => {
+        this.logger.error('Error from consumer', err);
+      });
+      this.consumer.on('ready', () => {
+        clearTimeout(timeoutId);
+        this.logger.info('Kafka consumer ready');
+        const topicsWithTasks = topics.filter(topic => !!this.registry.getTask(topic));
+        if (topicsWithTasks.length) {
+          this.consumer.subscribe(topicsWithTasks);
+          this.consumer.consume(1, this.consumeCallback);
+        }
+        resolve(this.consumer);
+      });
+    });
+  }
+
+  async createQueue({ topic }) {
+    const task = this.registry.getTask(topic);
+    return new Promise<void>((resolve, reject) => {
+      const options = task?.attributes ?? {};
+      this.adminClient.createTopic(
+        {
+          topic,
+          num_partitions:
+            options.num_partitions ??
+            (this.config as KafkaConfiguration).defaultTopicParitions,
+          replication_factor:
+            options.replication_factor ??
+            (this.config as KafkaConfiguration).defaultTopicReplicationFactor,
+        },
+        err => {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        }
+      );
+    });
+  }
+
+  async disconnect() {
+    this.consumer.disconnect();
+    this.adminClient.disconnect();
   }
 }
 

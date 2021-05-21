@@ -1,26 +1,13 @@
 ## Example app for testing Steveo
 
-It creates a docker app which is using a node application.
-
-It also has containers for `kafka` and `zookeeper`
+It creates a docker app which is using a node application (with running kafka).
 
 #### Build docker container
   - Run `docker-compose build app`
-  - Run `docker-compose up app` (it will exit but will link zookeeper, kafka & app)
-
+  - Run `docker-compose up app`
 
 ### `Kafka` Engine
 
-#### Create topic in `Kafka`
-
-  - Run `docker-compose run kafka bash`
-  - Navigate to `opt/kafka-<version>/bin`
-  - Run
-    ```shell
-    ./kafka-topics.sh --topic test-topic --create --zookeeper zookeeper:2181 --partitions 2 --replication-factor 1
-    ```
-  - Above steps will create topic `test-topic` with 2 partitions
-  - Exit from kafka
 
 #### Connect to container
   - Run `docker-compose run app bash`
@@ -28,21 +15,14 @@ It also has containers for `kafka` and `zookeeper`
 #### Start `kafka` producer
   ```shell
   root@57f35557fe6b:/usr/src/app# ENGINE=kafka node producer.js
-  Produce: Message  1
-  Payload Size: test-topic 49
   ```
 
 #### Start Consumer
   ```shell
   root@83df25a76b71:/usr/src/app# ENGINE=kafka node consumer.js
   initializing consumer [ 'test-topic' ]
-  2017-06-28T00:20:46.247Z INFO 1234-123 Joined group STEVEO_TASKS generationId 1 as 1234-123-b064107a-7383-4883-8831-df279eff84ef
-  2017-06-28T00:20:46.249Z INFO 1234-123 Elected as group leader
-  2017-06-28T00:20:46.289Z DEBUG 1234-123 Subscribed to test-topic:0 offset 269 leader 172.17.0.1:9092
-  Start subscribe test-topic { payload: 'Message 1', timestamp: 1498609251252 }
-  Payload from producer { payload: 'Message 1', timestamp: 1498609251252 }
-  Finish subscribe test-topic { payload: 'Message 1', timestamp: 1498609251252 }
   ```
+  You should start seeing messages flowing
 
 ### `SQS` Backend
 

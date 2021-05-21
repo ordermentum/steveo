@@ -1,8 +1,13 @@
 import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 import logger from 'null-logger';
-
-import { Configuration, Logger, IRegistry, Hooks } from '../common';
+import {
+  SQSConfiguration,
+  Configuration,
+  Logger,
+  IRegistry,
+  Hooks,
+} from '../common';
 
 class BaseRunner {
   async preProcess() {
@@ -26,6 +31,7 @@ class BaseRunner {
 
   registry?: IRegistry;
 
+  // @ts-ignore
   config: Configuration;
 
   logger: Logger;
@@ -39,7 +45,7 @@ class BaseRunner {
     this.logger = logger;
   }
 
-  async checks(onFail?: () => void) {
+  async checks(onFail?: () => void, additionalCheck?: () => void) {
     try {
       if (await this.terminationCheck()) {
         this.logger.info('Terminating due to termination check');
@@ -47,6 +53,9 @@ class BaseRunner {
       }
       await this.healthCheck();
       await this.preProcess();
+      if (additionalCheck) {
+        await additionalCheck();
+      }
       return undefined;
     } catch (e) {
       this.logger.info(`Encountered healthcheck errors: ${e}`);
@@ -83,11 +92,12 @@ class BaseRunner {
       topics.map(topic =>
         this.createQueue({
           topic,
-          receiveMessageWaitTimeSeconds: this.config
+          receiveMessageWaitTimeSeconds: (this.config as SQSConfiguration)
             .receiveMessageWaitTimeSeconds,
-          messageRetentionPeriod: this.config.messageRetentionPeriod,
+          messageRetentionPeriod: (this.config as SQSConfiguration)
+            .messageRetentionPeriod,
         }).catch(er => {
-          this.logger.debug('error creating queue for topic:', er);
+          this.logger.error('error creating queue for topic:', er);
         })
       )
     );

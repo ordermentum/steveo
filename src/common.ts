@@ -1,4 +1,12 @@
 import { HTTPOptions } from 'aws-sdk';
+import { Pool as GenericPool, Options } from 'generic-pool';
+import {
+  ConsumerGlobalConfig,
+  ConsumerTopicConfig,
+  GlobalConfig,
+  ProducerGlobalConfig,
+  ProducerTopicConfig,
+} from 'node-rdkafka';
 
 /**
  * FIXME: for callbacks that don't take an argument, need to specify
@@ -22,24 +30,39 @@ export interface Logger {
   error(format: any, ...params: any[]): void;
 }
 
-export type KafkaParams = {
-  kafkaConnection: string;
-  kafkaGroupId: string;
-  clientId?: string;
-  kafkaCodec: string;
-  logger: Logger;
+export type Engine = 'kafka' | 'sqs' | 'redis';
+
+export type KafkaConsumerConfig = {
+  global: ConsumerGlobalConfig;
+  topic: ConsumerTopicConfig;
 };
 
-export type Engine = 'kafka' | 'sqs' | 'redis';
+export type KafkaProducerConfig = {
+  global: ProducerGlobalConfig;
+  topic: ProducerTopicConfig;
+};
+
 export type KafkaConfiguration = {
-  kafkaConnection: string;
-  clientId: string;
-  kafkaGroupId: string;
-  logLevel: number;
-  kafkaCodec: number | string;
-  kafkaSendAttempts: number;
-  kafkaSendDelayMin: number;
-  kafkaSendDelayMax: number;
+  bootstrapServers: string;
+  securityProtocol?:
+    | 'plaintext'
+    | 'ssl'
+    | 'sasl_plaintext'
+    | 'sasl_ssl'
+    | undefined;
+  defaultTopicParitions?: number;
+  defaultTopicReplicationFactor?: number;
+  /**
+   * @description Wait for commiting the message? True - wait, False - immediate commit, Default - True
+   */
+  waitToCommit?: boolean;
+  /**
+   * @description Consumer/Producer connection ready timeout
+   */
+  connectionTimeout?: number;
+  consumer?: KafkaConsumerConfig;
+  producer?: KafkaProducerConfig;
+  admin?: GlobalConfig;
 };
 
 export type SQSConfiguration = {
@@ -47,31 +70,41 @@ export type SQSConfiguration = {
   apiVersion: string;
   messageRetentionPeriod: string;
   receiveMessageWaitTimeSeconds: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-  shuffleQueue: boolean;
+  accessKeyId?: string;
+  secretAccessKey?: string;
   maxNumberOfMessages: number;
   visibilityTimeout: number;
   waitTimeSeconds: number;
-  endPoint?: string;
+  endpoint?: string;
   httpOptions?: HTTPOptions;
+  consumerPollInterval?: number;
 };
 
 export type RedisConfiguration = {
   redisHost: string;
-  redisPort: string;
-  redisMessageMaxsize: number;
+  redisPort: number;
+  redisMessageMaxsize?: number;
   workerConfig: any;
-  consumerPollInterval: number;
+  consumerPollInterval?: number;
+  visibilityTimeout?: number;
 };
 
 export type DummyConfiguration = any;
 
-export type Configuration =
+export type Configuration = (
   | SQSConfiguration
   | KafkaConfiguration
   | RedisConfiguration
-  | any;
+) & {
+  engine: 'sqs' | 'kafka' | 'redis';
+  queuePrefix?: string;
+  shuffleQueue?: boolean;
+  workerConfig?: Options;
+  /**
+   * @description Uppercase topic names
+   */
+  upperCaseNames?: boolean;
+};
 
 export type Attribute = {
   name: string;
@@ -79,10 +112,7 @@ export type Attribute = {
   value: string;
 };
 
-export type Pool = {
-  acquire(): Promise<any>;
-  release(client: any): Promise<any>;
-};
+export type Pool<T> = GenericPool<T>;
 
 export type Registry = {};
 
@@ -114,40 +144,40 @@ export interface ITask<T = any, R = any> {
   subscribe: Callback<T, R>;
   name: string;
   topic: string;
-  attributes: Attribute[];
+  attributes: any;
   producer: any;
   publish(payload: T | T[]): Promise<void>;
 }
 
-export type Consumer = {
-  commitOffset(values: any): void;
-  init(config: any[]): any;
-};
-
-export interface IRunner {
+export interface IRunner<T = any, M = any> {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
-  receive(messages: any[], topic: string, partition: string): Promise<void>;
-  process(topics: Array<string>): Promise<any>;
-}
-
-export interface IMetric {
-  config: Configuration;
-  groupId?: string;
-  initialize(): Promise<void>;
+  receive(messages: M, topic: string, partition: number): Promise<void>;
+  process(topics: Array<string>): Promise<T>;
+  disconnect(): Promise<void>;
+  reconnect(): Promise<void>;
+  createQueues(): Promise<void>;
 }
 
 export type CustomTopicFunction = (topic: string) => string;
+
+export type TaskOpts = {
+  queueName?: string;
+};
 export interface ISteveo {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   producer: IProducer;
-  getTopicName?: CustomTopicFunction;
-  task(topic: string, callBack: Callback): ITask;
+  task(
+    topic: string,
+    callBack: Callback,
+    attributes?: Attribute[],
+    opts?: TaskOpts
+  ): ITask;
   runner(): IRunner;
-  customTopicName(cb: CustomTopicFunction): void;
+  disconnect(): void;
 }
 
 export type AsyncWrapper = {
@@ -166,14 +196,15 @@ export type Producer = {
   getQueueAttributes(params: any): any;
 };
 
-export interface IProducer {
+export interface IProducer<P = any> {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   producer?: any;
-  initialize(topic?: string): Promise<void>;
+  initialize(topic?: string): Promise<P>;
   getPayload(msg: any, topic: string): any;
-  send<T = any>(topic: string, payload: T): Promise<void>;
+  send<T = any>(topic: string, payload: T, key?: string): Promise<void>;
+  disconnect(): Promise<void>;
 }
 
 export type sqsUrls = {
@@ -192,7 +223,14 @@ export type CreateSqsTopic = {
   receiveMessageWaitTimeSeconds: string;
 };
 
-export type CreateQueueConfig = CreateRedisTopic | CreateSqsTopic;
+export type CreateKafkaTopic = {
+  topic: string;
+};
+
+export type CreateQueueConfig =
+  | CreateRedisTopic
+  | CreateSqsTopic
+  | CreateKafkaTopic;
 
 export type Hooks = {
   preProcess?: () => Promise<void>;

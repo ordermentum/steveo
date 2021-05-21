@@ -14,26 +14,34 @@ describe('Kafka Producer', () => {
   it('should initialize', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
-    const p = new Producer({}, registry);
-    const initStub = sandbox.stub(p.producer, 'init').resolves();
-    await p.initialize();
+    const p = new Producer({
+      bootstrapServers: "kafka:9200"
+    }, registry);
+    const initStub = sandbox.stub(p.producer, 'connect').resolves();
+    try {
+      await p.initialize();
+    }catch(err) {}
     expect(initStub.callCount).to.equal(1);
   });
 
   it('should send', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
-    const p = new Producer({}, registry);
-    const sendStub = sandbox.stub(p.producer, 'send').resolves();
+    const p = new Producer({
+      bootstrapServers: "kafka:9200"
+    }, registry);
+    const sendStub = sandbox.stub(p.producer, 'produce').resolves();
     await p.send('test-topic', { a: 'payload' });
     expect(sendStub.callCount).to.equal(1);
   });
 
-  it('should logg error on failure', async () => {
+  it('should log error on failure', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
-    const p = new Producer({}, registry);
-    const sendStub = sandbox.stub(p.producer, 'send').throws();
+    const p = new Producer({
+      bootstrapServers: "kafka:9200"
+    }, registry);
+    const sendStub = sandbox.stub(p.producer, 'produce').throws();
     let err;
     try {
       await p.send('test-topic', { a: 'payload' });
@@ -46,10 +54,25 @@ describe('Kafka Producer', () => {
 
   it('should send utf-8 strings', async () => {
     const registry = new Registry();
-    const p = new Producer({}, registry);
+    const p = new Producer({
+      bootstrapServers: "kafka:9200"
+    }, registry);
     registry.addTopic('test-topic');
-    const sendStub = sandbox.stub(p.producer, 'send').resolves();
+    const sendStub = sandbox.stub(p.producer, 'produce').resolves();
     await p.send('test-topic', { a: 'payload', b: '¼' });
     expect(sendStub.callCount).to.equal(1);
+    const payload = JSON.parse(sendStub.args[0][2].toString('utf8'));
+    expect(payload).to.eqls({ a: 'payload', b: '¼' });
+  });
+
+  it('should make buffers from string payload', async () => {
+    const registry = new Registry();
+    const p = new Producer({
+      bootstrapServers: "kafka:9200"
+    }, registry);
+    registry.addTopic('test-topic');
+    const sendStub = sandbox.stub(p.producer, 'produce').resolves();
+    await p.send('test-topic', JSON.stringify({ a: 'payload', b: '¼' }));
+    expect(sendStub.args[0][2] instanceof Buffer).to.be.true;
   });
 });
