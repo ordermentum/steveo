@@ -1646,10 +1646,10 @@ eslint-config-airbnb@^18.2.1:
     object.assign "^4.1.2"
     object.entries "^1.1.2"
 
-eslint-config-ordermentum@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/eslint-config-ordermentum/-/eslint-config-ordermentum-1.0.2.tgz#2f1f3f1f560b0d123dcc9a76b10b9d47c5623861"
-  integrity sha512-6ayjyPyAHOjz/z/IfN1w8z+R9rgScV/M6GAqFE6f+u92zQKVJcyJ/7nZym9+dpXm7ub+amlH1FLh8q5B4BamiA==
+eslint-config-ordermentum@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/eslint-config-ordermentum/-/eslint-config-ordermentum-1.0.3.tgz#d28ce8daa8955329e67344798f9ae08ed033fee4"
+  integrity sha512-lq9knV6HcZoAkdTO/fKGWXFWMLRGo72zu4Q8Y3RNUyTWgCzKox46oFtC40dPDnx19kaloeKqq3m8dzicfbzc9A==
   dependencies:
     "@typescript-eslint/eslint-plugin" "^4.13.0"
     "@typescript-eslint/parser" "^4.13.0"
