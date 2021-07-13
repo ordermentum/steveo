@@ -67,7 +67,7 @@
     "eslint-plugin-import": "2.23.4",
     "eslint-plugin-mocha": "8.2.0",
     "eslint-plugin-prettier": "3.4.0",
-    "eslint-plugin-unicorn": "29.0.0",
+    "eslint-plugin-unicorn": "34.0.1",
     "mocha": "8.4.0",
     "nyc": "14.1.1",
     "prettier": "1.19.1",
