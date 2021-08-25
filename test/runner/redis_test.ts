@@ -13,6 +13,7 @@ describe('Redis Runner', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     registry = new Registry();
+    //@ts-ignore
     runner = new Runner({}, registry, build());
   });
   afterEach(() => sandbox.restore());

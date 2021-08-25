@@ -11,10 +11,17 @@ describe('Runner', () => {
   let registry;
   beforeEach(() => {
     registry = new Registry();
+    registry.addNewTask({
+      name: 'test-topic',
+      topic: 'test-topic'
+    })
+
     // @ts-ignore
     runner = new Runner(
       {
-        bootstrapServers: "kafka:9200"
+        bootstrapServers: "kafka:9200",
+        engine: 'kafka',
+        securityProtocol: 'plaintext'
       },
       registry
     );
@@ -62,7 +69,9 @@ describe('Runner', () => {
     };
     const anotherRunner = new Runner(
       {
-        bootstrapServers: "kafka:9200"
+        bootstrapServers: "kafka:9200",
+        engine: 'kafka',
+        securityProtocol: 'plaintext'
       },
       // @ts-ignore
       anotherRegistry,
@@ -101,6 +110,8 @@ describe('Runner', () => {
     const anotherRunner = new Runner(
       {
         bootstrapServers: "kafka:9200",
+        engine: 'kafka',
+        securityProtocol: 'plaintext',
         waitToCommit: true
       },
       // @ts-ignore
@@ -136,7 +147,9 @@ describe('Runner', () => {
     };
     const anotherRunner = new Runner(
       {
-        bootstrapServers: "kafka:9200"
+        bootstrapServers: "kafka:9200",
+        engine: 'kafka',
+        securityProtocol: 'plaintext'
       },
       // @ts-ignore
       anotherRegistry,

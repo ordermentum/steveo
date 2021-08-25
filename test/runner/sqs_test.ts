@@ -14,6 +14,7 @@ describe('SQS Runner', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     registry = new Registry();
+    //@ts-ignore
     runner = new Runner({}, registry, build());
   });
 
@@ -139,8 +140,8 @@ describe('SQS Runner', () => {
       getQueueUrlAsync: getQueueUrlAsyncStub,
       receiveMessageAsync: receiveMessageAsyncStub,
     });
-
     const anotherRunner = new Runner(
+      //@ts-ignore
       { shuffleQueue: true },
       // @ts-ignore
       anotherRegistry,

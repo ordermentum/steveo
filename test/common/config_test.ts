@@ -10,7 +10,7 @@ describe('Config', () => {
     });
     expect(config.engine).to.eqls('kafka');
     // expect(config.bootstrapServers).to.eqls('kafka://kafka:9200');
-    expect(config.consumer.topic).to.eqls({ 'auto.offset.reset': 'earliest' });
+    expect(config.consumer.topic).to.eqls({ 'auto.offset.reset': 'latest' });
     expect(config.consumer.global).to.eqls({
       'socket.keepalive.enable': true,
       'enable.auto.commit': false,
@@ -47,7 +47,7 @@ describe('Config', () => {
     });
     expect(config.engine).to.eqls('kafka');
     // expect(config.bootstrapServers).to.eqls('kafka://kafka:9200');
-    expect(config.consumer.topic).to.eqls({ 'auto.offset.reset': 'earliest', b: 1 });
+    expect(config.consumer.topic).to.eqls({ 'auto.offset.reset': 'latest', b: 1 });
     expect(config.consumer.global).to.eqls({
       'socket.keepalive.enable': true,
       'enable.auto.commit': false,
