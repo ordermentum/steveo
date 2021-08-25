@@ -1,10 +1,11 @@
-import { Configuration } from '../common';
+import RedisSMQ from 'rsmq';
+import { Configuration, RedisConfiguration } from '../common';
 
-const redis = (config: Configuration) => {
-  const RedisSMQ = require('rsmq'); //eslint-disable-line
+const redis = (config: Configuration): RedisSMQ => {
+  const redisConfig = config as RedisConfiguration;
   const instance = new RedisSMQ({
-    host: config.redisHost,
-    port: config.redisPort,
+    host: redisConfig.redisHost,
+    port: redisConfig.redisPort,
     ns: 'rsmq',
   });
   return instance;

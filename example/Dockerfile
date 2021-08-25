@@ -1,4 +1,4 @@
-FROM ordermentum/service:7
+FROM ordermentum/service:14
 MAINTAINER Ordermentum <engineering@ordermentum.com>
 
 COPY ./package.json /usr/src/app

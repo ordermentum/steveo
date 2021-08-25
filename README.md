@@ -1,3 +1,4 @@
+
 <h1 align="center">Welcome to steveo 👋</h1>
 <p>
   <a href="https://www.npmjs.com/package/steveo" target="_blank">
@@ -9,11 +10,11 @@
 </p>
 
 [![npm version](https://badge.fury.io/js/steveo.svg)](https://badge.fury.io/js/steveo)
-[![Build Status](https://travis-ci.org/ordermentum/steveo.svg?branch=master)](https://travis-ci.org/ordermentum/steveo)
+[![CI](https://github.com/ordermentum/steveo/actions/workflows/main.yml/badge.svg?branch=develop)](https://github.com/ordermentum/steveo/actions/workflows/main.yml)
 [![npm](https://img.shields.io/npm/l/steveo.svg)](https://www.npmjs.com/package/steveo)
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
 
-> A Task Pub/Sub Background processing library ( Task Framework for Node.js)
+> A Task Pub/Sub Background processing library (Task Framework for Node.js)
 
 Steveo is a task management library that supports Kafka, SQS and Redis.
 
@@ -60,6 +61,11 @@ Responsible for keeping the inventory of tasks & event manager. Whenever a new t
 Responsible for consuming messages,
 
 - `process` method initialize group consumers and start to consume the messages. It will then call the subscribe callback set on the task
+- Emitting events based on success/failures
+	- runner_receive -> Received a message
+	- runner_complete -> Completed running the associated task
+	- runner_failure -> Failed running the associated task
+	- runner_connection_failure -> Error while polling for message (Kafka only)
 
 ### Example
 
