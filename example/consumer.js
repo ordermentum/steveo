@@ -1,4 +1,4 @@
-const Steveo = require('../lib').default;
+const Steveo = require('./lib').default;
 const bunyan = require('bunyan');
 
 const logger = bunyan.createLogger({ name: 'consumer' });
@@ -17,8 +17,13 @@ const sqsConfig = {
 };
 
 const kafkaConfig = {
-  kafkaConnection: process.env.KAFKA_CONNECTION,
-  clientId: '1234-123',
+  bootstrapServers: process.env.KAFKA_BROKERS,
+  consumer: {
+    global: {
+      "group.id": "STEVEO_TASKS",
+      "security.protocol": "plaintext"
+    }
+  }
 };
 
 const redisConfig = {
@@ -43,12 +48,12 @@ const steveoConfig = {
   const steveo = Steveo(config, logger)();
 
   steveo.events.on('runner_failure', (topic, ex) => {
-    logger.debug('Failed to call subscribe', topic, ex);
+    logger.info('Failed to call subscribe', topic, ex);
   });
 
   // subscribe Call for first task
   const subscribe = async payload => {
-    logger.debug('Payload from producer', payload);
+    logger.info('Payload from producer', payload);
   };
 
   // create first Task

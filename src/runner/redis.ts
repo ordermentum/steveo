@@ -1,5 +1,6 @@
 /* eslint-disable no-continue */
 import nullLogger from 'null-logger';
+import RedisSMQ from 'rsmq';
 import BaseRunner from '../base/base_runner';
 import { getContext } from './utils';
 import redisConf from '../config/redis';
@@ -11,6 +12,7 @@ import {
   Logger,
   IRegistry,
   CreateRedisTopic,
+  RedisConfiguration,
 } from '../common';
 
 type DeleteMessage = {
@@ -47,14 +49,14 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   registry: IRegistry;
 
-  redis: any;
+  redis: RedisSMQ;
 
-  pool: Pool;
+  pool: Pool<any>;
 
   constructor(
     config: Configuration,
     registry: IRegistry,
-    pool: Pool,
+    pool: Pool<any>,
     logger: Logger = nullLogger,
     hooks: Hooks = {}
   ) {
@@ -127,7 +129,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     const loop = () =>
       setTimeout(
         this.process.bind(this, topics),
-        this.config.consumerPollInterval
+        (this.config as RedisConfiguration).consumerPollInterval ?? 1000
       );
     await this.checks(loop);
     this.logger.debug(
@@ -156,7 +158,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
     if (exists) {
       this.logger.debug(`${topic} already exists`);
-      return true;
+      return;
     }
 
     const params = {
@@ -164,8 +166,14 @@ class RedisRunner extends BaseRunner implements IRunner {
       vt: visibilityTimeout,
       maxsize,
     };
-    return this.redis.createQueueAsync(params);
+    await this.redis.createQueueAsync(params);
   }
+
+  async disconnect() {
+    this.redis?.quit(() => {});
+  }
+
+  async reconnect() {}
 }
 
 export default RedisRunner;

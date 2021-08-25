@@ -1,14 +1,6 @@
-/* eslint-disable no-underscore-dangle */
 import NULL_LOGGER from 'null-logger';
-import Task from './task';
-import Registry from './registry';
-import runner from './base/runner';
-import metric from './base/metric';
-import producer from './base/producer';
-import getConfig from './config';
-import { build } from './base/pool';
-
 import {
+  IRunner,
   Hooks,
   ITask,
   Configuration,
@@ -17,12 +9,18 @@ import {
   Logger,
   ISteveo,
   IRegistry,
-  CustomTopicFunction,
   IProducer,
   IEvent,
-  IMetric,
   Attribute,
+  TaskOpts,
 } from './common';
+/* eslint-disable no-underscore-dangle */
+import Task from './task';
+import Registry from './registry';
+import runner from './base/runner';
+import producer from './base/producer';
+import getConfig from './config';
+import { build } from './base/pool';
 
 export class Steveo implements ISteveo {
   config: Configuration;
@@ -31,15 +29,13 @@ export class Steveo implements ISteveo {
 
   registry: IRegistry;
 
-  getTopicName?: CustomTopicFunction;
-
-  metric: IMetric | null;
-
   _producer?: IProducer;
+
+  _runner?: IRunner;
 
   events: IEvent;
 
-  pool: Pool;
+  pool: Pool<any>;
 
   hooks: Hooks;
 
@@ -51,53 +47,50 @@ export class Steveo implements ISteveo {
     this.logger = logger;
     this.registry = new Registry();
     this.config = getConfig(configuration);
-    this.metric = metric(this.config.engine, this.config, this.logger);
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
     this.hooks = hooks;
   }
 
-  getTopic(topic: string) {
-    let topicName = topic;
-    if (this.getTopicName && typeof this.getTopicName === 'function') {
-      topicName = this.getTopicName(topic);
-    }
-    return topicName;
-  }
-
   task<T = any, R = any>(
     name: string,
     callback: Callback<T, R>,
-    attributes: Attribute[] = [],
-    doNotRegister: boolean = false
+    sqsAttributes: Attribute[] = [],
+    attributes: TaskOpts = {}
   ): ITask<T> {
-    const topic = this.getTopic(name);
+    const topic =
+      attributes.queueName ??
+      (this.config.queuePrefix ? `${this.config.queuePrefix}_${name}` : name);
+
     const task = new Task<T, R>(
       this.config,
       this.registry,
       this.producer,
       name,
-      topic,
+      this.config.upperCaseNames ? topic.toUpperCase() : topic,
       callback,
-      attributes
+      sqsAttributes
     );
-
-    if (!doNotRegister) {
-      this.registry.addNewTask(task);
-    }
+    this.registry.addNewTask(task);
 
     return task;
   }
 
-  async publish<T = any>(name: string, payload: T) {
+  async publish<T = any>(name: string, payload: T, key?: string) {
     const topic = this.registry.getTopic(name);
-    return this.producer.send<T>(topic, payload);
+    return this.producer.send<T>(topic, payload, key);
   }
 
   async registerTopic(name: string, topic?: string) {
     const topicName = topic ?? name;
-    this.registry.addTopic(name, topic);
-    await this.producer.initialize(topicName);
+    const withOrWithoutPrefix = this.config.queuePrefix
+      ? `${this.config.queuePrefix}_${topicName}`
+      : topicName;
+    const uppercased = this.config.upperCaseNames
+      ? withOrWithoutPrefix.toUpperCase()
+      : withOrWithoutPrefix;
+    this.registry.addTopic(name, uppercased);
+    await this.producer.initialize(uppercased);
   }
 
   get producer() {
@@ -113,19 +106,23 @@ export class Steveo implements ISteveo {
   }
 
   runner() {
-    return runner(
-      this.config.engine,
-      this.config,
-      this.registry,
-      this.pool,
-      this.logger,
-      this.hooks
-    );
+    if (!this._runner) {
+      this._runner = runner(
+        this.config.engine,
+        this.config,
+        this.registry,
+        this.pool,
+        this.logger,
+        this.hooks
+      );
+    }
+    return this._runner;
   }
 
-  customTopicName = (cb: CustomTopicFunction) => {
-    this.getTopicName = cb;
-  };
+  disconnect() {
+    this._producer?.disconnect();
+    this._runner?.disconnect();
+  }
 }
 
 export default (config: Configuration, logger: Logger, hooks: Hooks) => () =>

@@ -24,12 +24,11 @@ class Factory {
   async destroy(resource) {
     this.destroyed += 1;
     this.bin.push(resource);
-    return true;
   }
 }
 
 function build(options = {}, factory = new Factory()) {
-  return genericPool.createPool(factory, options);
+  return genericPool.createPool<any>(factory, options);
 }
 
 export { Factory, build };
