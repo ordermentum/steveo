@@ -10,7 +10,7 @@
 </p>
 
 [![npm version](https://badge.fury.io/js/steveo.svg)](https://badge.fury.io/js/steveo)
-[![Build Status](https://travis-ci.org/ordermentum/steveo.svg?branch=master)](https://travis-ci.org/ordermentum/steveo)
+[![CI](https://github.com/ordermentum/steveo/actions/workflows/main.yml/badge.svg?branch=develop)](https://github.com/ordermentum/steveo/actions/workflows/main.yml)
 [![npm](https://img.shields.io/npm/l/steveo.svg)](https://www.npmjs.com/package/steveo)
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
 
