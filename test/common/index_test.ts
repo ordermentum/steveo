@@ -13,7 +13,8 @@ describe('Index', () => {
   });
 
   it('handles registering tasks', async () => {
-    const steveo = Steveo({ engine: 'kafka', bootstrapServers: "" }, NULL_LOGGER, {})();
+    //@ts-ignore
+    const steveo = Steveo({ engine: 'dummy' }, NULL_LOGGER, {})();
     //@ts-ignore
     const dummy = new DummyProducer({}, steveo.registry, NULL_LOGGER);
     const initializeStub = sandbox.stub(dummy, 'initialize').resolves();
@@ -23,13 +24,15 @@ describe('Index', () => {
     expect(initializeStub.calledOnce).to.equal(true);
   });
   it('handles registering topics', async () => {
-    const steveo = Steveo({ engine: 'kafka', bootstrapServers: "" }, NULL_LOGGER, {})();
+    //@ts-ignore
+    const steveo = Steveo({ engine: 'dummy' }, NULL_LOGGER, {})();
     const registryStub = sandbox.stub(steveo.registry, 'addNewTask').resolves();
     steveo.task('TEST_TOPIC', () => { });
     expect(registryStub.calledOnce).to.equal(true);
   });
   it('handles publishing topics', async () => {
-    const steveo = Steveo({ engine: 'kafka', bootstrapServers: "" }, NULL_LOGGER, {})();
+    //@ts-ignore
+    const steveo = Steveo({ engine: 'dummy' }, NULL_LOGGER, {})();
     steveo.registry.addTopic('TEST_TOPIC');
     //@ts-ignore
     const dummy = new DummyProducer({}, steveo.registry, NULL_LOGGER);
@@ -40,7 +43,8 @@ describe('Index', () => {
   });
 
   it('handles publishing to named topics', async () => {
-    const steveo = Steveo({ engine: 'kafka', bootstrapServers: "" }, NULL_LOGGER, {})();
+    //@ts-ignore
+    const steveo = Steveo({ engine: 'dummy' }, NULL_LOGGER, {})();
     steveo.registry.addTopic('TEST_TOPIC', 'PRODUCTION_TEST_TOPIC');
     //@ts-ignore
     const dummy = new DummyProducer({}, steveo.registry, NULL_LOGGER);
