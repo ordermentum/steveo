@@ -20,7 +20,7 @@ describe('SQS Producer', () => {
         .resolves({ data: { QueueUrl: 'kjsdkh' } }),
       getQueueUrlAsync: sandbox.stub().resolves({ QueueUrl: null }),
     });
-    const p = new Producer({}, registry);
+    const p = new Producer({engine: 'kafka', bootstrapServers: ""}, registry);
     await p.initialize('test');
     expect(initStub.callCount).to.equal(1);
   });
@@ -35,7 +35,7 @@ describe('SQS Producer', () => {
       createQueueAsync: createQueueAsyncStub,
       getQueueUrlAsync: getQueueUrlAsyncStub.resolves({ QueueUrl: null }),
     });
-    const p = new Producer({}, registry);
+    const p = new Producer({engine: 'kafka', bootstrapServers: ""}, registry);
     await p.initialize('test');
     expect(createQueueAsyncStub.callCount).to.equal(1);
     getQueueUrlAsyncStub.resolves({ QueueUrl: 'test' });
@@ -46,7 +46,7 @@ describe('SQS Producer', () => {
   it('should initialize & send if no sqsUrls ', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
-    const p = new Producer({}, registry);
+    const p = new Producer({engine: 'kafka', bootstrapServers: ""}, registry);
     sandbox.spy(p, 'getPayload');
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
     const initializeStub = sandbox.stub(p, 'initialize').resolves();
@@ -62,7 +62,7 @@ describe('SQS Producer', () => {
   it('should send without initialize if sqsUrls are present', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
-    const p = new Producer({}, registry);
+    const p = new Producer({engine: 'kafka', bootstrapServers: ""}, registry);
     sandbox.spy(p, 'getPayload');
     const sendMessageStub = sandbox.stub().resolves({ hi: 'hello' });
     const getQueueUrlAsyncStub = sandbox
@@ -87,7 +87,7 @@ describe('SQS Producer', () => {
   it('should send with attributes', async () => {
     const registry = new Registry();
 
-    const p = new Producer({}, registry);
+    const p = new Producer({engine: 'kafka', bootstrapServers: ""}, registry);
     sandbox.spy(p, 'getPayload');
     // @ts-ignore
     registry.addNewTask({
@@ -125,7 +125,7 @@ describe('SQS Producer', () => {
   it('should throw error if initialize rejects', async () => {
     const registry = new Registry();
 
-    const p = new Producer({}, registry);
+    const p = new Producer({engine: 'kafka', bootstrapServers: ""}, registry);
     sandbox.spy(p, 'getPayload');
     // @ts-ignore
     registry.addNewTask({
@@ -163,7 +163,7 @@ describe('SQS Producer', () => {
   it('should throw error if sendmessage fails', async () => {
     const registry = new Registry();
 
-    const p = new Producer({}, registry);
+    const p = new Producer({engine: 'kafka', bootstrapServers: ""}, registry);
     sandbox.spy(p, 'getPayload');
     // @ts-ignore
     registry.addNewTask({

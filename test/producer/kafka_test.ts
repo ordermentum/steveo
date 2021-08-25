@@ -15,7 +15,9 @@ describe('Kafka Producer', () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
     const p = new Producer({
-      bootstrapServers: "kafka:9200"
+      engine:'kafka',
+      bootstrapServers: "kafka:9200",
+      securityProtocol: 'plaintext'
     }, registry);
     const initStub = sandbox.stub(p.producer, 'connect').resolves();
     try {
@@ -28,7 +30,9 @@ describe('Kafka Producer', () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
     const p = new Producer({
-      bootstrapServers: "kafka:9200"
+      engine:'kafka',
+      bootstrapServers: "kafka:9200",
+      securityProtocol: 'plaintext'
     }, registry);
     const sendStub = sandbox.stub(p.producer, 'produce').resolves();
     await p.send('test-topic', { a: 'payload' });
@@ -39,7 +43,9 @@ describe('Kafka Producer', () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
     const p = new Producer({
-      bootstrapServers: "kafka:9200"
+      engine:'kafka',
+      bootstrapServers: "kafka:9200",
+      securityProtocol: 'plaintext'
     }, registry);
     const sendStub = sandbox.stub(p.producer, 'produce').throws();
     let err;
@@ -55,7 +61,9 @@ describe('Kafka Producer', () => {
   it('should send utf-8 strings', async () => {
     const registry = new Registry();
     const p = new Producer({
-      bootstrapServers: "kafka:9200"
+      engine:'kafka',
+      bootstrapServers: "kafka:9200",
+      securityProtocol: 'plaintext'
     }, registry);
     registry.addTopic('test-topic');
     const sendStub = sandbox.stub(p.producer, 'produce').resolves();
@@ -68,7 +76,9 @@ describe('Kafka Producer', () => {
   it('should make buffers from string payload', async () => {
     const registry = new Registry();
     const p = new Producer({
-      bootstrapServers: "kafka:9200"
+      engine:'kafka',
+      bootstrapServers: "kafka:9200",
+      securityProtocol: 'plaintext'
     }, registry);
     registry.addTopic('test-topic');
     const sendStub = sandbox.stub(p.producer, 'produce').resolves();

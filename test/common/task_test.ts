@@ -27,7 +27,7 @@ describe('Task', () => {
     };
     subscribe = sandbox.stub();
     task = new Task<{ payload: string }, any>(
-      {},
+      {engine: 'kafka', bootstrapServers: ""},
       registry,
       producer,
       'a-simple-task',
@@ -57,7 +57,7 @@ describe('Task', () => {
   it('should accept non-promise methods', async () => {
     let x;
     const functionTask = new Task<{ payload: string }>(
-      {},
+      {engine: 'kafka', bootstrapServers: ""},
       registry,
       producer,
       'test',
@@ -77,7 +77,7 @@ describe('Task', () => {
       initialize: sandbox.stub().resolves(),
     };
     const failTask = new Task<{ payload: string }>(
-      {},
+      {engine: 'kafka', bootstrapServers: ""},
       registry,
       // @ts-ignore
       failureProducer,

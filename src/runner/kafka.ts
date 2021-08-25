@@ -68,7 +68,7 @@ class KafkaRunner extends BaseRunner
       const parsed = {
         ...message,
         value: message.value?.toString(),
-        key: message.key?.toString()
+        key: message.key?.toString(),
       };
       this.registry.events.emit('runner_receive', topic, parsed, {
         ...message,
@@ -106,6 +106,7 @@ class KafkaRunner extends BaseRunner
   reconnect = async () =>
     new Promise<void>((resolve, reject) => {
       this.consumer.disconnect(() => {
+        // eslint-disable-next-line consistent-return
         this.consumer.connect({}, err => {
           if (err) {
             this.logger.error('Error reconnecting consumer', err);
@@ -188,7 +189,9 @@ class KafkaRunner extends BaseRunner
       this.consumer.on('ready', () => {
         clearTimeout(timeoutId);
         this.logger.info('Kafka consumer ready');
-        const topicsWithTasks = topics.filter(topic => !!this.registry.getTask(topic));
+        const topicsWithTasks = topics.filter(
+          topic => !!this.registry.getTask(topic)
+        );
         if (topicsWithTasks.length) {
           this.consumer.subscribe(topicsWithTasks);
           this.consumer.consume(1, this.consumeCallback);
@@ -212,6 +215,7 @@ class KafkaRunner extends BaseRunner
             options.replication_factor ??
             (this.config as KafkaConfiguration).defaultTopicReplicationFactor,
         },
+        // eslint-disable-next-line consistent-return
         err => {
           if (err) {
             return reject(err);
