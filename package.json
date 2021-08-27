@@ -46,7 +46,7 @@
     "lodash.shuffle": "^4.2.0",
     "moment": "2.29.1",
     "null-logger": "^1.0.0",
-    "uuid": "^3.1.0"
+    "uuid": "^8.0.0"
   },
   "optionalDependencies": {
     "aws-sdk": "^2.489.0",
