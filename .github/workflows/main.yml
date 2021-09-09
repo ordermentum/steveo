@@ -11,6 +11,17 @@ on:
       - main
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+     - uses: actions/checkout@v2
+     - name: Use Node.js 16.x
+       uses: actions/setup-node@v2
+       with:
+          node-version: 16.x
+     - run: yarn
+     - run: yarn lint && yarn typecheck
+
   build:
     runs-on: ubuntu-latest
     strategy:
