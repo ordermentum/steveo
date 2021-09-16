@@ -48,6 +48,10 @@ export const getConfig = (config: Configuration): Configuration => {
     parameters.defaultTopicParitions = kafkaConfig.defaultTopicParitions ?? 6;
     parameters.defaultTopicReplicationFactor =
       kafkaConfig.defaultTopicReplicationFactor ?? 3;
+    // A sensible default of minimum number of brokers available in msk (basic cluster)
+    if(parameters.defaultTopicReplicationFactor < 3) {
+      throw new Error("Replication factor cannot be less than the number of brokers");
+    }
   } else if (parameters.engine === 'sqs') {
     const sqsConfig = config as SQSConfiguration;
     parameters.region = sqsConfig.region;
