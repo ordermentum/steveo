@@ -50,7 +50,7 @@ export type KafkaConfiguration = {
     | 'sasl_plaintext'
     | 'sasl_ssl'
     | undefined;
-  defaultTopicParitions?: number;
+  defaultTopicPartitions?: number;
   defaultTopicReplicationFactor?: number;
   /**
    * @description Wait for commiting the message? True - wait, False - immediate commit, Default - True

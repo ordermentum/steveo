@@ -92,11 +92,12 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
             );
             this.registry.events.emit('producer_failure', topic, err);
             reject();
+          } else {
+            this.registry.events.emit('producer_success', topic, payload);
+            resolve();
           }
         }
       );
-      this.registry.events.emit('producer_success', topic, payload);
-      resolve();
     });
   }
 
