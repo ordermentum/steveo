@@ -25,9 +25,7 @@ const KafkaProducerDefault: KafkaProducerConfig = {
   topic: {},
 };
 
-export const getConfig = (
-  config: Configuration
-): Configuration => {
+export const getConfig = (config: Configuration): Configuration => {
   const parameters: any = {};
   parameters.engine = config.engine ?? 'kafka';
   parameters.shuffleQueue = !!config.shuffleQueue;
@@ -49,7 +47,8 @@ export const getConfig = (
     });
     parameters.admin = kafkaConfig.admin ?? {};
     parameters.defaultTopicPartitions = kafkaConfig.defaultTopicPartitions ?? 6;
-    parameters.defaultTopicReplicationFactor = kafkaConfig.defaultTopicReplicationFactor ?? 3;
+    parameters.defaultTopicReplicationFactor =
+      kafkaConfig.defaultTopicReplicationFactor ?? 3;
   } else if (parameters.engine === 'sqs') {
     const sqsConfig = config as SQSConfiguration;
     parameters.region = sqsConfig.region;
