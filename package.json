@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -55,13 +55,13 @@
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.1",
-    "@types/lodash.merge": "4.6.6",
-    "@types/uuid": "8.3.0",
     "@types/chai": "4.2.21",
+    "@types/lodash.merge": "4.6.6",
     "@types/mocha": "9.0.0",
     "@types/node": "14.17.16",
     "@types/rsmq": "0.8.4",
     "@types/sinon": "10.0.2",
+    "@types/uuid": "8.3.0",
     "@typescript-eslint/eslint-plugin": "4.31.1",
     "babel-eslint": "10.1.0",
     "babel-plugin-istanbul": "5.2.0",
