@@ -210,7 +210,7 @@ class KafkaRunner extends BaseRunner
           topic,
           num_partitions:
             options.num_partitions ??
-            (this.config as KafkaConfiguration).defaultTopicParitions,
+            (this.config as KafkaConfiguration).defaultTopicPartitions,
           replication_factor:
             options.replication_factor ??
             (this.config as KafkaConfiguration).defaultTopicReplicationFactor,

@@ -18,7 +18,7 @@ describe('Config', () => {
     });
     expect(config.producer).to.eqls({ global: {}, topic: {} });
     expect(config.admin).to.eqls({});
-    expect(config.defaultTopicParitions).to.eqls(6);
+    expect(config.defaultTopicPartitions).to.eqls(6);
     expect(config.defaultTopicReplicationFactor).to.eqls(3);
   });
 
@@ -63,7 +63,7 @@ describe('Config', () => {
       }
     });
     expect(config.admin).to.eqls({});
-    expect(config.defaultTopicParitions).to.eqls(10);
+    expect(config.defaultTopicPartitions).to.eqls(10);
     expect(config.defaultTopicReplicationFactor).to.eqls(3);
   });
 
