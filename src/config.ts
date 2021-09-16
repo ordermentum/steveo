@@ -26,8 +26,7 @@ const KafkaProducerDefault: KafkaProducerConfig = {
 };
 
 export const getConfig = (
-  config: Configuration,
-  logger?: Logger
+  config: Configuration
 ): Configuration => {
   const parameters: any = {};
   parameters.engine = config.engine ?? 'kafka';
@@ -50,18 +49,7 @@ export const getConfig = (
     });
     parameters.admin = kafkaConfig.admin ?? {};
     parameters.defaultTopicPartitions = kafkaConfig.defaultTopicPartitions ?? 6;
-    parameters.defaultTopicReplicationFactor =
-      kafkaConfig.defaultTopicReplicationFactor ?? 3;
-    // The replication factor of a topic cannot be less than 2
-    // Source - https://docs.aws.amazon.com/msk/latest/developerguide/msk-default-configuration.html
-    if (parameters.defaultTopicReplicationFactor < 2) {
-      logger?.error(
-        'Replication factor cannot be less than the number of in-sync-replicas required (2)'
-      );
-      throw new Error(
-        'Replication factor cannot be less than the number of in-sync-replicas required (2)'
-      );
-    }
+    parameters.defaultTopicReplicationFactor = kafkaConfig.defaultTopicReplicationFactor ?? 3;
   } else if (parameters.engine === 'sqs') {
     const sqsConfig = config as SQSConfiguration;
     parameters.region = sqsConfig.region;
