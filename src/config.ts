@@ -6,7 +6,6 @@ import {
   KafkaConfiguration,
   SQSConfiguration,
   RedisConfiguration,
-  Logger,
 } from './common';
 
 const KafkaConsumerDefault: KafkaConsumerConfig = {
