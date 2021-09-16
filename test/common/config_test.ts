@@ -43,7 +43,7 @@ describe('Config', () => {
           b: 1
         }
       },
-      defaultTopicParitions: 10
+      defaultTopicPartitions: 10
     });
     expect(config.engine).to.eqls('kafka');
     // expect(config.bootstrapServers).to.eqls('kafka://kafka:9200');
