@@ -208,18 +208,18 @@ ncp@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ncp/-/ncp-2.0.0.tgz#195a21d6c46e361d2fb1281ba38b91e9df7bdbb3"
 
-node-rdkafka@^2.10.1:
-  version "2.10.1"
-  resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-2.10.1.tgz#de6055a8aed6315a68f5b401415e7d6b9bfcc631"
-  integrity sha512-yRb9Y90ipef4X+S/UbvQedUNtKZONa9RR6hCpAaGD83NqUga/uxTofdRQG8bm7SEh/DNuaifIJjRzLcoG9nUSQ==
+node-rdkafka@^2.11.0:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-2.11.0.tgz#fa172afc54a591eb2175be2388509e391b29e9d6"
+  integrity sha512-GdeeUv7RkH5WTWGl5BSxdn74r+d/tLGT48J4dVQzNN/Xz+Xu9fDvDz/Ov3fQ4J3kEI2WwNVGjTaoCxHw+iRQhA==
   dependencies:
     bindings "^1.3.1"
     nan "^2.14.0"
 
-null-logger@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/null-logger/-/null-logger-1.0.0.tgz#d6b58b5d07de49891f21a5cc2670e62016e7c0e0"
-  integrity sha1-1rWLXQfeSYkfIaXMJnDmIBbnwOA=
+null-logger@^2.0.0:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/null-logger/-/null-logger-2.0.5.tgz#2f172340c1178e85d7f7c20f42e798ea412146b3"
+  integrity sha512-mB0fZf/OrUbSy3cHrOkEl6zL95av5obZ/cWo+gIPK0LHNm+6RYt1f5j2wWz/zvR/toAXcsPZA/gqIGWGNn5lVA==
 
 once@^1.3.0:
   version "1.4.0"

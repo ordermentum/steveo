@@ -3620,10 +3620,10 @@ normalize-path@^3.0.0, normalize-path@~3.0.0:
   resolved "https://registry.yarnpkg.com/normalize-path/-/normalize-path-3.0.0.tgz#0dcd69ff23a1c9b11fd0978316644a0388216a65"
   integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
 
-null-logger@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/null-logger/-/null-logger-1.0.0.tgz#d6b58b5d07de49891f21a5cc2670e62016e7c0e0"
-  integrity sha1-1rWLXQfeSYkfIaXMJnDmIBbnwOA=
+null-logger@^2.0.0:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/null-logger/-/null-logger-2.0.5.tgz#2f172340c1178e85d7f7c20f42e798ea412146b3"
+  integrity sha512-mB0fZf/OrUbSy3cHrOkEl6zL95av5obZ/cWo+gIPK0LHNm+6RYt1f5j2wWz/zvR/toAXcsPZA/gqIGWGNn5lVA==
 
 nyc@15.1.0:
   version "15.1.0"

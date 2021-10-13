@@ -45,7 +45,7 @@
     "lodash.merge": "4.6.2",
     "lodash.shuffle": "^4.2.0",
     "moment": "2.29.1",
-    "null-logger": "^1.0.0",
+    "null-logger": "^2.0.0",
     "uuid": "^8.0.0"
   },
   "optionalDependencies": {
