@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "3.0.3",
+  "version": "4.0.0-beta10",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -81,5 +81,8 @@
     "ts-node": "10.4.0",
     "typescript": "4.5.2",
     "typescript-eslint-parser": "22.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

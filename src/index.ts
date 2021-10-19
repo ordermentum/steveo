@@ -1,4 +1,6 @@
 import NULL_LOGGER from 'null-logger';
+import { ChildProcess } from 'child_process';
+import { forkChild } from './util';
 import {
   IRunner,
   Hooks,
@@ -17,7 +19,7 @@ import {
 /* eslint-disable no-underscore-dangle */
 import Task from './task';
 import Registry from './registry';
-import runner from './base/runner';
+import getRunner from './base/runner';
 import producer from './base/producer';
 import getConfig from './config';
 import { build } from './base/pool';
@@ -39,6 +41,8 @@ export class Steveo implements ISteveo {
 
   hooks: Hooks;
 
+  childProcesses: Map<number, ChildProcess>;
+
   constructor(
     configuration: Configuration,
     logger: Logger = NULL_LOGGER,
@@ -50,6 +54,7 @@ export class Steveo implements ISteveo {
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
     this.hooks = hooks;
+    this.childProcesses = new Map();
   }
 
   task<T = any, R = any>(
@@ -105,16 +110,90 @@ export class Steveo implements ISteveo {
     return this._producer;
   }
 
+  private async exitHandler(
+    code: number | null,
+    child: ChildProcess,
+    topic: string
+  ) {
+    const { pid } = child;
+    this.childProcesses.delete(pid);
+    if (code === 0 || code === null) {
+      this.logger.info(`Child ${pid} terminated`);
+      if (this.childProcesses.size === 0) {
+        process.exit(1);
+      }
+    } else {
+      this.logger.info(`Restarting child ${pid}`);
+      const restarted = await forkChild(
+        topic,
+        this.config.tasksPath,
+        this.config.childProcesses
+      );
+      restarted.on('exit', c =>
+        this.exitHandler.call(this, c, restarted, topic)
+      );
+      this.childProcesses.set(restarted.pid, child);
+    }
+  }
+
+  private async startChild(topic) {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        // Give ample time to let the children start
+        const timeoutID = setTimeout(() => {
+          reject(new Error('Error forking child'));
+        }, 30000);
+        const child = await forkChild(
+          topic,
+          this.config.tasksPath,
+          this.config.childProcesses
+        );
+        child.on('exit', code =>
+          this.exitHandler.call(this, code, child, topic)
+        );
+        child.on('message', m => {
+          clearTimeout(timeoutID);
+          if (m === 'success') {
+            resolve();
+          } else {
+            reject();
+          }
+        });
+        this.childProcesses.set(child.pid, child);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  async start(customTopics: string[] = []) {
+    await import(this.config.tasksPath);
+    const runner = this.runner();
+    const topics = customTopics?.length
+      ? customTopics
+      : this.registry.getTopics();
+    const topicsWithRegisteredTasks = topics.filter(
+      topic => !!this.registry.getTask(topic)
+    );
+    if (!this.config.childProcesses) {
+      runner.process(topicsWithRegisteredTasks);
+    } else {
+      await Promise.all(
+        topicsWithRegisteredTasks.map(topic => this.startChild(topic))
+      );
+    }
+  }
+
   runner() {
     if (!this._runner) {
-      this._runner = runner(
-        this.config.engine,
-        this.config,
-        this.registry,
-        this.pool,
-        this.logger,
-        this.hooks
-      );
+      this._runner = getRunner({
+        config: this.config,
+        registry: this.registry,
+        pool: this.pool,
+        logger: this.logger,
+        hooks: this.hooks,
+      });
     }
     return this._runner;
   }
@@ -125,5 +204,5 @@ export class Steveo implements ISteveo {
   }
 }
 
-export default (config: Configuration, logger: Logger, hooks: Hooks) => () =>
+export default (config: Configuration, logger: Logger, hooks: Hooks) =>
   new Steveo(config, logger, hooks);

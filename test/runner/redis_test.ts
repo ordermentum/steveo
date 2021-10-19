@@ -13,8 +13,13 @@ describe('Redis Runner', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     registry = new Registry();
-    //@ts-ignore
-    runner = new Runner({}, registry, build());
+    // @ts-ignore
+    runner = new Runner({
+      // @ts-ignore
+      config: {},
+      registry,
+      pool: build(),
+    });
   });
   afterEach(() => sandbox.restore());
   it('should create an instance', () => {
@@ -38,7 +43,13 @@ describe('Redis Runner', () => {
       deleteMessageAsync: deleteMessageStub,
     });
     // @ts-ignore
-    const anotherRunner = new Runner({}, anotherRegistry, build());
+    const anotherRunner = (runner = new Runner({
+      // @ts-ignore
+      config: {},
+      // @ts-ignore
+      registry: anotherRegistry,
+      pool: build(),
+    }));
     await anotherRunner.receive(
       [
         { message: JSON.stringify({ data: 'Hello' }) },
@@ -66,7 +77,13 @@ describe('Redis Runner', () => {
       deleteMessageAsync: deleteMessageStub,
     });
     // @ts-ignore
-    const anotherRunner = new Runner({}, anotherRegistry, build());
+    const anotherRunner = (runner = new Runner({
+      // @ts-ignore
+      config: {},
+      // @ts-ignore
+      registry: anotherRegistry,
+      pool: build(),
+    }));
     let error = false;
     try {
       await anotherRunner.receive(

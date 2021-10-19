@@ -12,13 +12,18 @@ const Runners: RunnersType = {
   redis: RedisRunner,
 };
 
-const getRunner = (
-  type: string,
-  config: Configuration,
-  registry: IRegistry,
-  pool: Pool<any>,
-  logger: Logger,
-  hooks: Hooks
-) => new Runners[type](config, registry, pool, logger, hooks);
+const getRunner = ({
+  config,
+  registry,
+  pool,
+  logger,
+  hooks,
+}: {
+  config: Configuration;
+  registry: IRegistry;
+  pool: Pool<any>;
+  logger: Logger;
+  hooks: Hooks;
+}) => new Runners[config.engine]({ config, registry, pool, logger, hooks });
 
 export default getRunner;

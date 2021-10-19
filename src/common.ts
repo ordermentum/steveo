@@ -91,6 +91,18 @@ export type RedisConfiguration = {
 
 export type DummyConfiguration = any;
 
+export type ChildProcessConfig = {
+  /**
+   * @description the absolute path to the steveo instance to make child processes of
+   */
+  instancePath: string;
+  /**
+   * @description The arguments to be passed when forking child process (mainly for interoperability with typescript)
+   * @example for ts-node we'll pass ['-r', 'ts-node/register']
+   */
+  args: string[];
+};
+
 export type Configuration = (
   | SQSConfiguration
   | KafkaConfiguration
@@ -104,6 +116,16 @@ export type Configuration = (
    * @description Uppercase topic names
    */
   upperCaseNames?: boolean;
+  /**
+   * @description [Consumers only] Create a child process of a consumer per topic
+   * @default false
+   * @summary 5 topics passed to the instance will fork 5 child processes
+   */
+  childProcesses?: ChildProcessConfig;
+  /**
+   * @description the absolute path to the tasks that need to be registered with this instance
+   */
+  tasksPath: string;
 };
 
 export type Attribute = {

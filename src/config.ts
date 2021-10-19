@@ -31,6 +31,8 @@ export const getConfig = (config: Configuration): Configuration => {
   parameters.workerConfig = config.workerConfig ?? {};
   parameters.queuePrefix = config.queuePrefix ?? '';
   parameters.upperCaseNames = config.upperCaseNames ?? true;
+  parameters.childProcesses = config.childProcesses ?? null;
+  parameters.tasksPath = config.tasksPath;
 
   if (parameters.engine === 'kafka') {
     const kafkaConfig = config as KafkaConfiguration;
