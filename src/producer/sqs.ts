@@ -1,4 +1,5 @@
 import nullLogger from 'null-logger';
+import { SQS } from 'aws-sdk';
 import sqsConf from '../config/sqs';
 
 import {
@@ -19,7 +20,7 @@ class SqsProducer implements IProducer {
 
   logger: Logger;
 
-  producer: any;
+  producer: SQS;
 
   sqsUrls: sqsUrls;
 
@@ -40,10 +41,15 @@ class SqsProducer implements IProducer {
       throw new Error('Topic cannot be empty');
     }
 
+    const config = this.config as SQSConfiguration;
+
     const data = await this.producer
-      .getQueueUrlAsync({ QueueName: topic })
-      .catch(_ => null);
+      .getQueueUrl({ QueueName: topic })
+      .promise()
+      .catch();
+
     const queue = data?.QueueUrl;
+
     if (queue) {
       this.sqsUrls[topic] = queue;
       return queue;
@@ -51,13 +57,11 @@ class SqsProducer implements IProducer {
     const params = {
       QueueName: topic,
       Attributes: {
-        ReceiveMessageWaitTimeSeconds: (this.config as SQSConfiguration)
-          .receiveMessageWaitTimeSeconds,
-        MessageRetentionPeriod: (this.config as SQSConfiguration)
-          .messageRetentionPeriod,
+        ReceiveMessageWaitTimeSeconds: config.receiveMessageWaitTimeSeconds,
+        MessageRetentionPeriod: config.messageRetentionPeriod,
       },
     };
-    const createResponse = await this.producer.createQueueAsync(params);
+    const createResponse = await this.producer.createQueue(params).promise();
     this.sqsUrls[topic] = createResponse?.QueueUrl;
     return this.sqsUrls[topic];
   }
@@ -100,7 +104,7 @@ class SqsProducer implements IProducer {
     const data = this.getPayload(payload, topic);
 
     try {
-      const response = await this.producer.sendMessageAsync(data);
+      const response = await this.producer.sendMessage(data).promise();
       this.logger.debug('SQS Publish Data', response);
       this.registry.events.emit('producer_success', topic, data);
     } catch (ex) {
