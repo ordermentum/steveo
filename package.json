@@ -58,7 +58,7 @@
     "@types/chai": "4.2.22",
     "@types/lodash.merge": "4.6.6",
     "@types/mocha": "9.0.0",
-    "@types/node": "14.17.34",
+    "@types/node": "14.18.0",
     "@types/rsmq": "0.8.4",
     "@types/sinon": "10.0.6",
     "@types/uuid": "8.3.0",
