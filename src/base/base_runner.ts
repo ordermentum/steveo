@@ -38,8 +38,8 @@ class BaseRunner {
 
   constructor(hooks: Hooks = {}) {
     this.errorCount = 0;
-    this.preProcess = hooks.preProcess || (() => Promise.resolve());
-    this.healthCheck = hooks.healthCheck || (() => Promise.resolve());
+    this.preProcess = hooks?.preProcess || (() => Promise.resolve());
+    this.healthCheck = hooks?.healthCheck || (() => Promise.resolve());
     this.terminationCheck =
       hooks.terminationCheck || (() => Promise.resolve(false));
     this.logger = logger;

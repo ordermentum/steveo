@@ -189,7 +189,6 @@ export type Producer = {
   init(): void;
   createQueueAsync(params: any): Promise<void>;
   createQueue(params: any): AsyncWrapper;
-  sendMessageAsync(params: any): Promise<void>;
   sendMessage(params: any): AsyncWrapper;
   listQueuesAsync(): Array<string>;
   getQueueAttributesAsync(params: any): any;

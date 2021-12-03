@@ -4,17 +4,16 @@ import sinon from 'sinon';
 import Runner from '../../src/runner/sqs';
 import { build } from '../../src/base/pool';
 import Registry from '../../src/registry';
-import sqsConf from '../../src/config/sqs';
 
 describe('SQS Runner', () => {
   let runner;
   let registry;
-  let sandbox;
+  let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     registry = new Registry();
-    //@ts-ignore
+    // @ts-ignore
     runner = new Runner({}, registry, build());
   });
 
@@ -43,12 +42,13 @@ describe('SQS Runner', () => {
       },
     };
 
-    const deleteMessageStub = sandbox.stub().resolves();
-    sandbox.stub(sqsConf, 'sqs').returns({
-      deleteMessageAsync: deleteMessageStub,
-    });
     // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
+    const deleteMessageStub = sandbox
+      .stub(anotherRunner.sqs, 'deleteMessage')
+      // @ts-ignore
+      .returns({ promise: async () => {} });
+
     await anotherRunner.receive(
       [
         { Body: JSON.stringify({ data: 'Hello' }) },
@@ -72,15 +72,15 @@ describe('SQS Runner', () => {
       },
     };
 
-    const getQueueUrlAsyncStub = sandbox
-      .stub()
-      .resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
-    sandbox.stub(sqsConf, 'sqs').returns({
-      getQueueUrlAsync: getQueueUrlAsyncStub,
-    });
-
     // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
+    const getQueueUrlAsyncStub = sandbox
+      .stub(anotherRunner.sqs, 'getQueueUrl')
+      .returns({
+        // @ts-ignore
+        promise: async () => ({ QueueUrl: 'https://ap-southeast2.aws.com' }),
+      });
+
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
     expect(anotherRunner.sqsUrls).to.deep.equal({
@@ -102,13 +102,17 @@ describe('SQS Runner', () => {
       },
     };
 
-    const getQueueUrlAsyncStub = sandbox.stub().rejects();
-    sandbox.stub(sqsConf, 'sqs').returns({
-      getQueueUrlAsync: getQueueUrlAsyncStub,
-    });
-
     // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
+    const getQueueUrlAsyncStub = sandbox
+      .stub(anotherRunner.sqs, 'getQueueUrl')
+      // @ts-ignore
+      .returns({
+        promise: async () => {
+          throw new Error();
+        },
+      });
+
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
     expect(anotherRunner.sqsUrls).to.deep.equal({});
@@ -130,23 +134,27 @@ describe('SQS Runner', () => {
         emit: sandbox.stub(),
       },
     };
-
-    const getQueueUrlAsyncStub = sandbox
-      .stub()
-      .resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
-    const receiveMessageAsyncStub = sandbox.stub().resolves([]);
-
-    sandbox.stub(sqsConf, 'sqs').returns({
-      getQueueUrlAsync: getQueueUrlAsyncStub,
-      receiveMessageAsync: receiveMessageAsyncStub,
-    });
     const anotherRunner = new Runner(
-      //@ts-ignore
+      // @ts-ignore
       { shuffleQueue: true },
       // @ts-ignore
       anotherRegistry,
       build()
     );
+    const getQueueUrlAsyncStub = sandbox
+      .stub(anotherRunner.sqs, 'getQueueUrl')
+      .returns({
+        // @ts-ignore
+        promise: async () => ({ QueueUrl: 'https://ap-southeast2.aws.com' }),
+      });
+
+    const receiveMessageAsyncStub = sandbox
+      .stub(anotherRunner.sqs, 'receiveMessage')
+      .returns({
+        // @ts-ignore
+        promise: async () => [],
+      });
+
     await anotherRunner.process();
     expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
     expect(receiveMessageAsyncStub.calledOnce).to.equal(true);
@@ -154,35 +162,40 @@ describe('SQS Runner', () => {
 
   it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
     const subscribeStub = sandbox.stub().throws({ some: 'error' });
+    const emitStub = sandbox.stub();
     const anotherRegistry = {
       getTask: () => ({
         publish: () => {},
         subscribe: subscribeStub,
       }),
       events: {
-        emit: sandbox.stub(),
+        emit: emitStub,
       },
     };
-    const deleteMessageStub = sandbox.stub().resolves();
-    sandbox.stub(sqsConf, 'sqs').returns({
-      deleteMessageAsync: deleteMessageStub,
-    });
     // @ts-ignore
     const anotherRunner = new Runner({}, anotherRegistry, build());
-    let error = false;
-    try {
-      await anotherRunner.receive(
-        [
-          { Body: JSON.stringify({ data: 'Hello' }) },
-          { Body: JSON.stringify({ data: 'World' }) },
-        ],
-        'a-topic'
-      );
-    } catch (ex) {
-      error = true;
-      expect(subscribeStub.callCount).to.equal(1);
-      expect(deleteMessageStub.callCount).to.equal(0);
-    }
-    expect(error);
+
+    const deleteMessageStub = sandbox
+      .stub(anotherRunner.sqs, 'deleteMessage')
+      // @ts-ignore
+      .returns({ promise: async () => {} });
+
+    await anotherRunner.receive(
+      [
+        { Body: JSON.stringify({ data: 'Hello' }) },
+        { Body: JSON.stringify({ data: 'World' }) },
+      ],
+      'a-topic'
+    );
+    expect(subscribeStub.callCount).to.equal(2);
+    expect(deleteMessageStub.callCount).to.equal(2);
+    expect(
+      emitStub.calledWith(
+        'runner_failure',
+        'a-topic',
+        { some: 'error' },
+        { data: 'World' }
+      )
+    ).to.equal(true);
   });
 });

@@ -1,5 +1,7 @@
 import nullLogger from 'null-logger';
+import bluebird from 'bluebird';
 
+import { SQS } from 'aws-sdk';
 import BaseRunner from '../base/base_runner';
 import { getContext } from './utils';
 import sqsConf from '../config/sqs';
@@ -16,7 +18,7 @@ import {
 } from '../common';
 
 type DeleteMessage = {
-  instance: any;
+  instance: SQS;
   topic: string;
   message: any;
   sqsUrls: any;
@@ -37,7 +39,7 @@ const deleteMessage = async ({
   };
   try {
     logger.debug('Deleting Message from Queue URL', deleteParams);
-    const data = await instance.deleteMessageAsync(deleteParams);
+    const data = await instance.deleteMessage(deleteParams).promise();
     logger.debug('returned data', data);
     return data;
   } catch (ex) {
@@ -55,9 +57,11 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   sqsUrls: any;
 
-  sqs: any;
+  sqs: SQS;
 
   pool: Pool<any>;
+
+  concurrency: number;
 
   constructor(
     config: Configuration,
@@ -73,18 +77,24 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.sqsUrls = {};
     this.sqs = sqsConf.sqs(config);
     this.pool = pool;
+    this.concurrency = config.workerConfig?.max ?? 1;
   }
 
-  async receive(messages: any[], topic: string): Promise<any> {
-    return Promise.all(
-      messages.map(async m => {
+  async receive(messages: SQS.MessageList, topic: string): Promise<any> {
+    this.registry.events.emit('runner_messages', topic, messages);
+
+    return bluebird.map(
+      messages,
+      async m => {
         let params = null;
         const resource = await this.pool.acquire();
         try {
           params = JSON.parse(m.Body);
           const context = getContext(params);
+
           this.registry.events.emit('runner_receive', topic, params, context);
           this.logger.debug('Deleting message', topic, params);
+
           await deleteMessage({ // eslint-disable-line
             instance: this.sqs,
             topic,
@@ -92,6 +102,7 @@ class SqsRunner extends BaseRunner implements IRunner {
             sqsUrls: this.sqsUrls,
             logger: this.logger,
           });
+
           this.logger.debug('Message Deleted', topic, params);
           const task = this.registry.getTask(topic);
           this.logger.debug('Start subscribe', topic, params);
@@ -117,12 +128,13 @@ class SqsRunner extends BaseRunner implements IRunner {
           this.registry.events.emit('runner_failure', topic, ex, params);
         }
         this.pool.release(resource);
-      })
+      },
+      { concurrency: this.concurrency }
     );
   }
 
-  async dequeue(topic: string, params: any) {
-    const data = await this.sqs.receiveMessageAsync(params);
+  async dequeue(topic: string, params: SQS.ReceiveMessageRequest) {
+    const data = await this.sqs.receiveMessage(params).promise();
 
     if (data.Messages) {
       this.logger.debug('Message from sqs', data);
@@ -147,24 +159,26 @@ class SqsRunner extends BaseRunner implements IRunner {
       `Polling for messages (${topics ? topics.join(',') : 'all'})`
     );
 
-    await Promise.all(
-      subscriptions.map(async topic => {
+    const config = this.config as SQSConfiguration;
+    await bluebird.map(
+      subscriptions,
+      async topic => {
         const queueURL = await this.getQueueUrl(topic);
         if (queueURL) {
           this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
+
           const params = {
-            MaxNumberOfMessages: (this.config as SQSConfiguration)
-              .maxNumberOfMessages,
+            MaxNumberOfMessages: config.maxNumberOfMessages,
             QueueUrl: queueURL,
-            VisibilityTimeout: (this.config as SQSConfiguration)
-              .visibilityTimeout,
-            WaitTimeSeconds: (this.config as SQSConfiguration).waitTimeSeconds,
+            VisibilityTimeout: config.visibilityTimeout,
+            WaitTimeSeconds: config.waitTimeSeconds,
           };
           await this.dequeue(topic, params);
         } else {
           this.logger.error(`Queue URL ${topic} not found`);
         }
-      })
+      },
+      { concurrency: this.concurrency }
     );
     loop();
   }
@@ -183,8 +197,9 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   getUrl(topic: string) {
     return this.sqs
-      .getQueueUrlAsync({ QueueName: topic })
-      .then(data => data && data.QueueUrl)
+      .getQueueUrl({ QueueName: topic })
+      .promise()
+      .then(data => data && data?.QueueUrl)
       .catch(e => {
         this.logger.error(e);
         return null;
@@ -203,7 +218,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         MessageRetentionPeriod: messageRetentionPeriod,
       },
     };
-    return this.sqs.createQueueAsync(params);
+    await this.sqs.createQueue(params).promise();
   }
 
   async disconnect() {}
