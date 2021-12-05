@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "3.0.3",
+  "version": "4.0.0-beta2",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -26,7 +26,7 @@
     "all": true,
     "exclude": [
       "coverage",
-      "example",
+      "examples",
       "test",
       "lib"
     ],
@@ -36,9 +36,8 @@
     ]
   },
   "dependencies": {
-    "@types/generic-pool": "^3.1.9",
     "bluebird": "^3.7.2",
-    "generic-pool": "^3.7.2",
+    "generic-pool": "^3.8.2",
     "lazy-object": "^1.0.1",
     "lodash.difference": "^4.5.0",
     "lodash.intersection": "^4.4.0",
@@ -49,19 +48,20 @@
     "uuid": "^8.0.0"
   },
   "optionalDependencies": {
-    "aws-sdk": "^2.489.0",
+    "aws-sdk": "^2.1043.0",
     "node-rdkafka": "^2.11.0",
     "rsmq": "^0.12.3"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@types/chai": "4.2.22",
+    "@types/generic-pool": "^3.1.10",
     "@types/lodash.merge": "4.6.6",
     "@types/mocha": "9.0.0",
     "@types/node": "16.11.11",
     "@types/rsmq": "0.8.4",
     "@types/sinon": "10.0.6",
-    "@types/uuid": "8.3.0",
+    "@types/uuid": "^8.3.3",
     "@typescript-eslint/eslint-plugin": "4.33.0",
     "babel-eslint": "10.1.0",
     "babel-plugin-istanbul": "5.2.0",

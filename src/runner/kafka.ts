@@ -10,7 +10,6 @@ import { getDuration } from './utils';
 import {
   Hooks,
   IRunner,
-  Pool,
   Logger,
   IRegistry,
   KafkaConfiguration,
@@ -27,22 +26,23 @@ class KafkaRunner extends BaseRunner
 
   consumer: KafkaConsumer;
 
-  pool: Pool<any>;
-
   adminClient: IAdminClient;
 
-  constructor(
-    config: Configuration,
-    registry: IRegistry,
-    pool: Pool<any>,
-    logger: Logger = nullLogger,
-    hooks: Hooks = {}
-  ) {
+  constructor({
+    config,
+    registry,
+    logger = nullLogger,
+    hooks = {},
+  }: {
+    config: Configuration;
+    registry: IRegistry;
+    logger: Logger;
+    hooks?: Hooks;
+  }) {
     super(hooks);
     this.config = config;
     this.registry = registry;
     this.logger = logger;
-    this.pool = pool;
 
     this.consumer = new Kafka.KafkaConsumer(
       {
@@ -64,6 +64,8 @@ class KafkaRunner extends BaseRunner
 
   receive = async (message: Message) => {
     const { topic } = message;
+    const config = this.config as KafkaConfiguration;
+    const { waitToCommit } = config;
     try {
       const parsed = {
         ...message,
@@ -80,12 +82,12 @@ class KafkaRunner extends BaseRunner
         this.consumer.commitMessage(message);
         return;
       }
-      if (!(this.config as KafkaConfiguration).waitToCommit) {
+      if (!waitToCommit) {
         this.consumer.commitMessage(message);
       }
       this.logger.debug('Start subscribe', topic, message);
       await task.subscribe(parsed);
-      if ((this.config as KafkaConfiguration).waitToCommit) {
+      if (waitToCommit) {
         this.consumer.commitMessage(message);
       }
       this.logger.debug('Finish subscribe', topic, message);
@@ -166,8 +168,6 @@ class KafkaRunner extends BaseRunner
   };
 
   process(topics: Array<string>) {
-    const subscriptions = this.getActiveSubsciptions(topics);
-    this.logger.debug('initializing consumer', subscriptions);
     return new Promise<KafkaConsumer>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         this.logger.error('Connection timed out');

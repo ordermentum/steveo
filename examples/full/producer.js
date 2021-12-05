@@ -1,35 +1,8 @@
-const Steveo = require('./lib').default;
+const Steveo = require('../../lib').default;
+const steveoConfig = require('./config');
+const bunyan = require('bunyan');
 
-const sqsConfig = {
-  region: process.env.AWS_REGION,
-  apiVersion: '2012-11-05',
-  receiveMessageWaitTimeSeconds: '20',
-  messageRetentionPeriod: '604800',
-  engine: 'sqs',
-  accessKeyId: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  maxNumberOfMessages: 1,
-  visibilityTimeout: 180,
-  waitTimeSeconds: 20,
-};
-
-const kafkaConfig = {
-  bootstrapServers: process.env.KAFKA_BROKERS,
-};
-
-const redisConfig = {
-  redisHost: process.env.REDIS_HOST,
-  redisPort: process.env.REDIS_PORT,
-  engine: 'redis',
-};
-
-const steveoConfig = {
-  kafka: kafkaConfig,
-  sqs: sqsConfig,
-  redis: redisConfig,
-};
-
-const logger = console;
+const logger = bunyan.createLogger({ name: 'producer' });
 
 (async () => {
   const config = steveoConfig[process.env.ENGINE];
@@ -59,20 +32,20 @@ const logger = console;
     },
   ];
   // create first Task
-  const firstTask = steveo.task('test-topic', () => {}, attributes);
-  const secondTask = steveo.task('test-spam', () => {}, attributes);
+  const firstTask = steveo.task('test-topic', () => { }, attributes);
+  const secondTask = steveo.task('test-spam', () => { }, attributes);
   await steveo.runner().createQueues();
 
   // let it run & publish messages in every second
   function produceMessages(counter) {
     if (counter < 10) {
-      setTimeout(async () => {
+      setInterval(async () => {
         counter += 1; // eslint-disable-line
         logger.log('Produce: Message ', counter);
         await firstTask.publish([{ payload: `Message ${counter}` }]);
         await secondTask.publish([{ payload: `Message ${counter}` }]);
         produceMessages(counter);
-      }, 100);
+      }, 1000);
     } else {
       process.exit(0);
     }

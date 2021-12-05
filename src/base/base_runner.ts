@@ -49,7 +49,7 @@ class BaseRunner {
     try {
       if (await this.terminationCheck()) {
         this.logger.info('Terminating due to termination check');
-        return process.exit(1);
+        return process.exit(0);
       }
       await this.healthCheck();
       await this.preProcess();
@@ -61,8 +61,8 @@ class BaseRunner {
       this.logger.info(`Encountered healthcheck errors: ${e}`);
       this.errorCount += 1;
       if (this.errorCount > 5) {
-        this.logger.info('Terminating due to healthcheck count too high');
-        return process.exit(1);
+        this.logger.error('Health check failure count is too high');
+        return process.exit(0);
       }
       if (onFail) return onFail();
     }

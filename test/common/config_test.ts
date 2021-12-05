@@ -1,4 +1,4 @@
-//@ts-nocheck
+// @ts-nocheck
 import { expect } from 'chai';
 import Config from '../../src/config';
 
@@ -14,7 +14,7 @@ describe('Config', () => {
     expect(config.consumer.global).to.eqls({
       'socket.keepalive.enable': true,
       'enable.auto.commit': false,
-      'group.id': 'KAFKA_CONSUMERS'
+      'group.id': 'KAFKA_CONSUMERS',
     });
     expect(config.producer).to.eqls({ global: {}, topic: {} });
     expect(config.admin).to.eqls({});
@@ -29,38 +29,41 @@ describe('Config', () => {
       consumer: {
         global: {
           a: 1,
-          'group.id': 'TEST_CONSUMERS'
+          'group.id': 'TEST_CONSUMERS',
         },
         topic: {
-          b: 1
-        }
+          b: 1,
+        },
       },
       producer: {
         global: {
           a: 1,
         },
         topic: {
-          b: 1
-        }
+          b: 1,
+        },
       },
-      defaultTopicPartitions: 10
+      defaultTopicPartitions: 10,
     });
     expect(config.engine).to.eqls('kafka');
     // expect(config.bootstrapServers).to.eqls('kafka://kafka:9200');
-    expect(config.consumer.topic).to.eqls({ 'auto.offset.reset': 'latest', b: 1 });
+    expect(config.consumer.topic).to.eqls({
+      'auto.offset.reset': 'latest',
+      b: 1,
+    });
     expect(config.consumer.global).to.eqls({
       'socket.keepalive.enable': true,
       'enable.auto.commit': false,
       'group.id': 'TEST_CONSUMERS',
-      a: 1
+      a: 1,
     });
     expect(config.producer).to.eqls({
       global: {
         a: 1,
       },
       topic: {
-        b: 1
-      }
+        b: 1,
+      },
     });
     expect(config.admin).to.eqls({});
     expect(config.defaultTopicPartitions).to.eqls(10);

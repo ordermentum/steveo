@@ -1,4 +1,8 @@
+/* eslint-disable import/no-dynamic-require */
+/* eslint-disable global-require */
 import NULL_LOGGER from 'null-logger';
+import { ChildProcess } from 'child_process';
+import { forkChild } from './util';
 import {
   IRunner,
   Hooks,
@@ -17,7 +21,7 @@ import {
 /* eslint-disable no-underscore-dangle */
 import Task from './task';
 import Registry from './registry';
-import runner from './base/runner';
+import getRunner from './base/runner';
 import producer from './base/producer';
 import getConfig from './config';
 import { build } from './base/pool';
@@ -37,12 +41,20 @@ export class Steveo implements ISteveo {
 
   pool: Pool<any>;
 
-  hooks: Hooks;
+  hooks?: Hooks;
+
+  childProcesses: Map<number, ChildProcess>;
+
+  restarts: number;
+
+  exiting: boolean;
+
+  MAX_RESTARTS = 20;
 
   constructor(
     configuration: Configuration,
     logger: Logger = NULL_LOGGER,
-    hooks: Hooks
+    hooks?: Hooks
   ) {
     this.logger = logger;
     this.registry = new Registry();
@@ -50,6 +62,9 @@ export class Steveo implements ISteveo {
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
     this.hooks = hooks;
+    this.childProcesses = new Map();
+    this.restarts = 0;
+    this.exiting = false;
   }
 
   task<T = any, R = any>(
@@ -105,16 +120,112 @@ export class Steveo implements ISteveo {
     return this._producer;
   }
 
+  private async exitHandler(
+    code: number | null,
+    child: ChildProcess | null,
+    topic: string
+  ) {
+    const pid = child?.pid;
+
+    if (pid) this.childProcesses.delete(pid);
+    if (code === 0 || code === null) {
+      this.logger.info(`Child ${pid} terminated`);
+      if (this.childProcesses.size === 0) {
+        process.exit(1);
+      }
+    }
+
+    if (!this.exiting && this.restarts >= this.MAX_RESTARTS) {
+      this.exiting = true;
+      for (const process of this.childProcesses.values()) {
+        process.kill();
+      }
+    }
+
+    this.logger.info(`Restarting child ${pid}`);
+    await this.startChild(topic);
+  }
+
+  private async startChild(topic) {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        // Give ample time to let the children start
+        const timeout = setTimeout(() => {
+          reject(new Error('Error forking child'));
+        }, 30000);
+
+        const child = await forkChild(
+          topic,
+          this.config.tasksPath,
+          this.config.childProcesses
+        );
+
+        child.on('exit', code => {
+          clearTimeout(timeout);
+          this.exitHandler.call(this, code, child, topic);
+        });
+        process.on('error', e => {
+          clearTimeout(timeout);
+          this.logger.error(`Failed to start child process ${e}`);
+          this.exitHandler.call(this, null, null, topic);
+        });
+        child.on('message', m => {
+          clearTimeout(timeout);
+          if (m === 'success') {
+            resolve();
+          } else {
+            reject();
+          }
+        });
+        if (child.pid) {
+          this.childProcesses.set(child.pid, child);
+          this.logger.debug(`spawned ${child.pid} for ${topic}`);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  /**
+   * This pattern allows us to load all tasks in a directory
+   * and as part of that they self register with the registry allowing
+   */
+  async loadTasks() {
+    require(this.config.tasksPath);
+  }
+
+  async start(customTopics: string[] = []) {
+    await this.loadTasks();
+    const runner = this.runner();
+
+    const topics = customTopics?.length
+      ? customTopics
+      : this.registry.getTopics();
+
+    const topicsWithRegisteredTasks = topics.filter(
+      topic => !!this.registry.getTask(topic)
+    );
+
+    if (!this.config.childProcesses) {
+      runner.process(topicsWithRegisteredTasks);
+    } else {
+      await Promise.all(
+        topicsWithRegisteredTasks.map(topic => this.startChild(topic))
+      );
+    }
+  }
+
   runner() {
     if (!this._runner) {
-      this._runner = runner(
-        this.config.engine,
-        this.config,
-        this.registry,
-        this.pool,
-        this.logger,
-        this.hooks
-      );
+      this._runner = getRunner({
+        config: this.config,
+        registry: this.registry,
+        pool: this.pool,
+        logger: this.logger,
+        hooks: this.hooks,
+      });
     }
     return this._runner;
   }
@@ -125,5 +236,5 @@ export class Steveo implements ISteveo {
   }
 }
 
-export default (config: Configuration, logger: Logger, hooks: Hooks) => () =>
+export default (config: Configuration, logger: Logger, hooks?: Hooks) =>
   new Steveo(config, logger, hooks);

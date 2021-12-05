@@ -18,8 +18,9 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowJs": true
   },
   "include": ["src"],
-  "exclude": ["test", "node_modules"]
+  "exclude": ["node_modules"]
 }

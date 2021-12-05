@@ -63,13 +63,19 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   concurrency: number;
 
-  constructor(
-    config: Configuration,
-    registry: IRegistry,
-    pool: Pool<any>,
-    logger: Logger = nullLogger,
-    hooks: Hooks = {}
-  ) {
+  constructor({
+    config,
+    registry,
+    pool,
+    logger = nullLogger,
+    hooks = {},
+  }: {
+    config: Configuration;
+    registry: IRegistry;
+    pool: Pool<any>;
+    logger: Logger;
+    hooks?: Hooks;
+  }) {
     super(hooks);
     this.config = config || {};
     this.registry = registry;
