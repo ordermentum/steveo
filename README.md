@@ -1,4 +1,3 @@
-
 <h1 align="center">Welcome to steveo 👋</h1>
 <p>
   <a href="https://www.npmjs.com/package/steveo" target="_blank">
@@ -61,11 +60,22 @@ Responsible for keeping the inventory of tasks & event manager. Whenever a new t
 Responsible for consuming messages,
 
 - `process` method initialize group consumers and start to consume the messages. It will then call the subscribe callback set on the task
-- Emitting events based on success/failures
-	- runner_receive -> Received a message
-	- runner_complete -> Completed running the associated task
-	- runner_failure -> Failed running the associated task
-	- runner_connection_failure -> Error while polling for message (Kafka only)
+
+Emitting events based on success/failures
+
+- runner_receive -> Received a message
+- runner_complete -> Completed running the associated task
+- runner_failure -> Failed running the associated task
+- runner_connection_failure -> Error while polling for message (Kafka only)
+
+- task_send
+- task_success
+- task_failure
+- task_added
+- task_removed
+
+- producer_success
+- producer_failure
 
 ### Example
 
@@ -93,7 +103,7 @@ Publish without registering a task
 await steveo.publish('example-task', { name: 'Apple' });
 ```
 
-For more details, see [example](https://github.com/ordermentum/steveo/blob/master/example/README.md)
+For more details, see [example](https://github.com/ordermentum/steveo/blob/master/examples/full/README.md)
 
 _Credits_
 

@@ -64,6 +64,8 @@ class KafkaRunner extends BaseRunner
 
   receive = async (message: Message) => {
     const { topic } = message;
+    const config = this.config as KafkaConfiguration;
+    const { waitToCommit } = config;
     try {
       const parsed = {
         ...message,
@@ -80,12 +82,12 @@ class KafkaRunner extends BaseRunner
         this.consumer.commitMessage(message);
         return;
       }
-      if (!(this.config as KafkaConfiguration).waitToCommit) {
+      if (!waitToCommit) {
         this.consumer.commitMessage(message);
       }
       this.logger.debug('Start subscribe', topic, message);
       await task.subscribe(parsed);
-      if ((this.config as KafkaConfiguration).waitToCommit) {
+      if (waitToCommit) {
         this.consumer.commitMessage(message);
       }
       this.logger.debug('Finish subscribe', topic, message);
