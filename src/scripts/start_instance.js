@@ -4,10 +4,8 @@ const topic = process.argv[2];
 
 (async () => {
   const runner = steveo.runner();
-  while (true) {
-    if (runner.registry.getTask(topic)) {
-      await runner.process([topic]);
-    }
-    process.send('success');
+  if (runner.registry.getTask(topic)) {
+    await runner.process([topic]);
   }
+  process.send('success');
 })();
