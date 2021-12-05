@@ -1,5 +1,5 @@
 import path from 'path';
-import Steveo from '../src';
+import Steveo from '../../src';
 import logger from './logger';
 
 const steveo = Steveo(
