@@ -167,7 +167,7 @@ export class Steveo implements ISteveo {
         });
         process.on('error', e => {
           clearTimeout(timeout);
-          this.logger.info(`Failed to start child process ${e}`);
+          this.logger.error(`Failed to start child process ${e}`);
           this.exitHandler.call(this, null, null, topic);
         });
         child.on('message', m => {
@@ -178,7 +178,10 @@ export class Steveo implements ISteveo {
             reject();
           }
         });
-        if (child.pid) this.childProcesses.set(child.pid, child);
+        if (child.pid) {
+          this.childProcesses.set(child.pid, child);
+          this.logger.debug(`spawned ${child.pid} for ${topic}`);
+        }
       } catch (e) {
         reject(e);
       }
