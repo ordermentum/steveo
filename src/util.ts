@@ -20,6 +20,7 @@ export const forkChild = async (
         TASKS: tasksPath,
       },
       execArgv: childProcessConfig.args ?? [],
+      stdio: 'inherit',
     });
     resolve(child);
   });

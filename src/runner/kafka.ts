@@ -37,7 +37,7 @@ class KafkaRunner extends BaseRunner
     config: Configuration;
     registry: IRegistry;
     logger: Logger;
-    hooks: Hooks;
+    hooks?: Hooks;
   }) {
     super(hooks);
     this.config = config;

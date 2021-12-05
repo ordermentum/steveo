@@ -23,7 +23,7 @@ const getRunner = ({
   registry: IRegistry;
   pool: Pool<any>;
   logger: Logger;
-  hooks: Hooks;
+  hooks?: Hooks;
 }) => new Runners[config.engine]({ config, registry, pool, logger, hooks });
 
 export default getRunner;

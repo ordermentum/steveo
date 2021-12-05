@@ -74,7 +74,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     registry: IRegistry;
     pool: Pool<any>;
     logger: Logger;
-    hooks: Hooks;
+    hooks?: Hooks;
   }) {
     super(hooks);
     this.config = config || {};

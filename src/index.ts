@@ -41,7 +41,7 @@ export class Steveo implements ISteveo {
 
   pool: Pool<any>;
 
-  hooks: Hooks;
+  hooks?: Hooks;
 
   childProcesses: Map<number, ChildProcess>;
 
@@ -54,7 +54,7 @@ export class Steveo implements ISteveo {
   constructor(
     configuration: Configuration,
     logger: Logger = NULL_LOGGER,
-    hooks: Hooks
+    hooks?: Hooks
   ) {
     this.logger = logger;
     this.registry = new Registry();
@@ -233,5 +233,5 @@ export class Steveo implements ISteveo {
   }
 }
 
-export default (config: Configuration, logger: Logger, hooks: Hooks) =>
+export default (config: Configuration, logger: Logger, hooks?: Hooks) =>
   new Steveo(config, logger, hooks);
