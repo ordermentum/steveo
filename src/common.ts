@@ -124,8 +124,9 @@ export type Configuration = (
   childProcesses?: ChildProcessConfig;
   /**
    * @description the absolute path to the tasks that need to be registered with this instance
+   * This is required if you want to use the built in steveo runner and/or the child process functionality
    */
-  tasksPath: string;
+  tasksPath?: string;
 };
 
 export type Attribute = {

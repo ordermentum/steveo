@@ -193,6 +193,10 @@ export class Steveo implements ISteveo {
    * and as part of that they self register with the registry allowing
    */
   async loadTasks() {
+    if (typeof this.config.tasksPath === 'undefined') {
+      throw new Error('config.tasksPath not defined - failed to load tasks');
+    }
+
     require(this.config.tasksPath);
   }
 

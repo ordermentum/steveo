@@ -6,7 +6,7 @@ const modulePath = path.resolve(__dirname, './scripts/start_instance.js');
 
 export const forkChild = async (
   topic: string,
-  tasksPath: string,
+  tasksPath?: string,
   childProcessConfig?: ChildProcessConfig
 ) => {
   if (!childProcessConfig) {
