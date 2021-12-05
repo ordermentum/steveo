@@ -18,12 +18,12 @@ const load = async () => {
   });
 
   await steveo.runner().createQueues();
-  // let it run & publish messages in every 5 seconds
+  // let it run & publish messages in every 10 seconds
   setInterval(async () => {
     console.log('publishing');
     await firstTask.publish([{ payload: `Message` }]);
     await spamTask.publish([{ payload: `Message` }]);
-  }, 1000);
+  }, 10000);
   await steveo.start();
 };
 
