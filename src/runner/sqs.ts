@@ -93,8 +93,9 @@ class SqsRunner extends BaseRunner implements IRunner {
       messages,
       async m => {
         let params = null;
-        const resource = await this.pool.acquire();
+        let resource;
         try {
+          resource = await this.pool.acquire();
           params = JSON.parse(m.Body);
           const context = getContext(params);
 
@@ -133,7 +134,7 @@ class SqsRunner extends BaseRunner implements IRunner {
           });
           this.registry.events.emit('runner_failure', topic, ex, params);
         }
-        this.pool.release(resource);
+        if (resource) await this.pool.release(resource);
       },
       { concurrency: this.concurrency }
     );

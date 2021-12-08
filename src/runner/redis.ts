@@ -78,8 +78,9 @@ class RedisRunner extends BaseRunner implements IRunner {
     return Promise.all(
       messages.map(async m => {
         let params = null;
-        const resource = await this.pool.acquire();
+        let resource;
         try {
+          resource = await this.pool.acquire();
           params = JSON.parse(m.message);
           const context = getContext(params);
           this.registry.events.emit('runner_receive', topic, params, context);
@@ -113,7 +114,7 @@ class RedisRunner extends BaseRunner implements IRunner {
           });
           this.registry.events.emit('runner_failure', topic, ex, params);
         }
-        await this.pool.release(resource);
+        if (resource) await this.pool.release(resource);
       })
     );
   }

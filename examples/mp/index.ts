@@ -23,7 +23,7 @@ const load = async () => {
     console.log('publishing');
     await firstTask.publish([{ payload: `Message` }]);
     await spamTask.publish([{ payload: `Message` }]);
-  }, 10000);
+  }, 1000);
   await steveo.start();
 };
 
