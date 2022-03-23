@@ -67,7 +67,7 @@ class KafkaRunner extends BaseRunner
     const config = this.config as KafkaConfiguration;
     const { parseMessage, waitToCommit } = config;
     try {
-      const valueString = message.value?.toString();
+      const valueString = message.value?.toString() ?? '';
       let value = valueString;
 
       if (parseMessage) {
