@@ -67,9 +67,14 @@ class KafkaRunner extends BaseRunner
     const config = this.config as KafkaConfiguration;
     const { waitToCommit } = config;
     try {
+      const valueString = message.value?.toString();
+      let value = valueString;
+      try {
+        value = JSON.parse(valueString ?? '');
+      } catch(err) {}
       const parsed = {
         ...message,
-        value: message.value?.toString(),
+        value,
         key: message.key?.toString(),
       };
       this.registry.events.emit('runner_receive', topic, parsed, {
