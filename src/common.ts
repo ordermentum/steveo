@@ -170,7 +170,6 @@ export interface ITask<T = any, R = any> {
   topic: string;
   attributes: any;
   producer: any;
-  deserializer?: <T = any>(value: string) => T;
   publish(payload: T | T[]): Promise<void>;
 }
 

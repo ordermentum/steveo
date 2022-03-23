@@ -92,10 +92,6 @@ class KafkaRunner extends BaseRunner
         return;
       }
 
-      if (task.deserializer) {
-        parsed.value = task.deserializer(parsed.value);
-      }
-
       if (!waitToCommit) {
         this.consumer.commitMessage(message);
       }
