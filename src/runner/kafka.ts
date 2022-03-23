@@ -73,7 +73,7 @@ class KafkaRunner extends BaseRunner
       if (parseMessage) {
         try {
           value = JSON.parse(valueString ?? '');
-        } catch (e) {}
+        } catch (e) {} // eslint-disable-line no-empty
       }
       const parsed = {
         ...message,
