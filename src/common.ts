@@ -60,6 +60,7 @@ export type KafkaConfiguration = {
    * @description Consumer/Producer connection ready timeout
    */
   connectionTimeout?: number;
+  parseMessage?: boolean;
   consumer?: KafkaConsumerConfig;
   producer?: KafkaProducerConfig;
   admin?: GlobalConfig;
@@ -169,6 +170,7 @@ export interface ITask<T = any, R = any> {
   topic: string;
   attributes: any;
   producer: any;
+  deserializer?: <T = any>(value: string) => T;
   publish(payload: T | T[]): Promise<void>;
 }
 

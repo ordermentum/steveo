@@ -65,13 +65,16 @@ class KafkaRunner extends BaseRunner
   receive = async (message: Message) => {
     const { topic } = message;
     const config = this.config as KafkaConfiguration;
-    const { waitToCommit } = config;
+    const { parseMessage, waitToCommit } = config;
     try {
       const valueString = message.value?.toString();
       let value = valueString;
-      try {
-        value = JSON.parse(valueString ?? '');
-      } catch(err) {}
+
+      if (parseMessage) {
+        try {
+          value = JSON.parse(valueString ?? '');
+        } catch (e) {}
+      }
       const parsed = {
         ...message,
         value,
@@ -82,11 +85,17 @@ class KafkaRunner extends BaseRunner
         start: getDuration(),
       });
       const task = this.registry.getTask(topic);
+
       if (!task) {
         this.logger.error(`Unknown Task ${topic}`);
         this.consumer.commitMessage(message);
         return;
       }
+
+      if (task.deserializer) {
+        parsed.value = task.deserializer(parsed.value);
+      }
+
       if (!waitToCommit) {
         this.consumer.commitMessage(message);
       }
