@@ -53,6 +53,8 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   pool: Pool<any>;
 
+  hooks?: Hooks;
+
   constructor({
     config,
     registry,
@@ -98,7 +100,13 @@ class RedisRunner extends BaseRunner implements IRunner {
             return;
           }
           this.logger.debug('Start subscribe', topic, params);
-          await task.subscribe(params); // eslint-disable-line
+          if (this.hooks?.preTask) {
+            await this.hooks.preTask(params);
+          }
+          const result = await task.subscribe(params);
+          if (this.hooks?.postTask) {
+            await this.hooks.postTask({ ...(params ?? {}), result });
+          }
           const completedContext = getContext(params);
           this.registry.events.emit(
             'runner_complete',

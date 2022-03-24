@@ -63,6 +63,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   concurrency: number;
 
+  hooks?: Hooks;
+
   constructor({
     config,
     registry,
@@ -77,6 +79,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     hooks?: Hooks;
   }) {
     super(hooks);
+    this.hooks = hooks;
     this.config = config || {};
     this.registry = registry;
     this.logger = logger;
@@ -117,7 +120,13 @@ class SqsRunner extends BaseRunner implements IRunner {
             this.logger.error(`Unknown Task ${topic}`);
             return;
           }
-          await task.subscribe(params); // eslint-disable-line
+          if (this.hooks?.preTask) {
+            await this.hooks.preTask(params);
+          }
+          const result = await task.subscribe(params);
+          if (this.hooks?.postTask) {
+            await this.hooks.postTask({ ...(params ?? {}), result });
+          }
           this.logger.debug('Completed subscribe', topic, params);
           const completedContext = getContext(params);
           this.registry.events.emit(

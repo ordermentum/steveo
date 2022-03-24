@@ -28,6 +28,8 @@ class KafkaRunner extends BaseRunner
 
   adminClient: IAdminClient;
 
+  hooks?: Hooks;
+
   constructor({
     config,
     registry,
@@ -40,6 +42,7 @@ class KafkaRunner extends BaseRunner
     hooks?: Hooks;
   }) {
     super(hooks);
+    this.hooks = hooks;
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -96,7 +99,13 @@ class KafkaRunner extends BaseRunner
         this.consumer.commitMessage(message);
       }
       this.logger.debug('Start subscribe', topic, message);
-      await task.subscribe(parsed);
+      if (this.hooks?.preTask) {
+        await this.hooks.preTask(parsed);
+      }
+      const result = await task.subscribe(parsed);
+      if (this.hooks?.postTask) {
+        await this.hooks.postTask({ ...parsed, result });
+      }
       if (waitToCommit) {
         this.consumer.commitMessage(message);
       }
