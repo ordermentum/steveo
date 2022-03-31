@@ -95,14 +95,14 @@ class SqsRunner extends BaseRunner implements IRunner {
     return bluebird.map(
       messages,
       async m => {
-        let params = null;
+        let params;
         let resource;
         try {
           resource = await this.pool.acquire();
           params = JSON.parse(m.Body);
-          const context = getContext(params);
+          const runnerContext = getContext(params);
 
-          this.registry.events.emit('runner_receive', topic, params, context);
+          this.registry.events.emit('runner_receive', topic, params, runnerContext);
           this.logger.debug('Deleting message', topic, params);
 
           await deleteMessage({ // eslint-disable-line
@@ -123,7 +123,8 @@ class SqsRunner extends BaseRunner implements IRunner {
           if (this.hooks?.preTask) {
             await this.hooks.preTask(params);
           }
-          const result = await task.subscribe(params);
+          const {context = null, ...value} = params;
+          const result = await task.subscribe(value, context);
           if (this.hooks?.postTask) {
             await this.hooks.postTask({ ...(params ?? {}), result });
           }

@@ -12,7 +12,7 @@ import {
  * FIXME: for callbacks that don't take an argument, need to specify
  * T = void to make the parameter optional
  */
-export type Callback<T = any, R = Promise<any>> = (payload: T) => R;
+export type Callback<T = any, R = Promise<any>, C = any> = (payload: T, context?: C) => R;
 
 export type getPayload = (
   msg: any,
@@ -60,7 +60,6 @@ export type KafkaConfiguration = {
    * @description Consumer/Producer connection ready timeout
    */
   connectionTimeout?: number;
-  parseMessage?: boolean;
   consumer?: KafkaConsumerConfig;
   producer?: KafkaProducerConfig;
   admin?: GlobalConfig;

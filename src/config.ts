@@ -50,7 +50,6 @@ export const getConfig = (config: Configuration): Configuration => {
     parameters.defaultTopicPartitions = kafkaConfig.defaultTopicPartitions ?? 6;
     parameters.defaultTopicReplicationFactor =
       kafkaConfig.defaultTopicReplicationFactor ?? 3;
-    parameters.parseMessage = kafkaConfig.parseMessage;
   } else if (parameters.engine === 'sqs') {
     const sqsConfig = config as SQSConfiguration;
     parameters.region = sqsConfig.region;

@@ -79,13 +79,13 @@ class RedisRunner extends BaseRunner implements IRunner {
   async receive(messages: any[], topic: string): Promise<any> {
     return Promise.all(
       messages.map(async m => {
-        let params = null;
+        let params;
         let resource;
         try {
           resource = await this.pool.acquire();
           params = JSON.parse(m.message);
-          const context = getContext(params);
-          this.registry.events.emit('runner_receive', topic, params, context);
+          const runnerContext = getContext(params);
+          this.registry.events.emit('runner_receive', topic, params, runnerContext);
           this.logger.debug('Deleting message', topic, params);
           await deleteMessage({ // eslint-disable-line
             instance: this.redis,
@@ -102,8 +102,9 @@ class RedisRunner extends BaseRunner implements IRunner {
           this.logger.debug('Start subscribe', topic, params);
           if (this.hooks?.preTask) {
             await this.hooks.preTask(params);
-          }
-          const result = await task.subscribe(params);
+          }          
+          const {context = null, ...value} = params;
+          const result = await task.subscribe(value, context);
           if (this.hooks?.postTask) {
             await this.hooks.postTask({ ...(params ?? {}), result });
           }

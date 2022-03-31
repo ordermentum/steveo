@@ -16,6 +16,8 @@ import {
   Configuration,
 } from '../common';
 
+class JsonParsingError extends Error { }
+
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
   config: Configuration;
@@ -68,20 +70,19 @@ class KafkaRunner extends BaseRunner
   receive = async (message: Message) => {
     const { topic } = message;
     const config = this.config as KafkaConfiguration;
-    const { parseMessage, waitToCommit } = config;
+    const { waitToCommit } = config;
     try {
       const valueString = message.value?.toString() ?? '';
       let value = valueString;
-
-      if (parseMessage) {
-        try {
-          value = JSON.parse(valueString);
-        } catch (e) {} // eslint-disable-line no-empty
+      try {
+        value = JSON.parse(valueString);
+      } catch (e) {
+        throw new JsonParsingError();
       }
       const parsed = {
         ...message,
         value,
-        key: message.key?.toString(),
+        key: message.key?.toString()
       };
       this.registry.events.emit('runner_receive', topic, parsed, {
         ...message,
@@ -102,7 +103,9 @@ class KafkaRunner extends BaseRunner
       if (this.hooks?.preTask) {
         await this.hooks.preTask(parsed);
       }
-      const result = await task.subscribe(parsed);
+      //@ts-ignore
+      const context = parsed.value.context ?? null;
+      const result = await task.subscribe(parsed, context);
       if (this.hooks?.postTask) {
         await this.hooks.postTask({ ...parsed, result });
       }
@@ -121,6 +124,9 @@ class KafkaRunner extends BaseRunner
         error: ex,
       });
       this.registry.events.emit('runner_failure', topic, ex, message);
+      if (ex instanceof JsonParsingError) {
+        this.consumer.commitMessage(message);
+      }
     }
   };
 
@@ -143,7 +149,7 @@ class KafkaRunner extends BaseRunner
    *
    * @description It's a bound function to avoid binding when passing as callback to the checker function
    */
-  healthCheck = async function() {
+  healthCheck = async function () {
     return new Promise<void>((resolve, reject) => {
       /**
        * if you are concerned about potential performance issues,
@@ -162,7 +168,7 @@ class KafkaRunner extends BaseRunner
   consumeCallback = async (err, messages) => {
     this.logger.debug('Consumer callback');
     await this.checks(
-      () => {},
+      () => { },
       () => this.healthCheck
     );
     if (err) {
