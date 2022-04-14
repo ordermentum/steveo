@@ -96,16 +96,24 @@ export class Steveo implements ISteveo {
     return this.producer.send<T>(topic, payload, key);
   }
 
-  async registerTopic(name: string, topic?: string) {
-    const topicName = topic ?? name;
+  getTopicName(name: string) {
     const withOrWithoutPrefix = this.config.queuePrefix
-      ? `${this.config.queuePrefix}_${topicName}`
-      : topicName;
+      ? `${this.config.queuePrefix}_${name}`
+      : name;
     const uppercased = this.config.upperCaseNames
       ? withOrWithoutPrefix.toUpperCase()
       : withOrWithoutPrefix;
-    this.registry.addTopic(name, uppercased);
-    await this.producer.initialize(uppercased);
+    return uppercased;
+  }
+
+  async registerTopic(name: string, topic?: string) {
+    let topicName = topic;
+    if (!topicName) {
+      topicName = this.getTopicName(name);
+    }
+
+    this.registry.addTopic(name, topicName);
+    await this.producer.initialize(topicName);
   }
 
   get producer() {
