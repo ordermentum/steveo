@@ -16,7 +16,7 @@ import {
   Configuration,
 } from '../common';
 
-class JsonParsingError extends Error { }
+class JsonParsingError extends Error {}
 
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
@@ -82,7 +82,7 @@ class KafkaRunner extends BaseRunner
       const parsed = {
         ...message,
         value,
-        key: message.key?.toString()
+        key: message.key?.toString(),
       };
       this.registry.events.emit('runner_receive', topic, parsed, {
         ...message,
@@ -103,7 +103,7 @@ class KafkaRunner extends BaseRunner
       if (this.hooks?.preTask) {
         await this.hooks.preTask(parsed);
       }
-      //@ts-ignore
+      // @ts-ignore
       const context = parsed.value.context ?? null;
       const result = await task.subscribe(parsed, context);
       if (this.hooks?.postTask) {
@@ -149,7 +149,7 @@ class KafkaRunner extends BaseRunner
    *
    * @description It's a bound function to avoid binding when passing as callback to the checker function
    */
-  healthCheck = async function () {
+  healthCheck = async function() {
     return new Promise<void>((resolve, reject) => {
       /**
        * if you are concerned about potential performance issues,
@@ -168,7 +168,7 @@ class KafkaRunner extends BaseRunner
   consumeCallback = async (err, messages) => {
     this.logger.debug('Consumer callback');
     await this.checks(
-      () => { },
+      () => {},
       () => this.healthCheck
     );
     if (err) {

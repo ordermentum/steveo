@@ -115,7 +115,12 @@ class SqsRunner extends BaseRunner implements IRunner {
           params = JSON.parse(m.Body);
           const runnerContext = getContext(params);
 
-          this.registry.events.emit('runner_receive', topic, params, runnerContext);
+          this.registry.events.emit(
+            'runner_receive',
+            topic,
+            params,
+            runnerContext
+          );
           this.logger.debug('Deleting message', topic, params);
 
           await deleteMessage({ // eslint-disable-line
@@ -136,7 +141,7 @@ class SqsRunner extends BaseRunner implements IRunner {
           if (this.hooks?.preTask) {
             await this.hooks.preTask(params);
           }
-          const {context = null, ...value} = params;
+          const { context = null, ...value } = params;
           const result = await task.subscribe(value, context);
           if (this.hooks?.postTask) {
             await this.hooks.postTask({ ...(params ?? {}), result });

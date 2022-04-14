@@ -12,7 +12,10 @@ import {
  * FIXME: for callbacks that don't take an argument, need to specify
  * T = void to make the parameter optional
  */
-export type Callback<T = any, R = Promise<any>, C = any> = (payload: T, context?: C) => R;
+export type Callback<T = any, R = Promise<any>, C = any> = (
+  payload: T,
+  context?: C
+) => R;
 
 export type getPayload = (
   msg: any,
