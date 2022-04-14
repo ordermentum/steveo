@@ -17,6 +17,19 @@ import {
   SQSConfiguration,
 } from '../common';
 
+const safeParseInt = (concurrency: string, fallback = 1) => {
+  if (!concurrency) {
+    return fallback;
+  }
+
+  const result = parseInt(concurrency, 10);
+  if (Number.isNaN(result)) {
+    return fallback;
+  }
+
+  return result;
+};
+
 type DeleteMessage = {
   instance: SQS;
   topic: string;
@@ -86,7 +99,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.sqsUrls = {};
     this.sqs = sqsConf.sqs(config);
     this.pool = pool;
-    this.concurrency = config.workerConfig?.max ?? 1;
+    this.concurrency = safeParseInt(config.workerConfig?.max, 1);
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
