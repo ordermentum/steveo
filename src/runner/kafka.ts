@@ -16,6 +16,8 @@ import {
   Configuration,
 } from '../common';
 
+class JsonParsingError extends Error {}
+
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
   config: Configuration;
@@ -27,6 +29,8 @@ class KafkaRunner extends BaseRunner
   consumer: KafkaConsumer;
 
   adminClient: IAdminClient;
+
+  hooks?: Hooks;
 
   constructor({
     config,
@@ -40,6 +44,7 @@ class KafkaRunner extends BaseRunner
     hooks?: Hooks;
   }) {
     super(hooks);
+    this.hooks = hooks;
     this.config = config;
     this.registry = registry;
     this.logger = logger;
@@ -67,9 +72,16 @@ class KafkaRunner extends BaseRunner
     const config = this.config as KafkaConfiguration;
     const { waitToCommit } = config;
     try {
+      const valueString = message.value?.toString() ?? '';
+      let value = valueString;
+      try {
+        value = JSON.parse(valueString);
+      } catch (e) {
+        throw new JsonParsingError();
+      }
       const parsed = {
         ...message,
-        value: message.value?.toString(),
+        value,
         key: message.key?.toString(),
       };
       this.registry.events.emit('runner_receive', topic, parsed, {
@@ -77,16 +89,26 @@ class KafkaRunner extends BaseRunner
         start: getDuration(),
       });
       const task = this.registry.getTask(topic);
+
       if (!task) {
         this.logger.error(`Unknown Task ${topic}`);
         this.consumer.commitMessage(message);
         return;
       }
+
       if (!waitToCommit) {
         this.consumer.commitMessage(message);
       }
       this.logger.debug('Start subscribe', topic, message);
-      await task.subscribe(parsed);
+      if (this.hooks?.preTask) {
+        await this.hooks.preTask(parsed);
+      }
+      // @ts-ignore
+      const context = parsed.value.context ?? null;
+      const result = await task.subscribe(parsed, context);
+      if (this.hooks?.postTask) {
+        await this.hooks.postTask({ ...parsed, result });
+      }
       if (waitToCommit) {
         this.consumer.commitMessage(message);
       }
@@ -102,6 +124,9 @@ class KafkaRunner extends BaseRunner
         error: ex,
       });
       this.registry.events.emit('runner_failure', topic, ex, message);
+      if (ex instanceof JsonParsingError) {
+        this.consumer.commitMessage(message);
+      }
     }
   };
 

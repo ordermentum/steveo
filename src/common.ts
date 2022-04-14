@@ -12,7 +12,10 @@ import {
  * FIXME: for callbacks that don't take an argument, need to specify
  * T = void to make the parameter optional
  */
-export type Callback<T = any, R = Promise<any>> = (payload: T) => R;
+export type Callback<T = any, R = Promise<any>, C = any> = (
+  payload: T,
+  context?: C
+) => R;
 
 export type getPayload = (
   msg: any,
@@ -185,8 +188,20 @@ export interface IRunner<T = any, M = any> {
 
 export type CustomTopicFunction = (topic: string) => string;
 
+export type TaskHooks = {
+  /**
+   * Called with the message value
+   */
+  pre: (args: any) => Promise<void>;
+  /**
+   * Called with returned value from the task in conjuction with the message
+   */
+  post: (args: any) => Promise<void>;
+};
+
 export type TaskOpts = {
   queueName?: string;
+  hooks?: Partial<TaskHooks>;
 };
 export interface ISteveo {
   config: Configuration;
@@ -258,4 +273,12 @@ export type Hooks = {
   preProcess?: () => Promise<void>;
   healthCheck?: () => Promise<void>;
   terminationCheck?: () => Promise<boolean>;
+  /**
+   * A default before hook to run when a consumer runs a task
+   */
+  preTask?: (args?: any) => Promise<void>;
+  /**
+   * A default after hook to run when a consumer runs a task
+   */
+  postTask?: (args?: any) => Promise<void>;
 };
