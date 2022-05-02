@@ -67,9 +67,9 @@ export class Steveo implements ISteveo {
     this.exiting = false;
   }
 
-  task<T = any, R = any>(
+  task<T = any, R = any, C = any>(
     name: string,
-    callback: Callback<T, R>,
+    callback: Callback<T, R, C>,
     sqsAttributes: Attribute[] = [],
     attributes: TaskOpts = {}
   ): ITask<T> {
