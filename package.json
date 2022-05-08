@@ -43,7 +43,7 @@
     "lodash.intersection": "^4.4.0",
     "lodash.merge": "4.6.2",
     "lodash.shuffle": "^4.2.0",
-    "moment": "2.29.2",
+    "moment": "2.29.3",
     "null-logger": "^2.0.0",
     "uuid": "^8.0.0"
   },
