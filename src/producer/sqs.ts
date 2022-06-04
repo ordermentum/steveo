@@ -140,15 +140,11 @@ class SqsProducer implements IProducer {
         this.registry.emit('producer_failure', topic, ex, data);
         throw ex;
       }
-
-      this.traceProvider
-        ? this.traceProvider.wrapHandler(
-            `${topic}-publish`,
-            undefined,
-            callback
-          )
-        : callback(undefined);
     };
+
+    this.traceProvider
+      ? this.traceProvider.wrapHandler(`${topic}-publish`, undefined, callback)
+      : await callback(undefined);
   }
 
   async disconnect() {}
