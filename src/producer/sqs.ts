@@ -48,6 +48,7 @@ class SqsProducer implements IProducer {
   }
 
   async initialize(topic: string): Promise<string> {
+    console.log('Test debugging - start initialize()');
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
@@ -59,9 +60,11 @@ class SqsProducer implements IProducer {
         console.log('error getting queue', err); // TODO - only for unit testing -- do not merge
       });
     const queueUrl = getQueueUrlResult?.QueueUrl;
+    console.log('queueUrl', queueUrl);
 
     if (queueUrl) {
       this.sqsUrls[topic] = queueUrl;
+      console.log('Test debugging - end initialize - queue url exists and is', queueUrl);
       return queueUrl;
     }
 
@@ -74,11 +77,13 @@ class SqsProducer implements IProducer {
         MessageRetentionPeriod: config.messageRetentionPeriod ?? '604800',
       },
     };
+    console.log('test debugging', 'creating queue');
     this.logger.debug(`Creating queue`, util.inspect(params));
     const res = await this.producer
       .createQueue(params)
       .promise()
       .catch(err => {
+        console.log('Test debugging - throw in initialize()');
         throw new Error(`Failed to call SQS createQueue: ${err}`);
       });
     if (!res.QueueUrl) {
@@ -89,6 +94,7 @@ class SqsProducer implements IProducer {
       );
     }
     this.sqsUrls[topic] = res.QueueUrl;
+    console.log('Test debugging - end initialize()');
     return res.QueueUrl;
   }
 
@@ -125,8 +131,8 @@ class SqsProducer implements IProducer {
   async send<T = any>(topic: string, payload: T) {
     this.transactionWrapper(`${topic}-publish`, async () => {
       try {
-        console.log('calling initialize')
-        console.log('urls', this.sqsUrls)
+        console.log('calling initialize');
+        console.log('urls', this.sqsUrls);
         await this.initialize(topic);
       } catch (ex) {
         this.newrelic?.noticeError(ex as Error);
