@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producer/sqs';
 import Registry from '../../src/registry';
+import Task from '../../src/task';
 
 describe('SQS Producer', () => {
   let sandbox: sinon.SinonSandbox;
@@ -118,77 +119,48 @@ describe('SQS Producer', () => {
     afterEach(() => {
       initializeStub.restore();
     });
+
+    it('should include attributes in the message payload', async () => {
+      const attributes = [
+        {
+          name: 'Hello',
+          dataType: 'String',
+          value: 'abc',
+        },
+      ];
+      const task = new Task(
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task-with-attributes',
+        'test-topic',
+        () => undefined,
+        attributes
+      );
+      registry.addNewTask(task);
+
+      await producer.send('test-topic', { a: 'payload' });
+
+      const sentAttributes =
+        sendMessageStub.getCall(0).args[0].MessageAttributes[
+          attributes[0].name
+        ];
+      const sentDataType = sentAttributes.DataType;
+      const sentStringValue = sentAttributes.StringValue;
+
+      expect(sendMessageStub.calledOnce, 'sendMessage is called').to.be.true;
+      expect(sentAttributes, 'attributes are passed in MessageAttributes').to.be
+        .not.undefined;
+      expect(sentDataType, 'dataType is passed in MessageAttributes').to.equal(
+        attributes[0].dataType
+      );
+      expect(
+        sentStringValue,
+        'stringValue is passed in MessageAttributes'
+      ).to.equal(attributes[0].value);
+    });
   });
 
-  // // What does "initialize" mean in this context?
-  // // initialize() is always called, but createQueue wont be called if it already exists.
-  // it('should send without initialize if sqsUrls are present', async () => {
-  //   registry.addTopic('test-topic');
-  //   sandbox.spy(producer, 'getPayload');
-  //   const sendMessageStub = sandbox
-  //     .stub(producer.producer, 'sendMessage')
-  //     // @ts-ignore
-  //     .returns(promiseResolves({ hi: 'hello' }));
-  //   sandbox
-  //     .stub(producer.producer, 'getQueueUrl')
-  //     // @ts-ignore
-  //     .returns(
-  //       promiseResolves({
-  //         QueueUrl:
-  //           'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
-  //       })
-  //     );
-  //   const createQueueStub = sandbox
-  //     .stub(producer.producer, 'createQueue')
-  //     // @ts-ignore
-  //     .returns(
-  //       promiseResolves({
-  //         QueueUrl:
-  //           'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
-  //       })
-  //     );
-  //   producer.sqsUrls = {
-  //     'test-topic':
-  //       'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
-  //   };
-  //   await producer.send('test-topic', { a: 'payload' });
-  //   expect(createQueueStub.notCalled).to.be.true;
-  //   expect(sendMessageStub.calledOnce).to.be.true;
-  // });
-  // it('should send with attributes', async () => {
-  //   sandbox.spy(producer, 'getPayload');
-  //   // @ts-ignore
-  //   registry.addNewTask({
-  //     name: 'test-topic',
-  //     topic: 'test-topic',
-  //     subscribe: () => {},
-  //     attributes: [
-  //       {
-  //         name: 'Hello',
-  //         dataType: 'String',
-  //         value: 'abc',
-  //       },
-  //     ],
-  //   });
-  //   const sendMessageStub = sandbox
-  //     .stub(producer.producer, 'sendMessage')
-  //     // @ts-ignore
-  //     .returns(promiseResolves({ hi: 'hello' }));
-  //   sandbox
-  //     .stub(producer.producer, 'getQueueUrl')
-  //     // @ts-ignore
-  //     .returns(promiseResolves({ QueueUrl: 'test-topic' }));
-  //   const createQueueStub = sandbox
-  //     .stub(producer.producer, 'createQueue')
-  //     // @ts-ignore
-  //     .returns(promiseResolves({ data: { QueueUrl: 'kjsdkh' } }));
-  //   producer.sqsUrls = {
-  //     'test-topic': 'asdasd',
-  //   };
-  //   await producer.send('test-topic', { a: 'payload' });
-  //   expect(createQueueStub.callCount).to.equal(0);
-  //   expect(sendMessageStub.callCount).to.equal(1);
-  // });
   // it('should throw error if initialize rejects', async () => {
   //   // @ts-ignore
   //   sandbox.spy(producer, 'getPayload');
