@@ -140,7 +140,7 @@ class SqsRunner extends BaseRunner implements IRunner {
               await this.segmentWrapper(
                 'task.preTask',
                 // eslint-disable-next-line no-return-await
-                async () => await this.hooks?.preTask?.(params)
+                async () => await this.hooks?.preTask?.(params) // using `await` so we get accurate segment timing
               );
             }
             const { context = null, ...value } = params;

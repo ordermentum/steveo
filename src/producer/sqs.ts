@@ -89,7 +89,6 @@ class SqsProducer implements IProducer {
     return res.QueueUrl;
   }
 
-  // Should getPayload be a part of the interface? Seems like an implementation detail.
   getPayload(
     msg: any,
     topic: string,
@@ -126,12 +125,6 @@ class SqsProducer implements IProducer {
   }
 
   async send<T = Record<string, any>>(topic: string, payload: T) {
-    // PR comment:
-    // The above should be `payload: Record<string,any>` and not `any`. We
-    // always do a messageBody = { ...payload }, which will mangle anything
-    // that's not an object.
-    // Passing a string payload "hello" gives '{"0":"h","1":"e","2":"l","3":"l","4":"o","_meta": ...
-    // and passing ["hello"] gives '{"0":"bad-message","_meta": ...
     return this.transactionWrapper(`${topic}-publish`, async () => {
       try {
         if (!this.sqsUrls[topic]) {
