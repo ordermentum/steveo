@@ -28,7 +28,10 @@ class SqsProducer implements IProducer {
 
   private newrelic?: any;
 
-  private transactionWrapper: any;
+  private transactionWrapper: <T>(
+    txName: string,
+    callback: (...args: any[]) => T
+  ) => Promise<T>;
 
   constructor(
     config: Configuration,
@@ -41,9 +44,9 @@ class SqsProducer implements IProducer {
     this.registry = registry;
     this.sqsUrls = {};
     this.newrelic = config.traceConfiguration?.newrelic;
-    this.transactionWrapper = (txname: string, func: any) =>
+    this.transactionWrapper = (txName: string, func: any) =>
       this.newrelic
-        ? this.newrelic.startBackgroundTransaction(txname, func)
+        ? this.newrelic.startBackgroundTransaction(txName, func)
         : func();
   }
 
@@ -130,7 +133,7 @@ class SqsProducer implements IProducer {
   }
 
   async send<T = any>(topic: string, payload: T) {
-    this.transactionWrapper(`${topic}-publish`, async () => {
+    return this.transactionWrapper(`${topic}-publish`, async () => {
       try {
         if (!this.sqsUrls[topic]) {
           await this.initialize(topic);

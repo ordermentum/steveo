@@ -95,7 +95,7 @@ describe('SQS Producer', () => {
     let initializeStub: sinon.SinonStub;
 
     beforeEach(() => {
-      initializeStub = sandbox.stub(producer, 'initialize').resolves();
+      initializeStub = sandbox.stub(producer, 'initialize');
     });
 
     it(`when the topic's SQS URL is not known, initialize() should be called`, async () => {
@@ -114,10 +114,6 @@ describe('SQS Producer', () => {
 
       expect(initializeStub.notCalled, 'initalise is not called').to.be.true;
       expect(sendMessageStub.calledOnce, 'sendMessage is called').to.be.true;
-    });
-
-    afterEach(() => {
-      initializeStub.restore();
     });
 
     it('should include attributes in the message payload', async () => {
@@ -159,45 +155,36 @@ describe('SQS Producer', () => {
         'stringValue is passed in MessageAttributes'
       ).to.equal(attributes[0].value);
     });
+
+    it('should throw an error if initialize() throws an error', async () => {
+      initializeStub.throws();
+
+      const task = new Task(
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task',
+        'test-topic',
+        () => undefined
+      );
+      registry.addNewTask(task);
+
+      let didCatchError = false;
+      try {
+        await producer.send('test-topic', { a: 'payload' });
+      } catch (ex) {
+        didCatchError = true;
+        expect(ex).not.equal(undefined, 'error is not undefined');
+        expect(ex).not.equal(null, 'error is not null');
+      }
+      expect(didCatchError, 'didCatchError is true').to.equal(true);
+    });
+
+    afterEach(() => {
+      initializeStub.restore();
+    });
   });
 
-  // it('should throw error if initialize rejects', async () => {
-  //   // @ts-ignore
-  //   sandbox.spy(producer, 'getPayload');
-  //   // @ts-ignore
-  //   registry.addNewTask({
-  //     name: 'test-topic',
-  //     topic: 'test-topic',
-  //     subscribe: () => {},
-  //     attributes: [
-  //       {
-  //         name: 'Hello',
-  //         dataType: '',
-  //         value: 'abc',
-  //       },
-  //       {
-  //         name: 'World',
-  //         dataType: 'String',
-  //         value: 'abc',
-  //       },
-  //     ],
-  //   });
-  //   sandbox
-  //     .stub(producer.producer, 'sendMessage')
-  //     // @ts-ignore
-  //     .returns(promiseResolves({ hi: 'hello' }));
-  //   sandbox.stub(producer, 'initialize').throws();
-  //   producer.sqsUrls = {};
-  //   let err = false;
-  //   try {
-  //     await producer.send('test-topic', { a: 'payload' });
-  //   } catch (ex) {
-  //     err = true;
-  //     expect(ex).not.eql(undefined);
-  //     expect(ex).not.eql(null);
-  //   }
-  //   expect(err).to.equal(true);
-  // });
   // it('should throw error if sendmessage fails', async () => {
   //   sandbox.spy(producer, 'getPayload');
   //   // @ts-ignore
