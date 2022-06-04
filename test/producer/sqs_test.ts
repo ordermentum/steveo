@@ -9,6 +9,7 @@ describe('SQS Producer', () => {
   let registry: Registry;
   let createQueueStub: sinon.SinonStub;
   let getQueueUrlStub: sinon.SinonStub;
+  let sendMessageStub: sinon.SinonStub;
 
   // const promiseResolves = async resolves => resolves;
 
@@ -16,6 +17,8 @@ describe('SQS Producer', () => {
   //   throw rejects;
   // };
 
+  // AWS SDK v2 has a pattern of `res = foo().promise()` to get a result as a
+  // promise
   const awsPromiseResolves = resolves => ({
     promise: async () => resolves,
   });
@@ -27,9 +30,6 @@ describe('SQS Producer', () => {
   });
 
   beforeEach(() => {
-    console.log('calling before each');
-    // sandbox.reset();
-    // sandbox.restore();
     sandbox = sinon.createSandbox();
     registry = new Registry();
     producer = new Producer(
@@ -63,10 +63,17 @@ describe('SQS Producer', () => {
             'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
         });
       });
+
+    sendMessageStub = sandbox.stub(producer.producer, 'sendMessage').returns(
+      // @ts-ignore
+      awsPromiseResolves({
+        MD5OfMessageBody: '00000000000000000000000000000000',
+        MessageId: '00000000-1111-2222-3333-444444444444',
+      })
+    );
   });
 
   afterEach(() => {
-    console.log('calling after each');
     sandbox.restore();
   });
 
@@ -83,23 +90,28 @@ describe('SQS Producer', () => {
     });
   });
 
-  // it('should initialize & send if no sqsUrls', async () => {
-  //   registry.addTopic('test-topic');
-  //   sandbox.spy(producer, 'getPayload');
-  //   const sendMessageStub = sandbox
-  //     .stub(producer.producer, 'sendMessage')
-  //     // @ts-ignore
-  //     .returns(promiseResolves({ hi: 'hello' }));
-  //   const initializeStub = sandbox.stub(producer, 'initialize').resolves();
-  //   // does this line even do anything?? does this test even do anything???
-  //   producer.sqsUrls = {
-  //     'test-topic':
-  //       'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
-  //   };
-  //   await producer.send('test-topic', { a: 'payload' });
-  //   expect(initializeStub.callCount).to.equal(1);
-  //   expect(sendMessageStub.callCount).to.equal(1);
-  // });
+  describe('#send', () => {
+    let initializeStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      initializeStub = sandbox.stub(producer, 'initialize').resolves();
+    });
+
+    it(`when the topic's SQS URL is not known, initialize() should be called`, async () => {
+      registry.addTopic('topic-without-queue');
+      await producer.send('topic-without-queue', { foo: 'bar' });
+
+      expect(initializeStub.calledOnce, 'initalise is called').to.be.true;
+      expect(sendMessageStub.calledOnce, 'sendMessage is called').to.be.true;
+    });
+
+    afterEach(() => {
+      initializeStub.restore();
+    });
+  });
+
+  it('should initialize & send if no sqsUrls', async () => {});
+
   // // What does "initialize" mean in this context?
   // // initialize() is always called, but createQueue wont be called if it already exists.
   // it('should send without initialize if sqsUrls are present', async () => {

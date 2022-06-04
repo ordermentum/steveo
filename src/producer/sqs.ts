@@ -64,7 +64,10 @@ class SqsProducer implements IProducer {
 
     if (queueUrl) {
       this.sqsUrls[topic] = queueUrl;
-      console.log('Test debugging - end initialize - queue url exists and is', queueUrl);
+      console.log(
+        'Test debugging - end initialize - queue url exists and is',
+        queueUrl
+      );
       return queueUrl;
     }
 
@@ -131,9 +134,12 @@ class SqsProducer implements IProducer {
   async send<T = any>(topic: string, payload: T) {
     this.transactionWrapper(`${topic}-publish`, async () => {
       try {
-        console.log('calling initialize');
         console.log('urls', this.sqsUrls);
-        await this.initialize(topic);
+
+        if (!this.sqsUrls[topic]) {
+          console.log('calling initialize');
+          await this.initialize(topic);
+        }
       } catch (ex) {
         this.newrelic?.noticeError(ex as Error);
         console.error('Error in initalizing sqs', ex);
