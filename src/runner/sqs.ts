@@ -137,17 +137,17 @@ class SqsRunner extends BaseRunner implements IRunner {
               }
             };
 
-            runFnAsSegment('runner.hooks.preTask', async () =>
+            await runFnAsSegment('runner.hooks.preTask', async () =>
               this.hooks?.preTask?.(params)
             );
 
             const { context = null, ...value } = params;
             let result;
-            runFnAsSegment('runner.task', async () => {
+            await runFnAsSegment('runner.task', async () => {
               result = await task.subscribe(value, context);
             });
 
-            runFnAsSegment('runner.hooks.postTask', async () =>
+            await runFnAsSegment('runner.hooks.postTask', async () =>
               this.hooks?.postTask?.({ ...(params ?? {}), result })
             );
 
