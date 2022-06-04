@@ -76,8 +76,17 @@ describe('SQS Producer', () => {
   afterEach(() => {
     sandbox.restore();
   });
+  describe('#initialize', async () => {
+    it(`throws when a topic is not provided`, async () => {
+      let didThrow = false;
+      try {
+        await producer.initialize(undefined as unknown as string);
+      } catch (err) {
+        didThrow = true;
+      }
+      expect(didThrow).to.be.true;
+    });
 
-  describe('#initialize', () => {
     it(`when a queue does not exist, a queue should be created`, async () => {
       await producer.initialize('topic-without-queue');
       expect(createQueueStub.calledOnce, 'createQueue is called').to.be.true;

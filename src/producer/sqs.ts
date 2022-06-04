@@ -83,11 +83,7 @@ class SqsProducer implements IProducer {
         throw new Error(`Failed to call SQS createQueue: ${err}`);
       });
     if (!res.QueueUrl) {
-      throw new Error(
-        `SQS createQueue response does not contain a queue name. Response: ${util.inspect(
-          res.$response
-        )}`
-      );
+      throw new Error('SQS createQueue response does not contain a queue name');
     }
     this.sqsUrls[topic] = res.QueueUrl;
     return res.QueueUrl;
