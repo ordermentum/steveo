@@ -1,6 +1,5 @@
 import nullLogger from 'null-logger';
 import { SQS } from 'aws-sdk';
-import type { TransactionHandle } from 'newrelic';
 import util from 'util';
 import { getSqsInstance } from '../config/sqs';
 
@@ -11,6 +10,7 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
+  TraceProvider,
 } from '../common';
 
 import { createMessageMetadata } from './utils/createMessageMetadata';
@@ -26,12 +26,7 @@ class SqsProducer implements IProducer {
 
   sqsUrls: sqsUrls;
 
-  private newrelic?: any;
-
-  private transactionWrapper: <T>(
-    txName: string,
-    callback: (...args: any[]) => T
-  ) => Promise<T>;
+  private traceProvider: TraceProvider;
 
   constructor(
     config: Configuration,
@@ -43,11 +38,7 @@ class SqsProducer implements IProducer {
     this.logger = logger;
     this.registry = registry;
     this.sqsUrls = {};
-    this.newrelic = config.traceConfiguration?.newrelic;
-    this.transactionWrapper = (txName: string, func: any) =>
-      this.newrelic
-        ? this.newrelic.startBackgroundTransaction(txName, func)
-        : func();
+    this.traceProvider = this.config.traceProvider as TraceProvider; // || nullTraceProvider
   }
 
   async initialize(topic: string): Promise<string> {
@@ -92,13 +83,13 @@ class SqsProducer implements IProducer {
   getPayload(
     msg: any,
     topic: string,
-    transaction?: TransactionHandle
+    traceMetadata?: string
   ): {
     MessageAttributes: any;
     MessageBody: string;
     QueueUrl: string;
   } {
-    const context = createMessageMetadata(msg, transaction);
+    const context = createMessageMetadata(msg, traceMetadata);
 
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
@@ -125,28 +116,35 @@ class SqsProducer implements IProducer {
   }
 
   async send<T = Record<string, any>>(topic: string, payload: T) {
-    return this.transactionWrapper(`${topic}-publish`, async () => {
-      try {
-        if (!this.sqsUrls[topic]) {
-          await this.initialize(topic);
+    this.traceProvider.wrapHandler(
+      `${topic}-publish`,
+      undefined,
+      async traceContext => {
+        // eslint-disable-next-line no-useless-catch
+        try {
+          if (!this.sqsUrls[topic]) {
+            await this.initialize(topic);
+          }
+        } catch (ex) {
+          this.traceProvider.onError(ex as Error, traceContext);
+          throw ex;
         }
-      } catch (ex) {
-        this.newrelic?.noticeError(ex as Error);
-        throw ex;
-      }
 
-      const transaction = this.newrelic?.getTransaction();
-      const data = this.getPayload(payload, topic, transaction);
+        const traceMetadata = await this.traceProvider.serializeTraceMetadata(
+          traceContext
+        );
+        const data = this.getPayload(payload, topic, traceMetadata);
 
-      try {
-        await this.producer.sendMessage(data).promise();
-        this.registry.emit('producer_success', topic, data);
-      } catch (ex) {
-        this.newrelic?.noticeError(ex as Error);
-        this.registry.emit('producer_failure', topic, ex, data);
-        throw ex;
+        try {
+          await this.producer.sendMessage(data).promise();
+          this.registry.emit('producer_success', topic, data);
+        } catch (ex) {
+          this.traceProvider.onError(ex as Error, traceContext);
+          this.registry.emit('producer_failure', topic, ex, data);
+          throw ex;
+        }
       }
-    });
+    );
   }
 
   async disconnect() {}

@@ -135,6 +135,7 @@ export type Configuration<Runner = any> = {
      */
     newRelic?: any;
   };
+  traceProvider?: TraceProvider;
 } & Runner;
 
 export type Attribute = {
@@ -257,6 +258,22 @@ export interface IProducer<P = any> {
   // types we will handle as first-class citizens,
   // e.g. `Record<string, any> | string`.
   disconnect(): Promise<void>;
+}
+
+export interface TraceProvider {
+  wrapHandler(
+    txName: string,
+    traceContext: unknown,
+    callback: (traceContext: unknown) => any
+  ): Promise<void>;
+  wrapHandlerSegment(
+    segmentName: string,
+    traceContext: unknown,
+    callback: any
+  ): Promise<void>;
+  onError(err: Error, traceContext: unknown): Promise<void>;
+  serializeTraceMetadata(traceContext: unknown): Promise<string>;
+  deserializeTraceMetadata(traceMetadata: string): Promise<unknown>;
 }
 
 export type sqsUrls = Record<string, string>;

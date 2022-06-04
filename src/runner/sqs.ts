@@ -14,6 +14,7 @@ import {
   IRegistry,
   CreateSqsTopic,
   SQSConfiguration,
+  TraceProvider,
 } from '../common';
 import { Steveo } from '..';
 
@@ -68,11 +69,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   currentTimeout?: ReturnType<typeof setTimeout>;
 
-  private newrelic?: any;
-
-  private transactionWrapper: any;
-
-  private segmentWrapper: any;
+  private traceProvider: TraceProvider;
 
   constructor(steveo: Steveo) {
     super(steveo);
@@ -84,15 +81,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
     this.concurrency = safeParseInt(steveo.config.workerConfig?.max, 1);
-    this.newrelic = steveo?.config.traceConfiguration?.newrelic;
-    this.transactionWrapper = (txname: string, func: any) =>
-      this.newrelic
-        ? this.newrelic.startBackgroundTransaction(txname, func)
-        : func();
-    this.segmentWrapper = (segmentName: string, func: any) =>
-      this.newrelic
-        ? this.newrelic.startSegment(segmentName, true, func)
-        : func();
+    this.traceProvider = this.config.traceProvider as TraceProvider; // || nullTraceProvider
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
@@ -104,82 +93,91 @@ class SqsRunner extends BaseRunner implements IRunner {
         let resource;
         const params = JSON.parse(message.Body as string);
         const runnerContext = getContext(params);
+        const context = await this.traceProvider.deserializeTraceMetadata(
+          runnerContext.traceMetadata
+        );
+        this.traceProvider.wrapHandler(
+          `${topic}-runner`,
+          context,
+          async traceContext => {
+            try {
+              resource = await this.pool.acquire();
 
-        this.transactionWrapper(`${topic}-runner`, async () => {
-          try {
-            if (this.newrelic && runnerContext.traceMetadata) {
-              const transactionHandle = this.newrelic?.getTransaction();
-              transactionHandle.acceptDistributedTraceHeaders(
-                'Queue',
-                runnerContext.traceMetadata
+              this.registry.emit(
+                'runner_receive',
+                topic,
+                params,
+                runnerContext
               );
-            }
+              this.logger.debug('Deleting message', topic, params);
 
-            resource = await this.pool.acquire();
-
-            this.registry.emit('runner_receive', topic, params, runnerContext);
-            this.logger.debug('Deleting message', topic, params);
-
-            await deleteMessage({
+              await deleteMessage({
               // eslint-disable-line
-              instance: this.sqs,
-              topic,
-              message,
-              sqsUrls: this.sqsUrls,
-              logger: this.logger,
-            });
+                instance: this.sqs,
+                topic,
+                message,
+                sqsUrls: this.sqsUrls,
+                logger: this.logger,
+              });
 
-            this.logger.debug('Message Deleted', topic, params);
-            const task = this.registry.getTask(topic);
-            this.logger.debug('Start subscribe', topic, params);
-            if (!task) {
-              this.logger.error(`Unknown Task ${topic}`);
-              return;
-            }
-            if (this.hooks?.preTask) {
-              await this.segmentWrapper(
-                'task.preTask',
-                // eslint-disable-next-line no-return-await
-                async () => await this.hooks?.preTask?.(params) // using `await` so we get accurate segment timing
-              );
-            }
-            const { context = null, ...value } = params;
-            let result;
-            await this.segmentWrapper(
-              'task.subscribe',
-              // eslint-disable-next-line no-return-await
-              async () => {
-                result = await task.subscribe(value, context);
+              this.logger.debug('Message deleted', topic, params);
+              const task = this.registry.getTask(topic);
+              this.logger.debug('Start subscribe', topic, params);
+              if (!task) {
+                this.logger.error(`Unknown Task ${topic}`); // should this throw? The message is already deleted :/
+                return;
               }
-            );
 
-            if (this.hooks?.postTask) {
-              await this.segmentWrapper(
-                'task.postTask',
-                async () =>
+              if (this.hooks?.preTask) {
+                await this.traceProvider.wrapHandlerSegment(
+                  'runner.hooks.preTask',
+                  traceContext,
                   // eslint-disable-next-line no-return-await
-                  await this.hooks?.postTask?.({ ...(params ?? {}), result })
+                  async () => await this.hooks?.preTask?.(params) // using `await` so we get accurate segment timing
+                );
+              }
+
+              const { context = null, ...value } = params;
+              let result;
+              await this.traceProvider.wrapHandlerSegment(
+                'runner.task',
+                traceContext,
+                // eslint-disable-next-line no-return-await
+                async () => {
+                  result = await task.subscribe(value, context);
+                }
               );
+
+              if (this.hooks?.postTask) {
+                await this.traceProvider.wrapHandlerSegment(
+                  'runner.hooks.postTask',
+                  traceContext,
+                  async () =>
+                    // eslint-disable-next-line no-return-await
+                    await this.hooks?.postTask?.({ ...(params ?? {}), result })
+                );
+              }
+
+              this.logger.debug('Completed subscribe', topic, params);
+              const completedContext = getContext(params);
+              this.registry.emit(
+                'runner_complete',
+                topic,
+                params,
+                completedContext
+              );
+            } catch (ex) {
+              this.logger.error('Error while executing consumer callback ', {
+                params,
+                topic,
+                error: ex,
+              });
+              this.registry.emit('runner_failure', topic, ex, params);
+              this.traceProvider.onError(ex as Error, traceContext);
             }
-            this.logger.debug('Completed subscribe', topic, params);
-            const completedContext = getContext(params);
-            this.registry.emit(
-              'runner_complete',
-              topic,
-              params,
-              completedContext
-            );
-          } catch (ex) {
-            this.logger.error('Error while executing consumer callback ', {
-              params,
-              topic,
-              error: ex,
-            });
-            this.registry.emit('runner_failure', topic, ex, params);
-            this.newrelic?.noticeError(ex as Error);
+            if (resource) await this.pool.release(resource);
           }
-          if (resource) await this.pool.release(resource);
-        });
+        );
       },
       { concurrency: this.concurrency }
     );
