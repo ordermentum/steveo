@@ -64,7 +64,6 @@ describe('SQS Producer', () => {
       // @ts-ignore
       .callsFake(({ MessageBody }: { MessageBody: string }) => {
         if (MessageBody.includes('bad-message')) {
-          console.log('returning rejections');
           return awsPromiseRejects('Bad message');
         }
         return awsPromiseResolves({
@@ -197,7 +196,6 @@ describe('SQS Producer', () => {
       try {
         await producer.send('test-topic', { message: 'bad-message' });
       } catch (ex) {
-        console.log('caught error', ex);
         didCatchError = true;
         expect(ex).not.equal(undefined, 'error is not undefined');
         expect(ex).not.equal(null, 'error is not null');

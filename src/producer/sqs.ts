@@ -51,7 +51,6 @@ class SqsProducer implements IProducer {
   }
 
   async initialize(topic: string): Promise<string> {
-    console.log('Test debugging - start initialize()');
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
@@ -59,18 +58,11 @@ class SqsProducer implements IProducer {
     const getQueueUrlResult = await this.producer
       .getQueueUrl({ QueueName: topic })
       .promise()
-      .catch(err => {
-        console.log('error getting queue', err); // TODO - only for unit testing -- do not merge
-      });
+      .catch(() => undefined);
     const queueUrl = getQueueUrlResult?.QueueUrl;
-    console.log('queueUrl', queueUrl);
 
     if (queueUrl) {
       this.sqsUrls[topic] = queueUrl;
-      console.log(
-        'Test debugging - end initialize - queue url exists and is',
-        queueUrl
-      );
       return queueUrl;
     }
 
@@ -98,7 +90,6 @@ class SqsProducer implements IProducer {
       );
     }
     this.sqsUrls[topic] = res.QueueUrl;
-    console.log('Test debugging - end initialize()');
     return res.QueueUrl;
   }
 
@@ -145,7 +136,6 @@ class SqsProducer implements IProducer {
     // that's not an object.
     // Passing a string payload "hello" gives '{"0":"h","1":"e","2":"l","3":"l","4":"o","_meta": ...
     // and passing ["hello"] gives '{"0":"bad-message","_meta": ...
-    console.log('payload:', payload);
     return this.transactionWrapper(`${topic}-publish`, async () => {
       try {
         if (!this.sqsUrls[topic]) {
@@ -158,16 +148,12 @@ class SqsProducer implements IProducer {
 
       const transaction = this.newrelic?.getTransaction();
       const data = this.getPayload(payload, topic, transaction);
-      console.log('data:', data);
 
       try {
-        const response = await this.producer.sendMessage(data).promise();
-        console.debug('SQS Publish Data', response);
+        await this.producer.sendMessage(data).promise();
         this.registry.emit('producer_success', topic, data);
       } catch (ex) {
-        console.log('caught sendMessage exception');
         this.newrelic?.noticeError(ex as Error);
-        console.error('Error while sending SQS payload', topic, ex);
         this.registry.emit('producer_failure', topic, ex, data);
         throw ex;
       }
