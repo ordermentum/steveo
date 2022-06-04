@@ -7,7 +7,6 @@ import {
   SQSConfiguration,
   RedisConfiguration,
 } from './common';
-import { getTraceProvider } from './newrelic-to-trace-provider';
 
 const KafkaConsumerDefault: KafkaConsumerConfig = {
   global: {
@@ -34,10 +33,7 @@ export const getConfig = (config: Configuration): Configuration => {
   parameters.upperCaseNames = config.upperCaseNames ?? true;
   parameters.childProcesses = config.childProcesses ?? null;
   parameters.tasksPath = config.tasksPath;
-  parameters.traceProvider =
-    config.traceProvider ||
-    // TODO - Move the below TraceProvider to its own repo `steveo-trace-provider-newrelic` and remove this.
-    getTraceProvider(config.traceConfiguration?.newrelic); // local version for development
+  parameters.traceProvider = config.traceProvider;
 
   if (parameters.engine === 'kafka') {
     const kafkaConfig = config as KafkaConfiguration;

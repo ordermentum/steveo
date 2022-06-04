@@ -69,7 +69,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   currentTimeout?: ReturnType<typeof setTimeout>;
 
-  private traceProvider: TraceProvider;
+  private traceProvider?: TraceProvider;
 
   constructor(steveo: Steveo) {
     super(steveo);
@@ -81,7 +81,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
     this.concurrency = safeParseInt(steveo.config.workerConfig?.max, 1);
-    this.traceProvider = this.config.traceProvider as TraceProvider; // || nullTraceProvider
+    this.traceProvider = this.config.traceProvider as TraceProvider;
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
@@ -93,91 +93,87 @@ class SqsRunner extends BaseRunner implements IRunner {
         let resource;
         const params = JSON.parse(message.Body as string);
         const runnerContext = getContext(params);
-        const context = await this.traceProvider.deserializeTraceMetadata(
+        const context = await this.traceProvider?.deserializeTraceMetadata(
           runnerContext.traceMetadata
         );
-        this.traceProvider.wrapHandler(
-          `${topic}-runner`,
-          context,
-          async traceContext => {
-            try {
-              resource = await this.pool.acquire();
 
-              this.registry.emit(
-                'runner_receive',
-                topic,
-                params,
-                runnerContext
-              );
-              this.logger.debug('Deleting message', topic, params);
+        const callback = async traceContext => {
+          try {
+            resource = await this.pool.acquire();
 
-              await deleteMessage({
-              // eslint-disable-line
-                instance: this.sqs,
-                topic,
-                message,
-                sqsUrls: this.sqsUrls,
-                logger: this.logger,
-              });
+            this.registry.emit('runner_receive', topic, params, runnerContext);
+            this.logger.debug('Deleting message', topic, params);
 
-              this.logger.debug('Message deleted', topic, params);
-              const task = this.registry.getTask(topic);
-              this.logger.debug('Start subscribe', topic, params);
-              if (!task) {
-                this.logger.error(`Unknown Task ${topic}`); // should this throw? The message is already deleted :/
-                return;
-              }
+            await deleteMessage({
+            // eslint-disable-line
+              instance: this.sqs,
+              topic,
+              message,
+              sqsUrls: this.sqsUrls,
+              logger: this.logger,
+            });
 
-              if (this.hooks?.preTask) {
+            this.logger.debug('Message deleted', topic, params);
+            const task = this.registry.getTask(topic);
+            this.logger.debug('Start subscribe', topic, params);
+            if (!task) {
+              this.logger.error(`Unknown Task ${topic}`);
+              return;
+            }
+
+            const runFnAsSegment = async (
+              segmentName: string,
+              callback: (...args: any[]) => void
+            ) => {
+              if (!this.traceProvider) {
+                await callback();
+              } else {
                 await this.traceProvider.wrapHandlerSegment(
-                  'runner.hooks.preTask',
+                  segmentName,
                   traceContext,
                   // eslint-disable-next-line no-return-await
-                  async () => await this.hooks?.preTask?.(params) // using `await` so we get accurate segment timing
+                  async () => await callback() // using `await` so we get accurate segment timing
                 );
               }
+            };
 
-              const { context = null, ...value } = params;
-              let result;
-              await this.traceProvider.wrapHandlerSegment(
-                'runner.task',
-                traceContext,
-                // eslint-disable-next-line no-return-await
-                async () => {
-                  result = await task.subscribe(value, context);
-                }
-              );
+            runFnAsSegment('runner.hooks.preTask', async () =>
+              this.hooks?.preTask?.(params)
+            );
 
-              if (this.hooks?.postTask) {
-                await this.traceProvider.wrapHandlerSegment(
-                  'runner.hooks.postTask',
-                  traceContext,
-                  async () =>
-                    // eslint-disable-next-line no-return-await
-                    await this.hooks?.postTask?.({ ...(params ?? {}), result })
-                );
-              }
+            const { context = null, ...value } = params;
+            let result;
+            runFnAsSegment('runner.task', async () => {
+              result = await task.subscribe(value, context);
+            });
 
-              this.logger.debug('Completed subscribe', topic, params);
-              const completedContext = getContext(params);
-              this.registry.emit(
-                'runner_complete',
-                topic,
-                params,
-                completedContext
-              );
-            } catch (ex) {
-              this.logger.error('Error while executing consumer callback ', {
-                params,
-                topic,
-                error: ex,
-              });
-              this.registry.emit('runner_failure', topic, ex, params);
-              this.traceProvider.onError(ex as Error, traceContext);
-            }
-            if (resource) await this.pool.release(resource);
+            runFnAsSegment('runner.hooks.postTask', async () =>
+              this.hooks?.postTask?.({ ...(params ?? {}), result })
+            );
+
+            this.logger.debug('Completed subscribe', topic, params);
+            const completedContext = getContext(params);
+            this.registry.emit(
+              'runner_complete',
+              topic,
+              params,
+              completedContext
+            );
+          } catch (ex) {
+            this.logger.error('Error while executing consumer callback ', {
+              params,
+              topic,
+              error: ex,
+            });
+            this.registry.emit('runner_failure', topic, ex, params);
+            this.traceProvider?.onError(ex as Error, traceContext);
           }
-        );
+          if (resource) await this.pool.release(resource);
+        };
+
+        this.traceProvider
+          ? this.traceProvider.wrapHandler(`${topic}-runner`, context, callback)
+          : callback(undefined);
       },
       { concurrency: this.concurrency }
     );

@@ -26,7 +26,7 @@ class SqsProducer implements IProducer {
 
   sqsUrls: sqsUrls;
 
-  private traceProvider: TraceProvider;
+  private traceProvider?: TraceProvider;
 
   constructor(
     config: Configuration,
@@ -38,7 +38,7 @@ class SqsProducer implements IProducer {
     this.logger = logger;
     this.registry = registry;
     this.sqsUrls = {};
-    this.traceProvider = this.config.traceProvider as TraceProvider; // || nullTraceProvider
+    this.traceProvider = this.config.traceProvider as TraceProvider;
   }
 
   async initialize(topic: string): Promise<string> {
@@ -116,35 +116,39 @@ class SqsProducer implements IProducer {
   }
 
   async send<T = Record<string, any>>(topic: string, payload: T) {
-    this.traceProvider.wrapHandler(
-      `${topic}-publish`,
-      undefined,
-      async traceContext => {
-        // eslint-disable-next-line no-useless-catch
-        try {
-          if (!this.sqsUrls[topic]) {
-            await this.initialize(topic);
-          }
-        } catch (ex) {
-          this.traceProvider.onError(ex as Error, traceContext);
-          throw ex;
+    const callback = async traceContext => {
+      // eslint-disable-next-line no-useless-catch
+      try {
+        if (!this.sqsUrls[topic]) {
+          await this.initialize(topic);
         }
-
-        const traceMetadata = await this.traceProvider.serializeTraceMetadata(
-          traceContext
-        );
-        const data = this.getPayload(payload, topic, traceMetadata);
-
-        try {
-          await this.producer.sendMessage(data).promise();
-          this.registry.emit('producer_success', topic, data);
-        } catch (ex) {
-          this.traceProvider.onError(ex as Error, traceContext);
-          this.registry.emit('producer_failure', topic, ex, data);
-          throw ex;
-        }
+      } catch (ex) {
+        this.traceProvider?.onError(ex as Error, traceContext);
+        throw ex;
       }
-    );
+
+      const traceMetadata = await this.traceProvider?.serializeTraceMetadata(
+        traceContext
+      );
+      const data = this.getPayload(payload, topic, traceMetadata);
+
+      try {
+        await this.producer.sendMessage(data).promise();
+        this.registry.emit('producer_success', topic, data);
+      } catch (ex) {
+        this.traceProvider?.onError(ex as Error, traceContext);
+        this.registry.emit('producer_failure', topic, ex, data);
+        throw ex;
+      }
+
+      this.traceProvider
+        ? this.traceProvider.wrapHandler(
+            `${topic}-publish`,
+            undefined,
+            callback
+          )
+        : callback(undefined);
+    };
   }
 
   async disconnect() {}
