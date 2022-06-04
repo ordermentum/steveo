@@ -253,6 +253,11 @@ export interface IProducer<P = any> {
   initialize(topic?: string): Promise<P>;
   getPayload(msg: any, topic: string): any;
   send<T = any>(topic: string, payload: T, key?: string): Promise<void>;
+  // FIXME: Replace T = any with Record<string, any> or an explicit list of
+  // types we will handle as first-class citizens,
+  // e.g. `Record<string, any> | string`.
+
+  // PR discussion: Can we make this `Record<string, any>`
   disconnect(): Promise<void>;
 }
 

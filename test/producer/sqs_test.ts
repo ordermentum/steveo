@@ -25,7 +25,7 @@ describe('SQS Producer', () => {
   });
 
   const awsPromiseRejects = rejects => ({
-    promise: async () => async () => {
+    promise: async () => {
       throw rejects;
     },
   });
@@ -65,13 +65,19 @@ describe('SQS Producer', () => {
         });
       });
 
-    sendMessageStub = sandbox.stub(producer.producer, 'sendMessage').returns(
+    sendMessageStub = sandbox
+      .stub(producer.producer, 'sendMessage')
       // @ts-ignore
-      awsPromiseResolves({
-        MD5OfMessageBody: '00000000000000000000000000000000',
-        MessageId: '00000000-1111-2222-3333-444444444444',
-      })
-    );
+      .callsFake(({ MessageBody }: { MessageBody: string }) => {
+        if (MessageBody.includes('bad-message')) {
+          console.log('returning rejections');
+          return awsPromiseRejects('Bad message');
+        }
+        return awsPromiseResolves({
+          MD5OfMessageBody: '00000000000000000000000000000000',
+          MessageId: '00000000-1111-2222-3333-444444444444',
+        });
+      });
   });
 
   afterEach(() => {
@@ -180,41 +186,33 @@ describe('SQS Producer', () => {
       expect(didCatchError, 'didCatchError is true').to.equal(true);
     });
 
+    it('should throw an error if sendMessage() throws an error', async () => {
+      initializeStub.resolves();
+
+      const task = new Task(
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task',
+        'test-topic',
+        () => undefined
+      );
+      registry.addNewTask(task);
+
+      let didCatchError = false;
+      try {
+        await producer.send('test-topic', { message: 'bad-message' });
+      } catch (ex) {
+        console.log('caught error', ex);
+        didCatchError = true;
+        expect(ex).not.equal(undefined, 'error is not undefined');
+        expect(ex).not.equal(null, 'error is not null');
+      }
+      expect(didCatchError, 'didCatchError is true').to.equal(true);
+    });
+
     afterEach(() => {
       initializeStub.restore();
     });
   });
-
-  // it('should throw error if sendmessage fails', async () => {
-  //   sandbox.spy(producer, 'getPayload');
-  //   // @ts-ignore
-  //   registry.addNewTask({
-  //     name: 'test-topic',
-  //     topic: 'test-topic',
-  //     subscribe: () => {},
-  //     attributes: [
-  //       {
-  //         name: 'Hello',
-  //         dataType: 'String',
-  //         value: 'abc',
-  //       },
-  //     ],
-  //   });
-  //   sandbox
-  //     .stub(producer.producer, 'sendMessage')
-  //     // @ts-ignore
-  //     .returns(promiseRejects({ yeah: 'nah' }));
-  //   sandbox.stub(producer, 'initialize').resolves();
-  //   producer.sqsUrls = {};
-  //   let err = false;
-  //   try {
-  //     await producer.send('test-topic', { a: 'payload' });
-  //   } catch (ex) {
-  //     err = true;
-  //     expect(ex).not.eql(undefined);
-  //     expect(ex).not.eql(null);
-  //   }
-  //   expect(err).to.equal(true);
-  // });
-  // it('should add New Relic trace metadata iff. New Relic is available', async () => {});
 });

@@ -103,11 +103,17 @@ class SqsProducer implements IProducer {
   }
 
   // Should getPayload be a part of the interface? Seems like an implementation detail.
-  getPayload(msg: any, topic: string, transaction?: TransactionHandle): any {
+  getPayload(
+    msg: any,
+    topic: string,
+    transaction?: TransactionHandle
+  ): {
+    MessageAttributes: any;
+    MessageBody: string;
+    QueueUrl: string;
+  } {
     const context = createMessageMetadata(msg, transaction);
 
-    // Why are we looking at tasks on the producer side?
-    // What do these attributes do? Why can't they be in the message body?
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
     const messageAttributes = {
@@ -132,7 +138,14 @@ class SqsProducer implements IProducer {
     };
   }
 
-  async send<T = any>(topic: string, payload: T) {
+  async send<T = Record<string, any>>(topic: string, payload: T) {
+    // PR comment:
+    // The above should be `payload: Record<string,any>` and not `any`. We
+    // always do a messageBody = { ...payload }, which will mangle anything
+    // that's not an object.
+    // Passing a string payload "hello" gives '{"0":"h","1":"e","2":"l","3":"l","4":"o","_meta": ...
+    // and passing ["hello"] gives '{"0":"bad-message","_meta": ...
+    console.log('payload:', payload);
     return this.transactionWrapper(`${topic}-publish`, async () => {
       try {
         if (!this.sqsUrls[topic]) {
@@ -145,12 +158,14 @@ class SqsProducer implements IProducer {
 
       const transaction = this.newrelic?.getTransaction();
       const data = this.getPayload(payload, topic, transaction);
+      console.log('data:', data);
 
       try {
         const response = await this.producer.sendMessage(data).promise();
         console.debug('SQS Publish Data', response);
         this.registry.emit('producer_success', topic, data);
       } catch (ex) {
+        console.log('caught sendMessage exception');
         this.newrelic?.noticeError(ex as Error);
         console.error('Error while sending SQS payload', topic, ex);
         this.registry.emit('producer_failure', topic, ex, data);
