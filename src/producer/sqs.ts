@@ -80,13 +80,11 @@ class SqsProducer implements IProducer {
         MessageRetentionPeriod: config.messageRetentionPeriod ?? '604800',
       },
     };
-    console.log('test debugging', 'creating queue');
     this.logger.debug(`Creating queue`, util.inspect(params));
     const res = await this.producer
       .createQueue(params)
       .promise()
       .catch(err => {
-        console.log('Test debugging - throw in initialize()');
         throw new Error(`Failed to call SQS createQueue: ${err}`);
       });
     if (!res.QueueUrl) {
@@ -134,15 +132,11 @@ class SqsProducer implements IProducer {
   async send<T = any>(topic: string, payload: T) {
     this.transactionWrapper(`${topic}-publish`, async () => {
       try {
-        console.log('urls', this.sqsUrls);
-
         if (!this.sqsUrls[topic]) {
-          console.log('calling initialize');
           await this.initialize(topic);
         }
       } catch (ex) {
         this.newrelic?.noticeError(ex as Error);
-        console.error('Error in initalizing sqs', ex);
         throw ex;
       }
 
@@ -150,7 +144,6 @@ class SqsProducer implements IProducer {
       const data = this.getPayload(payload, topic, transaction);
 
       try {
-        console.debug('SQS send', data);
         const response = await this.producer.sendMessage(data).promise();
         console.debug('SQS Publish Data', response);
         this.registry.emit('producer_success', topic, data);

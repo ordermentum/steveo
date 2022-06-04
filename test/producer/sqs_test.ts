@@ -105,12 +105,20 @@ describe('SQS Producer', () => {
       expect(sendMessageStub.calledOnce, 'sendMessage is called').to.be.true;
     });
 
+    it(`when the topic's SQS URL is know, initialize() should not be called`, async () => {
+      registry.addTopic('topic-with-queue');
+      producer.sqsUrls['topic-with-queue'] =
+        'https://sqs.ap-southeast-2.amazonaws.com/123456123456/registered-topic-with-queue';
+      await producer.send('topic-with-queue', { foo: 'bar' });
+
+      expect(initializeStub.notCalled, 'initalise is not called').to.be.true;
+      expect(sendMessageStub.calledOnce, 'sendMessage is called').to.be.true;
+    });
+
     afterEach(() => {
       initializeStub.restore();
     });
   });
-
-  it('should initialize & send if no sqsUrls', async () => {});
 
   // // What does "initialize" mean in this context?
   // // initialize() is always called, but createQueue wont be called if it already exists.
