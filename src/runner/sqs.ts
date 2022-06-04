@@ -25,6 +25,7 @@ type DeleteMessage = {
   logger: Logger;
 };
 
+// FIXME: This is mostly boilerplate and can just be run inline as this.sqs.deleteMessage
 /* istanbul ignore next */
 const deleteMessage = async ({
   instance,
@@ -71,6 +72,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   private transactionWrapper: any;
 
+  private segmentWrapper: any;
+
   constructor(steveo: Steveo) {
     super(steveo);
     this.hooks = steveo?.hooks;
@@ -85,6 +88,10 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.transactionWrapper = (txname: string, func: any) =>
       this.newrelic
         ? this.newrelic.startBackgroundTransaction(txname, func)
+        : func();
+    this.segmentWrapper = (segmentName: string, func: any) =>
+      this.newrelic
+        ? this.newrelic.startSegment(segmentName, true, func)
         : func();
   }
 
@@ -130,12 +137,10 @@ class SqsRunner extends BaseRunner implements IRunner {
               return;
             }
             if (this.hooks?.preTask) {
-              await this.newrelic?.startSegment(
+              await this.segmentWrapper(
                 'task.preTask',
-                true,
-                async () => {
-                  await this.hooks?.preTask?.(params);
-                }
+                // eslint-disable-next-line no-return-await
+                async () => await this.hooks?.preTask?.(params)
               );
             }
             const { context = null, ...value } = params;
@@ -148,12 +153,11 @@ class SqsRunner extends BaseRunner implements IRunner {
               }
             );
             if (this.hooks?.postTask) {
-              await this.newrelic?.startSegment(
+              await this.segmentWrapper(
                 'task.postTask',
-                true,
-                async () => {
-                  await this.hooks?.postTask?.({ ...(params ?? {}), result });
-                }
+                async () =>
+                  // eslint-disable-next-line no-return-await
+                  await this.hooks?.postTask?.({ ...(params ?? {}), result })
               );
             }
             this.logger.debug('Completed subscribe', topic, params);

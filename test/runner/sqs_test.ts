@@ -72,8 +72,11 @@ describe('SQS Runner', () => {
       'a-topic'
     );
 
-    expect(subscribeStub.callCount).to.equal(2);
-    expect(deleteMessageStub.callCount).to.equal(2);
+    expect(subscribeStub.callCount, 'subscribe is called twice').to.equal(2);
+    expect(
+      deleteMessageStub.callCount,
+      'deleteMessage is called twice'
+    ).to.equal(2);
   });
 
   it('get all urls for queues', async () => {
@@ -301,8 +304,11 @@ describe('SQS Runner', () => {
       ],
       'a-topic'
     );
-    expect(subscribeStub.callCount).to.equal(2);
-    expect(deleteMessageStub.callCount).to.equal(2);
+    expect(subscribeStub.callCount, 'subscribe is called twice').to.equal(2);
+    expect(
+      deleteMessageStub.callCount,
+      'deleteMessage is called twice'
+    ).to.equal(2);
     expect(
       emitStub.calledWith(
         'runner_failure',

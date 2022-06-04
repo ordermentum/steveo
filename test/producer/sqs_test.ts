@@ -12,21 +12,15 @@ describe('SQS Producer', () => {
   let getQueueUrlStub: sinon.SinonStub;
   let sendMessageStub: sinon.SinonStub;
 
-  // const promiseResolves = async resolves => resolves;
-
-  // const promiseRejects = async rejects => {
-  //   throw rejects;
-  // };
-
   // AWS SDK v2 has a pattern of `res = foo().promise()` to get a result as a
   // promise
-  const awsPromiseResolves = resolves => ({
-    promise: async () => resolves,
+  const awsPromiseResolves = returnValue => ({
+    promise: async () => returnValue,
   });
 
-  const awsPromiseRejects = rejects => ({
+  const awsPromiseRejects = errorMessage => ({
     promise: async () => {
-      throw rejects;
+      throw new Error(errorMessage);
     },
   });
 
