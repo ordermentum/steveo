@@ -6,8 +6,8 @@ import { build } from '../../src/base/pool';
 import Registry from '../../src/registry';
 
 describe('SQS Runner', () => {
-  let runner;
-  let registry;
+  let runner: Runner;
+  let registry: Registry;
   let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => {
@@ -18,6 +18,10 @@ describe('SQS Runner', () => {
       config: {},
       registry,
       pool: build(),
+      hooks: {
+        preTask: sandbox.spy(),
+        postTask: sandbox.spy(),
+      },
     };
     // @ts-ignore
     runner = new Runner(steveo);
@@ -78,6 +82,36 @@ describe('SQS Runner', () => {
       'deleteMessage is called twice'
     ).to.equal(2);
   });
+
+  // TODO - Figure this one out
+  // it('calls preTask and postTask hooks for each message', async () => {
+  //   sandbox
+  //     .stub(runner.sqs, 'deleteMessage') // @ts-ignore
+  //     .returns({ promise: async () => {} });
+
+  //   await runner.receive(
+  //     [
+  //       { Body: JSON.stringify({ data: 'Apple' }) },
+  //       { Body: JSON.stringify({ data: 'Banana' }) },
+  //     ],
+  //     'topic'
+  //   );
+
+  //   console.log('runner.steveo?.hooks', runner.steveo?.hooks);
+  //   console.log(
+  //     'runner.steveo?.hooks.preTask.callCount',
+  //     (runner as any).steveo?.hooks?.preTask?.callCount
+  //   );
+
+  //   expect(
+  //     (runner.steveo?.hooks?.preTask as sinon.SinonSpy).callCount,
+  //     'preTask hook is called twice'
+  //   ).to.equal(2);
+  //   expect(
+  //     (runner.steveo?.hooks?.postTask as sinon.SinonSpy).callCount,
+  //     'postTask hook is called twice'
+  //   ).to.equal(2);
+  // });
 
   it('get all urls for queues', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });

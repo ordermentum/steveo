@@ -76,7 +76,7 @@ describe('SQS Producer', () => {
   afterEach(() => {
     sandbox.restore();
   });
-  describe('#initialize', async () => {
+  describe('initialize', async () => {
     it(`throws when a topic is not provided`, async () => {
       let didThrow = false;
       try {
@@ -99,7 +99,7 @@ describe('SQS Producer', () => {
     });
   });
 
-  describe('#send', () => {
+  describe('send', () => {
     let initializeStub: sinon.SinonStub;
 
     beforeEach(() => {

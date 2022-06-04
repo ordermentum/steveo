@@ -145,13 +145,14 @@ class SqsRunner extends BaseRunner implements IRunner {
             }
             const { context = null, ...value } = params;
             let result;
-            await this.newrelic?.startSegment(
+            await this.segmentWrapper(
               'task.subscribe',
-              true,
+              // eslint-disable-next-line no-return-await
               async () => {
                 result = await task.subscribe(value, context);
               }
             );
+
             if (this.hooks?.postTask) {
               await this.segmentWrapper(
                 'task.postTask',
