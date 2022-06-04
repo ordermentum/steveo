@@ -256,8 +256,6 @@ export interface IProducer<P = any> {
   // FIXME: Replace T = any with Record<string, any> or an explicit list of
   // types we will handle as first-class citizens,
   // e.g. `Record<string, any> | string`.
-
-  // PR discussion: Can we make this `Record<string, any>`
   disconnect(): Promise<void>;
 }
 

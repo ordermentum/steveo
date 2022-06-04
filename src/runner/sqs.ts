@@ -25,7 +25,7 @@ type DeleteMessage = {
   logger: Logger;
 };
 
-// FIXME: This is mostly boilerplate and can just be run inline as this.sqs.deleteMessage
+// FIXME: This is mostly boilerplate and doesn't need its own function
 /* istanbul ignore next */
 const deleteMessage = async ({
   instance,
