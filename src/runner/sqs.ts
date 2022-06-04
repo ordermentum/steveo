@@ -81,7 +81,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
     this.concurrency = safeParseInt(steveo.config.workerConfig?.max, 1);
-    this.newrelic = steveo?.config.traceConfiguration.newrelic;
+    this.newrelic = steveo?.config.traceConfiguration?.newrelic;
     this.transactionWrapper = (txname: string, func: any) =>
       this.newrelic
         ? this.newrelic.startBackgroundTransaction(txname, func)

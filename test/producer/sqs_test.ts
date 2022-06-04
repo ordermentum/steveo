@@ -169,7 +169,7 @@ describe('SQS Producer', () => {
 
     // @ts-ignore
     const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
+      { engine: 'sqs', tasksPath: '' },
       registry
     );
     sandbox.spy(p, 'getPayload');
