@@ -82,15 +82,16 @@ describe('SQS Producer', () => {
 
     const initializeStub = sandbox.stub(p, 'initialize').resolves();
     // does this line even do anything?? does this test even do anything???
-    // p.sqsUrls = {
-    //   'test-topic': '',
-    // };
+    p.sqsUrls = {
+      'test-topic': 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+    };
     await p.send('test-topic', { a: 'payload' });
     expect(initializeStub.callCount).to.equal(1);
     expect(sendMessageStub.callCount).to.equal(1);
   });
 
-  // TODO - Draw this out and figure it out on paper. Something is sus.
+  // What does "initialize" mean in this context?
+  // initialize() is always called, but createQueue wont be called if it already exists.
   it('should send without initialize if sqsUrls are present', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
@@ -108,18 +109,18 @@ describe('SQS Producer', () => {
     sandbox
       .stub(p.producer, 'getQueueUrl')
       // @ts-ignore
-      .returns(promiseResolves({ QueueUrl: 'test-topic' }));
+      .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic' }));
     const createQueueStub = sandbox
       .stub(p.producer, 'createQueue')
       // @ts-ignore
       .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic' }));
 
     p.sqsUrls = {
-      'test-topic': 'asdasd',
+      'test-topic': 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
     };
     await p.send('test-topic', { a: 'payload' });
-    expect(createQueueStub.callCount).to.equal(0);
-    expect(sendMessageStub.callCount).to.equal(1);
+    expect(createQueueStub.notCalled).to.be.true;
+    expect(sendMessageStub.calledOnce).to.be.true;
   });
 
   it('should send with attributes', async () => {
@@ -246,7 +247,7 @@ describe('SQS Producer', () => {
     expect(err).to.equal(true);
   });
 
-  // it('should add New Relic trace metadata iff. New Relic is available', async () => {
+  it('should add New Relic trace metadata iff. New Relic is available', async () => {
     
-  // })
+  })
 });

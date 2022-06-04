@@ -1,6 +1,7 @@
 import nullLogger from 'null-logger';
 import { SQS } from 'aws-sdk';
 import type { TransactionHandle } from 'newrelic';
+import util from 'util';
 import { getSqsInstance } from '../config/sqs';
 
 import {
@@ -54,7 +55,9 @@ class SqsProducer implements IProducer {
     const getQueueUrlResult = await this.producer
       .getQueueUrl({ QueueName: topic })
       .promise()
-      .catch(() => {});
+      .catch(err => {
+        console.log('error getting queue', err); // TODO - only for unit testing -- do not merge
+      });
     const queueUrl = getQueueUrlResult?.QueueUrl;
 
     if (queueUrl) {
@@ -71,7 +74,7 @@ class SqsProducer implements IProducer {
         MessageRetentionPeriod: config.messageRetentionPeriod ?? '604800',
       },
     };
-    this.logger.debug(`Creating queue`, JSON.stringify(params, undefined, ''));
+    this.logger.debug(`Creating queue`, util.inspect(params));
     const res = await this.producer
       .createQueue(params)
       .promise()
@@ -80,7 +83,7 @@ class SqsProducer implements IProducer {
       });
     if (!res.QueueUrl) {
       throw new Error(
-        `SQS createQueue response does not contain a queue name. Response: ${JSON.stringify(
+        `SQS createQueue response does not contain a queue name. Response: ${util.inspect(
           res.$response
         )}`
       );
@@ -122,10 +125,12 @@ class SqsProducer implements IProducer {
   async send<T = any>(topic: string, payload: T) {
     this.transactionWrapper(`${topic}-publish`, async () => {
       try {
+        console.log('calling initialize')
+        console.log('urls', this.sqsUrls)
         await this.initialize(topic);
       } catch (ex) {
         this.newrelic?.noticeError(ex as Error);
-        this.logger.error('Error in initalizing sqs', ex);
+        console.error('Error in initalizing sqs', ex);
         throw ex;
       }
 
@@ -133,12 +138,13 @@ class SqsProducer implements IProducer {
       const data = this.getPayload(payload, topic, transaction);
 
       try {
+        console.debug('SQS send', data);
         const response = await this.producer.sendMessage(data).promise();
-        this.logger.debug('SQS Publish Data', response);
+        console.debug('SQS Publish Data', response);
         this.registry.emit('producer_success', topic, data);
       } catch (ex) {
         this.newrelic?.noticeError(ex as Error);
-        this.logger.error('Error while sending SQS payload', topic, ex);
+        console.error('Error while sending SQS payload', topic, ex);
         this.registry.emit('producer_failure', topic, ex, data);
         throw ex;
       }
