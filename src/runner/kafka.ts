@@ -1,9 +1,9 @@
-import nullLogger from 'null-logger';
 import Kafka, {
   AdminClient,
   IAdminClient,
   KafkaConsumer,
   Message,
+  TopicPartition,
 } from 'node-rdkafka';
 import BaseRunner from '../base/base_runner';
 import { getDuration } from './utils';
@@ -15,12 +15,13 @@ import {
   KafkaConfiguration,
   Configuration,
 } from '../common';
+import { Steveo } from '..';
 
 class JsonParsingError extends Error {}
 
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
-  config: Configuration;
+  config: Configuration<KafkaConfiguration>;
 
   logger: Logger;
 
@@ -32,45 +33,32 @@ class KafkaRunner extends BaseRunner
 
   hooks?: Hooks;
 
-  constructor({
-    config,
-    registry,
-    logger = nullLogger,
-    hooks = {},
-  }: {
-    config: Configuration;
-    registry: IRegistry;
-    logger: Logger;
-    hooks?: Hooks;
-  }) {
-    super(hooks);
-    this.hooks = hooks;
-    this.config = config;
-    this.registry = registry;
-    this.logger = logger;
-
+  constructor({ steveo }: { steveo: Steveo }) {
+    super(steveo);
+    this.hooks = steveo?.hooks;
+    this.config = steveo?.config;
+    this.registry = steveo?.registry;
+    this.logger = steveo.logger;
     this.consumer = new Kafka.KafkaConsumer(
       {
-        'bootstrap.servers': (this.config as KafkaConfiguration)
-          .bootstrapServers,
-        'security.protocol': (this.config as KafkaConfiguration)
-          .securityProtocol,
-        ...((this.config as KafkaConfiguration).consumer?.global ?? {}),
+        'bootstrap.servers': this.config.bootstrapServers,
+        'security.protocol': this.config.securityProtocol,
+        ...(this.config.consumer?.global ?? {}),
       },
-      (this.config as KafkaConfiguration).consumer?.topic ?? {}
+      this.config.consumer?.topic ?? {}
     );
 
     this.adminClient = AdminClient.create({
-      'bootstrap.servers': (this.config as KafkaConfiguration).bootstrapServers,
-      'security.protocol': (this.config as KafkaConfiguration).securityProtocol,
-      ...(this.config as KafkaConfiguration).admin,
+      'bootstrap.servers': this.config.bootstrapServers,
+      'security.protocol': this.config.securityProtocol,
+      ...(this.config.admin ?? {}),
     });
   }
 
   receive = async (message: Message) => {
     const { topic } = message;
-    const config = this.config as KafkaConfiguration;
-    const { waitToCommit } = config;
+    const { waitToCommit } = this.config;
+
     try {
       const valueString = message.value?.toString() ?? '';
       let value = valueString;
@@ -167,10 +155,13 @@ class KafkaRunner extends BaseRunner
 
   consumeCallback = async (err, messages) => {
     this.logger.debug('Consumer callback');
-    await this.checks(
-      () => {},
-      () => this.healthCheck
-    );
+    await this.healthCheck();
+
+    if (this.steveo.exiting) {
+      this.disconnect();
+      return;
+    }
+
     if (err) {
       const message = 'Error while consumption';
       this.logger.error(`${message} - ${err}`);
@@ -192,12 +183,26 @@ class KafkaRunner extends BaseRunner
     }
   };
 
+  /**
+   * Important to note that Kafka is different to SQS and Redis Runners
+   * as with they are both polling consumers
+   * no timeout behaviour, need to hook into the stream provided by node-rdkafka
+   */
   process(topics: Array<string>) {
     return new Promise<KafkaConsumer>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         this.logger.error('Connection timed out');
         reject();
-      }, (this.config as KafkaConfiguration).connectionTimeout!);
+      }, this.config.connectionTimeout);
+
+      setInterval(() => {
+        if (this.paused) {
+          this.consumer.pause(this.consumer.position());
+        } else {
+          this.consumer.resume(this.consumer.position());
+        }
+      }, 1000);
+
       this.consumer.connect({}, err => {
         clearTimeout(timeoutId);
         if (err) {
@@ -205,18 +210,21 @@ class KafkaRunner extends BaseRunner
           reject();
         }
       });
+
       this.consumer.on('disconnected', () => {
         this.logger.debug('Consumer disconnected');
       });
+
       this.consumer.on('event.error', err => {
         this.logger.error('Error from consumer', err);
       });
+
       this.consumer.on('ready', () => {
         clearTimeout(timeoutId);
         this.logger.info('Kafka consumer ready');
-        const topicsWithTasks = topics.filter(
-          topic => !!this.registry.getTask(topic)
-        );
+
+        const topicsWithTasks = this.getTopicsWithTasks(topics);
+
         if (topicsWithTasks.length) {
           this.consumer.subscribe(topicsWithTasks);
           this.consumer.consume(1, this.consumeCallback);
@@ -224,6 +232,13 @@ class KafkaRunner extends BaseRunner
         resolve(this.consumer);
       });
     });
+  }
+
+  getTopicsWithTasks(topics: string[]) {
+    const topicsWithTasks = topics.filter(
+      topic => !!this.registry.getTask(topic)
+    );
+    return topicsWithTasks;
   }
 
   async createQueue({ topic }) {
@@ -234,11 +249,10 @@ class KafkaRunner extends BaseRunner
         {
           topic,
           num_partitions:
-            options.num_partitions ??
-            (this.config as KafkaConfiguration).defaultTopicPartitions,
+            options.num_partitions ?? this.config.defaultTopicPartitions,
           replication_factor:
             options.replication_factor ??
-            (this.config as KafkaConfiguration).defaultTopicReplicationFactor,
+            this.config.defaultTopicReplicationFactor,
         },
         // eslint-disable-next-line consistent-return
         err => {

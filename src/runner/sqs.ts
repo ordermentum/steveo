@@ -1,4 +1,3 @@
-import nullLogger from 'null-logger';
 import bluebird from 'bluebird';
 
 import { SQS } from 'aws-sdk';
@@ -16,6 +15,7 @@ import {
   CreateSqsTopic,
   SQSConfiguration,
 } from '../common';
+import { Steveo } from '..';
 
 const safeParseInt = (concurrency: string, fallback = 1) => {
   if (!concurrency) {
@@ -62,7 +62,7 @@ const deleteMessage = async ({
 };
 
 class SqsRunner extends BaseRunner implements IRunner {
-  config: Configuration;
+  config: Configuration<SQSConfiguration>;
 
   logger: Logger;
 
@@ -78,28 +78,18 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   hooks?: Hooks;
 
-  constructor({
-    config,
-    registry,
-    pool,
-    logger = nullLogger,
-    hooks = {},
-  }: {
-    config: Configuration;
-    registry: IRegistry;
-    pool: Pool<any>;
-    logger: Logger;
-    hooks?: Hooks;
-  }) {
-    super(hooks);
-    this.hooks = hooks;
-    this.config = config || {};
-    this.registry = registry;
-    this.logger = logger;
+  currentTimeout?: ReturnType<typeof setTimeout>;
+
+  constructor({ steveo }: { steveo: Steveo }) {
+    super(steveo);
+    this.hooks = steveo?.hooks;
+    this.config = steveo?.config || {};
+    this.registry = steveo?.registry;
+    this.logger = steveo.logger;
     this.sqsUrls = {};
-    this.sqs = sqsConf.sqs(config);
-    this.pool = pool;
-    this.concurrency = safeParseInt(config.workerConfig?.max, 1);
+    this.sqs = sqsConf.sqs(steveo.config);
+    this.pool = steveo.pool;
+    this.concurrency = safeParseInt(steveo.config.workerConfig?.max, 1);
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
@@ -182,19 +172,27 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics?: string[]) {
-    const loop = () =>
-      setTimeout(
+    const loop = () => {
+      if (this.steveo.exiting) return;
+      if (this.currentTimeout) clearTimeout(this.currentTimeout);
+
+      this.currentTimeout = setTimeout(
         this.process.bind(this, topics),
-        (this.config as SQSConfiguration).consumerPollInterval ?? 1000
+        this.config.consumerPollInterval ?? 1000
       );
-    await this.checks(loop);
+    };
+
+    if (this.paused) {
+      this.logger.debug(`paused processing`);
+      loop();
+      return;
+    }
 
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug(
       `Polling for messages (${topics ? topics.join(',') : 'all'})`
     );
 
-    const config = this.config as SQSConfiguration;
     await bluebird.map(
       subscriptions,
       async topic => {
@@ -203,10 +201,10 @@ class SqsRunner extends BaseRunner implements IRunner {
           this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
 
           const params = {
-            MaxNumberOfMessages: config.maxNumberOfMessages,
+            MaxNumberOfMessages: this.config.maxNumberOfMessages,
             QueueUrl: queueURL,
-            VisibilityTimeout: config.visibilityTimeout,
-            WaitTimeSeconds: config.waitTimeSeconds,
+            VisibilityTimeout: this.config.visibilityTimeout,
+            WaitTimeSeconds: this.config.waitTimeSeconds,
           };
           await this.dequeue(topic, params);
         } else {
@@ -256,7 +254,9 @@ class SqsRunner extends BaseRunner implements IRunner {
     await this.sqs.createQueue(params).promise();
   }
 
-  async disconnect() {}
+  async disconnect() {
+    if (this.currentTimeout) clearTimeout(this.currentTimeout);
+  }
 
   async reconnect() {}
 }

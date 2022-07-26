@@ -106,11 +106,7 @@ export type ChildProcessConfig = {
   args: string[];
 };
 
-export type Configuration = (
-  | SQSConfiguration
-  | KafkaConfiguration
-  | RedisConfiguration
-) & {
+export type Configuration<Runner = any> = Runner & {
   engine: 'sqs' | 'kafka' | 'redis';
   queuePrefix?: string;
   shuffleQueue?: boolean;
@@ -184,6 +180,9 @@ export interface IRunner<T = any, M = any> {
   disconnect(): Promise<void>;
   reconnect(): Promise<void>;
   createQueues(): Promise<void>;
+
+  pause(): Promise<void>;
+  resume(): Promise<void>;
 }
 
 export type CustomTopicFunction = (topic: string) => string;
