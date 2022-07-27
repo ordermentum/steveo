@@ -3,7 +3,6 @@ import Kafka, {
   IAdminClient,
   KafkaConsumer,
   Message,
-  TopicPartition,
 } from 'node-rdkafka';
 import BaseRunner from '../base/base_runner';
 import { getDuration } from './utils';
