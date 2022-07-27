@@ -202,10 +202,10 @@ export class Steveo implements ISteveo {
   terminate() {
     this.exiting = true;
 
-    // allow runner and producer to gracefully top processing
+    // allow runner and producer to gracefully stop processing
     setTimeout(() => {
       this.disconnect();
-    }, 10000);
+    }, this.config.terminateWait ?? 5000);
   }
 
   pause() {

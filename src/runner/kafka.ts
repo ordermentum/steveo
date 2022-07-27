@@ -162,6 +162,8 @@ class KafkaRunner extends BaseRunner
       return;
     }
 
+    await this.preProcess();
+
     if (err) {
       const message = 'Error while consumption';
       this.logger.error(`${message} - ${err}`);
@@ -197,11 +199,11 @@ class KafkaRunner extends BaseRunner
 
       setInterval(() => {
         if (this.paused) {
-          this.consumer.pause(this.consumer.position());
+          this.consumer.pause(this.consumer.assignments());
         } else {
-          this.consumer.resume(this.consumer.position());
+          this.consumer.resume(this.consumer.assignments());
         }
-      }, 1000);
+      }, this.config.pauseInterval ?? 5000);
 
       this.consumer.connect({}, err => {
         clearTimeout(timeoutId);
