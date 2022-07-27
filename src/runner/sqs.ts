@@ -1,6 +1,7 @@
 import bluebird from 'bluebird';
 
 import { SQS } from 'aws-sdk';
+import nullLogger from 'null-logger';
 import BaseRunner from '../base/base_runner';
 import { getContext } from './utils';
 import sqsConf from '../config/sqs';
@@ -85,7 +86,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.hooks = steveo?.hooks;
     this.config = steveo?.config || {};
     this.registry = steveo?.registry;
-    this.logger = steveo.logger;
+    this.logger = steveo?.logger ?? nullLogger;
     this.sqsUrls = {};
     this.sqs = sqsConf.sqs(steveo.config);
     this.pool = steveo.pool;

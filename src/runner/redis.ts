@@ -1,5 +1,6 @@
 /* eslint-disable no-continue */
 import RedisSMQ from 'rsmq';
+import nullLogger from 'null-logger';
 import BaseRunner from '../base/base_runner';
 import { getContext } from './utils';
 import redisConf from '../config/redis';
@@ -61,7 +62,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     super(steveo);
     this.config = steveo?.config;
     this.registry = steveo?.registry;
-    this.logger = steveo.logger;
+    this.logger = steveo?.logger ?? nullLogger;
     this.redis = redisConf.redis(steveo?.config);
     this.pool = steveo.pool;
   }

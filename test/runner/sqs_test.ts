@@ -13,13 +13,14 @@ describe('SQS Runner', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     registry = new Registry();
-    // @ts-ignore
-    runner = new Runner({
-      // @ts-ignore
+
+    const steveo = {
       config: {},
       registry,
       pool: build(),
-    });
+    };
+    // @ts-ignore
+    runner = new Runner({ steveo });
   });
 
   afterEach(() => {
@@ -47,13 +48,14 @@ describe('SQS Runner', () => {
       },
     };
 
-    const anotherRunner = new Runner({
-      // @ts-ignore
+    const steveo = {
       config: {},
-      // @ts-ignore
       registry: anotherRegistry,
       pool: build(),
-    });
+    };
+
+    // @ts-ignore
+    const anotherRunner = new Runner({ steveo });
 
     // @ts-ignore
     const deleteMessageStub = sandbox
@@ -85,13 +87,14 @@ describe('SQS Runner', () => {
       },
     };
 
-    const anotherRunner = new Runner({
-      // @ts-ignore
+    const steveo = {
       config: {},
       // @ts-ignore
       registry: anotherRegistry,
       pool: build(),
-    });
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner({ steveo });
     const getQueueUrlAsyncStub = sandbox
       .stub(anotherRunner.sqs, 'getQueueUrl')
       .returns({
@@ -120,13 +123,15 @@ describe('SQS Runner', () => {
       },
     };
 
-    const anotherRunner = new Runner({
+    const steveo = {
       // @ts-ignore
       config: {},
-      // @ts-ignore
       registry: anotherRegistry,
       pool: build(),
-    });
+    };
+
+    // @ts-ignore
+    const anotherRunner = new Runner({ steveo });
     const getQueueUrlAsyncStub = sandbox
       .stub(anotherRunner.sqs, 'getQueueUrl')
       // @ts-ignore
@@ -158,13 +163,13 @@ describe('SQS Runner', () => {
       },
     };
 
-    const anotherRunner = new Runner({
-      // @ts-ignore
+    const steveo = {
       config: { shuffleQueue: true },
-      // @ts-ignore
       registry: anotherRegistry,
       pool: build(),
-    });
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner({ steveo });
 
     const getQueueUrlAsyncStub = sandbox
       .stub(anotherRunner.sqs, 'getQueueUrl')
@@ -197,13 +202,13 @@ describe('SQS Runner', () => {
         emit: emitStub,
       },
     };
-    const anotherRunner = new Runner({
-      // @ts-ignore
+    const steveo = {
       config: {},
-      // @ts-ignore
       registry: anotherRegistry,
       pool: build(),
-    });
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner({ steveo });
     const deleteMessageStub = sandbox
       .stub(anotherRunner.sqs, 'deleteMessage')
       // @ts-ignore

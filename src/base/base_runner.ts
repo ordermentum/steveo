@@ -1,5 +1,6 @@
 import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
+import nullLogger from 'null-logger';
 import { Steveo } from '..';
 import { SQSConfiguration, Configuration, Logger, IRegistry } from '../common';
 
@@ -30,7 +31,7 @@ class BaseRunner {
     this.errorCount = 0;
     this.preProcess = steveo?.hooks?.preProcess || (() => Promise.resolve());
     this.steveo = steveo;
-    this.logger = steveo.logger;
+    this.logger = steveo?.logger ?? nullLogger;
     this.paused = false;
   }
 

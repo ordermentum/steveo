@@ -4,6 +4,7 @@ import Kafka, {
   KafkaConsumer,
   Message,
 } from 'node-rdkafka';
+import nullLogger from 'null-logger';
 import BaseRunner from '../base/base_runner';
 import { getDuration } from './utils';
 import {
@@ -37,7 +38,7 @@ class KafkaRunner extends BaseRunner
     this.hooks = steveo?.hooks;
     this.config = steveo?.config;
     this.registry = steveo?.registry;
-    this.logger = steveo.logger;
+    this.logger = steveo?.logger ?? nullLogger;
     this.consumer = new Kafka.KafkaConsumer(
       {
         'bootstrap.servers': this.config.bootstrapServers,
