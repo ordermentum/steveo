@@ -199,13 +199,15 @@ export class Steveo implements ISteveo {
     });
   }
 
-  terminate() {
+  async terminate() {
     this.exiting = true;
-
     // allow runner and producer to gracefully stop processing
-    setTimeout(() => {
-      this.disconnect();
-    }, this.config.terminateWait ?? 5000);
+    return new Promise<void>(resolve => {
+      setTimeout(async () => {
+        await this.disconnect();
+        return resolve();
+      }, this.config.terminateWait ?? 5000);
+    });
   }
 
   pause() {

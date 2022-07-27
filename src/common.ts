@@ -112,7 +112,7 @@ export type ChildProcessConfig = {
   args: string[];
 };
 
-export type Configuration<Runner = any> = Runner & {
+export type Configuration<Runner = any> = {
   engine: 'sqs' | 'kafka' | 'redis';
   queuePrefix?: string;
   shuffleQueue?: boolean;
@@ -137,7 +137,7 @@ export type Configuration<Runner = any> = Runner & {
    * @description the graceful period we wait when terminating for tasks to complete
    */
   terminateWait?: number;
-};
+} & Runner;
 
 export type Attribute = {
   name: string;

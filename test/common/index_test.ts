@@ -83,4 +83,56 @@ describe('Index', () => {
     await steveo.start();
     expect(startChildStub.callCount).to.eqls(2);
   });
+
+  describe('lifecycle methods', () => {
+    it('terminates', async () => {
+      const disconnectStub = sandbox
+        // @ts-ignore
+        .stub(Steveo.prototype, 'disconnect')
+        .resolves();
+      const steveo = create(
+        // @ts-ignore
+        {
+          engine: 'dummy',
+          terminateWait: 1,
+          tasksPath: __filename,
+          childProcesses: {
+            instancePath: '',
+            args: [],
+          },
+        },
+        NULL_LOGGER,
+        {}
+      );
+      await steveo.terminate();
+      expect(steveo.exiting).to.equal(true);
+      expect(disconnectStub.callCount).to.eqls(1);
+    });
+
+    it('pause', async () => {
+      const steveo = create(
+        // @ts-ignore
+        {
+          engine: 'dummy',
+          terminateWait: 0,
+          tasksPath: __filename,
+          childProcesses: {
+            instancePath: '',
+            args: [],
+          },
+        },
+        NULL_LOGGER,
+        {}
+      );
+
+      const pause = sandbox.stub().resolves();
+      // @ts-ignore
+      steveo._runner = {
+        pause,
+      };
+
+      steveo.pause();
+      expect(pause.callCount).to.eqls(1);
+    });
+  });
 });
