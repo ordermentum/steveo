@@ -109,7 +109,7 @@ describe('Index', () => {
       expect(disconnectStub.callCount).to.eqls(1);
     });
 
-    it('pause', async () => {
+    it('pause and resume', async () => {
       const steveo = create(
         // @ts-ignore
         {
@@ -126,13 +126,17 @@ describe('Index', () => {
       );
 
       const pause = sandbox.stub().resolves();
+      const resume = sandbox.stub().resolves();
       // @ts-ignore
       steveo._runner = {
         pause,
+        resume,
       };
 
       steveo.pause();
       expect(pause.callCount).to.eqls(1);
+      steveo.resume();
+      expect(resume.callCount).to.eqls(1);
     });
   });
 });
