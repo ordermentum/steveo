@@ -20,7 +20,7 @@ describe('SQS Runner', () => {
       pool: build(),
     };
     // @ts-ignore
-    runner = new Runner({ steveo });
+    runner = new Runner(steveo);
   });
 
   afterEach(() => {
@@ -55,7 +55,7 @@ describe('SQS Runner', () => {
     };
 
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
 
     // @ts-ignore
     const deleteMessageStub = sandbox
@@ -94,7 +94,7 @@ describe('SQS Runner', () => {
       pool: build(),
     };
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
       .stub(anotherRunner.sqs, 'getQueueUrl')
       .returns({
@@ -131,7 +131,7 @@ describe('SQS Runner', () => {
     };
 
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
       .stub(anotherRunner.sqs, 'getQueueUrl')
       // @ts-ignore
@@ -169,7 +169,7 @@ describe('SQS Runner', () => {
       pool: build(),
     };
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
 
     const getQueueUrlAsyncStub = sandbox
       .stub(anotherRunner.sqs, 'getQueueUrl')
@@ -208,7 +208,7 @@ describe('SQS Runner', () => {
       pool: build(),
     };
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
     const deleteMessageStub = sandbox
       .stub(anotherRunner.sqs, 'deleteMessage')
       // @ts-ignore

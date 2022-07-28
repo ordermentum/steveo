@@ -81,7 +81,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   currentTimeout?: ReturnType<typeof setTimeout>;
 
-  constructor({ steveo }: { steveo: Steveo }) {
+  constructor(steveo: Steveo) {
     super(steveo);
     this.hooks = steveo?.hooks;
     this.config = steveo?.config || {};

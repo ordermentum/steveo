@@ -58,7 +58,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   currentTimeout?: ReturnType<typeof setTimeout>;
 
-  constructor({ steveo }: { steveo: Steveo }) {
+  constructor(steveo: Steveo) {
     super(steveo);
     this.config = steveo?.config;
     this.registry = steveo?.registry;
@@ -150,6 +150,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
     if (this.paused) {
       this.logger.debug(`paused processing`);
+      loop();
       return;
     }
 
@@ -167,10 +168,6 @@ class RedisRunner extends BaseRunner implements IRunner {
 
     loop();
   }
-
-  async pause() {}
-
-  async resume() {}
 
   async createQueue({
     topic,

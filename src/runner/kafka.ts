@@ -33,7 +33,7 @@ class KafkaRunner extends BaseRunner
 
   hooks?: Hooks;
 
-  constructor({ steveo }: { steveo: Steveo }) {
+  constructor(steveo: Steveo) {
     super(steveo);
     this.hooks = steveo?.hooks;
     this.config = steveo?.config;

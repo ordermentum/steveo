@@ -21,7 +21,7 @@ describe('Redis Runner', () => {
       pool: build(),
     };
     // @ts-ignore
-    runner = new Runner({ steveo });
+    runner = new Runner(steveo);
   });
   afterEach(() => sandbox.restore());
   it('should create an instance', () => {
@@ -54,7 +54,7 @@ describe('Redis Runner', () => {
     };
 
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
     await anotherRunner.receive(
       [
         { message: JSON.stringify({ data: 'Hello' }) },
@@ -89,7 +89,7 @@ describe('Redis Runner', () => {
       pool: build(),
     };
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
     let error = false;
     try {
       await anotherRunner.receive(

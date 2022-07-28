@@ -26,7 +26,7 @@ describe('Runner', () => {
       registry,
     };
     // @ts-ignore
-    runner = new Runner({ steveo });
+    runner = new Runner(steveo);
     sandbox = sinon.createSandbox();
   });
 
@@ -76,7 +76,7 @@ describe('Runner', () => {
       pool: build(),
     };
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
     const commitOffsetStub = sandbox.stub(
       anotherRunner.consumer,
       'commitMessage'
@@ -118,7 +118,7 @@ describe('Runner', () => {
       pool: build(),
     };
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
     const commitOffsetStub = sandbox.stub(
       anotherRunner.consumer,
       'commitMessage'
@@ -156,7 +156,7 @@ describe('Runner', () => {
       pool: build(),
     };
     // @ts-ignore
-    const anotherRunner = new Runner({ steveo });
+    const anotherRunner = new Runner(steveo);
     let error = false;
     let commitOffsetStub;
     try {

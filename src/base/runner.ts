@@ -12,7 +12,6 @@ const Runners: RunnersType = {
   redis: RedisRunner,
 };
 
-const getRunner = ({ steveo }: { steveo: Steveo }) =>
-  new Runners[steveo.config.engine]({ steveo });
+const getRunner = (steveo: Steveo) => new Runners[steveo.config.engine](steveo);
 
 export default getRunner;

@@ -257,9 +257,7 @@ export class Steveo implements ISteveo {
 
   runner() {
     if (!this._runner) {
-      this._runner = getRunner({
-        steveo: this,
-      });
+      this._runner = getRunner(this);
     }
     return this._runner;
   }
