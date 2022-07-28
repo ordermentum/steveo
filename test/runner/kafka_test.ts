@@ -16,8 +16,7 @@ describe('Runner', () => {
       topic: 'test-topic',
     });
 
-    // @ts-ignore
-    runner = new Runner({
+    const steveo = {
       // @ts-ignore
       config: {
         bootstrapServers: 'kafka:9200',
@@ -25,7 +24,9 @@ describe('Runner', () => {
         securityProtocol: 'plaintext',
       },
       registry,
-    });
+    };
+    // @ts-ignore
+    runner = new Runner(steveo);
     sandbox = sinon.createSandbox();
   });
 
@@ -64,8 +65,7 @@ describe('Runner', () => {
         emit: sandbox.stub(),
       },
     };
-    const anotherRunner = new Runner({
-      // @ts-ignore
+    const steveo = {
       config: {
         bootstrapServers: 'kafka:9200',
         engine: 'kafka',
@@ -74,7 +74,9 @@ describe('Runner', () => {
       // @ts-ignore
       registry: anotherRegistry,
       pool: build(),
-    });
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner(steveo);
     const commitOffsetStub = sandbox.stub(
       anotherRunner.consumer,
       'commitMessage'
@@ -104,8 +106,7 @@ describe('Runner', () => {
       },
     };
 
-    const anotherRunner = new Runner({
-      // @ts-ignore
+    const steveo = {
       config: {
         bootstrapServers: 'kafka:9200',
         engine: 'kafka',
@@ -115,7 +116,9 @@ describe('Runner', () => {
       // @ts-ignore
       registry: anotherRegistry,
       pool: build(),
-    });
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner(steveo);
     const commitOffsetStub = sandbox.stub(
       anotherRunner.consumer,
       'commitMessage'
@@ -143,17 +146,17 @@ describe('Runner', () => {
         emit: sandbox.stub(),
       },
     };
-    const anotherRunner = new Runner({
-      // @ts-ignore
+    const steveo = {
       config: {
         bootstrapServers: 'kafka:9200',
         engine: 'kafka',
         securityProtocol: 'plaintext',
       },
-      // @ts-ignore
       registry: anotherRegistry,
       pool: build(),
-    });
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner(steveo);
     let error = false;
     let commitOffsetStub;
     try {

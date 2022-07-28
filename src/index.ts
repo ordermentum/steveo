@@ -49,6 +49,8 @@ export class Steveo implements ISteveo {
 
   exiting: boolean;
 
+  paused: boolean;
+
   MAX_RESTARTS = 20;
 
   constructor(
@@ -65,6 +67,7 @@ export class Steveo implements ISteveo {
     this.childProcesses = new Map();
     this.restarts = 0;
     this.exiting = false;
+    this.paused = false;
   }
 
   task<T = any, R = any, C = any>(
@@ -196,6 +199,29 @@ export class Steveo implements ISteveo {
     });
   }
 
+  async terminate() {
+    this.exiting = true;
+    // allow runner and producer to gracefully stop processing
+    return new Promise<void>(resolve => {
+      setTimeout(async () => {
+        await this.disconnect();
+        return resolve();
+      }, this.config.terminateWait ?? 5000);
+    });
+  }
+
+  pause() {
+    this.paused = true;
+    const runner = this.runner();
+    runner.pause();
+  }
+
+  resume() {
+    this.paused = false;
+    const runner = this.runner();
+    runner.resume();
+  }
+
   /**
    * This pattern allows us to load all tasks in a directory
    * and as part of that they self register with the registry allowing
@@ -231,13 +257,7 @@ export class Steveo implements ISteveo {
 
   runner() {
     if (!this._runner) {
-      this._runner = getRunner({
-        config: this.config,
-        registry: this.registry,
-        pool: this.pool,
-        logger: this.logger,
-        hooks: this.hooks,
-      });
+      this._runner = getRunner(this);
     }
     return this._runner;
   }

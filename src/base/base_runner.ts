@@ -1,13 +1,8 @@
 import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
-import logger from 'null-logger';
-import {
-  SQSConfiguration,
-  Configuration,
-  Logger,
-  IRegistry,
-  Hooks,
-} from '../common';
+import nullLogger from 'null-logger';
+import { Steveo } from '..';
+import { SQSConfiguration, Configuration, Logger, IRegistry } from '../common';
 
 class BaseRunner {
   async preProcess() {
@@ -19,54 +14,25 @@ class BaseRunner {
     throw new Error('Unimplemented');
   }
 
-  async healthCheck() {
-    throw new Error('Unimplemented');
-  }
-
-  async terminationCheck(): Promise<boolean> {
-    return true;
-  }
-
   errorCount: number;
 
   registry?: IRegistry;
+
+  steveo: Steveo;
+
+  paused: boolean;
 
   // @ts-ignore
   config: Configuration;
 
   logger: Logger;
 
-  constructor(hooks: Hooks = {}) {
+  constructor(steveo: Steveo) {
     this.errorCount = 0;
-    this.preProcess = hooks?.preProcess || (() => Promise.resolve());
-    this.healthCheck = hooks?.healthCheck || (() => Promise.resolve());
-    this.terminationCheck =
-      hooks.terminationCheck || (() => Promise.resolve(false));
-    this.logger = logger;
-  }
-
-  async checks(onFail?: () => void, additionalCheck?: () => void) {
-    try {
-      if (await this.terminationCheck()) {
-        this.logger.info('Terminating due to termination check');
-        return process.exit(0);
-      }
-      await this.healthCheck();
-      await this.preProcess();
-      if (additionalCheck) {
-        await additionalCheck();
-      }
-      return undefined;
-    } catch (e) {
-      this.logger.info(`Encountered healthcheck errors: ${e}`);
-      this.errorCount += 1;
-      if (this.errorCount > 5) {
-        this.logger.error('Health check failure count is too high');
-        return process.exit(0);
-      }
-      if (onFail) return onFail();
-    }
-    return null;
+    this.preProcess = steveo?.hooks?.preProcess || (() => Promise.resolve());
+    this.steveo = steveo;
+    this.logger = steveo?.logger ?? nullLogger;
+    this.paused = false;
   }
 
   getActiveSubsciptions(topics?: string[]): string[] {
@@ -81,6 +47,14 @@ class BaseRunner {
       return shuffle(filtered);
     }
     return filtered;
+  }
+
+  async pause() {
+    this.paused = true;
+  }
+
+  async resume() {
+    this.paused = false;
   }
 
   async createQueues(): Promise<any> {
