@@ -92,8 +92,10 @@ class KafkaRunner extends BaseRunner
       }
 
       if (!waitToCommit) {
+        this.logger.debug(`commit offset ${message.offset}`);
         this.consumer.commitMessage(message);
       }
+
       this.logger.debug('Start subscribe', topic, message);
       if (this.hooks?.preTask) {
         await this.hooks.preTask(parsed);
@@ -104,9 +106,12 @@ class KafkaRunner extends BaseRunner
       if (this.hooks?.postTask) {
         await this.hooks.postTask({ ...parsed, result });
       }
+
       if (waitToCommit) {
+        this.logger.debug(`commit offset ${message.offset}`);
         this.consumer.commitMessage(message);
       }
+
       this.logger.debug('Finish subscribe', topic, message);
       this.registry.events.emit('runner_complete', topic, parsed, {
         ...message,
@@ -218,6 +223,10 @@ class KafkaRunner extends BaseRunner
           this.logger.error('Error initializing consumer', err);
           reject();
         }
+      });
+
+      this.consumer.on('event.log', log => {
+        this.logger.debug(log.message);
       });
 
       this.consumer.on('disconnected', () => {
