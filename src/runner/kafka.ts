@@ -43,6 +43,13 @@ class KafkaRunner extends BaseRunner
       {
         'bootstrap.servers': this.config.bootstrapServers,
         'security.protocol': this.config.securityProtocol,
+        offset_commit_cb: (err, topicPartitions) => {
+          if (err) {
+            this.logger.error(err);
+          } else {
+            this.logger.debug(topicPartitions);
+          }
+        },
         ...(this.config.consumer?.global ?? {}),
       },
       this.config.consumer?.topic ?? {}
