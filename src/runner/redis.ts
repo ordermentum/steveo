@@ -1,6 +1,6 @@
 /* eslint-disable no-continue */
-import nullLogger from 'null-logger';
 import RedisSMQ from 'rsmq';
+import nullLogger from 'null-logger';
 import BaseRunner from '../base/base_runner';
 import { getContext } from './utils';
 import redisConf from '../config/redis';
@@ -14,6 +14,7 @@ import {
   CreateRedisTopic,
   RedisConfiguration,
 } from '../common';
+import { Steveo } from '..';
 
 type DeleteMessage = {
   instance: any;
@@ -43,7 +44,7 @@ const deleteMessage = async ({
 };
 
 class RedisRunner extends BaseRunner implements IRunner {
-  config: Configuration;
+  config: Configuration<RedisConfiguration>;
 
   logger: Logger;
 
@@ -55,25 +56,15 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   hooks?: Hooks;
 
-  constructor({
-    config,
-    registry,
-    pool,
-    logger = nullLogger,
-    hooks = {},
-  }: {
-    config: Configuration;
-    registry: IRegistry;
-    pool: Pool<any>;
-    logger: Logger;
-    hooks?: Hooks;
-  }) {
-    super(hooks);
-    this.config = config;
-    this.registry = registry;
-    this.logger = logger;
-    this.redis = redisConf.redis(config);
-    this.pool = pool;
+  currentTimeout?: ReturnType<typeof setTimeout>;
+
+  constructor(steveo: Steveo) {
+    super(steveo);
+    this.config = steveo?.config;
+    this.registry = steveo?.registry;
+    this.logger = steveo?.logger ?? nullLogger;
+    this.redis = redisConf.redis(steveo?.config);
+    this.pool = steveo.pool;
   }
 
   async receive(messages: any[], topic: string): Promise<any> {
@@ -147,15 +138,26 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics?: string[]) {
-    const loop = () =>
-      setTimeout(
+    const loop = () => {
+      if (this.steveo.exiting) return;
+      if (this.currentTimeout) clearTimeout(this.currentTimeout);
+
+      this.currentTimeout = setTimeout(
         this.process.bind(this, topics),
-        (this.config as RedisConfiguration).consumerPollInterval ?? 1000
+        this.config.consumerPollInterval ?? 1000
       );
-    await this.checks(loop);
+    };
+
+    if (this.paused) {
+      this.logger.debug(`paused processing`);
+      loop();
+      return;
+    }
+
     this.logger.debug(
       `starting poll for messages ${topics ? topics.join(',') : 'all'}`
     );
+
     const subscriptions = this.getActiveSubsciptions(topics);
 
     await Promise.all(
@@ -191,6 +193,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async disconnect() {
+    if (this.currentTimeout) clearTimeout(this.currentTimeout);
     this.redis?.quit(() => {});
   }
 

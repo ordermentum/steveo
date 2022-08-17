@@ -55,6 +55,12 @@ export type KafkaConfiguration = {
     | undefined;
   defaultTopicPartitions?: number;
   defaultTopicReplicationFactor?: number;
+
+  /**
+   * the interval we check if the steveo consumer has been paused
+   */
+  pauseInterval?: number;
+
   /**
    * @description Wait for commiting the message? True - wait, False - immediate commit, Default - True
    */
@@ -106,11 +112,7 @@ export type ChildProcessConfig = {
   args: string[];
 };
 
-export type Configuration = (
-  | SQSConfiguration
-  | KafkaConfiguration
-  | RedisConfiguration
-) & {
+export type Configuration<Runner = any> = {
   engine: 'sqs' | 'kafka' | 'redis';
   queuePrefix?: string;
   shuffleQueue?: boolean;
@@ -130,7 +132,12 @@ export type Configuration = (
    * This is required if you want to use the built in steveo runner and/or the child process functionality
    */
   tasksPath?: string;
-};
+
+  /**
+   * @description the graceful period we wait when terminating for tasks to complete
+   */
+  terminateWait?: number;
+} & Runner;
 
 export type Attribute = {
   name: string;
@@ -184,6 +191,9 @@ export interface IRunner<T = any, M = any> {
   disconnect(): Promise<void>;
   reconnect(): Promise<void>;
   createQueues(): Promise<void>;
+
+  pause(): Promise<void>;
+  resume(): Promise<void>;
 }
 
 export type CustomTopicFunction = (topic: string) => string;
