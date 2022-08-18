@@ -193,7 +193,7 @@ class KafkaRunner extends BaseRunner
         await this.receive(messages[0]);
       }
     } finally {
-      if (this.paused) {
+      if (this.steveo.paused) {
         this.logger.debug('Consumer paused');
         return;
       }
@@ -288,7 +288,7 @@ class KafkaRunner extends BaseRunner
     if(!this.consumer.isConnected()) {
       throw new Error("Lost connection to kafka");
     }
-    if (!this.paused) {
+    if (!this.steveo.paused) {
       this.logger.debug('Resuming consumer');
       this.consumer.consume(1, this.consumeCallback);
     }
