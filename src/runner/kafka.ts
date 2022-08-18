@@ -108,7 +108,7 @@ class KafkaRunner extends BaseRunner
       }
 
       if (waitToCommit) {
-        this.logger.debug(`committing message ${message}`);
+        this.logger.debug('committing message', message);
         this.consumer.commitMessage(message);
       }
 
@@ -175,11 +175,6 @@ class KafkaRunner extends BaseRunner
       return;
     }
 
-    if (this.paused) {
-      this.logger.debug('Consumer paused');
-      return;
-    }
-
     await this.preProcess();
 
     if (err) {
@@ -199,6 +194,10 @@ class KafkaRunner extends BaseRunner
         await this.receive(messages[0]);
       }
     } finally {
+      if (this.paused) {
+        this.logger.debug('Consumer paused');
+        return;
+      }
       this.consumer.consume(1, this.consumeCallback);
     }
   };
@@ -214,16 +213,6 @@ class KafkaRunner extends BaseRunner
         this.logger.error('Connection timed out');
         reject();
       }, this.config.connectionTimeout);
-
-      setInterval(() => {
-        if (this.paused) {
-          this.logger.debug('Pausing consumer', this.consumer.assignments());
-          this.consumer.pause(this.consumer.assignments());
-        } else {
-          this.logger.debug('Playing consumer', this.consumer.assignments());
-          this.consumer.resume(this.consumer.assignments());
-        }
-      }, this.config.pauseInterval ?? 5000);
 
       this.consumer.connect({}, err => {
         clearTimeout(timeoutId);
@@ -294,6 +283,13 @@ class KafkaRunner extends BaseRunner
   async disconnect() {
     this.consumer.disconnect();
     this.adminClient.disconnect();
+  }
+
+  async resume() {
+    if (!this.paused && this.consumer.isConnected()) {
+      this.logger.debug('Resuming consumer');
+      this.consumer.consume(1, this.consumeCallback);
+    }
   }
 }
 

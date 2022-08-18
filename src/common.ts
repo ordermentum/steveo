@@ -57,11 +57,6 @@ export type KafkaConfiguration = {
   defaultTopicReplicationFactor?: number;
 
   /**
-   * the interval we check if the steveo consumer has been paused
-   */
-  pauseInterval?: number;
-
-  /**
    * @description Wait for commiting the message? True - wait, False - immediate commit, Default - True
    */
   waitToCommit?: boolean;
