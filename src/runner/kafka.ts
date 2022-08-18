@@ -17,7 +17,7 @@ import {
 } from '../common';
 import { Steveo } from '..';
 
-class JsonParsingError extends Error {}
+class JsonParsingError extends Error { }
 
 class KafkaRunner extends BaseRunner
   implements IRunner<KafkaConsumer, Message> {
@@ -47,7 +47,7 @@ class KafkaRunner extends BaseRunner
           if (err) {
             this.logger.error(err);
           } else {
-            this.logger.debug(topicPartitions);
+            this.logger.debug('Offset commit successful', topicPartitions, ' assigments', this.consumer.assignments());
           }
         },
         ...(this.config.consumer?.global ?? {}),
@@ -108,7 +108,7 @@ class KafkaRunner extends BaseRunner
       }
 
       if (waitToCommit) {
-        this.logger.debug(`commit offset ${message.offset}`);
+        this.logger.debug(`committing message ${message}`);
         this.consumer.commitMessage(message);
       }
 
@@ -149,7 +149,7 @@ class KafkaRunner extends BaseRunner
    *
    * @description It's a bound function to avoid binding when passing as callback to the checker function
    */
-  healthCheck = async function() {
+  healthCheck = async function () {
     return new Promise<void>((resolve, reject) => {
       /**
        * if you are concerned about potential performance issues,
@@ -166,11 +166,17 @@ class KafkaRunner extends BaseRunner
   };
 
   consumeCallback = async (err, messages) => {
-    this.logger.debug('Consumer callback');
+    this.logger.debug('Consumer callback', messages?.[0]);
+    this.logger.debug('Consumer assignments', this.consumer.assignments());
     await this.healthCheck();
 
     if (this.steveo.exiting) {
       this.disconnect();
+      return;
+    }
+
+    if (this.paused) {
+      this.logger.debug('Consumer paused');
       return;
     }
 
@@ -211,8 +217,10 @@ class KafkaRunner extends BaseRunner
 
       setInterval(() => {
         if (this.paused) {
+          this.logger.debug('Pausing consumer', this.consumer.assignments());
           this.consumer.pause(this.consumer.assignments());
         } else {
+          this.logger.debug('Playing consumer', this.consumer.assignments());
           this.consumer.resume(this.consumer.assignments());
         }
       }, this.config.pauseInterval ?? 5000);
