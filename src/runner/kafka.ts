@@ -167,7 +167,6 @@ class KafkaRunner extends BaseRunner
 
   consumeCallback = async (err, messages) => {
     this.logger.debug('Consumer callback', messages?.[0]);
-    this.logger.debug('Consumer assignments', this.consumer.assignments());
     await this.healthCheck();
 
     if (this.steveo.exiting) {
@@ -286,7 +285,10 @@ class KafkaRunner extends BaseRunner
   }
 
   async resume() {
-    if (!this.paused && this.consumer.isConnected()) {
+    if(!this.consumer.isConnected()) {
+      throw new Error("Lost connection to kafka");
+    }
+    if (!this.paused) {
       this.logger.debug('Resuming consumer');
       this.consumer.consume(1, this.consumeCallback);
     }
