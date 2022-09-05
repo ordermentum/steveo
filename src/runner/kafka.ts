@@ -47,7 +47,12 @@ class KafkaRunner extends BaseRunner
           if (err) {
             this.logger.error(err);
           } else {
-            this.logger.debug(topicPartitions);
+            this.logger.debug(
+              'Offset commit successful',
+              topicPartitions,
+              ' assigments',
+              this.consumer.assignments()
+            );
           }
         },
         ...(this.config.consumer?.global ?? {}),
@@ -108,7 +113,7 @@ class KafkaRunner extends BaseRunner
       }
 
       if (waitToCommit) {
-        this.logger.debug(`commit offset ${message.offset}`);
+        this.logger.debug('committing message', message);
         this.consumer.commitMessage(message);
       }
 
@@ -166,7 +171,7 @@ class KafkaRunner extends BaseRunner
   };
 
   consumeCallback = async (err, messages) => {
-    this.logger.debug('Consumer callback');
+    this.logger.debug('Consumer callback', messages?.[0]);
     await this.healthCheck();
 
     if (this.steveo.exiting) {
@@ -193,7 +198,11 @@ class KafkaRunner extends BaseRunner
         await this.receive(messages[0]);
       }
     } finally {
-      this.consumer.consume(1, this.consumeCallback);
+      if (this.steveo.paused) {
+        this.logger.debug('Consumer paused');
+      } else {
+        this.consumer.consume(1, this.consumeCallback);
+      }
     }
   };
 
@@ -208,14 +217,6 @@ class KafkaRunner extends BaseRunner
         this.logger.error('Connection timed out');
         reject();
       }, this.config.connectionTimeout);
-
-      setInterval(() => {
-        if (this.paused) {
-          this.consumer.pause(this.consumer.assignments());
-        } else {
-          this.consumer.resume(this.consumer.assignments());
-        }
-      }, this.config.pauseInterval ?? 5000);
 
       this.consumer.connect({}, err => {
         clearTimeout(timeoutId);
@@ -286,6 +287,16 @@ class KafkaRunner extends BaseRunner
   async disconnect() {
     this.consumer.disconnect();
     this.adminClient.disconnect();
+  }
+
+  async resume() {
+    if (!this.consumer.isConnected()) {
+      throw new Error('Lost connection to kafka');
+    }
+    if (!this.steveo.paused) {
+      this.logger.debug('Resuming consumer');
+      this.consumer.consume(1, this.consumeCallback);
+    }
   }
 }
 
