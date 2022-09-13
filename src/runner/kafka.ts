@@ -294,7 +294,9 @@ class KafkaRunner extends BaseRunner
   }
 
   async resume() {
-    if (this.consumerReady && !this.consumer.isConnected()) {
+    if(!this.consumerReady)
+      return;
+    if (!this.consumer.isConnected()) {
       throw new Error('Lost connection to kafka');
     }
     if (!this.steveo.paused) {
