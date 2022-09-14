@@ -33,12 +33,15 @@ class KafkaRunner extends BaseRunner
 
   hooks?: Hooks;
 
+  consumerReady: boolean;
+
   constructor(steveo: Steveo) {
     super(steveo);
     this.hooks = steveo?.hooks;
     this.config = steveo?.config;
     this.registry = steveo?.registry;
     this.logger = steveo?.logger ?? nullLogger;
+    this.consumerReady = false;
     this.consumer = new Kafka.KafkaConsumer(
       {
         'bootstrap.servers': this.config.bootstrapServers,
@@ -241,6 +244,7 @@ class KafkaRunner extends BaseRunner
       this.consumer.on('ready', () => {
         clearTimeout(timeoutId);
         this.logger.info('Kafka consumer ready');
+        this.consumerReady = true;
 
         const topicsWithTasks = this.getTopicsWithTasks(topics);
 
@@ -290,6 +294,7 @@ class KafkaRunner extends BaseRunner
   }
 
   async resume() {
+    if (!this.consumerReady) return;
     if (!this.consumer.isConnected()) {
       throw new Error('Lost connection to kafka');
     }
