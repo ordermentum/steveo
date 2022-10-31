@@ -57,6 +57,10 @@ class BaseRunner {
     this.paused = false;
   }
 
+  async healthCheck() {
+    throw new Error('Unimplemented');
+  }
+
   async createQueues(): Promise<any> {
     if (!this.registry) return false;
 

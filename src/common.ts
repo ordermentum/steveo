@@ -187,6 +187,7 @@ export interface IRunner<T = any, M = any> {
   reconnect(): Promise<void>;
   createQueues(): Promise<void>;
 
+  healthCheck: () => Promise<void>;
   pause(): Promise<void>;
   resume(): Promise<void>;
 }
