@@ -160,9 +160,14 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async dequeue(topic: string, params: SQS.ReceiveMessageRequest) {
-    const data = await this.sqs.receiveMessage(params).promise();
+    const data = await this.sqs.receiveMessage(params)
+      .promise()
+      .catch(e => { 
+        this.logger.error('Error while receiving message from queue', e);
+        return null;
+      });
 
-    if (data.Messages) {
+    if (data?.Messages) {
       this.logger.debug('Message from sqs', data);
       try {
         await this.receive(data.Messages, topic);
@@ -217,7 +222,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     loop();
   }
 
-  healthCheck = async function() {
+  healthCheck = async function () {
     // get a random registered queue
     const items = this.registry.getTopics();
     const item = items[Math.floor(Math.random() * items.length)];
@@ -266,7 +271,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
   }
 
-  async reconnect() {}
+  async reconnect() { }
 }
 
 export default SqsRunner;
