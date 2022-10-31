@@ -217,6 +217,13 @@ class SqsRunner extends BaseRunner implements IRunner {
     loop();
   }
 
+  healthCheck = async function() {
+    // get a random registered queue
+    const items = this.registry.getTopics();
+    const item = items[Math.floor(Math.random() * items.length)];
+    await this.sqs.getQueueUrl({ QueueName: item }).promise();
+  };
+
   async getQueueUrl(topic: string) {
     if (!this.sqsUrls[topic]) {
       this.logger.debug(`url not cached for ${topic}`);

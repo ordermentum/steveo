@@ -93,12 +93,6 @@ class SqsProducer implements IProducer {
     };
   }
 
-  healthCheck = async function() {
-    // get a random registered queue
-    const item = this.queues[Math.floor(Math.random() * this.queues.length)];
-    return this.sqs.getQueueUrl(item).promise();
-  };
-
   async send<T = any>(topic: string, payload: T) {
     try {
       await this.initialize(topic);
