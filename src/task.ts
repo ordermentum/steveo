@@ -53,13 +53,13 @@ class Task<T = any, R = any> implements ITask<T, R> {
       await this.producer.initialize(this.topic);
       await Promise.all(
         params.map(data => {
-          this.registry.events.emit('task_send', this.topic, data);
+          this.registry.emit('task_send', this.topic, data);
           return this.producer.send(this.topic, data);
         })
       );
-      this.registry.events.emit('task_success', this.topic, payload);
+      this.registry.emit('task_success', this.topic, payload);
     } catch (ex) {
-      this.registry.events.emit('task_failure', this.topic, ex);
+      this.registry.emit('task_failure', this.topic, ex);
       throw ex;
     }
   }

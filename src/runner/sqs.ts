@@ -94,7 +94,7 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
-    this.registry.events.emit('runner_messages', topic, messages);
+    this.registry.emit('runner_messages', topic, messages);
 
     return bluebird.map(
       messages,
@@ -106,12 +106,7 @@ class SqsRunner extends BaseRunner implements IRunner {
           params = JSON.parse(m.Body);
           const runnerContext = getContext(params);
 
-          this.registry.events.emit(
-            'runner_receive',
-            topic,
-            params,
-            runnerContext
-          );
+          this.registry.emit('runner_receive', topic, params, runnerContext);
           this.logger.debug('Deleting message', topic, params);
 
           await deleteMessage({ // eslint-disable-line
@@ -139,7 +134,7 @@ class SqsRunner extends BaseRunner implements IRunner {
           }
           this.logger.debug('Completed subscribe', topic, params);
           const completedContext = getContext(params);
-          this.registry.events.emit(
+          this.registry.emit(
             'runner_complete',
             topic,
             params,
@@ -151,7 +146,7 @@ class SqsRunner extends BaseRunner implements IRunner {
             topic,
             error: ex,
           });
-          this.registry.events.emit('runner_failure', topic, ex, params);
+          this.registry.emit('runner_failure', topic, ex, params);
         }
         if (resource) await this.pool.release(resource);
       },

@@ -61,10 +61,10 @@ class RedisProducer implements IProducer {
         qname: topic,
       });
       this.logger.debug('Queue status', queueAttributes);
-      this.registry.events.emit('producer_success', topic, payload);
+      this.registry.emit('producer_success', topic, payload);
     } catch (ex) {
       this.logger.error('Error while sending Redis payload', topic, ex);
-      this.registry.events.emit('producer_failure', topic, ex, data);
+      this.registry.emit('producer_failure', topic, ex, data);
       throw ex;
     }
   }

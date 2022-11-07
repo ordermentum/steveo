@@ -8,6 +8,7 @@ import {
   IProducer,
   IRegistry,
 } from '../common';
+import { getMeta } from './utils';
 
 class KafkaProducer implements IProducer<HighLevelProducer> {
   config: Configuration;
@@ -66,10 +67,11 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
   }
 
   getPayload = <T>(payload: T) => {
+    const context = getMeta(payload);
     if (typeof payload === 'string') {
       return Buffer.from(payload, 'utf-8');
     }
-    return Buffer.from(JSON.stringify(payload), 'utf-8');
+    return Buffer.from(JSON.stringify({ ...payload, _meta: context }), 'utf-8');
   };
 
   async send<T>(topic: string, payload: T, key: string | null = null) {
@@ -90,10 +92,10 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
               'Error :',
               err
             );
-            this.registry.events.emit('producer_failure', topic, err);
+            this.registry.emit('producer_failure', topic, err);
             reject();
           } else {
-            this.registry.events.emit('producer_success', topic, payload);
+            this.registry.emit('producer_success', topic, payload);
             resolve();
           }
         }

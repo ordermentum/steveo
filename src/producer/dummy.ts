@@ -45,10 +45,10 @@ class DummyProducer implements IProducer {
   async send<T = any>(topic: string, payload: T) {
     const data = this.getPayload(payload, topic);
     try {
-      this.registry.events.emit('producer_success', topic, payload);
+      this.registry.emit('producer_success', topic, payload);
     } catch (ex) {
       this.logger.error('Error while sending Redis payload', topic, ex);
-      this.registry.events.emit('producer_failure', topic, ex, data);
+      this.registry.emit('producer_failure', topic, ex, data);
       throw ex;
     }
   }

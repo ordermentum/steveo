@@ -157,11 +157,14 @@ export interface IRegistry {
   registeredTasks: TaskList;
   events: IEvent;
   items: Map<string, string>;
+  heartbeat: number;
+
   addNewTask(task: ITask, topic?: string): void;
   removeTask(task: ITask): void;
   getTopics(): string[];
   getTaskTopics(): string[];
   getTopic(name: string): string;
+  emit(name: string, ...args: any): void;
   addTopic(name: string, topic?: string): void;
   getTask(topic: string): ITask | null;
 }

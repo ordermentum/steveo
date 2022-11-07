@@ -76,12 +76,7 @@ class RedisRunner extends BaseRunner implements IRunner {
           resource = await this.pool.acquire();
           params = JSON.parse(m.message);
           const runnerContext = getContext(params);
-          this.registry.events.emit(
-            'runner_receive',
-            topic,
-            params,
-            runnerContext
-          );
+          this.registry.emit('runner_receive', topic, params, runnerContext);
           this.logger.debug('Deleting message', topic, params);
           await deleteMessage({ // eslint-disable-line
             instance: this.redis,
@@ -105,7 +100,7 @@ class RedisRunner extends BaseRunner implements IRunner {
             await this.hooks.postTask({ ...(params ?? {}), result });
           }
           const completedContext = getContext(params);
-          this.registry.events.emit(
+          this.registry.emit(
             'runner_complete',
             topic,
             params,
@@ -117,7 +112,7 @@ class RedisRunner extends BaseRunner implements IRunner {
             topic,
             error: ex,
           });
-          this.registry.events.emit('runner_failure', topic, ex, params);
+          this.registry.emit('runner_failure', topic, ex, params);
         }
         if (resource) await this.pool.release(resource);
       })

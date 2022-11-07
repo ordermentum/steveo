@@ -9,20 +9,28 @@ class Registry implements IRegistry {
 
   items: Map<string, string>;
 
+  heartbeat: number;
+
   constructor() {
     this.registeredTasks = {};
+    this.heartbeat = new Date().getDate();
     this.events = new events.EventEmitter();
     this.items = new Map<string, string>();
   }
 
+  emit(name: string, ...args: any) {
+    this.heartbeat = Math.max(new Date().getTime(), this.heartbeat);
+    this.emit(name, ...args);
+  }
+
   addNewTask(task: ITask) {
-    this.events.emit('task_added', task);
+    this.emit('task_added', task);
     this.items.set(task.name, task.topic);
     this.registeredTasks[task.topic] = task;
   }
 
   removeTask(task: ITask) {
-    this.events.emit('task_removed', task);
+    this.emit('task_removed', task);
     delete this.registeredTasks[task.topic];
     this.items.delete(task.name);
   }

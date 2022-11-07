@@ -87,7 +87,7 @@ class KafkaRunner extends BaseRunner
         value,
         key: message.key?.toString(),
       };
-      this.registry.events.emit('runner_receive', topic, parsed, {
+      this.registry.emit('runner_receive', topic, parsed, {
         ...message,
         start: getDuration(),
       });
@@ -121,7 +121,7 @@ class KafkaRunner extends BaseRunner
       }
 
       this.logger.debug('Finish subscribe', topic, message);
-      this.registry.events.emit('runner_complete', topic, parsed, {
+      this.registry.emit('runner_complete', topic, parsed, {
         ...message,
         end: getDuration(),
       });
@@ -131,7 +131,7 @@ class KafkaRunner extends BaseRunner
         topic,
         error: ex,
       });
-      this.registry.events.emit('runner_failure', topic, ex, message);
+      this.registry.emit('runner_failure', topic, ex, message);
       if (ex instanceof JsonParsingError) {
         this.consumer.commitMessage(message);
       }
@@ -188,12 +188,7 @@ class KafkaRunner extends BaseRunner
     if (err) {
       const message = 'Error while consumption';
       this.logger.error(`${message} - ${err}`);
-      this.registry.events.emit(
-        'runner_connection_failure',
-        null,
-        err,
-        message
-      ); // keeping the argument order - (eventName, topicName, error, message)
+      this.registry.emit('runner_connection_failure', null, err, message); // keeping the argument order - (eventName, topicName, error, message)
       this.consumer.consume(1, this.consumeCallback);
       return;
     }
