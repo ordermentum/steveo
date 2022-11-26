@@ -26,6 +26,8 @@ export type getPayload = (
   message: any;
 };
 
+export type RunnerState = 'running' | 'terminating' | 'terminated' | 'paused';
+
 export interface Logger {
   trace(format: any, ...params: any[]): void;
   info(format: any, ...params: any[]): void;

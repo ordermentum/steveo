@@ -134,10 +134,12 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   async process(topics?: string[]) {
     const loop = () => {
-      if (this.steveo.exiting) {
+      if (this.state === 'terminating') {
         this.steveo.events.emit('terminate', true);
+        this.state = 'terminated';
         return;
       }
+
       if (this.currentTimeout) clearTimeout(this.currentTimeout);
 
       this.currentTimeout = setTimeout(
@@ -146,7 +148,7 @@ class RedisRunner extends BaseRunner implements IRunner {
       );
     };
 
-    if (this.paused) {
+    if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
       loop();
       return;
@@ -191,6 +193,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async disconnect() {
+    await this.close();
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
     this.redis?.quit(() => {});
   }

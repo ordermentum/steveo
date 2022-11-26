@@ -1,3 +1,5 @@
+import util from 'util';
+
 export const getDuration = (start = undefined) => {
   const durationComponents = process.hrtime(start);
   const seconds = durationComponents[0];
@@ -19,3 +21,5 @@ export const getContext = params => {
     duration,
   };
 };
+
+export const sleep = util.promisify(setTimeout);
