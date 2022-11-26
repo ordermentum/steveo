@@ -180,6 +180,7 @@ class KafkaRunner extends BaseRunner
 
     if (this.steveo.exiting) {
       this.disconnect();
+      this.steveo.events.emit('terminate', true);
       return;
     }
 
