@@ -23,3 +23,16 @@ export const getContext = params => {
 };
 
 export const sleep = util.promisify(setTimeout);
+
+export const safeParseInt = (concurrency: string, fallback = 1) => {
+  if (!concurrency) {
+    return fallback;
+  }
+
+  const result = parseInt(concurrency, 10);
+  if (Number.isNaN(result)) {
+    return fallback;
+  }
+
+  return result;
+};

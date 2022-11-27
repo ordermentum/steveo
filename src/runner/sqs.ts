@@ -3,7 +3,7 @@ import bluebird from 'bluebird';
 import { SQS } from 'aws-sdk';
 import nullLogger from 'null-logger';
 import BaseRunner from '../base/base_runner';
-import { getContext } from './utils';
+import { safeParseInt, getContext } from './utils';
 import sqsConf from '../config/sqs';
 
 import {
@@ -17,19 +17,6 @@ import {
   SQSConfiguration,
 } from '../common';
 import { Steveo } from '..';
-
-const safeParseInt = (concurrency: string, fallback = 1) => {
-  if (!concurrency) {
-    return fallback;
-  }
-
-  const result = parseInt(concurrency, 10);
-  if (Number.isNaN(result)) {
-    return fallback;
-  }
-
-  return result;
-};
 
 type DeleteMessage = {
   instance: SQS;
