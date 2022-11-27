@@ -180,6 +180,51 @@ describe('SQS Runner', () => {
       expect(anotherRunner.state).to.equal('terminated');
     });
 
+    it('paused', async () => {
+      const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+
+      const anotherRegistry = {
+        getTask: () => ({
+          publish: () => {},
+          subscribe: subscribeStub,
+        }),
+        getTopics: () => ['test'],
+        getTaskTopics: () => ['test'],
+        emit: sandbox.stub(),
+        events: {
+          emit: sandbox.stub(),
+        },
+      };
+
+      const steveo = {
+        config: { shuffleQueue: true },
+        registry: anotherRegistry,
+        pool: build(),
+      };
+
+      // @ts-ignore
+      const anotherRunner = new Runner(steveo);
+
+      const getQueueUrlAsyncStub = sandbox
+        .stub(anotherRunner.sqs, 'getQueueUrl')
+        .returns({
+          // @ts-ignore
+          promise: async () => ({ QueueUrl: 'https://ap-southeast2.aws.com' }),
+        });
+
+      const receiveMessageAsyncStub = sandbox
+        .stub(anotherRunner.sqs, 'receiveMessage')
+        .returns({
+          // @ts-ignore
+          promise: async () => [],
+        });
+
+      anotherRunner.state = 'paused';
+      await anotherRunner.process();
+      expect(getQueueUrlAsyncStub.calledOnce).to.equal(false);
+      expect(receiveMessageAsyncStub.calledOnce).to.equal(false);
+    });
+
     it('processes a message', async () => {
       const subscribeStub = sandbox.stub().resolves({ some: 'success' });
 
