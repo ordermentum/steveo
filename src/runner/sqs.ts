@@ -2,7 +2,7 @@ import bluebird from 'bluebird';
 
 import { SQS } from 'aws-sdk';
 import nullLogger from 'null-logger';
-import BaseRunner from '../base/base_runner';
+import BaseRunner from './base';
 import { safeParseInt, getContext } from './utils';
 import sqsConf from '../config/sqs';
 

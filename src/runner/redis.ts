@@ -1,7 +1,7 @@
 /* eslint-disable no-continue */
 import RedisSMQ from 'rsmq';
 import nullLogger from 'null-logger';
-import BaseRunner from '../base/base_runner';
+import BaseRunner from './base';
 import { getContext } from './utils';
 import redisConf from '../config/redis';
 import {

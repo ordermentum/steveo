@@ -5,7 +5,7 @@ import Kafka, {
   Message,
 } from 'node-rdkafka';
 import nullLogger from 'null-logger';
-import BaseRunner from '../base/base_runner';
+import BaseRunner from './base';
 import { getDuration } from './utils';
 import {
   Hooks,

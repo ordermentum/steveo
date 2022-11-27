@@ -9,7 +9,7 @@ import {
   IRegistry,
   RunnerState,
 } from '../common';
-import { sleep } from '../runner/utils';
+import { sleep } from './utils';
 
 class BaseRunner {
   async preProcess() {
