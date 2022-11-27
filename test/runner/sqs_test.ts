@@ -43,6 +43,7 @@ describe('SQS Runner', () => {
         publish: () => {},
         subscribe: subscribeStub,
       }),
+      emit: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },
@@ -82,6 +83,7 @@ describe('SQS Runner', () => {
         publish: () => {},
         subscribe: subscribeStub,
       }),
+      emit: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },
@@ -118,6 +120,7 @@ describe('SQS Runner', () => {
         publish: () => {},
         subscribe: subscribeStub,
       }),
+      emit: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },
@@ -158,6 +161,7 @@ describe('SQS Runner', () => {
       }),
       getTopics: () => ['test'],
       getTaskTopics: () => ['test'],
+      emit: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },
@@ -198,6 +202,7 @@ describe('SQS Runner', () => {
         publish: () => {},
         subscribe: subscribeStub,
       }),
+      emit: emitStub,
       events: {
         emit: emitStub,
       },

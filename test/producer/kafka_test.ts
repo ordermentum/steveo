@@ -88,7 +88,11 @@ describe('Kafka Producer', () => {
     await p.send('test-topic', { a: 'payload', b: '¼' });
     expect(sendStub.callCount).to.equal(1);
     const payload = JSON.parse(sendStub.args[0][2].toString('utf8'));
-    expect(payload).to.eqls({ a: 'payload', b: '¼' });
+
+    // eslint-disable-next-line no-underscore-dangle
+    expect(payload?._meta).to.exist;
+    expect(payload?.a).to.equal('payload');
+    expect(payload?.b).to.equal('¼');
   });
 
   it('should make buffers from string payload', async () => {

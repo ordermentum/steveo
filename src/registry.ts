@@ -20,7 +20,7 @@ class Registry implements IRegistry {
 
   emit(name: string, ...args: any) {
     this.heartbeat = Math.max(new Date().getTime(), this.heartbeat);
-    this.emit(name, ...args);
+    this.events.emit(name, ...args);
   }
 
   addNewTask(task: ITask) {
