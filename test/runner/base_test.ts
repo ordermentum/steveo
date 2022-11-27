@@ -34,4 +34,24 @@ describe('Base', () => {
   it('should create an instance', () => {
     expect(typeof runner).to.equal('object');
   });
+
+  it('should pause', async () => {
+    runner.state = 'running';
+    await runner.pause();
+    expect(runner.state).to.equal('paused');
+  });
+
+  it('should resume', async () => {
+    runner.state = 'paused';
+    await runner.resume();
+    expect(runner.state).to.equal('running');
+  });
+
+  it('should terminate', async () => {
+    runner.state = 'running';
+    setTimeout(() => {
+      runner.state = 'terminated';
+    }, 1000);
+    await runner.terminate();
+  });
 });
