@@ -19,17 +19,6 @@ Steveo is a task management library that supports Kafka, SQS and Redis.
 
 Think of it as [sidekiq](https://github.com/mperham/sidekiq) for node.js with support for multiple backends.
 
-On a highlevel, it works as below, Steveo has 3 main components
-
-```
-              +-----------+     +-----------+     +-----------+
-              |           |     |           |     |           |
-PUBLISH ----->|   TASK    |     | REGISTRY  |     |   RUNNER  |-----> RECEIVE
-              |           |     |           |     |           |
-              |           |     |           |     |           |
-              +-----------+     +-----------+     +-----------+
-```
-
 ## Installation
 
 This is a Node.js module available through the npm registry.
@@ -123,6 +112,20 @@ yarn install
 
 ```sh
 yarn run test
+```
+
+
+## Architecture
+
+On a highlevel, it works as below, Steveo has 3 main components
+
+```
+              +-----------+     +-----------+     +-----------+
+              |           |     |           |     |           |
+PUBLISH ----->|   TASK    |     | REGISTRY  |     |   RUNNER  |-----> RECEIVE
+              |           |     |           |     |           |
+              |           |     |           |     |           |
+              +-----------+     +-----------+     +-----------+
 ```
 
 
