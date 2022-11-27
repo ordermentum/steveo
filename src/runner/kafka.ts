@@ -179,7 +179,7 @@ class KafkaRunner extends BaseRunner
     await this.healthCheck();
 
     if (this.state === 'terminating') {
-      this.steveo.events.emit('terminate', true);
+      this.registry.emit('terminate', true);
       this.state = 'terminated';
       return;
     }

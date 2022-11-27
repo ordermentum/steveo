@@ -135,7 +135,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   async process(topics?: string[]) {
     const loop = () => {
       if (this.state === 'terminating') {
-        this.steveo.events.emit('terminate', true);
+        this.registry.emit('terminate', true);
         this.state = 'terminated';
         return;
       }
