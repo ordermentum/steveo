@@ -38,6 +38,8 @@ class BaseRunner {
     this.errorCount = 0;
     this.preProcess = steveo?.hooks?.preProcess || (() => Promise.resolve());
     this.steveo = steveo;
+    this.registry = steveo?.registry;
+    this.config = steveo?.config || {};
     this.logger = steveo?.logger ?? nullLogger;
     this.state = 'running';
   }

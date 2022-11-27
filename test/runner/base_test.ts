@@ -47,6 +47,38 @@ describe('Base', () => {
     expect(runner.state).to.equal('running');
   });
 
+  describe('getActiveSubscriptions', () => {
+    it('returns empty', () => {
+      runner.registry = null;
+      const active = runner.getActiveSubsciptions(['test']);
+      expect(active).to.deep.equal([]);
+      runner.registry = registry;
+    });
+
+    it('returns non-filtered', () => {
+      const active = runner.getActiveSubsciptions();
+      expect(active).to.deep.equal(['test-topic']);
+    });
+
+    it('returns missing', () => {
+      const active = runner.getActiveSubsciptions(['unknown']);
+      expect(active).to.deep.equal([]);
+    });
+
+    it('returns filtered', () => {
+      registry.addNewTask({
+        name: 'test',
+        topic: 'test',
+      });
+      registry.addNewTask({
+        name: 'another',
+        topic: 'another',
+      });
+      const active = runner.getActiveSubsciptions(['test']);
+      expect(active).to.deep.equal(['test']);
+    });
+  });
+
   it('should terminate', async () => {
     runner.state = 'running';
     setTimeout(() => {
