@@ -193,7 +193,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async disconnect() {
-    await this.close();
+    await this.terminate();
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
     this.redis?.quit(() => {});
   }

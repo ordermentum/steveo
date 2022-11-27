@@ -286,7 +286,7 @@ class KafkaRunner extends BaseRunner
   }
 
   async disconnect() {
-    await this.close();
+    await this.terminate();
     this.consumer.disconnect();
     this.adminClient.disconnect();
   }

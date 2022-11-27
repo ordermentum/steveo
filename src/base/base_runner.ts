@@ -64,8 +64,8 @@ class BaseRunner {
     this.state = 'paused';
   }
 
-  async close() {
-    if (this.state === 'running') {
+  async terminate() {
+    if (['running', 'paused'].includes(this.state)) {
       this.state = 'terminating';
     }
 

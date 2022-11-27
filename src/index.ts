@@ -262,9 +262,9 @@ export class Steveo implements ISteveo {
     return this._runner;
   }
 
-  disconnect() {
-    this._producer?.disconnect();
-    this._runner?.disconnect();
+  async disconnect() {
+    await this._producer?.disconnect();
+    await this._runner?.disconnect();
   }
 }
 
