@@ -85,5 +85,6 @@ describe('Base', () => {
       runner.state = 'terminated';
     }, 1000);
     await runner.terminate();
+    expect(runner.state).to.equal('terminated');
   });
 });
