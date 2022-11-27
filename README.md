@@ -13,9 +13,11 @@
 [![npm](https://img.shields.io/npm/l/steveo.svg)](https://www.npmjs.com/package/steveo)
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
 
-> A Task Pub/Sub Background processing library (Task Framework for Node.js)
+A Task Pub/Sub Background processing library (Task Framework for Node.js)
 
 Steveo is a task management library that supports Kafka, SQS and Redis.
+
+Think of it as [sidekiq](https://github.com/mperham/sidekiq) for node.js with support for multiple backends.
 
 On a highlevel, it works as below, Steveo has 3 main components
 
@@ -28,17 +30,18 @@ PUBLISH ----->|   TASK    |     | REGISTRY  |     |   RUNNER  |-----> RECEIVE
               +-----------+     +-----------+     +-----------+
 ```
 
-## Install
+## Installation
 
-```sh
-yarn install
-```
+This is a Node.js module available through the npm registry.
 
-## Run tests
+Before installing, download and install Node.js. Node.js 12 or higher is required.
 
-```sh
-yarn run test
-```
+If this is a brand new project, make sure to create a package.json first with the npm init command.
+
+Installation is done using the npm install command:
+
+$ npm install steveo
+
 
 ## Author
 
@@ -104,6 +107,23 @@ await steveo.publish('example-task', { name: 'Apple' });
 ```
 
 For more details, see [example](https://github.com/ordermentum/steveo/blob/master/examples/full/README.md)
+
+
+## Contributing
+
+
+### Installing dependencies
+
+```sh
+yarn install
+```
+
+## Running tests
+
+```sh
+yarn run test
+```
+
 
 _Credits_
 
