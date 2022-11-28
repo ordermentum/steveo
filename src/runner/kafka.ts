@@ -296,6 +296,7 @@ class KafkaRunner extends BaseRunner
     if (!this.consumer.isConnected()) {
       throw new Error('Lost connection to kafka');
     }
+    if (this.state === 'terminating') return;
     if (this.state === 'paused') {
       this.logger.debug('Resuming consumer');
       this.consumer.consume(1, this.consumeCallback);

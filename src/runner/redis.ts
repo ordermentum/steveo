@@ -148,6 +148,11 @@ class RedisRunner extends BaseRunner implements IRunner {
       );
     };
 
+    if (this.state === 'terminating') {
+      this.logger.debug(`runner terminating`);
+      return;
+    }
+
     if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
       loop();

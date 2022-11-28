@@ -1,11 +1,14 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 import Registry from '../../src/registry';
 
 describe('Registry', () => {
   let registry: Registry;
+  let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => {
     registry = new Registry();
+    sandbox = sinon.createSandbox();
   });
 
   it('should add new tasks', () => {
@@ -34,6 +37,12 @@ describe('Registry', () => {
       subscribe: () => {},
     });
     expect(registry.getTopics().length).to.equal(1);
+  });
+
+  it('call emit', async () => {
+    const stub = sandbox.stub(registry.events, 'emit');
+    registry.emit('test');
+    expect(stub.calledOnce).to.be.true;
   });
 
   it('should remove tasks', async () => {
