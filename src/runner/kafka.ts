@@ -5,7 +5,7 @@ import Kafka, {
   Message,
 } from 'node-rdkafka';
 import nullLogger from 'null-logger';
-import BaseRunner from '../base/base_runner';
+import BaseRunner from './base';
 import { getDuration } from './utils';
 import {
   Hooks,
@@ -178,8 +178,9 @@ class KafkaRunner extends BaseRunner
     this.logger.debug('Consumer callback', messages?.[0]);
     await this.healthCheck();
 
-    if (this.steveo.exiting) {
-      this.disconnect();
+    if (this.state === 'terminating') {
+      this.registry.emit('terminate', true);
+      this.state = 'terminated';
       return;
     }
 
@@ -197,7 +198,7 @@ class KafkaRunner extends BaseRunner
         await this.receive(messages[0]);
       }
     } finally {
-      if (this.steveo.paused) {
+      if (this.state === 'paused') {
         this.logger.debug('Consumer paused');
       } else {
         this.consumer.consume(1, this.consumeCallback);
@@ -285,6 +286,7 @@ class KafkaRunner extends BaseRunner
   }
 
   async disconnect() {
+    await this.terminate();
     this.consumer.disconnect();
     this.adminClient.disconnect();
   }
@@ -294,7 +296,8 @@ class KafkaRunner extends BaseRunner
     if (!this.consumer.isConnected()) {
       throw new Error('Lost connection to kafka');
     }
-    if (!this.steveo.paused) {
+    if (this.state === 'terminating') return;
+    if (this.state === 'paused') {
       this.logger.debug('Resuming consumer');
       this.consumer.consume(1, this.consumeCallback);
     }

@@ -61,6 +61,7 @@ describe('Runner', () => {
         publish: () => {},
         subscribe: subscribeStub,
       }),
+      emit: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },
@@ -101,6 +102,7 @@ describe('Runner', () => {
         publish: () => {},
         subscribe: subscribeStub,
       }),
+      emit: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },
@@ -140,8 +142,9 @@ describe('Runner', () => {
     const anotherRegistry = {
       getTask: () => ({
         publish: () => {},
-        subscribe: sandbox.stub().returns(Promise.reject({ some: 'error' })),
+        subscribe: sandbox.stub().rejects({ some: 'error' }),
       }),
+      emit: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },
@@ -157,23 +160,19 @@ describe('Runner', () => {
     };
     // @ts-ignore
     const anotherRunner = new Runner(steveo);
-    let error = false;
-    let commitOffsetStub;
-    try {
-      commitOffsetStub = sandbox.stub(anotherRunner.consumer, 'commitMessage');
-      await anotherRunner.receive({
-        value: Buffer.from(
-          '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
-        ),
-        size: 1000,
-        offset: 0,
-        topic: 'a-topic',
-        partition: 1,
-      });
-    } catch (ex) {
-      error = true;
-      expect(commitOffsetStub.getTask().callCount).to.equal(1);
-    }
-    expect(error);
+    const stub = sandbox
+      .stub(anotherRunner.consumer, 'commitMessage')
+      .throws({ some: 'error' });
+
+    await anotherRunner.receive({
+      value: Buffer.from(
+        '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
+      ),
+      size: 1000,
+      offset: 0,
+      topic: 'a-topic',
+      partition: 1,
+    });
+    expect(stub.called).to.be.true;
   });
 });

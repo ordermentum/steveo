@@ -2,8 +2,8 @@ import bluebird from 'bluebird';
 
 import { SQS } from 'aws-sdk';
 import nullLogger from 'null-logger';
-import BaseRunner from '../base/base_runner';
-import { getContext } from './utils';
+import BaseRunner from './base';
+import { safeParseInt, getContext } from './utils';
 import sqsConf from '../config/sqs';
 
 import {
@@ -17,19 +17,6 @@ import {
   SQSConfiguration,
 } from '../common';
 import { Steveo } from '..';
-
-const safeParseInt = (concurrency: string, fallback = 1) => {
-  if (!concurrency) {
-    return fallback;
-  }
-
-  const result = parseInt(concurrency, 10);
-  if (Number.isNaN(result)) {
-    return fallback;
-  }
-
-  return result;
-};
 
 type DeleteMessage = {
   instance: SQS;
@@ -175,7 +162,12 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async process(topics?: string[]) {
     const loop = () => {
-      if (this.steveo.exiting) return;
+      if (this.state === 'terminating') {
+        this.registry.emit('terminate', true);
+        this.state = 'terminated';
+        return;
+      }
+
       if (this.currentTimeout) clearTimeout(this.currentTimeout);
 
       this.currentTimeout = setTimeout(
@@ -184,7 +176,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       );
     };
 
-    if (this.paused) {
+    if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
       loop();
       return;
@@ -264,6 +256,8 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async disconnect() {
+    await this.terminate();
+
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
   }
 

@@ -1,7 +1,7 @@
 /* eslint-disable no-continue */
 import RedisSMQ from 'rsmq';
 import nullLogger from 'null-logger';
-import BaseRunner from '../base/base_runner';
+import BaseRunner from './base';
 import { getContext } from './utils';
 import redisConf from '../config/redis';
 import {
@@ -134,7 +134,12 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   async process(topics?: string[]) {
     const loop = () => {
-      if (this.steveo.exiting) return;
+      if (this.state === 'terminating') {
+        this.registry.emit('terminate', true);
+        this.state = 'terminated';
+        return;
+      }
+
       if (this.currentTimeout) clearTimeout(this.currentTimeout);
 
       this.currentTimeout = setTimeout(
@@ -143,7 +148,12 @@ class RedisRunner extends BaseRunner implements IRunner {
       );
     };
 
-    if (this.paused) {
+    if (this.state === 'terminating') {
+      this.logger.debug(`runner terminating`);
+      return;
+    }
+
+    if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
       loop();
       return;
@@ -188,6 +198,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async disconnect() {
+    await this.terminate();
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
     this.redis?.quit(() => {});
   }

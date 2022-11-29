@@ -36,6 +36,7 @@ describe('Redis Runner', () => {
         publish: () => {},
         subscribe: subscribeStub,
       }),
+      emit: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },
@@ -73,6 +74,7 @@ describe('Redis Runner', () => {
         publish: () => {},
         subscribe: subscribeStub,
       }),
+      emit: sandbox.stub(),
       events: {
         emit: sandbox.stub(),
       },

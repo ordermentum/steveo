@@ -2,7 +2,14 @@ import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 import nullLogger from 'null-logger';
 import { Steveo } from '..';
-import { SQSConfiguration, Configuration, Logger, IRegistry } from '../common';
+import {
+  SQSConfiguration,
+  Configuration,
+  Logger,
+  IRegistry,
+  RunnerState,
+} from '../common';
+import { sleep } from './utils';
 
 class BaseRunner {
   async preProcess() {
@@ -20,7 +27,7 @@ class BaseRunner {
 
   steveo: Steveo;
 
-  paused: boolean;
+  state: RunnerState;
 
   // @ts-ignore
   config: Configuration;
@@ -31,8 +38,10 @@ class BaseRunner {
     this.errorCount = 0;
     this.preProcess = steveo?.hooks?.preProcess || (() => Promise.resolve());
     this.steveo = steveo;
+    this.registry = steveo?.registry;
+    this.config = steveo?.config || {};
     this.logger = steveo?.logger ?? nullLogger;
-    this.paused = false;
+    this.state = 'running';
   }
 
   getActiveSubsciptions(topics?: string[]): string[] {
@@ -49,12 +58,22 @@ class BaseRunner {
     return filtered;
   }
 
-  async pause() {
-    this.paused = true;
+  async resume() {
+    this.state = 'running';
   }
 
-  async resume() {
-    this.paused = false;
+  async pause() {
+    this.state = 'paused';
+  }
+
+  async terminate() {
+    if (['running', 'paused'].includes(this.state)) {
+      this.state = 'terminating';
+    }
+
+    while (this.state !== 'terminated') {
+      await sleep(5000);
+    }
   }
 
   async healthCheck() {

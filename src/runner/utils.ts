@@ -1,3 +1,5 @@
+import util from 'util';
+
 export const getDuration = (start = undefined) => {
   const durationComponents = process.hrtime(start);
   const seconds = durationComponents[0];
@@ -18,4 +20,19 @@ export const getContext = params => {
   return {
     duration,
   };
+};
+
+export const sleep = util.promisify(setTimeout);
+
+export const safeParseInt = (concurrency: string, fallback = 1) => {
+  if (!concurrency) {
+    return fallback;
+  }
+
+  const result = parseInt(concurrency, 10);
+  if (Number.isNaN(result)) {
+    return fallback;
+  }
+
+  return result;
 };
