@@ -199,27 +199,22 @@ export class Steveo implements ISteveo {
     });
   }
 
+  // allow runner and producer to gracefully stop processing
   async terminate() {
     this.exiting = true;
-    // allow runner and producer to gracefully stop processing
-    return new Promise<void>(resolve => {
-      setTimeout(async () => {
-        await this.disconnect();
-        return resolve();
-      }, this.config.terminateWait ?? 5000);
-    });
+    return this.disconnect();
   }
 
-  pause() {
+  async pause() {
     this.paused = true;
     const runner = this.runner();
-    runner.pause();
+    return runner.pause();
   }
 
-  resume() {
+  async resume() {
     this.paused = false;
     const runner = this.runner();
-    runner.resume();
+    return runner.resume();
   }
 
   /**

@@ -59,10 +59,12 @@ class BaseRunner {
   }
 
   async resume() {
+    this.logger.debug(`resuming runner`);
     this.state = 'running';
   }
 
   async pause() {
+    this.logger.debug(`pausing runner`);
     this.state = 'paused';
   }
 

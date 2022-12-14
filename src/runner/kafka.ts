@@ -299,6 +299,7 @@ class KafkaRunner extends BaseRunner
     if (this.state === 'terminating') return;
     if (this.state === 'paused') {
       this.logger.debug('Resuming consumer');
+      this.state = 'running';
       this.consumer.consume(1, this.consumeCallback);
     }
   }

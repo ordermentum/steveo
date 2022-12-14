@@ -94,7 +94,6 @@ describe('Index', () => {
         // @ts-ignore
         {
           engine: 'dummy',
-          terminateWait: 1,
           tasksPath: __filename,
           childProcesses: {
             instancePath: '',
@@ -114,7 +113,6 @@ describe('Index', () => {
         // @ts-ignore
         {
           engine: 'dummy',
-          terminateWait: 0,
           tasksPath: __filename,
           childProcesses: {
             instancePath: '',
@@ -133,9 +131,9 @@ describe('Index', () => {
         resume,
       };
 
-      steveo.pause();
+      await steveo.pause();
       expect(pause.callCount).to.eqls(1);
-      steveo.resume();
+      await steveo.resume();
       expect(resume.callCount).to.eqls(1);
     });
   });
