@@ -8,7 +8,7 @@ import {
   IProducer,
   IRegistry,
 } from '../common';
-import { getMeta } from './utils';
+import { generateMetadata } from './utils';
 
 class KafkaProducer implements IProducer<HighLevelProducer> {
   config: Configuration;
@@ -67,7 +67,7 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
   }
 
   getPayload = <T>(payload: T) => {
-    const context = getMeta(payload);
+    const context = generateMetadata(payload);
     if (typeof payload === 'string') {
       return Buffer.from(payload, 'utf-8');
     }

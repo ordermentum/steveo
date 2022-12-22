@@ -2,7 +2,7 @@ import moment from 'moment';
 import * as crypto from 'crypto';
 import os from 'os';
 
-export const getMeta = <T = any>(message: T) => {
+export const generateMetadata = <T = any>(message: T) => {
   const sha1 = crypto.createHash('sha1');
   const signature = sha1
     .update(JSON.stringify(message))

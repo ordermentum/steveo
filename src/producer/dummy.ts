@@ -2,7 +2,7 @@ import nullLogger from 'null-logger';
 
 import { Configuration, Logger, IProducer, IRegistry } from '../common';
 
-import { getMeta } from './utils';
+import { generateMetadata } from './utils';
 
 class DummyProducer implements IProducer {
   config: Configuration;
@@ -35,7 +35,7 @@ class DummyProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string): any {
-    const context = getMeta(msg);
+    const context = generateMetadata(msg);
     return {
       qname: topic,
       message: JSON.stringify({ ...msg, _meta: context }),

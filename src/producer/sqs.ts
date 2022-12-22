@@ -11,7 +11,7 @@ import {
   SQSConfiguration,
 } from '../common';
 
-import { getMeta } from './utils';
+import { generateMetadata } from './utils';
 
 class SqsProducer implements IProducer {
   config: Configuration;
@@ -67,7 +67,7 @@ class SqsProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string): any {
-    const context = getMeta(msg);
+    const context = generateMetadata(msg);
 
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
