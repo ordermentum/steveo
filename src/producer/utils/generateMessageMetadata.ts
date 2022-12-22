@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 import os from 'os';
 import newrelic from 'newrelic';
 
-export const generateMessageMetadata = <T = any>(message: T, transaction ) => {
+export const generateMessageMetadata = <T = any>(message: T, transaction?: newrelic.TransactionHandle ) => {
   const sha1 = crypto.createHash('sha1');
   const signature = sha1
     .update(JSON.stringify(message))
@@ -13,9 +13,11 @@ export const generateMessageMetadata = <T = any>(message: T, transaction ) => {
   const start = process.hrtime();
   const hostname = os.hostname();
 
-  const traceMetadata = {};
-  // const transaction = newrelic.startBackgroundTransaction();
-  // transaction.insertDistributedTraceHeaders(traceMetadata);
+  let traceMetadata: newrelic.DistributedTraceHeaders | undefined;
+  if (transaction) {
+    traceMetadata = {};
+    transaction.insertDistributedTraceHeaders(traceMetadata);
+  }
 
   return { hostname, timestamp, traceMetadata, signature, start };
 };
