@@ -11,7 +11,7 @@ import {
   SQSConfiguration,
 } from '../common';
 
-import { generateMetadata } from './utils/generateMetadata';
+import { generateMessageMetadata } from './utils/generateMessageMetadata';
 
 class SqsProducer implements IProducer {
   config: Configuration;
@@ -66,8 +66,9 @@ class SqsProducer implements IProducer {
     return this.sqsUrls[topic];
   }
 
+  // Why does the _producer_ have a get payload fn??
   getPayload(msg: any, topic: string): any {
-    const context = generateMetadata(msg);
+    const context = generateMessageMetadata(msg);
 
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];

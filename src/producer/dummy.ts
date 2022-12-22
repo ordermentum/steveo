@@ -1,8 +1,8 @@
-import nullLogger from 'null-logger';
+import nullLogger from "null-logger";
 
-import { Configuration, Logger, IProducer, IRegistry } from '../common';
+import { Configuration, Logger, IProducer, IRegistry } from "../common";
 
-import { generateMetadata } from './utils/generateMetadata';
+import { generateMessageMetadata } from "./utils/generateMessageMetadata";
 
 class DummyProducer implements IProducer {
   config: Configuration;
@@ -35,7 +35,7 @@ class DummyProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string): any {
-    const context = generateMetadata(msg);
+    const context = generateMessageMetadata(msg);
     return {
       qname: topic,
       message: JSON.stringify({ ...msg, _meta: context }),
@@ -45,10 +45,10 @@ class DummyProducer implements IProducer {
   async send<T = any>(topic: string, payload: T) {
     const data = this.getPayload(payload, topic);
     try {
-      this.registry.emit('producer_success', topic, payload);
+      this.registry.emit("producer_success", topic, payload);
     } catch (ex) {
-      this.logger.error('Error while sending Redis payload', topic, ex);
-      this.registry.emit('producer_failure', topic, ex, data);
+      this.logger.error("Error while sending Redis payload", topic, ex);
+      this.registry.emit("producer_failure", topic, ex, data);
       throw ex;
     }
   }
