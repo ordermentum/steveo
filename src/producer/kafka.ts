@@ -8,7 +8,7 @@ import {
   IProducer,
   IRegistry,
 } from '../common';
-import { generateMetadata } from './utils';
+import { generateMetadata } from './utils/generateMetadata';
 
 class KafkaProducer implements IProducer<HighLevelProducer> {
   config: Configuration;

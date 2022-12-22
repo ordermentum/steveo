@@ -10,7 +10,7 @@ import {
   RedisConfiguration,
 } from '../common';
 
-import { generateMetadata } from './utils';
+import { generateMetadata } from './utils/generateMetadata';
 
 class RedisProducer implements IProducer {
   config: Configuration;

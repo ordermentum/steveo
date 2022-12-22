@@ -11,7 +11,7 @@ import {
   SQSConfiguration,
 } from '../common';
 
-import { generateMetadata } from './utils';
+import { generateMetadata } from './utils/generateMetadata';
 
 class SqsProducer implements IProducer {
   config: Configuration;

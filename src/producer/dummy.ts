@@ -2,7 +2,7 @@ import nullLogger from 'null-logger';
 
 import { Configuration, Logger, IProducer, IRegistry } from '../common';
 
-import { generateMetadata } from './utils';
+import { generateMetadata } from './utils/generateMetadata';
 
 class DummyProducer implements IProducer {
   config: Configuration;
