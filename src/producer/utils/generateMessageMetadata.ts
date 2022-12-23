@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 import os from 'os';
 import newrelic from 'newrelic';
 
-export const generateMessageMetadata = <T = any>(message: T, transaction?: newrelic.TransactionHandle ) => {
+export const generateMessageMetadata = <T = any>(message: T, transaction?: newrelic.TransactionHandle) => {
   const sha1 = crypto.createHash('sha1');
   const signature = sha1
     .update(JSON.stringify(message))

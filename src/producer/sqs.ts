@@ -1,6 +1,7 @@
-import nullLogger from 'null-logger';
-import { SQS } from 'aws-sdk';
-import sqsConf from '../config/sqs';
+import newrelic from "newrelic";
+import nullLogger from "null-logger";
+import { SQS } from "aws-sdk";
+import sqsConf from "../config/sqs";
 
 import {
   Configuration,
@@ -9,9 +10,9 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
-} from '../common';
+} from "../common";
 
-import { generateMessageMetadata } from './utils/generateMessageMetadata';
+import { generateMessageMetadata } from "./utils/generateMessageMetadata";
 
 class SqsProducer implements IProducer {
   config: Configuration;
@@ -38,7 +39,7 @@ class SqsProducer implements IProducer {
 
   async initialize(topic?: string) {
     if (!topic) {
-      throw new Error('Topic cannot be empty');
+      throw new Error("Topic cannot be empty");
     }
 
     const config = this.config as SQSConfiguration;
@@ -67,21 +68,25 @@ class SqsProducer implements IProducer {
   }
 
   // Why does the _producer_ have a get payload fn??
-  getPayload(msg: any, topic: string): any {
-    const context = generateMessageMetadata(msg);
+  getPayload(
+    msg: any,
+    topic: string,
+    transaction?: newrelic.TransactionHandle
+  ): any {
+    const context = generateMessageMetadata(msg, transaction);
 
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
     const messageAttributes = {
       Timestamp: {
-        DataType: 'Number',
+        DataType: "Number",
         StringValue: context.timestamp.toString(),
       },
     };
     if (attributes) {
-      attributes.forEach(a => {
+      attributes.forEach((a) => {
         messageAttributes[a.name] = {
-          DataType: a.dataType || 'String',
+          DataType: a.dataType || "String",
           StringValue: a.value.toString(),
         };
       });
@@ -95,24 +100,29 @@ class SqsProducer implements IProducer {
   }
 
   async send<T = any>(topic: string, payload: T) {
-    try {
-      await this.initialize(topic);
-    } catch (ex) {
-      this.logger.error('Error in initalizing sqs', ex);
-      throw ex;
-    }
+    newrelic.startBackgroundTransaction(topic, async () => {
+      try {
+        await this.initialize(topic);
+      } catch (ex) {
+        newrelic.noticeError(ex as Error);
+        this.logger.error("Error in initalizing sqs", ex);
+        throw ex;
+      }
 
-    const data = this.getPayload(payload, topic);
+      const transaction = newrelic.getTransaction();
+      const data = this.getPayload(payload, topic, transaction);
 
-    try {
-      const response = await this.producer.sendMessage(data).promise();
-      this.logger.debug('SQS Publish Data', response);
-      this.registry.emit('producer_success', topic, data);
-    } catch (ex) {
-      this.logger.error('Error while sending SQS payload', topic, ex);
-      this.registry.emit('producer_failure', topic, ex, data);
-      throw ex;
-    }
+      try {
+        const response = await this.producer.sendMessage(data).promise();
+        this.logger.debug("SQS Publish Data", response);
+        this.registry.emit("producer_success", topic, data);
+      } catch (ex) {
+        newrelic.noticeError(ex as Error);
+        this.logger.error("Error while sending SQS payload", topic, ex);
+        this.registry.emit("producer_failure", topic, ex, data);
+        throw ex;
+      }
+    });
   }
 
   async disconnect() {}
