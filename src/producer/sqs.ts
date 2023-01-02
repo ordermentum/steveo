@@ -1,4 +1,4 @@
-import newrelic from "newrelic";
+import newrelic from "newrelic"; // TODO - Move to a dependency injection pattern
 import nullLogger from "null-logger";
 import { SQS } from "aws-sdk";
 import sqsConf from "../config/sqs";

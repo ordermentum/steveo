@@ -83,14 +83,15 @@ class SqsRunner extends BaseRunner implements IRunner {
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
     this.registry.emit('runner_messages', topic, messages);
 
+    // pretty sure we can do this using Array.map + Promise.all
     return bluebird.map(
       messages,
-      async m => {
+      async (m) => {
         let params;
         let resource;
         try {
           resource = await this.pool.acquire();
-          params = JSON.parse(m.Body);
+          params = JSON.parse(m.Body as string);
           const runnerContext = getContext(params);
 
           this.registry.emit('runner_receive', topic, params, runnerContext);
