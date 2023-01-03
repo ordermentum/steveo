@@ -1,10 +1,10 @@
-import bluebird from 'bluebird';
-
-import { SQS } from 'aws-sdk';
-import nullLogger from 'null-logger';
-import BaseRunner from './base';
-import { safeParseInt, getContext } from './utils';
-import sqsConf from '../config/sqs';
+import newrelic from "newrelic";
+import { SQS } from "aws-sdk";
+import bluebird from "bluebird";
+import nullLogger from "null-logger";
+import BaseRunner from "./base";
+import { safeParseInt, getContext } from "./utils";
+import sqsConf from "../config/sqs";
 
 import {
   Hooks,
@@ -15,8 +15,8 @@ import {
   IRegistry,
   CreateSqsTopic,
   SQSConfiguration,
-} from '../common';
-import { Steveo } from '..';
+} from "../common";
+import { Steveo } from "..";
 
 type DeleteMessage = {
   instance: SQS;
@@ -39,12 +39,12 @@ const deleteMessage = async ({
     ReceiptHandle: message.ReceiptHandle,
   };
   try {
-    logger.debug('Deleting Message from Queue URL', deleteParams);
+    logger.debug("Deleting Message from Queue URL", deleteParams);
     const data = await instance.deleteMessage(deleteParams).promise();
-    logger.debug('returned data', data);
+    logger.debug("returned data", data);
     return data;
   } catch (ex) {
-    logger.error('sqs deletion error', ex, topic, message);
+    logger.error("sqs deletion error", ex, topic, message);
     throw ex;
   }
 };
@@ -81,62 +81,75 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
-    this.registry.emit('runner_messages', topic, messages);
+    this.registry.emit("runner_messages", topic, messages);
 
     // pretty sure we can do this using Array.map + Promise.all
     return bluebird.map(
       messages,
-      async (m) => {
+      async (message) => {
         let params;
         let resource;
-        try {
-          resource = await this.pool.acquire();
-          params = JSON.parse(m.Body as string);
-          const runnerContext = getContext(params);
+        params = JSON.parse(message.Body as string);
+        const runnerContext = getContext(params);
 
-          this.registry.emit('runner_receive', topic, params, runnerContext);
-          this.logger.debug('Deleting message', topic, params);
+        newrelic.startBackgroundTransaction(`${topic}-runner`, async () => {
+          try {
+            if (runnerContext.traceMetadata) {
+              const transactionHandle = newrelic.getTransaction();
+              transactionHandle.acceptDistributedTraceHeaders(
+                "Queue",
+                runnerContext.traceMetadata
+              );
+            }
 
-          await deleteMessage({ // eslint-disable-line
-            instance: this.sqs,
-            topic,
-            message: m,
-            sqsUrls: this.sqsUrls,
-            logger: this.logger,
-          });
+            resource = await this.pool.acquire();
 
-          this.logger.debug('Message Deleted', topic, params);
-          const task = this.registry.getTask(topic);
-          this.logger.debug('Start subscribe', topic, params);
-          if (!task) {
-            this.logger.error(`Unknown Task ${topic}`);
-            return;
+            this.registry.emit("runner_receive", topic, params, runnerContext);
+            this.logger.debug("Deleting message", topic, params);
+
+            await deleteMessage({
+              // eslint-disable-line
+              instance: this.sqs,
+              topic,
+              message,
+              sqsUrls: this.sqsUrls,
+              logger: this.logger,
+            });
+
+            this.logger.debug("Message Deleted", topic, params);
+            const task = this.registry.getTask(topic);
+            this.logger.debug("Start subscribe", topic, params);
+            if (!task) {
+              this.logger.error(`Unknown Task ${topic}`);
+              return;
+            }
+            if (this.hooks?.preTask) {
+              await this.hooks.preTask(params);
+            }
+            const { context = null, ...value } = params;
+            const result = await task.subscribe(value, context);
+            if (this.hooks?.postTask) {
+              await this.hooks.postTask({ ...(params ?? {}), result });
+            }
+            this.logger.debug("Completed subscribe", topic, params);
+            const completedContext = getContext(params);
+            this.registry.emit(
+              "runner_complete",
+              topic,
+              params,
+              completedContext
+            );
+          } catch (ex) {
+            newrelic.noticeError(ex as Error);
+            this.logger.error("Error while executing consumer callback ", {
+              params,
+              topic,
+              error: ex,
+            });
+            this.registry.emit("runner_failure", topic, ex, params);
           }
-          if (this.hooks?.preTask) {
-            await this.hooks.preTask(params);
-          }
-          const { context = null, ...value } = params;
-          const result = await task.subscribe(value, context);
-          if (this.hooks?.postTask) {
-            await this.hooks.postTask({ ...(params ?? {}), result });
-          }
-          this.logger.debug('Completed subscribe', topic, params);
-          const completedContext = getContext(params);
-          this.registry.emit(
-            'runner_complete',
-            topic,
-            params,
-            completedContext
-          );
-        } catch (ex) {
-          this.logger.error('Error while executing consumer callback ', {
-            params,
-            topic,
-            error: ex,
-          });
-          this.registry.emit('runner_failure', topic, ex, params);
-        }
-        if (resource) await this.pool.release(resource);
+          if (resource) await this.pool.release(resource);
+        });
       },
       { concurrency: this.concurrency }
     );
@@ -146,26 +159,26 @@ class SqsRunner extends BaseRunner implements IRunner {
     const data = await this.sqs
       .receiveMessage(params)
       .promise()
-      .catch(e => {
-        this.logger.error('Error while receiving message from queue', e);
+      .catch((e) => {
+        this.logger.error("Error while receiving message from queue", e);
         return null;
       });
 
     if (data?.Messages) {
-      this.logger.debug('Message from sqs', data);
+      this.logger.debug("Message from sqs", data);
       try {
         await this.receive(data.Messages, topic);
       } catch (ex) {
-        this.logger.error('Error while invoking receive', ex);
+        this.logger.error("Error while invoking receive", ex);
       }
     }
   }
 
   async process(topics?: string[]) {
     const loop = () => {
-      if (this.state === 'terminating') {
-        this.registry.emit('terminate', true);
-        this.state = 'terminated';
+      if (this.state === "terminating") {
+        this.registry.emit("terminate", true);
+        this.state = "terminated";
         return;
       }
 
@@ -177,7 +190,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       );
     };
 
-    if (this.state === 'paused') {
+    if (this.state === "paused") {
       this.logger.debug(`paused processing`);
       loop();
       return;
@@ -185,12 +198,12 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug(
-      `Polling for messages (${topics ? topics.join(',') : 'all'})`
+      `Polling for messages (${topics ? topics.join(",") : "all"})`
     );
 
     await bluebird.map(
       subscriptions,
-      async topic => {
+      async (topic) => {
         const queueURL = await this.getQueueUrl(topic);
         if (queueURL) {
           this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
@@ -234,8 +247,8 @@ class SqsRunner extends BaseRunner implements IRunner {
     return this.sqs
       .getQueueUrl({ QueueName: topic })
       .promise()
-      .then(data => data && data?.QueueUrl)
-      .catch(e => {
+      .then((data) => data && data?.QueueUrl)
+      .catch((e) => {
         this.logger.error(e);
         return null;
       });
@@ -243,8 +256,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async createQueue({
     topic,
-    receiveMessageWaitTimeSeconds = '20',
-    messageRetentionPeriod = '604800',
+    receiveMessageWaitTimeSeconds = "20",
+    messageRetentionPeriod = "604800",
   }: CreateSqsTopic) {
     const params = {
       QueueName: topic,

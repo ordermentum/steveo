@@ -8,7 +8,7 @@ export const getDuration = (start = undefined) => {
   return duration;
 };
 
-export const getContext = params => {
+export const getContext = (params) => {
   const { _meta: meta } = params;
 
   if (!meta) {
@@ -19,6 +19,7 @@ export const getContext = params => {
 
   return {
     duration,
+    traceMetadata: meta.traceMetadata,
   };
 };
 

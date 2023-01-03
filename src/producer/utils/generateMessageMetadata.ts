@@ -8,7 +8,7 @@ export const generateMessageMetadata = <T = any>(message: T, transaction?: newre
   const signature = sha1
     .update(JSON.stringify(message))
     .digest('hex')
-    .substring(0, 8);
+    .substring(0, 8); // why are we truncating this?
   const timestamp = moment().unix();
   const start = process.hrtime();
   const hostname = os.hostname();
