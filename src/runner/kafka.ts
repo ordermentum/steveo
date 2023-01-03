@@ -262,6 +262,8 @@ class KafkaRunner extends BaseRunner
   }
 
   async createQueue({ topic }) {
+    this.logger.info(`creating kafka topic ${topic}`);
+
     const task = this.registry.getTask(topic);
     return new Promise<void>((resolve, reject) => {
       const options = task?.attributes ?? {};
