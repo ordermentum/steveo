@@ -124,12 +124,19 @@ class SqsRunner extends BaseRunner implements IRunner {
               return;
             }
             if (this.hooks?.preTask) {
-              await this.hooks.preTask(params);
+              newrelic.startSegment("task.preTask", true, async () => {
+                await this.hooks?.preTask?.(params);
+              });
             }
             const { context = null, ...value } = params;
-            const result = await task.subscribe(value, context);
+            let result;
+            newrelic.startSegment("task.subscribe", true, async () => {
+              result = await task.subscribe(value, context);
+            });
             if (this.hooks?.postTask) {
-              await this.hooks.postTask({ ...(params ?? {}), result });
+              newrelic.startSegment("task.postTask", true, async () => {
+                await this.hooks?.postTask?.({ ...(params ?? {}), result });
+              });
             }
             this.logger.debug("Completed subscribe", topic, params);
             const completedContext = getContext(params);
