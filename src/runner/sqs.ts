@@ -124,17 +124,17 @@ class SqsRunner extends BaseRunner implements IRunner {
               return;
             }
             if (this.hooks?.preTask) {
-              newrelic.startSegment("task.preTask", true, async () => {
+              await newrelic.startSegment("task.preTask", true, async () => {
                 await this.hooks?.preTask?.(params);
               });
             }
             const { context = null, ...value } = params;
             let result;
-            newrelic.startSegment("task.subscribe", true, async () => {
-              result = await task.subscribe(value, context);
+            await newrelic.startSegment("task.subscribe", true, async () => {
+                result = await task.subscribe(value, context);
             });
             if (this.hooks?.postTask) {
-              newrelic.startSegment("task.postTask", true, async () => {
+              await newrelic.startSegment("task.postTask", true, async () => {
                 await this.hooks?.postTask?.({ ...(params ?? {}), result });
               });
             }
@@ -147,13 +147,13 @@ class SqsRunner extends BaseRunner implements IRunner {
               completedContext
             );
           } catch (ex) {
-            newrelic.noticeError(ex as Error);
             this.logger.error("Error while executing consumer callback ", {
               params,
               topic,
               error: ex,
             });
             this.registry.emit("runner_failure", topic, ex, params);
+            newrelic.noticeError(ex as Error);
           }
           if (resource) await this.pool.release(resource);
         });

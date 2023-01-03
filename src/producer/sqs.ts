@@ -100,7 +100,7 @@ class SqsProducer implements IProducer {
   }
 
   async send<T = any>(topic: string, payload: T) {
-    newrelic.startBackgroundTransaction(topic, async () => {
+    newrelic.startBackgroundTransaction(`${topic}-publish`, async () => {
       try {
         await this.initialize(topic);
       } catch (ex) {
