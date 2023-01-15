@@ -129,11 +129,6 @@ export type Configuration<Runner = any> = {
    * This is required if you want to use the built in steveo runner and/or the child process functionality
    */
   tasksPath?: string;
-
-  /**
-   * @description the graceful period we wait when terminating for tasks to complete
-   */
-  terminateWait?: number;
 } & Runner;
 
 export type Attribute = {

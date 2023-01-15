@@ -266,6 +266,8 @@ class SqsRunner extends BaseRunner implements IRunner {
     receiveMessageWaitTimeSeconds = "20",
     messageRetentionPeriod = "604800",
   }: CreateSqsTopic) {
+    this.logger.info(`creating SQS queue ${topic}`);
+
     const params = {
       QueueName: topic,
       Attributes: {

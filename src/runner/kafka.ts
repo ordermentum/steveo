@@ -262,6 +262,8 @@ class KafkaRunner extends BaseRunner
   }
 
   async createQueue({ topic }) {
+    this.logger.info(`creating kafka topic ${topic}`);
+
     const task = this.registry.getTask(topic);
     return new Promise<void>((resolve, reject) => {
       const options = task?.attributes ?? {};
@@ -299,6 +301,7 @@ class KafkaRunner extends BaseRunner
     if (this.state === 'terminating') return;
     if (this.state === 'paused') {
       this.logger.debug('Resuming consumer');
+      this.state = 'running';
       this.consumer.consume(1, this.consumeCallback);
     }
   }
