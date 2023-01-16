@@ -94,6 +94,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         params = JSON.parse(message.Body as string);
         const runnerContext = getContext(params);
 
+        // TODO - Write a runWithTraceContext wrapper to cover cases when NR isn't provided
         this._newrelic?.startBackgroundTransaction(`${topic}-runner`, async () => {
           try {
             if (runnerContext.traceMetadata) {
