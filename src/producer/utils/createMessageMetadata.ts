@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as crypto from 'crypto';
 import os from 'os';
-import newrelic from 'newrelic';
+import type newrelic from 'newrelic';
 
 export const createMessageMetadata = <T = any>(message: T, transaction?: newrelic.TransactionHandle) => {
   const sha1 = crypto.createHash('sha1'); // can we change this to SHA256?

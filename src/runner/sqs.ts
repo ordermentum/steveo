@@ -1,4 +1,3 @@
-import newrelic from "newrelic";
 import { SQS } from "aws-sdk";
 import bluebird from "bluebird";
 import nullLogger from "null-logger";
@@ -68,6 +67,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   currentTimeout?: ReturnType<typeof setTimeout>;
 
+  _newrelic?: any;
+
   constructor(steveo: Steveo) {
     super(steveo);
     this.hooks = steveo?.hooks;
@@ -92,10 +93,10 @@ class SqsRunner extends BaseRunner implements IRunner {
         params = JSON.parse(message.Body as string);
         const runnerContext = getContext(params);
 
-        newrelic.startBackgroundTransaction(`${topic}-runner`, async () => {
+        this._newrelic?.startBackgroundTransaction(`${topic}-runner`, async () => {
           try {
             if (runnerContext.traceMetadata) {
-              const transactionHandle = newrelic.getTransaction();
+              const transactionHandle = this._newrelic?.getTransaction();
               transactionHandle.acceptDistributedTraceHeaders(
                 "Queue",
                 runnerContext.traceMetadata
@@ -124,17 +125,17 @@ class SqsRunner extends BaseRunner implements IRunner {
               return;
             }
             if (this.hooks?.preTask) {
-              await newrelic.startSegment("task.preTask", true, async () => {
+              await this._newrelic?.startSegment("task.preTask", true, async () => {
                 await this.hooks?.preTask?.(params);
               });
             }
             const { context = null, ...value } = params;
             let result;
-            await newrelic.startSegment("task.subscribe", true, async () => {
+            await this._newrelic?.startSegment("task.subscribe", true, async () => {
                 result = await task.subscribe(value, context);
             });
             if (this.hooks?.postTask) {
-              await newrelic.startSegment("task.postTask", true, async () => {
+              await this._newrelic?.startSegment("task.postTask", true, async () => {
                 await this.hooks?.postTask?.({ ...(params ?? {}), result });
               });
             }
@@ -153,7 +154,7 @@ class SqsRunner extends BaseRunner implements IRunner {
               error: ex,
             });
             this.registry.emit("runner_failure", topic, ex, params);
-            newrelic.noticeError(ex as Error);
+            this._newrelic?.noticeError(ex as Error);
           }
           if (resource) await this.pool.release(resource);
         });
