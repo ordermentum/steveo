@@ -47,7 +47,6 @@
     "lodash.merge": "4.6.2",
     "lodash.shuffle": "^4.2.0",
     "moment": "2.29.4",
-    "newrelic": "^9.7.4",
     "null-logger": "^2.0.0",
     "uuid": "^8.0.0"
   },
