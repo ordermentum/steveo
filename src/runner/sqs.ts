@@ -4,7 +4,7 @@ import bluebird from "bluebird";
 import nullLogger from "null-logger";
 import BaseRunner from "./base";
 import { safeParseInt, getContext } from "./utils";
-import sqsConf from "../config/sqs";
+import { getSqsInstance } from "../config/sqs";
 
 import {
   Hooks,
@@ -75,7 +75,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.registry = steveo?.registry;
     this.logger = steveo?.logger ?? nullLogger;
     this.sqsUrls = {};
-    this.sqs = sqsConf.sqs(steveo.config);
+    this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
     this.concurrency = safeParseInt(steveo.config.workerConfig?.max, 1);
   }

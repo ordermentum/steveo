@@ -33,6 +33,7 @@ export const getConfig = (config: Configuration): Configuration => {
   parameters.upperCaseNames = config.upperCaseNames ?? true;
   parameters.childProcesses = config.childProcesses ?? null;
   parameters.tasksPath = config.tasksPath;
+  parameters.traceConfiguration = config.traceConfiguration || {};
 
   if (parameters.engine === 'kafka') {
     const kafkaConfig = config as KafkaConfiguration;

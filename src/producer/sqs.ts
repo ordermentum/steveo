@@ -1,7 +1,7 @@
 import newrelic from "newrelic"; // TODO - Move to a dependency injection pattern
 import nullLogger from "null-logger";
 import { SQS } from "aws-sdk";
-import sqsConf from "../config/sqs";
+import { getSqsInstance } from "../config/sqs"; // I want to rename this to `import { getSqsInstance } from "../repo/sqs";`
 
 import {
   Configuration,
@@ -31,7 +31,7 @@ class SqsProducer implements IProducer {
     logger: Logger = nullLogger
   ) {
     this.config = config;
-    this.producer = sqsConf.sqs(config);
+    this.producer = getSqsInstance(config);
     this.logger = logger;
     this.registry = registry;
     this.sqsUrls = {};
