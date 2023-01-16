@@ -129,6 +129,12 @@ export type Configuration<Runner = any> = {
    * This is required if you want to use the built in steveo runner and/or the child process functionality
    */
   tasksPath?: string;
+  traceConfiguration?: {
+    /**
+     * @description a New Relic SDK instance can be provided to enable New Relic APM trace propagation
+     */
+    newRelic?: any,
+  }
 } & Runner;
 
 export type Attribute = {
