@@ -85,7 +85,10 @@ class SqsRunner extends BaseRunner implements IRunner {
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
     this.registry.emit("runner_messages", topic, messages);
 
-    // pretty sure we can do this using Array.map + Promise.all
+    const transactionWrapper = this._newrelic
+      ? this._newrelic.startBackgroundTransaction
+      : (_, callback) => callback();
+
     return bluebird.map(
       messages,
       async (message) => {
@@ -94,10 +97,9 @@ class SqsRunner extends BaseRunner implements IRunner {
         params = JSON.parse(message.Body as string);
         const runnerContext = getContext(params);
 
-        // TODO - Write a runWithTraceContext wrapper to cover cases when NR isn't provided
-        this._newrelic?.startBackgroundTransaction(`${topic}-runner`, async () => {
+        transactionWrapper(`${topic}-runner`, async () => {
           try {
-            if (runnerContext.traceMetadata) {
+            if (this._newrelic && runnerContext.traceMetadata) {
               const transactionHandle = this._newrelic?.getTransaction();
               transactionHandle.acceptDistributedTraceHeaders(
                 "Queue",
