@@ -79,6 +79,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
     this.concurrency = safeParseInt(steveo.config.workerConfig?.max, 1);
+    this._newrelic = steveo?.config.traceConfiguration.newrelic;
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
