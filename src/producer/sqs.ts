@@ -12,7 +12,7 @@ import {
   SQSConfiguration,
 } from "../common";
 
-import { generateMessageMetadata } from "./utils/generateMessageMetadata";
+import { createMessageMetadata } from "./utils/createMessageMetadata";
 
 class SqsProducer implements IProducer {
   config: Configuration;
@@ -73,7 +73,7 @@ class SqsProducer implements IProducer {
     topic: string,
     transaction?: newrelic.TransactionHandle
   ): any {
-    const context = generateMessageMetadata(msg, transaction);
+    const context = createMessageMetadata(msg, transaction);
 
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
