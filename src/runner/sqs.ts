@@ -93,9 +93,8 @@ class SqsRunner extends BaseRunner implements IRunner {
     return bluebird.map(
       messages,
       async message => {
-        let params;
         let resource;
-        params = JSON.parse(message.Body as string);
+        const params = JSON.parse(message.Body as string);
         const runnerContext = getContext(params);
 
         // TODO - Calling this.transactionWrapper doesn't work as NR seems to
