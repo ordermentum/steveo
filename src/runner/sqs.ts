@@ -190,7 +190,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     );
   }
 
-  async dequeue(topic: string, params: SQS.ReceiveMessageRequest) {
+  async dequeue(params: SQS.ReceiveMessageRequest) {
     const data = await this.sqs
       .receiveMessage(params)
       .promise()
@@ -199,14 +199,8 @@ class SqsRunner extends BaseRunner implements IRunner {
         return null;
       });
 
-    if (data?.Messages) {
-      this.logger.debug("Message from sqs", data);
-      try {
-        await this.receive(data.Messages, topic);
-      } catch (ex) {
-        this.logger.error("Error while invoking receive", ex);
-      }
-    }
+    this.logger.debug("Message from sqs", data);
+    return data?.Messages;
   }
 
   async process(topics?: string[]) {
@@ -249,7 +243,14 @@ class SqsRunner extends BaseRunner implements IRunner {
             VisibilityTimeout: this.config.visibilityTimeout,
             WaitTimeSeconds: this.config.waitTimeSeconds,
           };
-          await this.dequeue(topic, params);
+          const messages = await this.dequeue(params);
+
+          if (!messages) { return; }
+          try {
+              await this.receive(messages, topic);
+          } catch (ex) {
+            this.logger.error("Error while invoking receive", ex);
+          }
         } else {
           this.logger.error(`Queue URL ${topic} not found`);
         }
