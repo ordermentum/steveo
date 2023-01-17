@@ -55,7 +55,6 @@
     "rsmq": "^0.12.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.12",
     "@babel/eslint-parser": "^7.19.1",
     "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@ordermentum/eslint-config-ordermentum": "1.1.2",
@@ -70,7 +69,6 @@
     "@types/uuid": "8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.48.2",
     "@typescript-eslint/parser": "^5.48.2",
-    "babel-plugin-istanbul": "5.2.0",
     "chai": "4.3.7",
     "cross-env": "7.0.3",
     "eslint": "^8.32.0",
