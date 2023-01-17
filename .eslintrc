@@ -1,7 +1,5 @@
 {
-  "extends": [
-    "@ordermentum/ordermentum",
-  ],
+  "extends": ["@ordermentum/ordermentum"],
   "globals": {
     "SequelizeAttributes": "readonly"
   },

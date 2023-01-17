@@ -1,9 +1,9 @@
-import { SQS } from "aws-sdk";
-import bluebird from "bluebird";
-import nullLogger from "null-logger";
-import BaseRunner from "./base";
-import { safeParseInt, getContext } from "./utils";
-import { getSqsInstance } from "../config/sqs";
+import { SQS } from 'aws-sdk';
+import bluebird from 'bluebird';
+import nullLogger from 'null-logger';
+import BaseRunner from './base';
+import { safeParseInt, getContext } from './utils';
+import { getSqsInstance } from '../config/sqs';
 
 import {
   Hooks,
@@ -14,8 +14,8 @@ import {
   IRegistry,
   CreateSqsTopic,
   SQSConfiguration,
-} from "../common";
-import { Steveo } from "..";
+} from '../common';
+import { Steveo } from '..';
 
 type DeleteMessage = {
   instance: SQS;
@@ -38,12 +38,12 @@ const deleteMessage = async ({
     ReceiptHandle: message.ReceiptHandle,
   };
   try {
-    logger.debug("Deleting Message from Queue URL", deleteParams);
+    logger.debug('Deleting Message from Queue URL', deleteParams);
     const data = await instance.deleteMessage(deleteParams).promise();
-    logger.debug("returned data", data);
+    logger.debug('returned data', data);
     return data;
   } catch (ex) {
-    logger.error("sqs deletion error", ex, topic, message);
+    logger.error('sqs deletion error', ex, topic, message);
     throw ex;
   }
 };
@@ -88,11 +88,11 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
-    this.registry.emit("runner_messages", topic, messages);
+    this.registry.emit('runner_messages', topic, messages);
 
     return bluebird.map(
       messages,
-      async (message) => {
+      async message => {
         let params;
         let resource;
         params = JSON.parse(message.Body as string);
@@ -120,71 +120,91 @@ class SqsRunner extends BaseRunner implements IRunner {
 
         // Should extract below callback into a function and then do an either cb() or nr('txname', cb)
 
-        this.newrelic.startBackgroundTransaction(`${topic}-runner`, async () => {
-          try {
-            if (this.newrelic && runnerContext.traceMetadata) {
-              const transactionHandle = this.newrelic?.getTransaction();
-              transactionHandle.acceptDistributedTraceHeaders(
-                "Queue",
-                runnerContext.traceMetadata
+        this.newrelic.startBackgroundTransaction(
+          `${topic}-runner`,
+          async () => {
+            try {
+              if (this.newrelic && runnerContext.traceMetadata) {
+                const transactionHandle = this.newrelic?.getTransaction();
+                transactionHandle.acceptDistributedTraceHeaders(
+                  'Queue',
+                  runnerContext.traceMetadata
+                );
+              }
+
+              resource = await this.pool.acquire();
+
+              this.registry.emit(
+                'runner_receive',
+                topic,
+                params,
+                runnerContext
               );
-            }
+              this.logger.debug('Deleting message', topic, params);
 
-            resource = await this.pool.acquire();
-
-            this.registry.emit("runner_receive", topic, params, runnerContext);
-            this.logger.debug("Deleting message", topic, params);
-
-            await deleteMessage({
+              await deleteMessage({
               // eslint-disable-line
-              instance: this.sqs,
-              topic,
-              message,
-              sqsUrls: this.sqsUrls,
-              logger: this.logger,
-            });
+                instance: this.sqs,
+                topic,
+                message,
+                sqsUrls: this.sqsUrls,
+                logger: this.logger,
+              });
 
-            this.logger.debug("Message Deleted", topic, params);
-            const task = this.registry.getTask(topic);
-            this.logger.debug("Start subscribe", topic, params);
-            if (!task) {
-              this.logger.error(`Unknown Task ${topic}`);
-              return;
-            }
-            if (this.hooks?.preTask) {
-              await this.newrelic?.startSegment("task.preTask", true, async () => {
-                await this.hooks?.preTask?.(params);
+              this.logger.debug('Message Deleted', topic, params);
+              const task = this.registry.getTask(topic);
+              this.logger.debug('Start subscribe', topic, params);
+              if (!task) {
+                this.logger.error(`Unknown Task ${topic}`);
+                return;
+              }
+              if (this.hooks?.preTask) {
+                await this.newrelic?.startSegment(
+                  'task.preTask',
+                  true,
+                  async () => {
+                    await this.hooks?.preTask?.(params);
+                  }
+                );
+              }
+              const { context = null, ...value } = params;
+              let result;
+              await this.newrelic?.startSegment(
+                'task.subscribe',
+                true,
+                async () => {
+                  result = await task.subscribe(value, context);
+                }
+              );
+              if (this.hooks?.postTask) {
+                await this.newrelic?.startSegment(
+                  'task.postTask',
+                  true,
+                  async () => {
+                    await this.hooks?.postTask?.({ ...(params ?? {}), result });
+                  }
+                );
+              }
+              this.logger.debug('Completed subscribe', topic, params);
+              const completedContext = getContext(params);
+              this.registry.emit(
+                'runner_complete',
+                topic,
+                params,
+                completedContext
+              );
+            } catch (ex) {
+              this.logger.error('Error while executing consumer callback ', {
+                params,
+                topic,
+                error: ex,
               });
+              this.registry.emit('runner_failure', topic, ex, params);
+              this.newrelic?.noticeError(ex as Error);
             }
-            const { context = null, ...value } = params;
-            let result;
-            await this.newrelic?.startSegment("task.subscribe", true, async () => {
-                result = await task.subscribe(value, context);
-            });
-            if (this.hooks?.postTask) {
-              await this.newrelic?.startSegment("task.postTask", true, async () => {
-                await this.hooks?.postTask?.({ ...(params ?? {}), result });
-              });
-            }
-            this.logger.debug("Completed subscribe", topic, params);
-            const completedContext = getContext(params);
-            this.registry.emit(
-              "runner_complete",
-              topic,
-              params,
-              completedContext
-            );
-          } catch (ex) {
-            this.logger.error("Error while executing consumer callback ", {
-              params,
-              topic,
-              error: ex,
-            });
-            this.registry.emit("runner_failure", topic, ex, params);
-            this.newrelic?.noticeError(ex as Error);
+            if (resource) await this.pool.release(resource);
           }
-          if (resource) await this.pool.release(resource);
-        });
+        );
       },
       { concurrency: this.concurrency }
     );
@@ -194,20 +214,20 @@ class SqsRunner extends BaseRunner implements IRunner {
     const data = await this.sqs
       .receiveMessage(params)
       .promise()
-      .catch((e) => {
-        this.logger.error("Error while receiving message from queue", e);
+      .catch(e => {
+        this.logger.error('Error while receiving message from queue', e);
         return null;
       });
 
-    this.logger.debug("Message from sqs", data);
+    this.logger.debug('Message from sqs', data);
     return data?.Messages;
   }
 
   async process(topics?: string[]) {
     const loop = () => {
-      if (this.state === "terminating") {
-        this.registry.emit("terminate", true);
-        this.state = "terminated";
+      if (this.state === 'terminating') {
+        this.registry.emit('terminate', true);
+        this.state = 'terminated';
         return;
       }
 
@@ -219,7 +239,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       );
     };
 
-    if (this.state === "paused") {
+    if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
       loop();
       return;
@@ -227,12 +247,12 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug(
-      `Polling for messages (${topics ? topics.join(",") : "all"})`
+      `Polling for messages (${topics ? topics.join(',') : 'all'})`
     );
 
     await bluebird.map(
       subscriptions,
-      async (topic) => {
+      async topic => {
         const queueURL = await this.getQueueUrl(topic);
         if (queueURL) {
           this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
@@ -245,11 +265,13 @@ class SqsRunner extends BaseRunner implements IRunner {
           };
           const messages = await this.dequeue(params);
 
-          if (!messages) { return; }
+          if (!messages) {
+            return;
+          }
           try {
-              await this.receive(messages, topic);
+            await this.receive(messages, topic);
           } catch (ex) {
-            this.logger.error("Error while invoking receive", ex);
+            this.logger.error('Error while invoking receive', ex);
           }
         } else {
           this.logger.error(`Queue URL ${topic} not found`);
@@ -260,7 +282,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     loop();
   }
 
-  healthCheck = async function() {
+  healthCheck = async function () {
     // get a random registered queue
     const items = this.registry.getTopics();
     const item = items[Math.floor(Math.random() * items.length)];
@@ -283,8 +305,8 @@ class SqsRunner extends BaseRunner implements IRunner {
     return this.sqs
       .getQueueUrl({ QueueName: topic })
       .promise()
-      .then((data) => data && data?.QueueUrl)
-      .catch((e) => {
+      .then(data => data && data?.QueueUrl)
+      .catch(e => {
         this.logger.error(e);
         return null;
       });
@@ -292,8 +314,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   async createQueue({
     topic,
-    receiveMessageWaitTimeSeconds = "20",
-    messageRetentionPeriod = "604800",
+    receiveMessageWaitTimeSeconds = '20',
+    messageRetentionPeriod = '604800',
   }: CreateSqsTopic) {
     this.logger.info(`creating SQS queue ${topic}`);
 
