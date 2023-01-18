@@ -1,6 +1,6 @@
 import nullLogger from 'null-logger';
 import { SQS } from 'aws-sdk';
-import type newrelic from 'newrelic';
+import type { TransactionHandle } from 'newrelic';
 import { getSqsInstance } from '../config/sqs';
 
 import {
@@ -79,7 +79,7 @@ class SqsProducer implements IProducer {
   getPayload(
     msg: any,
     topic: string,
-    transaction?: newrelic.TransactionHandle
+    transaction?: TransactionHandle
   ): any {
     const context = createMessageMetadata(msg, transaction);
 

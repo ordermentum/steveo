@@ -1,11 +1,11 @@
 import moment from 'moment';
 import * as crypto from 'crypto';
 import os from 'os';
-import type newrelic from 'newrelic';
+import type { DistributedTraceHeaders, TransactionHandle } from 'newrelic';
 
 export const createMessageMetadata = <T = any>(
   message: T,
-  transaction?: newrelic.TransactionHandle
+  transaction?: TransactionHandle
 ) => {
   const sha1 = crypto.createHash('sha1'); // can we change this to SHA256?
   const signature = sha1
@@ -16,7 +16,7 @@ export const createMessageMetadata = <T = any>(
   const start = process.hrtime();
   const hostname = os.hostname();
 
-  let traceMetadata: newrelic.DistributedTraceHeaders | undefined;
+  let traceMetadata: DistributedTraceHeaders | undefined;
   if (transaction) {
     traceMetadata = {};
     transaction.insertDistributedTraceHeaders(traceMetadata);
