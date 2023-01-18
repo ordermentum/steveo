@@ -583,10 +583,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@ordermentum/eslint-config-ordermentum@^2.0.0-rc1":
-  version "2.0.0-rc1"
-  resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-2.0.0-rc1.tgz#b980526c68317ff555581c090a8a453346317781"
-  integrity sha512-hmoIgQBx0sbQRgM37gIXvl6pdYzengI9KsAVj55pSwyNzvbfD1cS+1VJaK6/5Qi6jFCgwGio7JvsvmeMTN5ZBw==
+"@ordermentum/eslint-config-ordermentum@^2.0.0-rc2":
+  version "2.0.0-rc2"
+  resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-2.0.0-rc2.tgz#ae93598460957f970cbe633f6ae88d8b3979feb7"
+  integrity sha512-3eazNZ/5oJG68NXapAHM5GiK+QYnpj5kl7adzqCPxYPwOb6m/+wW4tiemGxqQAEMc/LUHJLVOyfTokpJ93kEHQ==
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
