@@ -76,11 +76,7 @@ class SqsProducer implements IProducer {
     return this.sqsUrls[topic];
   }
 
-  getPayload(
-    msg: any,
-    topic: string,
-    transaction?: TransactionHandle
-  ): any {
+  getPayload(msg: any, topic: string, transaction?: TransactionHandle): any {
     const context = createMessageMetadata(msg, transaction);
 
     const task = this.registry.getTask(topic);
