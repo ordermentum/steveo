@@ -44,10 +44,13 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
       return this.producer;
     }
     return new Promise<HighLevelProducer>((resolve, reject) => {
-      const timeoutId = setTimeout(() => {
-        this.logger.error('Connection timed out');
-        reject();
-      }, (this.config as KafkaConfiguration).connectionTimeout!);
+      const timeoutId = setTimeout(
+        () => {
+          this.logger.error('Connection timed out');
+          reject();
+        },
+        (this.config as KafkaConfiguration).connectionTimeout!
+      );
       this.producer.connect({}, err => {
         if (err) {
           clearTimeout(timeoutId);
