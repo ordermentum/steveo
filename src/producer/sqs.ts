@@ -1,7 +1,7 @@
-import nullLogger from "null-logger";
-import { SQS } from "aws-sdk";
+import nullLogger from 'null-logger';
+import { SQS } from 'aws-sdk';
 import type newrelic from "newrelic";
-import { getSqsInstance } from "../config/sqs";
+import { getSqsInstance } from '../config/sqs';
 
 import {
   Configuration,
@@ -10,9 +10,9 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
-} from "../common";
+} from '../common';
 
-import { createMessageMetadata } from "./utils/createMessageMetadata";
+import { createMessageMetadata } from './utils/createMessageMetadata';
 
 class SqsProducer implements IProducer {
   config: Configuration;
@@ -48,7 +48,7 @@ class SqsProducer implements IProducer {
 
   async initialize(topic?: string) {
     if (!topic) {
-      throw new Error("Topic cannot be empty");
+      throw new Error('Topic cannot be empty');
     }
 
     const config = this.config as SQSConfiguration;
@@ -87,14 +87,14 @@ class SqsProducer implements IProducer {
     const attributes = task ? task.attributes : [];
     const messageAttributes = {
       Timestamp: {
-        DataType: "Number",
+        DataType: 'Number',
         StringValue: context.timestamp.toString(),
       },
     };
     if (attributes) {
-      attributes.forEach((a) => {
+      attributes.forEach(a => {
         messageAttributes[a.name] = {
-          DataType: a.dataType || "String",
+          DataType: a.dataType || 'String',
           StringValue: a.value.toString(),
         };
       });
@@ -113,7 +113,7 @@ class SqsProducer implements IProducer {
         await this.initialize(topic);
       } catch (ex) {
         this.newrelic?.noticeError(ex as Error);
-        this.logger.error("Error in initalizing sqs", ex);
+        this.logger.error('Error in initalizing sqs', ex);
         throw ex;
       }
 
@@ -122,12 +122,12 @@ class SqsProducer implements IProducer {
 
       try {
         const response = await this.producer.sendMessage(data).promise();
-        this.logger.debug("SQS Publish Data", response);
-        this.registry.emit("producer_success", topic, data);
+        this.logger.debug('SQS Publish Data', response);
+        this.registry.emit('producer_success', topic, data);
       } catch (ex) {
         this.newrelic?.noticeError(ex as Error);
-        this.logger.error("Error while sending SQS payload", topic, ex);
-        this.registry.emit("producer_failure", topic, ex, data);
+        this.logger.error('Error while sending SQS payload', topic, ex);
+        this.registry.emit('producer_failure', topic, ex, data);
         throw ex;
       }
     });
