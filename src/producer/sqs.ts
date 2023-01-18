@@ -25,7 +25,9 @@ class SqsProducer implements IProducer {
 
   sqsUrls: sqsUrls;
 
-  _newrelic?: any;
+  private newrelic?: any;
+
+  private transactionWrapper: any;
 
   constructor(
     config: Configuration,
@@ -37,7 +39,11 @@ class SqsProducer implements IProducer {
     this.logger = logger;
     this.registry = registry;
     this.sqsUrls = {};
-    this._newrelic = config.traceConfiguration.newrelic;
+    this.newrelic = config.traceConfiguration.newrelic;
+    this.transactionWrapper = (txname: string, func: any) =>
+      this.newrelic
+        ? this.newrelic.startBackgroundTransaction(txname, func)
+        : func();
   }
 
   async initialize(topic?: string) {
@@ -70,7 +76,6 @@ class SqsProducer implements IProducer {
     return this.sqsUrls[topic];
   }
 
-  // Why does the _producer_ have a get payload fn??
   getPayload(
     msg: any,
     topic: string,
@@ -103,16 +108,16 @@ class SqsProducer implements IProducer {
   }
 
   async send<T = any>(topic: string, payload: T) {
-    this._newrelic?.startBackgroundTransaction(`${topic}-publish`, async () => {
+    this.transactionWrapper(`${topic}-publish`, async () => {
       try {
         await this.initialize(topic);
       } catch (ex) {
-        this._newrelic?.noticeError(ex as Error);
+        this.newrelic?.noticeError(ex as Error);
         this.logger.error("Error in initalizing sqs", ex);
         throw ex;
       }
 
-      const transaction = this._newrelic?.getTransaction();
+      const transaction = this.newrelic?.getTransaction();
       const data = this.getPayload(payload, topic, transaction);
 
       try {
@@ -120,7 +125,7 @@ class SqsProducer implements IProducer {
         this.logger.debug("SQS Publish Data", response);
         this.registry.emit("producer_success", topic, data);
       } catch (ex) {
-        this._newrelic?.noticeError(ex as Error);
+        this.newrelic?.noticeError(ex as Error);
         this.logger.error("Error while sending SQS payload", topic, ex);
         this.registry.emit("producer_failure", topic, ex, data);
         throw ex;

@@ -98,24 +98,6 @@ class SqsRunner extends BaseRunner implements IRunner {
         const params = JSON.parse(message.Body as string);
         const runnerContext = getContext(params);
 
-        // Steveo: Error while invoking receive TypeError: Cannot read properties of undefined (reading 'agent')
-        // at startBackgroundTransaction (/Users/zahav/ordermentum/infrastructure/samples-and-pocs/new-relic-apm-steveo/app/node_modules/newrelic/api.js:983:23)
-        // at bluebird_1.default.map.concurrency (/Users/zahav/ordermentum/steveo/lib/runner/sqs.js:69:13)
-        // at tryCatcher (/Users/zahav/ordermentum/steveo/node_modules/bluebird/js/release/util.js:16:23)
-        // at MappingPromiseArray._promiseFulfilled (/Users/zahav/ordermentum/steveo/node_modules/bluebird/js/release/map.js:68:38)
-        // at MappingPromiseArray.PromiseArray._iterate (/Users/zahav/ordermentum/steveo/node_modules/bluebird/js/release/promise_array.js:115:31)
-        // at MappingPromiseArray.init (/Users/zahav/ordermentum/steveo/node_modules/bluebird/js/release/promise_array.js:79:10)
-        // at MappingPromiseArray._asyncInit (/Users/zahav/ordermentum/steveo/node_modules/bluebird/js/release/map.js:37:10)
-        // at _drainQueueStep (/Users/zahav/ordermentum/steveo/node_modules/bluebird/js/release/async.js:97:12)
-        // at _drainQueue (/Users/zahav/ordermentum/steveo/node_modules/bluebird/js/release/async.js:86:9)
-        // at Async._drainQueues (/Users/zahav/ordermentum/steveo/node_modules/bluebird/js/release/async.js:102:5)
-        // at Immediate.Async.drainQueues (/Users/zahav/ordermentum/steveo/node_modules/bluebird/js/release/async.js:15:14)
-        // at processImmediate (node:internal/timers:466:21)
-        // at process.topLevelDomainCallback (node:domain:152:15)
-        // at process.callbackTrampoline (node:internal/async_hooks:128:24)
-
-        // Should extract below callback into a function and then do an either cb() or nr('txname', cb)
-
         this.transactionWrapper(`${topic}-runner`, async () => {
           try {
             if (this.newrelic && runnerContext.traceMetadata) {

@@ -753,14 +753,14 @@
     semver "^7.3.7"
     tsutils "^3.21.0"
 
-"@typescript-eslint/parser@^5.48.2":
-  version "5.48.2"
-  resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-5.48.2.tgz#c9edef2a0922d26a37dba03be20c5fff378313b3"
-  integrity sha512-38zMsKsG2sIuM5Oi/olurGwYJXzmtdsHhn5mI/pQogP+BjYVkK5iRazCQ8RGS0V+YLk282uWElN70zAAUmaYHw==
+"@typescript-eslint/parser@^5.48.3-alpha.1":
+  version "5.48.3-alpha.1"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-5.48.3-alpha.1.tgz#323ff0d044aebfb1908ec21e5baa0672f2c6dfea"
+  integrity sha512-Fri7O6Ua1CbyQOfhQzOQwNVm6UKPky3MY/mRQEwyNPz8JZEH2JNapZ7xwbT23wEBi6APMNW1TDRzn7Nwo8meZQ==
   dependencies:
-    "@typescript-eslint/scope-manager" "5.48.2"
-    "@typescript-eslint/types" "5.48.2"
-    "@typescript-eslint/typescript-estree" "5.48.2"
+    "@typescript-eslint/scope-manager" "5.48.3-alpha.1+eefc5781"
+    "@typescript-eslint/types" "5.48.3-alpha.1+eefc5781"
+    "@typescript-eslint/typescript-estree" "5.48.3-alpha.1+eefc5781"
     debug "^4.3.4"
 
 "@typescript-eslint/scope-manager@5.48.2":
@@ -770,6 +770,14 @@
   dependencies:
     "@typescript-eslint/types" "5.48.2"
     "@typescript-eslint/visitor-keys" "5.48.2"
+
+"@typescript-eslint/scope-manager@5.48.3-alpha.1+eefc5781":
+  version "5.48.3-alpha.1"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/scope-manager/-/scope-manager-5.48.3-alpha.1.tgz#60a1193fd75c60026b1c07daec048a24d37c3d83"
+  integrity sha512-c+5pBdx/cbeE2tHaGem0GW+jkD0Cp6Gm2waaAnvCb/WawjU0oJu9XAr8671aBIQq5mFyaek2jnEWTBrarF7jog==
+  dependencies:
+    "@typescript-eslint/types" "5.48.3-alpha.1+eefc5781"
+    "@typescript-eslint/visitor-keys" "5.48.3-alpha.1+eefc5781"
 
 "@typescript-eslint/type-utils@5.48.2":
   version "5.48.2"
@@ -786,6 +794,11 @@
   resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-5.48.2.tgz#635706abb1ec164137f92148f06f794438c97b8e"
   integrity sha512-hE7dA77xxu7ByBc6KCzikgfRyBCTst6dZQpwaTy25iMYOnbNljDT4hjhrGEJJ0QoMjrfqrx+j1l1B9/LtKeuqA==
 
+"@typescript-eslint/types@5.48.3-alpha.1+eefc5781":
+  version "5.48.3-alpha.1"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-5.48.3-alpha.1.tgz#b09bac283cd77006502f55feed7ab278515b92fd"
+  integrity sha512-INZEIyLkAL4HzwmVDv2tuKwj2j0ww6qywhFZXN+H/zu05tqiiMANdIp69ENbwynrTHvNPNW/7Imj43Jw/S9Yyg==
+
 "@typescript-eslint/typescript-estree@5.48.2":
   version "5.48.2"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/typescript-estree/-/typescript-estree-5.48.2.tgz#6e206b462942b32383582a6c9251c05021cc21b0"
@@ -793,6 +806,19 @@
   dependencies:
     "@typescript-eslint/types" "5.48.2"
     "@typescript-eslint/visitor-keys" "5.48.2"
+    debug "^4.3.4"
+    globby "^11.1.0"
+    is-glob "^4.0.3"
+    semver "^7.3.7"
+    tsutils "^3.21.0"
+
+"@typescript-eslint/typescript-estree@5.48.3-alpha.1+eefc5781":
+  version "5.48.3-alpha.1"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/typescript-estree/-/typescript-estree-5.48.3-alpha.1.tgz#a2d8d6b328be9acb337772f8d1a10dc010131952"
+  integrity sha512-PI9mellaresv+rYuz4a/rsoy/2qbvK53U4PXL5jUWemb+ydzpfd2oOzBStkQ1j5XsRqu8l94nZzDUm4+B1BFmw==
+  dependencies:
+    "@typescript-eslint/types" "5.48.3-alpha.1+eefc5781"
+    "@typescript-eslint/visitor-keys" "5.48.3-alpha.1+eefc5781"
     debug "^4.3.4"
     globby "^11.1.0"
     is-glob "^4.0.3"
@@ -819,6 +845,14 @@
   integrity sha512-z9njZLSkwmjFWUelGEwEbdf4NwKvfHxvGC0OcGN1Hp/XNDIcJ7D5DpPNPv6x6/mFvc1tQHsaWmpD/a4gOvvCJQ==
   dependencies:
     "@typescript-eslint/types" "5.48.2"
+    eslint-visitor-keys "^3.3.0"
+
+"@typescript-eslint/visitor-keys@5.48.3-alpha.1+eefc5781":
+  version "5.48.3-alpha.1"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/visitor-keys/-/visitor-keys-5.48.3-alpha.1.tgz#60aa70395d0849fa1cd10e2514e9e1b56b0477e1"
+  integrity sha512-syD1ZbesNhu+RHtf9bUTkFT8oizq7DZqqE1o2/MSrLWYqIMU/eHyYtp4GincGwWcOGweWmW4yFR1NXFqIySIKg==
+  dependencies:
+    "@typescript-eslint/types" "5.48.3-alpha.1+eefc5781"
     eslint-visitor-keys "^3.3.0"
 
 acorn-jsx@^5.3.2:
