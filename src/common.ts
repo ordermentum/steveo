@@ -133,8 +133,8 @@ export type Configuration<Runner = any> = {
     /**
      * @description a New Relic SDK instance can be provided to enable New Relic APM trace propagation
      */
-    newRelic?: any,
-  }
+    newRelic?: any;
+  };
 } & Runner;
 
 export type Attribute = {

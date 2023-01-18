@@ -241,4 +241,8 @@ describe('SQS Producer', () => {
     }
     expect(err).to.equal(true);
   });
+
+  it('should add New Relic trace metadata iff. New Relic is available', async () => {
+    
+  })
 });
