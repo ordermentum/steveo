@@ -55,7 +55,7 @@ export class Steveo implements ISteveo {
 
   constructor(
     configuration: Configuration,
-    logger: Logger = NULL_LOGGER,
+    logger: Logger = NULL_LOGGER, // eslint-disable-line default-param-last
     hooks?: Hooks
   ) {
     this.logger = logger;

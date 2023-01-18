@@ -1,6 +1,6 @@
 import nullLogger from 'null-logger';
 import { SQS } from 'aws-sdk';
-import type newrelic from "newrelic";
+import type newrelic from 'newrelic';
 import { getSqsInstance } from '../config/sqs';
 
 import {

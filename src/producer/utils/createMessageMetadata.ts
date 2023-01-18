@@ -3,7 +3,10 @@ import * as crypto from 'crypto';
 import os from 'os';
 import type newrelic from 'newrelic';
 
-export const createMessageMetadata = <T = any>(message: T, transaction?: newrelic.TransactionHandle) => {
+export const createMessageMetadata = <T = any>(
+  message: T,
+  transaction?: newrelic.TransactionHandle
+) => {
   const sha1 = crypto.createHash('sha1'); // can we change this to SHA256?
   const signature = sha1
     .update(JSON.stringify(message))
