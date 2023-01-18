@@ -67,9 +67,9 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   currentTimeout?: ReturnType<typeof setTimeout>;
 
-  newrelic?: any;
+  private newrelic?: any;
 
-  transactionWrapper: any;
+  private transactionWrapper: any;
 
   constructor(steveo: Steveo) {
     super(steveo);
@@ -82,9 +82,10 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.pool = steveo.pool;
     this.concurrency = safeParseInt(steveo.config.workerConfig?.max, 1);
     this.newrelic = steveo?.config.traceConfiguration.newrelic;
-    this.transactionWrapper = this.newrelic
-      ? this.newrelic.startBackgroundTransaction
-      : (_: string, callback) => callback();
+    this.transactionWrapper = (txname: string, func: any) =>
+      this.newrelic
+        ? this.newrelic.startBackgroundTransaction(txname, func)
+        : func();
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
@@ -96,10 +97,6 @@ class SqsRunner extends BaseRunner implements IRunner {
         let resource;
         const params = JSON.parse(message.Body as string);
         const runnerContext = getContext(params);
-
-        // TODO - Calling this.transactionWrapper doesn't work as NR seems to
-        // call this.(parent).metrics or somesuch that gets broken when we
-        // reassign it like in line 85.
 
         // Steveo: Error while invoking receive TypeError: Cannot read properties of undefined (reading 'agent')
         // at startBackgroundTransaction (/Users/zahav/ordermentum/infrastructure/samples-and-pocs/new-relic-apm-steveo/app/node_modules/newrelic/api.js:983:23)
@@ -119,91 +116,83 @@ class SqsRunner extends BaseRunner implements IRunner {
 
         // Should extract below callback into a function and then do an either cb() or nr('txname', cb)
 
-        this.newrelic.startBackgroundTransaction(
-          `${topic}-runner`,
-          async () => {
-            try {
-              if (this.newrelic && runnerContext.traceMetadata) {
-                const transactionHandle = this.newrelic?.getTransaction();
-                transactionHandle.acceptDistributedTraceHeaders(
-                  'Queue',
-                  runnerContext.traceMetadata
-                );
-              }
-
-              resource = await this.pool.acquire();
-
-              this.registry.emit(
-                'runner_receive',
-                topic,
-                params,
-                runnerContext
+        this.transactionWrapper(`${topic}-runner`, async () => {
+          try {
+            if (this.newrelic && runnerContext.traceMetadata) {
+              const transactionHandle = this.newrelic?.getTransaction();
+              transactionHandle.acceptDistributedTraceHeaders(
+                'Queue',
+                runnerContext.traceMetadata
               );
-              this.logger.debug('Deleting message', topic, params);
+            }
 
-              await deleteMessage({
+            resource = await this.pool.acquire();
+
+            this.registry.emit('runner_receive', topic, params, runnerContext);
+            this.logger.debug('Deleting message', topic, params);
+
+            await deleteMessage({
               // eslint-disable-line
-                instance: this.sqs,
-                topic,
-                message,
-                sqsUrls: this.sqsUrls,
-                logger: this.logger,
-              });
+              instance: this.sqs,
+              topic,
+              message,
+              sqsUrls: this.sqsUrls,
+              logger: this.logger,
+            });
 
-              this.logger.debug('Message Deleted', topic, params);
-              const task = this.registry.getTask(topic);
-              this.logger.debug('Start subscribe', topic, params);
-              if (!task) {
-                this.logger.error(`Unknown Task ${topic}`);
-                return;
-              }
-              if (this.hooks?.preTask) {
-                await this.newrelic?.startSegment(
-                  'task.preTask',
-                  true,
-                  async () => {
-                    await this.hooks?.preTask?.(params);
-                  }
-                );
-              }
-              const { context = null, ...value } = params;
-              let result;
+            this.logger.debug('Message Deleted', topic, params);
+            const task = this.registry.getTask(topic);
+            this.logger.debug('Start subscribe', topic, params);
+            if (!task) {
+              this.logger.error(`Unknown Task ${topic}`);
+              return;
+            }
+            if (this.hooks?.preTask) {
               await this.newrelic?.startSegment(
-                'task.subscribe',
+                'task.preTask',
                 true,
                 async () => {
-                  result = await task.subscribe(value, context);
+                  await this.hooks?.preTask?.(params);
                 }
               );
-              if (this.hooks?.postTask) {
-                await this.newrelic?.startSegment(
-                  'task.postTask',
-                  true,
-                  async () => {
-                    await this.hooks?.postTask?.({ ...(params ?? {}), result });
-                  }
-                );
-              }
-              this.logger.debug('Completed subscribe', topic, params);
-              const completedContext = getContext(params);
-              this.registry.emit(
-                'runner_complete',
-                topic,
-                params,
-                completedContext
-              );
-            } catch (ex) {
-              this.logger.error('Error while executing consumer callback ', {
-                params,
-                topic,
-                error: ex,
-              });
-              this.registry.emit('runner_failure', topic, ex, params);
-              this.newrelic?.noticeError(ex as Error);
             }
-            if (resource) await this.pool.release(resource);
+            const { context = null, ...value } = params;
+            let result;
+            await this.newrelic?.startSegment(
+              'task.subscribe',
+              true,
+              async () => {
+                result = await task.subscribe(value, context);
+              }
+            );
+            if (this.hooks?.postTask) {
+              await this.newrelic?.startSegment(
+                'task.postTask',
+                true,
+                async () => {
+                  await this.hooks?.postTask?.({ ...(params ?? {}), result });
+                }
+              );
+            }
+            this.logger.debug('Completed subscribe', topic, params);
+            const completedContext = getContext(params);
+            this.registry.emit(
+              'runner_complete',
+              topic,
+              params,
+              completedContext
+            );
+          } catch (ex) {
+            this.logger.error('Error while executing consumer callback ', {
+              params,
+              topic,
+              error: ex,
+            });
+            this.registry.emit('runner_failure', topic, ex, params);
+            this.newrelic?.noticeError(ex as Error);
           }
-        );
+          if (resource) await this.pool.release(resource);
+        });
       },
       { concurrency: this.concurrency }
     );
