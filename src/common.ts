@@ -256,9 +256,7 @@ export interface IProducer<P = any> {
   disconnect(): Promise<void>;
 }
 
-export type sqsUrls = {
-  [key: string]: any;
-};
+export type sqsUrls = Record<string, string>;
 
 export type CreateRedisTopic = {
   topic: string;

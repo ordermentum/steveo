@@ -71,14 +71,23 @@ class SqsProducer implements IProducer {
         MessageRetentionPeriod: config.messageRetentionPeriod,
       },
     };
-    const createResponse = await this.producer.createQueue(params).promise();
-    this.sqsUrls[topic] = createResponse?.QueueUrl;
-    return this.sqsUrls[topic];
+    // TODO - Test this
+    const res = await this.producer.createQueue(params).promise();
+    if (!res.QueueUrl) {
+      throw new Error(
+        `Failed to create SQS queue: ${res.$response.error?.message}`
+      );
+    }
+    this.sqsUrls[topic] = res.QueueUrl;
+    return res.QueueUrl;
   }
 
+  // Should getPayload be a part of the interface? Seems like an implementation detail.
   getPayload(msg: any, topic: string, transaction?: TransactionHandle): any {
     const context = createMessageMetadata(msg, transaction);
 
+    // Why are we looking at tasks on the producer side?
+    // What do these attributes do? Why can't they be in the message body?
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
     const messageAttributes = {
