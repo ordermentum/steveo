@@ -39,7 +39,7 @@ class SqsProducer implements IProducer {
     this.logger = logger;
     this.registry = registry;
     this.sqsUrls = {};
-    this.newrelic = config.traceConfiguration.newrelic;
+    this.newrelic = config.traceConfiguration?.newrelic;
     this.transactionWrapper = (txname: string, func: any) =>
       this.newrelic
         ? this.newrelic.startBackgroundTransaction(txname, func)
@@ -50,8 +50,6 @@ class SqsProducer implements IProducer {
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
-
-    const config = this.config as SQSConfiguration;
 
     const data = await this.producer
       .getQueueUrl({ QueueName: topic })
@@ -64,6 +62,8 @@ class SqsProducer implements IProducer {
       this.sqsUrls[topic] = queue;
       return queue;
     }
+
+    const config = this.config as SQSConfiguration;
     const params = {
       QueueName: topic,
       Attributes: {

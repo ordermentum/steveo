@@ -71,7 +71,7 @@ describe('SQS Producer', () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
     const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
+      { engine: 'sqs', tasksPath: '' },
       registry
     );
     sandbox.spy(p, 'getPayload');
@@ -81,26 +81,30 @@ describe('SQS Producer', () => {
       .returns(promiseResolves({ hi: 'hello' }));
 
     const initializeStub = sandbox.stub(p, 'initialize').resolves();
-    p.sqsUrls = {
-      'test-topic': '',
-    };
+    // does this line even do anything?? does this test even do anything???
+    // p.sqsUrls = {
+    //   'test-topic': '',
+    // };
     await p.send('test-topic', { a: 'payload' });
     expect(initializeStub.callCount).to.equal(1);
     expect(sendMessageStub.callCount).to.equal(1);
   });
 
+  // TODO - Draw this out and figure it out on paper. Something is sus.
   it('should send without initialize if sqsUrls are present', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
     const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
+      { engine: 'sqs' },
       registry
     );
+
     sandbox.spy(p, 'getPayload');
     const sendMessageStub = sandbox
       .stub(p.producer, 'sendMessage')
       // @ts-ignore
       .returns(promiseResolves({ hi: 'hello' }));
+
     sandbox
       .stub(p.producer, 'getQueueUrl')
       // @ts-ignore
@@ -242,7 +246,7 @@ describe('SQS Producer', () => {
     expect(err).to.equal(true);
   });
 
-  it('should add New Relic trace metadata iff. New Relic is available', async () => {
+  // it('should add New Relic trace metadata iff. New Relic is available', async () => {
     
-  })
+  // })
 });
