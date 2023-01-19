@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["es2017"],
-    "target": "es2017",
+    "lib": ["ESNext"],
+    "target": "ES2020",
     "module": "commonjs",
-    "jsx": "react",
+    // "jsx": "react",
     "checkJs": false,
     "declaration": true,
     "outDir": "lib",

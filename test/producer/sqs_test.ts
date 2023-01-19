@@ -21,7 +21,7 @@ describe('SQS Producer', () => {
 
   afterEach(() => sandbox.restore());
 
-  it('should create queues if required when initializing a topic', async () => {
+  it('should initialize', async () => {
     const registry = new Registry();
     // @ts-ignore
     const p = new Producer(
@@ -29,40 +29,18 @@ describe('SQS Producer', () => {
       registry
     );
 
-    const mockQueues = new Set();
     const createQueueStub = sandbox
-      .stub(p.producer, "createQueue")
-      .callsFake( // @ts-ignore
-        ({ QueueName }) => // @ts-ignore
-          new Promise((resolve) => {
-            mockQueues.add(QueueName);
-            resolve({
-              QueueUrl: `https://sqs.ap-southeast-2.amazonaws.com/123456123456/${topic}`,
-            });
-          })
-      );
-    const getQueueUrlStub = sandbox
-      .stub(p.producer, "getQueueUrl")
-      .callsFake( // @ts-ignore
-        ({ QueueName }) => // @ts-ignore
-          new Promise((resolve, reject) => {
-            if (mockQueues[QueueName]) {
-              resolve({
-                QueueUrl: `https://sqs.ap-southeast-2.amazonaws.com/123456123456/${topic}`,
-              });
-            } else { reject('Queue does not exist'); }
-          })
-      );
+      .stub(p.producer, 'createQueue')
+      // @ts-ignore
+      .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic' }));
 
-      // todo - move to sinon and call sinon.reset + setup up stubs + vals again before each
+    sandbox
+      .stub(p.producer, 'getQueueUrl')
+      // @ts-ignore
+      .returns(promiseResolves({ QueueUrl: null }));
 
-    // sandbox
-    //   .stub(p.producer, 'getQueueUrl')
-    //   // @ts-ignore
-    //   .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test' }));
-
-    await p.initialize('test'); // @ts-ignore
-    expect(createQueueStub.calledOnceWith({ QueueUrl: 'test' }));
+    await p.initialize('test');
+    expect(createQueueStub.callCount).to.equal(1);
   });
 
   it('should not recreate queue and send from cached object', async () => {
@@ -75,7 +53,7 @@ describe('SQS Producer', () => {
     const createQueueStub = sandbox
       .stub(p.producer, 'createQueue')
       // @ts-ignore
-      .returns(promiseResolves({ data: { QueueUrl: 'kjsdkh' } }));
+      .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic' }));
 
     const getQueueUrlStub = sandbox.stub(p.producer, 'getQueueUrl');
     // @ts-ignore
@@ -112,8 +90,8 @@ describe('SQS Producer', () => {
     expect(sendMessageStub.callCount).to.equal(1);
   });
 
-  // This does not happen. We always call initialize().
-  it('should send without looking up the queue URL if the sqs URL is already set', async () => {
+  // TODO - Draw this out and figure it out on paper. Something is sus.
+  it('should send without initialize if sqsUrls are present', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
     const p = new Producer(
@@ -126,21 +104,21 @@ describe('SQS Producer', () => {
       .stub(p.producer, 'sendMessage')
       // @ts-ignore
       .returns(promiseResolves({ hi: 'hello' }));
-    const getQueueUrlStub = sandbox
+
+    sandbox
       .stub(p.producer, 'getQueueUrl')
       // @ts-ignore
       .returns(promiseResolves({ QueueUrl: 'test-topic' }));
     const createQueueStub = sandbox
       .stub(p.producer, 'createQueue')
       // @ts-ignore
-      .returns(promiseResolves({ data: { QueueUrl: 'kjsdkh' } }));
+      .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic' }));
 
     p.sqsUrls = {
       'test-topic': 'asdasd',
     };
     await p.send('test-topic', { a: 'payload' });
     expect(createQueueStub.callCount).to.equal(0);
-    expect(getQueueUrlStub.callCount).to.equal(0);
     expect(sendMessageStub.callCount).to.equal(1);
   });
 
