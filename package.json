@@ -50,13 +50,11 @@
     "uuid": "^8.0.0"
   },
   "optionalDependencies": {
-    "aws-sdk": "2.1297.0",
+    "aws-sdk": "^2.1043.0",
     "node-rdkafka": "^2.13.0",
     "rsmq": "^0.12.4"
   },
   "devDependencies": {
-    "@babel/core": "7.20.12",
-    "@babel/eslint-parser": "7.19.1",
     "@emotion/eslint-plugin": "11.10",
     "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@ordermentum/eslint-config-ordermentum": "2.0.0-rc2",
