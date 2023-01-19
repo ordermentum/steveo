@@ -4,12 +4,12 @@ import Producer from '../../src/producer/sqs';
 import Registry from '../../src/registry';
 
 describe('SQS Producer', () => {
-  let sandbox: sinon.SinonSandbox;
+  const sandbox = sinon.createSandbox();
   let producer;
   let registry;
 
   beforeEach(() => {
-    sandbox = sinon.createSandbox();
+    sandbox.restore();
     registry = new Registry();
     producer = new Producer(
       {
@@ -32,12 +32,8 @@ describe('SQS Producer', () => {
   afterEach(() => sandbox.restore());
 
   it('should initialize', async () => {
-    const registry = new Registry();
-    // @ts-ignore
-    const p = new Producer({ engine: 'sqs', tasksPath: '' }, registry);
-
     const createQueueStub = sandbox
-      .stub(p.producer, 'createQueue')
+      .stub(producer.producer, 'createQueue')
       // @ts-ignore
       .returns(
         promiseResolves({
@@ -47,20 +43,17 @@ describe('SQS Producer', () => {
       );
 
     sandbox
-      .stub(p.producer, 'getQueueUrl')
+      .stub(producer.producer, 'getQueueUrl')
       // @ts-ignore
       .returns(promiseResolves({ QueueUrl: null }));
 
-    await p.initialize('test');
+    await producer.initialize('test');
     expect(createQueueStub.callCount).to.equal(1);
   });
 
   it('should not recreate queue and send from cached object', async () => {
-    const registry = new Registry();
-
-    const p = new Producer({ engine: 'sqs', tasksPath: '' }, registry);
     const createQueueStub = sandbox
-      .stub(p.producer, 'createQueue')
+      .stub(producer.producer, 'createQueue')
       // @ts-ignore
       .returns(
         promiseResolves({
@@ -69,35 +62,33 @@ describe('SQS Producer', () => {
         })
       );
 
-    const getQueueUrlStub = sandbox.stub(p.producer, 'getQueueUrl');
+    const getQueueUrlStub = sandbox.stub(producer.producer, 'getQueueUrl');
     // @ts-ignore
     getQueueUrlStub.returns(promiseResolves({ QueueUrl: null }));
 
-    await p.initialize('test');
+    await producer.initialize('test');
     expect(createQueueStub.callCount).to.equal(1);
     // @ts-ignore
     getQueueUrlStub.returns(promiseResolves({ QueueUrl: 'test' }));
-    await p.initialize('test');
+    await producer.initialize('test');
     expect(createQueueStub.callCount).to.equal(1); // Should remain 1, not create queue again
   });
 
   it('should initialize & send if no sqsUrls', async () => {
-    const registry = new Registry();
     registry.addTopic('test-topic');
-    const p = new Producer({ engine: 'sqs', tasksPath: '' }, registry);
-    sandbox.spy(p, 'getPayload');
+    sandbox.spy(producer, 'getPayload');
     const sendMessageStub = sandbox
-      .stub(p.producer, 'sendMessage')
+      .stub(producer.producer, 'sendMessage')
       // @ts-ignore
       .returns(promiseResolves({ hi: 'hello' }));
 
-    const initializeStub = sandbox.stub(p, 'initialize').resolves();
+    const initializeStub = sandbox.stub(producer, 'initialize').resolves();
     // does this line even do anything?? does this test even do anything???
-    p.sqsUrls = {
+    producer.sqsUrls = {
       'test-topic':
         'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
     };
-    await p.send('test-topic', { a: 'payload' });
+    await producer.send('test-topic', { a: 'payload' });
     expect(initializeStub.callCount).to.equal(1);
     expect(sendMessageStub.callCount).to.equal(1);
   });
@@ -105,18 +96,16 @@ describe('SQS Producer', () => {
   // What does "initialize" mean in this context?
   // initialize() is always called, but createQueue wont be called if it already exists.
   it('should send without initialize if sqsUrls are present', async () => {
-    const registry = new Registry();
     registry.addTopic('test-topic');
-    const p = new Producer({ engine: 'sqs' }, registry);
 
-    sandbox.spy(p, 'getPayload');
+    sandbox.spy(producer, 'getPayload');
     const sendMessageStub = sandbox
-      .stub(p.producer, 'sendMessage')
+      .stub(producer.producer, 'sendMessage')
       // @ts-ignore
       .returns(promiseResolves({ hi: 'hello' }));
 
     sandbox
-      .stub(p.producer, 'getQueueUrl')
+      .stub(producer.producer, 'getQueueUrl')
       // @ts-ignore
       .returns(
         promiseResolves({
@@ -125,7 +114,7 @@ describe('SQS Producer', () => {
         })
       );
     const createQueueStub = sandbox
-      .stub(p.producer, 'createQueue')
+      .stub(producer.producer, 'createQueue')
       // @ts-ignore
       .returns(
         promiseResolves({
@@ -134,23 +123,17 @@ describe('SQS Producer', () => {
         })
       );
 
-    p.sqsUrls = {
+    producer.sqsUrls = {
       'test-topic':
         'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
     };
-    await p.send('test-topic', { a: 'payload' });
+    await producer.send('test-topic', { a: 'payload' });
     expect(createQueueStub.notCalled).to.be.true;
     expect(sendMessageStub.calledOnce).to.be.true;
   });
 
   it('should send with attributes', async () => {
-    const registry = new Registry();
-
-    const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
-      registry
-    );
-    sandbox.spy(p, 'getPayload');
+    sandbox.spy(producer, 'getPayload');
     // @ts-ignore
     registry.addNewTask({
       name: 'test-topic',
@@ -165,32 +148,29 @@ describe('SQS Producer', () => {
       ],
     });
     const sendMessageStub = sandbox
-      .stub(p.producer, 'sendMessage')
+      .stub(producer.producer, 'sendMessage')
       // @ts-ignore
       .returns(promiseResolves({ hi: 'hello' }));
     sandbox
-      .stub(p.producer, 'getQueueUrl')
+      .stub(producer.producer, 'getQueueUrl')
       // @ts-ignore
       .returns(promiseResolves({ QueueUrl: 'test-topic' }));
     const createQueueStub = sandbox
-      .stub(p.producer, 'createQueue')
+      .stub(producer.producer, 'createQueue')
       // @ts-ignore
       .returns(promiseResolves({ data: { QueueUrl: 'kjsdkh' } }));
 
-    p.sqsUrls = {
+    producer.sqsUrls = {
       'test-topic': 'asdasd',
     };
-    await p.send('test-topic', { a: 'payload' });
+    await producer.send('test-topic', { a: 'payload' });
     expect(createQueueStub.callCount).to.equal(0);
     expect(sendMessageStub.callCount).to.equal(1);
   });
 
   it('should throw error if initialize rejects', async () => {
-    const registry = new Registry();
-
     // @ts-ignore
-    const p = new Producer({ engine: 'sqs', tasksPath: '' }, registry);
-    sandbox.spy(p, 'getPayload');
+    sandbox.spy(producer, 'getPayload');
     // @ts-ignore
     registry.addNewTask({
       name: 'test-topic',
@@ -210,14 +190,14 @@ describe('SQS Producer', () => {
       ],
     });
     sandbox
-      .stub(p.producer, 'sendMessage')
+      .stub(producer.producer, 'sendMessage')
       // @ts-ignore
       .returns(promiseResolves({ hi: 'hello' }));
-    sandbox.stub(p, 'initialize').throws();
-    p.sqsUrls = {};
+    sandbox.stub(producer, 'initialize').throws();
+    producer.sqsUrls = {};
     let err = false;
     try {
-      await p.send('test-topic', { a: 'payload' });
+      await producer.send('test-topic', { a: 'payload' });
     } catch (ex) {
       err = true;
       expect(ex).not.eql(undefined);
@@ -227,13 +207,7 @@ describe('SQS Producer', () => {
   });
 
   it('should throw error if sendmessage fails', async () => {
-    const registry = new Registry();
-
-    const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
-      registry
-    );
-    sandbox.spy(p, 'getPayload');
+    sandbox.spy(producer, 'getPayload');
     // @ts-ignore
     registry.addNewTask({
       name: 'test-topic',
@@ -248,14 +222,14 @@ describe('SQS Producer', () => {
       ],
     });
     sandbox
-      .stub(p.producer, 'sendMessage')
+      .stub(producer.producer, 'sendMessage')
       // @ts-ignore
       .returns(promiseRejects({ yeah: 'nah' }));
-    sandbox.stub(p, 'initialize').resolves();
-    p.sqsUrls = {};
+    sandbox.stub(producer, 'initialize').resolves();
+    producer.sqsUrls = {};
     let err = false;
     try {
-      await p.send('test-topic', { a: 'payload' });
+      await producer.send('test-topic', { a: 'payload' });
     } catch (ex) {
       err = true;
       expect(ex).not.eql(undefined);
