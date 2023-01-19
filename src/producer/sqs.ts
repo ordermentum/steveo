@@ -46,17 +46,28 @@ class SqsProducer implements IProducer {
         : func();
   }
 
+  /**
+   * @description Adds the topic's SQS queue URL to the sqsUrls list, and
+   * creates the SQS queue if it does not exist
+   */
   async initialize(topic: string): Promise<string> {
+    this.logger.debug(`Initialising topic ${topic}`);
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
 
-    const data = await this.producer
-      .getQueueUrl({ QueueName: topic })
-      .promise()
-      .catch();
+    let getQueueResult;
+    try {
+      getQueueResult = await this.producer
+        .getQueueUrl({ QueueName: topic })
+        .promise();
+    } catch (err) {
+      this.logger.info('caught error'); //
+      this.logger.info((err as Error).message);
+      this.logger.info('after error'); //
+    }
 
-    const queue = data?.QueueUrl;
+    const queue = getQueueResult?.QueueUrl;
     if (queue) {
       this.sqsUrls[topic] = queue;
       return queue;
@@ -74,7 +85,7 @@ class SqsProducer implements IProducer {
     const res = await this.producer.createQueue(params).promise();
     if (!res.QueueUrl) {
       throw new Error(
-        `Failed to create SQS queue: ${res.$response.error?.message}`
+        `Failed to create SQS queue: ${res.$response?.error?.message}`
       );
     }
     this.sqsUrls[topic] = res.QueueUrl;
@@ -114,6 +125,7 @@ class SqsProducer implements IProducer {
   async send<T = any>(topic: string, payload: T) {
     this.transactionWrapper(`${topic}-publish`, async () => {
       try {
+        // This would result in calling getQueueUrl for each send(). Where is this cached?
         await this.initialize(topic);
       } catch (ex) {
         this.newrelic?.noticeError(ex as Error);
@@ -122,7 +134,7 @@ class SqsProducer implements IProducer {
       }
 
       const transaction = this.newrelic?.getTransaction();
-      const data = this.getPayload(payload, topic, transaction);
+      const data = this.getPayload(payload, topic, transaction); // this reads the queue URL using the topic name
 
       try {
         const response = await this.producer.sendMessage(data).promise();

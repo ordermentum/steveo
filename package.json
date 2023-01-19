@@ -50,7 +50,7 @@
     "uuid": "^8.0.0"
   },
   "optionalDependencies": {
-    "aws-sdk": "^2.1043.0",
+    "aws-sdk": "2.1297.0",
     "node-rdkafka": "^2.13.0",
     "rsmq": "^0.12.4"
   },
