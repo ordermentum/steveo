@@ -46,7 +46,7 @@ class SqsProducer implements IProducer {
         : func();
   }
 
-  async initialize(topic?: string) {
+  async initialize(topic: string): Promise<string> {
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
@@ -57,7 +57,6 @@ class SqsProducer implements IProducer {
       .catch();
 
     const queue = data?.QueueUrl;
-
     if (queue) {
       this.sqsUrls[topic] = queue;
       return queue;
