@@ -5,8 +5,18 @@ import Registry from '../../src/registry';
 
 describe('SQS Producer', () => {
   let sandbox: sinon.SinonSandbox;
+  let producer;
+  let registry;
+
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+    registry = new Registry();
+    producer = new Producer(
+      {
+        engine: 'sqs',
+      },
+      registry
+    );
   });
 
   const promiseResolves = resolves => ({
@@ -24,15 +34,17 @@ describe('SQS Producer', () => {
   it('should initialize', async () => {
     const registry = new Registry();
     // @ts-ignore
-    const p = new Producer(
-      { engine: 'sqs', tasksPath: '' },
-      registry
-    );
+    const p = new Producer({ engine: 'sqs', tasksPath: '' }, registry);
 
     const createQueueStub = sandbox
       .stub(p.producer, 'createQueue')
       // @ts-ignore
-      .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic' }));
+      .returns(
+        promiseResolves({
+          QueueUrl:
+            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+        })
+      );
 
     sandbox
       .stub(p.producer, 'getQueueUrl')
@@ -46,14 +58,16 @@ describe('SQS Producer', () => {
   it('should not recreate queue and send from cached object', async () => {
     const registry = new Registry();
 
-    const p = new Producer(
-      { engine: 'sqs', tasksPath: '' },
-      registry
-    );
+    const p = new Producer({ engine: 'sqs', tasksPath: '' }, registry);
     const createQueueStub = sandbox
       .stub(p.producer, 'createQueue')
       // @ts-ignore
-      .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic' }));
+      .returns(
+        promiseResolves({
+          QueueUrl:
+            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+        })
+      );
 
     const getQueueUrlStub = sandbox.stub(p.producer, 'getQueueUrl');
     // @ts-ignore
@@ -70,10 +84,7 @@ describe('SQS Producer', () => {
   it('should initialize & send if no sqsUrls', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
-    const p = new Producer(
-      { engine: 'sqs', tasksPath: '' },
-      registry
-    );
+    const p = new Producer({ engine: 'sqs', tasksPath: '' }, registry);
     sandbox.spy(p, 'getPayload');
     const sendMessageStub = sandbox
       .stub(p.producer, 'sendMessage')
@@ -83,7 +94,8 @@ describe('SQS Producer', () => {
     const initializeStub = sandbox.stub(p, 'initialize').resolves();
     // does this line even do anything?? does this test even do anything???
     p.sqsUrls = {
-      'test-topic': 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+      'test-topic':
+        'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
     };
     await p.send('test-topic', { a: 'payload' });
     expect(initializeStub.callCount).to.equal(1);
@@ -95,10 +107,7 @@ describe('SQS Producer', () => {
   it('should send without initialize if sqsUrls are present', async () => {
     const registry = new Registry();
     registry.addTopic('test-topic');
-    const p = new Producer(
-      { engine: 'sqs' },
-      registry
-    );
+    const p = new Producer({ engine: 'sqs' }, registry);
 
     sandbox.spy(p, 'getPayload');
     const sendMessageStub = sandbox
@@ -109,14 +118,25 @@ describe('SQS Producer', () => {
     sandbox
       .stub(p.producer, 'getQueueUrl')
       // @ts-ignore
-      .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic' }));
+      .returns(
+        promiseResolves({
+          QueueUrl:
+            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+        })
+      );
     const createQueueStub = sandbox
       .stub(p.producer, 'createQueue')
       // @ts-ignore
-      .returns(promiseResolves({ QueueUrl: 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic' }));
+      .returns(
+        promiseResolves({
+          QueueUrl:
+            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+        })
+      );
 
     p.sqsUrls = {
-      'test-topic': 'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+      'test-topic':
+        'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
     };
     await p.send('test-topic', { a: 'payload' });
     expect(createQueueStub.notCalled).to.be.true;
@@ -169,10 +189,7 @@ describe('SQS Producer', () => {
     const registry = new Registry();
 
     // @ts-ignore
-    const p = new Producer(
-      { engine: 'sqs', tasksPath: '' },
-      registry
-    );
+    const p = new Producer({ engine: 'sqs', tasksPath: '' }, registry);
     sandbox.spy(p, 'getPayload');
     // @ts-ignore
     registry.addNewTask({
@@ -247,7 +264,5 @@ describe('SQS Producer', () => {
     expect(err).to.equal(true);
   });
 
-  it('should add New Relic trace metadata iff. New Relic is available', async () => {
-    
-  })
+  it('should add New Relic trace metadata iff. New Relic is available', async () => {});
 });
