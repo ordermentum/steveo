@@ -166,7 +166,7 @@ class SqsRunner extends BaseRunner implements IRunner {
               error: ex,
             });
             this.registry.emit('runner_failure', topic, ex, params);
-            this.traceProvider?.onError(ex as Error, traceContext);
+            this.traceProvider?.onError?.(ex as Error, traceContext);
           }
           if (resource) await this.pool.release(resource);
         };
@@ -233,10 +233,10 @@ class SqsRunner extends BaseRunner implements IRunner {
             WaitTimeSeconds: this.config.waitTimeSeconds,
           };
           const messages = await this.dequeue(params);
-
           if (!messages) {
             return;
           }
+
           try {
             await this.receive(messages, topic);
           } catch (ex) {

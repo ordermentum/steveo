@@ -123,7 +123,7 @@ class SqsProducer implements IProducer {
           await this.initialize(topic);
         }
       } catch (ex) {
-        this.traceProvider?.onError(ex as Error, traceContext);
+        this.traceProvider?.onError?.(ex as Error, traceContext);
         throw ex;
       }
 
@@ -136,7 +136,7 @@ class SqsProducer implements IProducer {
         await this.producer.sendMessage(data).promise();
         this.registry.emit('producer_success', topic, data);
       } catch (ex) {
-        this.traceProvider?.onError(ex as Error, traceContext);
+        this.traceProvider?.onError?.(ex as Error, traceContext);
         this.registry.emit('producer_failure', topic, ex, data);
         throw ex;
       }
