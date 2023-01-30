@@ -6,8 +6,8 @@ import { build } from '../../src/base/pool';
 import Registry from '../../src/registry';
 
 describe('SQS Runner', () => {
-  let runner;
-  let registry;
+  let runner: Runner;
+  let registry: Registry;
   let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => {
@@ -18,6 +18,10 @@ describe('SQS Runner', () => {
       config: {},
       registry,
       pool: build(),
+      hooks: {
+        preTask: sandbox.spy(),
+        postTask: sandbox.spy(),
+      },
     };
     // @ts-ignore
     runner = new Runner(steveo);
@@ -72,8 +76,11 @@ describe('SQS Runner', () => {
       'a-topic'
     );
 
-    expect(subscribeStub.callCount).to.equal(2);
-    expect(deleteMessageStub.callCount).to.equal(2);
+    expect(subscribeStub.callCount, 'subscribe is called twice').to.equal(2);
+    expect(
+      deleteMessageStub.callCount,
+      'deleteMessage is called twice'
+    ).to.equal(2);
   });
 
   it('get all urls for queues', async () => {
@@ -301,8 +308,11 @@ describe('SQS Runner', () => {
       ],
       'a-topic'
     );
-    expect(subscribeStub.callCount).to.equal(2);
-    expect(deleteMessageStub.callCount).to.equal(2);
+    expect(subscribeStub.callCount, 'subscribe is called twice').to.equal(2);
+    expect(
+      deleteMessageStub.callCount,
+      'deleteMessage is called twice'
+    ).to.equal(2);
     expect(
       emitStub.calledWith(
         'runner_failure',

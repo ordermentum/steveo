@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["es2017"],
-    "target": "es2017",
+    "lib": ["ES2019"],
+    "target": "ES2019",
     "module": "commonjs",
-    "jsx": "react",
+    // "jsx": "react",
     "checkJs": false,
     "declaration": true,
     "outDir": "lib",

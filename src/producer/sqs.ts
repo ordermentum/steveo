@@ -1,6 +1,7 @@
 import nullLogger from 'null-logger';
 import { SQS } from 'aws-sdk';
-import sqsConf from '../config/sqs';
+import util from 'util';
+import { getSqsInstance } from '../config/sqs';
 
 import {
   Configuration,
@@ -9,9 +10,10 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
+  TraceProvider,
 } from '../common';
 
-import { getMeta } from './utils';
+import { createMessageMetadata } from './utils/createMessageMetadata';
 
 class SqsProducer implements IProducer {
   config: Configuration;
@@ -24,50 +26,70 @@ class SqsProducer implements IProducer {
 
   sqsUrls: sqsUrls;
 
+  private traceProvider?: TraceProvider;
+
   constructor(
     config: Configuration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
     this.config = config;
-    this.producer = sqsConf.sqs(config);
+    this.producer = getSqsInstance(config);
     this.logger = logger;
     this.registry = registry;
     this.sqsUrls = {};
+    this.traceProvider = this.config.traceProvider as TraceProvider;
   }
 
-  async initialize(topic?: string) {
+  async initialize(topic: string): Promise<string> {
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
 
-    const config = this.config as SQSConfiguration;
-
-    const data = await this.producer
+    const getQueueUrlResult = await this.producer
       .getQueueUrl({ QueueName: topic })
       .promise()
-      .catch();
+      .catch(() => undefined);
+    const queueUrl = getQueueUrlResult?.QueueUrl;
 
-    const queue = data?.QueueUrl;
-
-    if (queue) {
-      this.sqsUrls[topic] = queue;
-      return queue;
+    if (queueUrl) {
+      this.sqsUrls[topic] = queueUrl;
+      return queueUrl;
     }
+
+    const config = this.config as SQSConfiguration;
     const params = {
       QueueName: topic,
       Attributes: {
-        ReceiveMessageWaitTimeSeconds: config.receiveMessageWaitTimeSeconds,
-        MessageRetentionPeriod: config.messageRetentionPeriod,
+        ReceiveMessageWaitTimeSeconds:
+          config.receiveMessageWaitTimeSeconds ?? '20',
+        MessageRetentionPeriod: config.messageRetentionPeriod ?? '604800',
       },
     };
-    const createResponse = await this.producer.createQueue(params).promise();
-    this.sqsUrls[topic] = createResponse?.QueueUrl;
-    return this.sqsUrls[topic];
+    this.logger.debug(`Creating queue`, util.inspect(params));
+    const res = await this.producer
+      .createQueue(params)
+      .promise()
+      .catch(err => {
+        throw new Error(`Failed to call SQS createQueue: ${err}`);
+      });
+    if (!res.QueueUrl) {
+      throw new Error('SQS createQueue response does not contain a queue name');
+    }
+    this.sqsUrls[topic] = res.QueueUrl;
+    return res.QueueUrl;
   }
 
-  getPayload(msg: any, topic: string): any {
-    const context = getMeta(msg);
+  getPayload(
+    msg: any,
+    topic: string,
+    traceMetadata?: string
+  ): {
+    MessageAttributes: any;
+    MessageBody: string;
+    QueueUrl: string;
+  } {
+    const context = createMessageMetadata(msg, traceMetadata);
 
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
@@ -93,25 +115,36 @@ class SqsProducer implements IProducer {
     };
   }
 
-  async send<T = any>(topic: string, payload: T) {
-    try {
-      await this.initialize(topic);
-    } catch (ex) {
-      this.logger.error('Error in initalizing sqs', ex);
-      throw ex;
-    }
+  async send<T = Record<string, any>>(topic: string, payload: T) {
+    const callback = async traceContext => {
+      // eslint-disable-next-line no-useless-catch
+      try {
+        if (!this.sqsUrls[topic]) {
+          await this.initialize(topic);
+        }
+      } catch (ex) {
+        this.traceProvider?.onError?.(ex as Error, traceContext);
+        throw ex;
+      }
 
-    const data = this.getPayload(payload, topic);
+      const traceMetadata = await this.traceProvider?.serializeTraceMetadata(
+        traceContext
+      );
+      const data = this.getPayload(payload, topic, traceMetadata);
 
-    try {
-      const response = await this.producer.sendMessage(data).promise();
-      this.logger.debug('SQS Publish Data', response);
-      this.registry.emit('producer_success', topic, data);
-    } catch (ex) {
-      this.logger.error('Error while sending SQS payload', topic, ex);
-      this.registry.emit('producer_failure', topic, ex, data);
-      throw ex;
-    }
+      try {
+        await this.producer.sendMessage(data).promise();
+        this.registry.emit('producer_success', topic, data);
+      } catch (ex) {
+        this.traceProvider?.onError?.(ex as Error, traceContext);
+        this.registry.emit('producer_failure', topic, ex, data);
+        throw ex;
+      }
+    };
+
+    this.traceProvider
+      ? this.traceProvider.wrapHandler(`${topic}-publish`, undefined, callback)
+      : await callback(undefined);
   }
 
   async disconnect() {}

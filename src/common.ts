@@ -129,6 +129,7 @@ export type Configuration<Runner = any> = {
    * This is required if you want to use the built in steveo runner and/or the child process functionality
    */
   tasksPath?: string;
+  traceProvider?: TraceProvider;
 } & Runner;
 
 export type Attribute = {
@@ -247,12 +248,29 @@ export interface IProducer<P = any> {
   initialize(topic?: string): Promise<P>;
   getPayload(msg: any, topic: string): any;
   send<T = any>(topic: string, payload: T, key?: string): Promise<void>;
+  // FIXME: Replace T = any with Record<string, any> or an explicit list of
+  // types we will handle as first-class citizens,
+  // e.g. `Record<string, any> | string`.
   disconnect(): Promise<void>;
 }
 
-export type sqsUrls = {
-  [key: string]: any;
-};
+export interface TraceProvider {
+  wrapHandler(
+    txName: string,
+    traceContext: unknown,
+    callback: (traceContext: unknown) => any
+  ): Promise<void>;
+  wrapHandlerSegment(
+    segmentName: string,
+    traceContext: unknown,
+    callback: any
+  ): Promise<void>;
+  onError(err: Error, traceContext: unknown): Promise<void>;
+  serializeTraceMetadata(traceContext: unknown): Promise<string>;
+  deserializeTraceMetadata(traceMetadata: string): Promise<unknown>;
+}
+
+export type sqsUrls = Record<string, string>;
 
 export type CreateRedisTopic = {
   topic: string;

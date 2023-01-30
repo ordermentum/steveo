@@ -19,6 +19,7 @@ export const getContext = params => {
 
   return {
     duration,
+    traceMetadata: meta.traceMetadata,
   };
 };
 

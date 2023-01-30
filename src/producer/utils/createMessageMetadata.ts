@@ -2,8 +2,11 @@ import moment from 'moment';
 import * as crypto from 'crypto';
 import os from 'os';
 
-export const getMeta = <T = any>(message: T) => {
-  const sha1 = crypto.createHash('sha1');
+export const createMessageMetadata = <T = any>(
+  message: T,
+  traceMetadata?: string
+) => {
+  const sha1 = crypto.createHash('sha1'); // can we change this to SHA256?
   const signature = sha1
     .update(JSON.stringify(message))
     .digest('hex')
@@ -11,5 +14,6 @@ export const getMeta = <T = any>(message: T) => {
   const timestamp = moment().unix();
   const start = process.hrtime();
   const hostname = os.hostname();
-  return { hostname, timestamp, signature, start };
+
+  return { hostname, timestamp, traceMetadata, signature, start };
 };

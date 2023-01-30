@@ -19,8 +19,10 @@ import { Steveo } from '..';
 
 class JsonParsingError extends Error {}
 
-class KafkaRunner extends BaseRunner
-  implements IRunner<KafkaConsumer, Message> {
+class KafkaRunner
+  extends BaseRunner
+  implements IRunner<KafkaConsumer, Message>
+{
   config: Configuration<KafkaConfiguration>;
 
   logger: Logger;
@@ -158,7 +160,7 @@ class KafkaRunner extends BaseRunner
    * @description It's a bound function to avoid binding when passing as callback to the checker function
    * Reference: https://github.com/Blizzard/node-rdkafka/issues/217#issuecomment-313582908
    */
-  healthCheck = async function() {
+  healthCheck = async function () {
     return new Promise<void>((resolve, reject) => {
       /**
        * if you are concerned about potential performance issues,

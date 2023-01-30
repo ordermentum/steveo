@@ -10,7 +10,7 @@ import {
   RedisConfiguration,
 } from '../common';
 
-import { getMeta } from './utils';
+import { createMessageMetadata } from './utils/createMessageMetadata';
 
 class RedisProducer implements IProducer {
   config: Configuration;
@@ -45,7 +45,7 @@ class RedisProducer implements IProducer {
   }
 
   getPayload(msg: any, topic: string): any {
-    const context = getMeta(msg);
+    const context = createMessageMetadata(msg);
     return {
       qname: topic,
       message: JSON.stringify({ ...msg, _meta: context }),

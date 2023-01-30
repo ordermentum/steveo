@@ -2,243 +2,218 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producer/sqs';
 import Registry from '../../src/registry';
+import Task from '../../src/task';
 
 describe('SQS Producer', () => {
   let sandbox: sinon.SinonSandbox;
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
+  let producer: Producer;
+  let registry: Registry;
+  let createQueueStub: sinon.SinonStub;
+  let getQueueUrlStub: sinon.SinonStub;
+  let sendMessageStub: sinon.SinonStub;
+
+  // AWS SDK v2 has a pattern of `res = foo().promise()` to get a result as a
+  // promise
+  const awsPromiseResolves = returnValue => ({
+    promise: async () => returnValue,
   });
 
-  const promiseResolves = resolves => ({
-    promise: async () => resolves,
-  });
-
-  const promiseRejects = rejects => ({
+  const awsPromiseRejects = errorMessage => ({
     promise: async () => {
-      throw rejects;
+      throw new Error(errorMessage);
     },
   });
 
-  afterEach(() => sandbox.restore());
-
-  it('should initialize', async () => {
-    const registry = new Registry();
-    // @ts-ignore
-    const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+    registry = new Registry();
+    producer = new Producer(
+      {
+        engine: 'sqs',
+      },
       registry
     );
-
-    const createQueueStub = sandbox
-      .stub(p.producer, 'createQueue')
+    createQueueStub = sandbox
+      .stub(producer.producer, 'createQueue')
       // @ts-ignore
-      .returns(promiseResolves({ data: { QueueUrl: 'kjsdkh' } }));
+      .callsFake(({ QueueName }) => {
+        if (QueueName === 'topic-with-existing-queue') {
+          return awsPromiseRejects('Queue exists');
+        }
+        return awsPromiseResolves({
+          QueueUrl:
+            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+        });
+      });
 
-    sandbox
-      .stub(p.producer, 'getQueueUrl')
+    getQueueUrlStub = sandbox
+      .stub(producer.producer, 'getQueueUrl')
       // @ts-ignore
-      .returns(promiseResolves({ QueueUrl: null }));
+      .callsFake(({ QueueName }) => {
+        if (QueueName === 'topic-without-queue') {
+          return awsPromiseRejects('Queue does not exist');
+        }
+        return awsPromiseResolves({
+          QueueUrl:
+            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+        });
+      });
 
-    await p.initialize('test');
-    expect(createQueueStub.callCount).to.equal(1);
+    sendMessageStub = sandbox
+      .stub(producer.producer, 'sendMessage')
+      // @ts-ignore
+      .callsFake(({ MessageBody }: { MessageBody: string }) => {
+        if (MessageBody.includes('bad-message')) {
+          return awsPromiseRejects('Bad message');
+        }
+        return awsPromiseResolves({
+          MD5OfMessageBody: '00000000000000000000000000000000',
+          MessageId: '00000000-1111-2222-3333-444444444444',
+        });
+      });
   });
 
-  it('should not recreate queue and send from cached object', async () => {
-    const registry = new Registry();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  describe('initialize', async () => {
+    it(`throws when a topic is not provided`, async () => {
+      let didThrow = false;
+      try {
+        await producer.initialize(undefined as unknown as string);
+      } catch (err) {
+        didThrow = true;
+      }
+      expect(didThrow).to.be.true;
+    });
 
-    const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
-      registry
-    );
-    const createQueueStub = sandbox
-      .stub(p.producer, 'createQueue')
-      // @ts-ignore
-      .returns(promiseResolves({ data: { QueueUrl: 'kjsdkh' } }));
+    it(`when a queue does not exist, a queue should be created`, async () => {
+      await producer.initialize('topic-without-queue');
+      expect(createQueueStub.calledOnce, 'createQueue is called').to.be.true;
+    });
 
-    const getQueueUrlStub = sandbox.stub(p.producer, 'getQueueUrl');
-    // @ts-ignore
-    getQueueUrlStub.returns(promiseResolves({ QueueUrl: null }));
-
-    await p.initialize('test');
-    expect(createQueueStub.callCount).to.equal(1);
-    // @ts-ignore
-    getQueueUrlStub.returns(promiseResolves({ QueueUrl: 'test' }));
-    await p.initialize('test');
-    expect(createQueueStub.callCount).to.equal(1); // Should remain 1, not create queue again
+    it('when a queue exists, it should read and use the existing queue URL', async () => {
+      await producer.initialize('topic-with-queue');
+      expect(getQueueUrlStub.calledOnce, 'getQueueUrl is called').to.be.true;
+      expect(createQueueStub.notCalled, 'createQueue is not called').to.be.true;
+    });
   });
 
-  it('should initialize & send if no sqsUrls', async () => {
-    const registry = new Registry();
-    registry.addTopic('test-topic');
-    const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
-      registry
-    );
-    sandbox.spy(p, 'getPayload');
-    const sendMessageStub = sandbox
-      .stub(p.producer, 'sendMessage')
-      // @ts-ignore
-      .returns(promiseResolves({ hi: 'hello' }));
+  describe('send', () => {
+    let initializeStub: sinon.SinonStub;
 
-    const initializeStub = sandbox.stub(p, 'initialize').resolves();
-    p.sqsUrls = {
-      'test-topic': '',
-    };
-    await p.send('test-topic', { a: 'payload' });
-    expect(initializeStub.callCount).to.equal(1);
-    expect(sendMessageStub.callCount).to.equal(1);
-  });
+    beforeEach(() => {
+      initializeStub = sandbox.stub(producer, 'initialize');
+    });
 
-  it('should send without initialize if sqsUrls are present', async () => {
-    const registry = new Registry();
-    registry.addTopic('test-topic');
-    const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
-      registry
-    );
-    sandbox.spy(p, 'getPayload');
-    const sendMessageStub = sandbox
-      .stub(p.producer, 'sendMessage')
-      // @ts-ignore
-      .returns(promiseResolves({ hi: 'hello' }));
-    sandbox
-      .stub(p.producer, 'getQueueUrl')
-      // @ts-ignore
-      .returns(promiseResolves({ QueueUrl: 'test-topic' }));
-    const createQueueStub = sandbox
-      .stub(p.producer, 'createQueue')
-      // @ts-ignore
-      .returns(promiseResolves({ data: { QueueUrl: 'kjsdkh' } }));
+    it(`when the topic's SQS URL is not known, initialize() should be called`, async () => {
+      registry.addTopic('topic-without-queue');
+      await producer.send('topic-without-queue', { foo: 'bar' });
 
-    p.sqsUrls = {
-      'test-topic': 'asdasd',
-    };
-    await p.send('test-topic', { a: 'payload' });
-    expect(createQueueStub.callCount).to.equal(0);
-    expect(sendMessageStub.callCount).to.equal(1);
-  });
+      expect(initializeStub.calledOnce, 'initalise is called').to.be.true;
+      expect(sendMessageStub.calledOnce, 'sendMessage is called').to.be.true;
+    });
 
-  it('should send with attributes', async () => {
-    const registry = new Registry();
+    it(`when the topic's SQS URL is know, initialize() should not be called`, async () => {
+      registry.addTopic('topic-with-queue');
+      producer.sqsUrls['topic-with-queue'] =
+        'https://sqs.ap-southeast-2.amazonaws.com/123456123456/registered-topic-with-queue';
+      await producer.send('topic-with-queue', { foo: 'bar' });
 
-    const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
-      registry
-    );
-    sandbox.spy(p, 'getPayload');
-    // @ts-ignore
-    registry.addNewTask({
-      name: 'test-topic',
-      topic: 'test-topic',
-      subscribe: () => {},
-      attributes: [
+      expect(initializeStub.notCalled, 'initalise is not called').to.be.true;
+      expect(sendMessageStub.calledOnce, 'sendMessage is called').to.be.true;
+    });
+
+    it('should include attributes in the message payload', async () => {
+      const attributes = [
         {
           name: 'Hello',
           dataType: 'String',
           value: 'abc',
         },
-      ],
+      ];
+      const task = new Task(
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task-with-attributes',
+        'test-topic',
+        () => undefined,
+        attributes
+      );
+      registry.addNewTask(task);
+
+      await producer.send('test-topic', { a: 'payload' });
+
+      const sentAttributes =
+        sendMessageStub.getCall(0).args[0].MessageAttributes[
+          attributes[0].name
+        ];
+      const sentDataType = sentAttributes.DataType;
+      const sentStringValue = sentAttributes.StringValue;
+
+      expect(sendMessageStub.calledOnce, 'sendMessage is called').to.be.true;
+      expect(sentAttributes, 'attributes are passed in MessageAttributes').to.be
+        .not.undefined;
+      expect(sentDataType, 'dataType is passed in MessageAttributes').to.equal(
+        attributes[0].dataType
+      );
+      expect(
+        sentStringValue,
+        'stringValue is passed in MessageAttributes'
+      ).to.equal(attributes[0].value);
     });
-    const sendMessageStub = sandbox
-      .stub(p.producer, 'sendMessage')
-      // @ts-ignore
-      .returns(promiseResolves({ hi: 'hello' }));
-    sandbox
-      .stub(p.producer, 'getQueueUrl')
-      // @ts-ignore
-      .returns(promiseResolves({ QueueUrl: 'test-topic' }));
-    const createQueueStub = sandbox
-      .stub(p.producer, 'createQueue')
-      // @ts-ignore
-      .returns(promiseResolves({ data: { QueueUrl: 'kjsdkh' } }));
 
-    p.sqsUrls = {
-      'test-topic': 'asdasd',
-    };
-    await p.send('test-topic', { a: 'payload' });
-    expect(createQueueStub.callCount).to.equal(0);
-    expect(sendMessageStub.callCount).to.equal(1);
-  });
+    it('should throw an error if initialize() throws an error', async () => {
+      initializeStub.throws();
 
-  it('should throw error if initialize rejects', async () => {
-    const registry = new Registry();
+      const task = new Task(
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task',
+        'test-topic',
+        () => undefined
+      );
+      registry.addNewTask(task);
 
-    // @ts-ignore
-    const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
-      registry
-    );
-    sandbox.spy(p, 'getPayload');
-    // @ts-ignore
-    registry.addNewTask({
-      name: 'test-topic',
-      topic: 'test-topic',
-      subscribe: () => {},
-      attributes: [
-        {
-          name: 'Hello',
-          dataType: '',
-          value: 'abc',
-        },
-        {
-          name: 'World',
-          dataType: 'String',
-          value: 'abc',
-        },
-      ],
+      let didCatchError = false;
+      try {
+        await producer.send('test-topic', { a: 'payload' });
+      } catch (ex) {
+        didCatchError = true;
+        expect(ex).not.equal(undefined, 'error is not undefined');
+        expect(ex).not.equal(null, 'error is not null');
+      }
+      expect(didCatchError, 'didCatchError is true').to.equal(true);
     });
-    sandbox
-      .stub(p.producer, 'sendMessage')
-      // @ts-ignore
-      .returns(promiseResolves({ hi: 'hello' }));
-    sandbox.stub(p, 'initialize').throws();
-    p.sqsUrls = {};
-    let err = false;
-    try {
-      await p.send('test-topic', { a: 'payload' });
-    } catch (ex) {
-      err = true;
-      expect(ex).not.eql(undefined);
-      expect(ex).not.eql(null);
-    }
-    expect(err).to.equal(true);
-  });
 
-  it('should throw error if sendmessage fails', async () => {
-    const registry = new Registry();
+    it('should throw an error if sendMessage() throws an error', async () => {
+      initializeStub.resolves();
 
-    const p = new Producer(
-      { engine: 'kafka', bootstrapServers: '', tasksPath: '' },
-      registry
-    );
-    sandbox.spy(p, 'getPayload');
-    // @ts-ignore
-    registry.addNewTask({
-      name: 'test-topic',
-      topic: 'test-topic',
-      subscribe: () => {},
-      attributes: [
-        {
-          name: 'Hello',
-          dataType: 'String',
-          value: 'abc',
-        },
-      ],
+      const task = new Task(
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task',
+        'test-topic',
+        () => undefined
+      );
+      registry.addNewTask(task);
+
+      let didCatchError = false;
+      try {
+        await producer.send('test-topic', { message: 'bad-message' });
+      } catch (ex) {
+        didCatchError = true;
+        expect(ex).not.equal(undefined, 'error is not undefined');
+        expect(ex).not.equal(null, 'error is not null');
+      }
+      expect(didCatchError, 'didCatchError is true').to.equal(true);
     });
-    sandbox
-      .stub(p.producer, 'sendMessage')
-      // @ts-ignore
-      .returns(promiseRejects({ yeah: 'nah' }));
-    sandbox.stub(p, 'initialize').resolves();
-    p.sqsUrls = {};
-    let err = false;
-    try {
-      await p.send('test-topic', { a: 'payload' });
-    } catch (ex) {
-      err = true;
-      expect(ex).not.eql(undefined);
-      expect(ex).not.eql(null);
-    }
-    expect(err).to.equal(true);
+
+    afterEach(() => {
+      initializeStub.restore();
+    });
   });
 });

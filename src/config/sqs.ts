@@ -1,7 +1,7 @@
 import * as AWS from 'aws-sdk';
 import { Configuration, SQSConfiguration } from '../common';
 
-const sqs = (config: Configuration): AWS.SQS => {
+export const getSqsInstance = (config: Configuration): AWS.SQS => {
   const sqsConfig = config as SQSConfiguration;
   if (sqsConfig.httpOptions) {
     AWS.config.update({
@@ -17,8 +17,4 @@ const sqs = (config: Configuration): AWS.SQS => {
   });
 
   return instance;
-};
-
-export default {
-  sqs,
 };

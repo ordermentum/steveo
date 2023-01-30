@@ -1,10 +1,9 @@
-import bluebird from 'bluebird';
-
 import { SQS } from 'aws-sdk';
+import bluebird from 'bluebird';
 import nullLogger from 'null-logger';
 import BaseRunner from './base';
 import { safeParseInt, getContext } from './utils';
-import sqsConf from '../config/sqs';
+import { getSqsInstance } from '../config/sqs';
 
 import {
   Hooks,
@@ -15,6 +14,7 @@ import {
   IRegistry,
   CreateSqsTopic,
   SQSConfiguration,
+  TraceProvider,
 } from '../common';
 import { Steveo } from '..';
 
@@ -26,6 +26,7 @@ type DeleteMessage = {
   logger: Logger;
 };
 
+// FIXME: This is mostly boilerplate and doesn't need its own function
 /* istanbul ignore next */
 const deleteMessage = async ({
   instance,
@@ -68,6 +69,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   currentTimeout?: ReturnType<typeof setTimeout>;
 
+  private traceProvider?: TraceProvider;
+
   constructor(steveo: Steveo) {
     super(steveo);
     this.hooks = steveo?.hooks;
@@ -75,9 +78,10 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.registry = steveo?.registry;
     this.logger = steveo?.logger ?? nullLogger;
     this.sqsUrls = {};
-    this.sqs = sqsConf.sqs(steveo.config);
+    this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
     this.concurrency = safeParseInt(steveo.config.workerConfig?.max, 1);
+    this.traceProvider = this.config.traceProvider as TraceProvider;
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
@@ -85,63 +89,97 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     return bluebird.map(
       messages,
-      async m => {
-        let params;
+      async message => {
         let resource;
-        try {
-          resource = await this.pool.acquire();
-          params = JSON.parse(m.Body);
-          const runnerContext = getContext(params);
+        const params = JSON.parse(message.Body as string);
+        const runnerContext = getContext(params);
+        const context = await this.traceProvider?.deserializeTraceMetadata(
+          runnerContext.traceMetadata
+        );
 
-          this.registry.emit('runner_receive', topic, params, runnerContext);
-          this.logger.debug('Deleting message', topic, params);
+        const callback = async traceContext => {
+          try {
+            resource = await this.pool.acquire();
 
-          await deleteMessage({ // eslint-disable-line
-            instance: this.sqs,
-            topic,
-            message: m,
-            sqsUrls: this.sqsUrls,
-            logger: this.logger,
-          });
+            this.registry.emit('runner_receive', topic, params, runnerContext);
+            this.logger.debug('Deleting message', topic, params);
 
-          this.logger.debug('Message Deleted', topic, params);
-          const task = this.registry.getTask(topic);
-          this.logger.debug('Start subscribe', topic, params);
-          if (!task) {
-            this.logger.error(`Unknown Task ${topic}`);
-            return;
+            await deleteMessage({
+            // eslint-disable-line
+              instance: this.sqs,
+              topic,
+              message,
+              sqsUrls: this.sqsUrls,
+              logger: this.logger,
+            });
+
+            this.logger.debug('Message deleted', topic, params);
+            const task = this.registry.getTask(topic);
+            this.logger.debug('Start subscribe', topic, params);
+            if (!task) {
+              this.logger.error(`Unknown Task ${topic}`);
+              return;
+            }
+
+            const runFnAsSegment = async (
+              segmentName: string,
+              callback: (...args: any[]) => void
+            ) => {
+              if (!this.traceProvider) {
+                await callback();
+              } else {
+                await this.traceProvider.wrapHandlerSegment(
+                  segmentName,
+                  traceContext,
+                  // eslint-disable-next-line no-return-await
+                  async () => await callback() // using `await` so we get accurate segment timing
+                );
+              }
+            };
+
+            await runFnAsSegment('runner.hooks.preTask', async () =>
+              this.hooks?.preTask?.(params)
+            );
+
+            const { context = null, ...value } = params;
+            let result;
+            await runFnAsSegment('runner.task', async () => {
+              result = await task.subscribe(value, context);
+            });
+
+            await runFnAsSegment('runner.hooks.postTask', async () =>
+              this.hooks?.postTask?.({ ...(params ?? {}), result })
+            );
+
+            this.logger.debug('Completed subscribe', topic, params);
+            const completedContext = getContext(params);
+            this.registry.emit(
+              'runner_complete',
+              topic,
+              params,
+              completedContext
+            );
+          } catch (ex) {
+            this.logger.error('Error while executing consumer callback ', {
+              params,
+              topic,
+              error: ex,
+            });
+            this.registry.emit('runner_failure', topic, ex, params);
+            this.traceProvider?.onError?.(ex as Error, traceContext);
           }
-          if (this.hooks?.preTask) {
-            await this.hooks.preTask(params);
-          }
-          const { context = null, ...value } = params;
-          const result = await task.subscribe(value, context);
-          if (this.hooks?.postTask) {
-            await this.hooks.postTask({ ...(params ?? {}), result });
-          }
-          this.logger.debug('Completed subscribe', topic, params);
-          const completedContext = getContext(params);
-          this.registry.emit(
-            'runner_complete',
-            topic,
-            params,
-            completedContext
-          );
-        } catch (ex) {
-          this.logger.error('Error while executing consumer callback ', {
-            params,
-            topic,
-            error: ex,
-          });
-          this.registry.emit('runner_failure', topic, ex, params);
-        }
-        if (resource) await this.pool.release(resource);
+          if (resource) await this.pool.release(resource);
+        };
+
+        this.traceProvider
+          ? this.traceProvider.wrapHandler(`${topic}-runner`, context, callback)
+          : callback(undefined);
       },
       { concurrency: this.concurrency }
     );
   }
 
-  async dequeue(topic: string, params: SQS.ReceiveMessageRequest) {
+  async dequeue(params: SQS.ReceiveMessageRequest) {
     const data = await this.sqs
       .receiveMessage(params)
       .promise()
@@ -150,14 +188,8 @@ class SqsRunner extends BaseRunner implements IRunner {
         return null;
       });
 
-    if (data?.Messages) {
-      this.logger.debug('Message from sqs', data);
-      try {
-        await this.receive(data.Messages, topic);
-      } catch (ex) {
-        this.logger.error('Error while invoking receive', ex);
-      }
-    }
+    this.logger.debug('Message from sqs', data);
+    return data?.Messages;
   }
 
   async process(topics?: string[]) {
@@ -200,7 +232,16 @@ class SqsRunner extends BaseRunner implements IRunner {
             VisibilityTimeout: this.config.visibilityTimeout,
             WaitTimeSeconds: this.config.waitTimeSeconds,
           };
-          await this.dequeue(topic, params);
+          const messages = await this.dequeue(params);
+          if (!messages) {
+            return;
+          }
+
+          try {
+            await this.receive(messages, topic);
+          } catch (ex) {
+            this.logger.error('Error while invoking receive', ex);
+          }
         } else {
           this.logger.error(`Queue URL ${topic} not found`);
         }
@@ -210,7 +251,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     loop();
   }
 
-  healthCheck = async function() {
+  healthCheck = async function () {
     // get a random registered queue
     const items = this.registry.getTopics();
     const item = items[Math.floor(Math.random() * items.length)];
