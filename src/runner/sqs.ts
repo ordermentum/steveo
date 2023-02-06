@@ -240,7 +240,11 @@ class SqsRunner extends BaseRunner implements IRunner {
           try {
             await this.receive(messages, topic);
           } catch (ex) {
-            this.logger.error('Error while invoking receive', ex);
+            this.logger.error('Error while invoking receive', {
+              error: ex,
+              topic,
+              messages,
+            });
           }
         } else {
           this.logger.error(`Queue URL ${topic} not found`);
