@@ -242,6 +242,7 @@ class SqsRunner extends BaseRunner implements IRunner {
           } catch (ex) {
             this.logger.error('Error while invoking receive', {
               error: ex,
+              topic,
               messages,
             });
           }
