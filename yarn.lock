@@ -2542,10 +2542,10 @@ node-preload@^0.2.1:
   dependencies:
     process-on-spawn "^1.0.0"
 
-node-rdkafka@^2.13.0:
-  version "2.14.5"
-  resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-2.14.5.tgz#7d8aafcc94ebda3d7d1d37cc5fd2afdadc58529a"
-  integrity sha512-MMIxF2gmy6Po98Iwd8lF2Z4C6ZV9tir3FQRp+htqNqTBK+D7wlHZJ1J2NTOILcdjgUWHd2Xb7UqyCC6uG4w1og==
+node-rdkafka@^2.15.0:
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-2.15.0.tgz#aaee6e9793229e7f029f014a1c44067f5f38d21c"
+  integrity sha512-LXeliPuuWC9QaeQL48RWbXz1AUl6M0JAbZJN800VHYMXO+jO7GBc97rtClBau+fMj2qxFiPw+d0IovIIcgaVdw==
   dependencies:
     bindings "^1.3.1"
     nan "^2.17.0"
