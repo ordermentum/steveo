@@ -169,7 +169,7 @@ class KafkaRunner
        */
       this.consumer.getMetadata({}, err => {
         if (err) {
-          return reject();
+          return reject(err);
         }
         return resolve();
       });

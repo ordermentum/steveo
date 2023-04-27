@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "5.2.0-beta1",
+  "version": "5.2.0",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
