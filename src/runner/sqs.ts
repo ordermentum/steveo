@@ -259,6 +259,11 @@ class SqsRunner extends BaseRunner implements IRunner {
     // get a random registered queue
     const items = this.registry.getTopics();
     const item = items[Math.floor(Math.random() * items.length)];
+
+    if (!item) {
+      throw new Error('No queues registered');
+    }
+
     await this.sqs.getQueueUrl({ QueueName: item }).promise();
   };
 
