@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import { build } from '../../src/base/pool';
-import Runner from '../../src/runner/redis';
+import { build } from '../../src/lib/pool';
+import Runner from '../../src/consumers/redis';
 import Registry from '../../src/registry';
 import redisConf from '../../src/config/redis';
 
-describe('Redis Runner', () => {
+describe('runner/redis', () => {
   let runner;
   let registry;
   let sandbox;

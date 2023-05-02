@@ -1,13 +1,10 @@
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable global-require */
 import NULL_LOGGER from 'null-logger';
-import { ChildProcess } from 'child_process';
-import { forkChild } from './util';
 import {
   IRunner,
   Hooks,
   ITask,
-  Configuration,
   Callback,
   Pool,
   Logger,
@@ -17,17 +14,22 @@ import {
   IEvent,
   Attribute,
   TaskOpts,
+  KafkaConfiguration,
+  RedisConfiguration,
+  SQSConfiguration,
+  DummyConfiguration,
 } from './common';
 /* eslint-disable no-underscore-dangle */
 import Task from './task';
 import Registry from './registry';
-import getRunner from './base/runner';
-import producer from './base/producer';
+import getRunner from './lib/runner';
+import getProducer from './lib/producer';
 import getConfig from './config';
-import { build } from './base/pool';
+import { build } from './lib/pool';
+import { Manager } from './lib/manager';
 
 export class Steveo implements ISteveo {
-  config: Configuration;
+  config: KafkaConfiguration | RedisConfiguration | SQSConfiguration;
 
   logger: Logger;
 
@@ -43,8 +45,6 @@ export class Steveo implements ISteveo {
 
   hooks?: Hooks;
 
-  childProcesses: Map<number, ChildProcess>;
-
   restarts: number;
 
   exiting: boolean;
@@ -53,8 +53,14 @@ export class Steveo implements ISteveo {
 
   MAX_RESTARTS = 20;
 
+  manager: Manager;
+
   constructor(
-    configuration: Configuration,
+    configuration:
+      | KafkaConfiguration
+      | RedisConfiguration
+      | SQSConfiguration
+      | DummyConfiguration,
     logger: Logger = NULL_LOGGER, // eslint-disable-line default-param-last
     hooks?: Hooks
   ) {
@@ -64,10 +70,10 @@ export class Steveo implements ISteveo {
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
     this.hooks = hooks;
-    this.childProcesses = new Map();
     this.restarts = 0;
     this.exiting = false;
     this.paused = false;
+    this.manager = new Manager(this);
   }
 
   task<T = any, R = any, C = any>(
@@ -121,7 +127,7 @@ export class Steveo implements ISteveo {
 
   get producer() {
     if (!this._producer) {
-      this._producer = producer(
+      this._producer = getProducer(
         this.config.engine,
         this.config,
         this.registry,
@@ -131,90 +137,16 @@ export class Steveo implements ISteveo {
     return this._producer;
   }
 
-  private async exitHandler(
-    code: number | null,
-    child: ChildProcess | null,
-    topic: string
-  ) {
-    const pid = child?.pid;
-
-    if (pid) this.childProcesses.delete(pid);
-    if (code === 0 || code === null) {
-      this.logger.info(`Child ${pid} terminated`);
-      if (this.childProcesses.size === 0) {
-        process.exit(1);
-      }
-    }
-
-    if (!this.exiting && this.restarts >= this.MAX_RESTARTS) {
-      this.exiting = true;
-      for (const process of this.childProcesses.values()) {
-        process.kill();
-      }
-    }
-
-    this.logger.info(`Restarting child ${pid}`);
-    await this.startChild(topic);
-  }
-
-  private async startChild(topic) {
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise<void>(async (resolve, reject) => {
-      try {
-        // Give ample time to let the children start
-        const timeout = setTimeout(() => {
-          reject(new Error('Error forking child'));
-        }, 30000);
-
-        const child = await forkChild(
-          topic,
-          this.config.tasksPath,
-          this.config.childProcesses
-        );
-
-        child.on('exit', code => {
-          clearTimeout(timeout);
-          this.exitHandler.call(this, code, child, topic);
-        });
-        process.on('error', e => {
-          clearTimeout(timeout);
-          this.logger.error(`Failed to start child process ${e}`);
-          this.exitHandler.call(this, null, null, topic);
-        });
-        child.on('message', m => {
-          clearTimeout(timeout);
-          if (m === 'success') {
-            resolve();
-          } else {
-            reject();
-          }
-        });
-        if (child.pid) {
-          this.childProcesses.set(child.pid, child);
-          this.logger.debug(`spawned ${child.pid} for ${topic}`);
-        }
-      } catch (e) {
-        reject(e);
-      }
-    });
-  }
-
-  // allow runner and producer to gracefully stop processing
-  async terminate() {
-    this.exiting = true;
-    return this.disconnect();
-  }
-
   async pause() {
-    this.paused = true;
-    const runner = this.runner();
-    return runner.pause();
+    return this.manager.pause();
   }
 
   async resume() {
-    this.paused = false;
-    const runner = this.runner();
-    return runner.resume();
+    return this.manager.resume();
+  }
+
+  async stop() {
+    return this.manager.stop();
   }
 
   /**
@@ -233,6 +165,10 @@ export class Steveo implements ISteveo {
     await this.loadTasks();
     const runner = this.runner();
 
+    if (!runner) {
+      throw new Error('No runner found');
+    }
+
     const topics = customTopics?.length
       ? customTopics
       : this.registry.getTopics();
@@ -241,29 +177,27 @@ export class Steveo implements ISteveo {
       topic => !!this.registry.getTask(topic)
     );
 
-    if (!this.config.childProcesses) {
-      runner.process(topicsWithRegisteredTasks);
-    } else {
-      await Promise.all(
-        topicsWithRegisteredTasks.map(topic => this.startChild(topic))
-      );
-    }
+    runner.process(topicsWithRegisteredTasks);
   }
 
   runner() {
     if (!this._runner) {
-      this._runner = getRunner(this);
+      this.logger.debug('no runner exists, creating runner');
+      const runner = getRunner(this);
+      this.logger.debug(`runner created ${runner.name}`);
+      this._runner = runner;
     }
-    return this._runner;
-  }
 
-  async disconnect() {
-    return Promise.all([
-      this._producer?.disconnect(),
-      this._runner?.disconnect(),
-    ]);
+    return this._runner;
   }
 }
 
-export default (config: Configuration, logger: Logger, hooks?: Hooks) =>
-  new Steveo(config, logger, hooks);
+export default (
+  config:
+    | KafkaConfiguration
+    | RedisConfiguration
+    | SQSConfiguration
+    | DummyConfiguration,
+  logger: Logger,
+  hooks?: Hooks
+) => new Steveo(config, logger, hooks);

@@ -4,7 +4,6 @@ import util from 'util';
 import { getSqsInstance } from '../config/sqs';
 
 import {
-  Configuration,
   Logger,
   IProducer,
   IRegistry,
@@ -13,10 +12,10 @@ import {
   TraceProvider,
 } from '../common';
 
-import { createMessageMetadata } from './utils/createMessageMetadata';
+import { createMessageMetadata } from '../lib/context';
 
 class SqsProducer implements IProducer {
-  config: Configuration;
+  config: SQSConfiguration;
 
   registry: IRegistry;
 
@@ -29,7 +28,7 @@ class SqsProducer implements IProducer {
   private traceProvider?: TraceProvider;
 
   constructor(
-    config: Configuration,
+    config: SQSConfiguration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
@@ -38,7 +37,7 @@ class SqsProducer implements IProducer {
     this.logger = logger;
     this.registry = registry;
     this.sqsUrls = {};
-    this.traceProvider = this.config.traceProvider as TraceProvider;
+    this.traceProvider = this.config.traceProvider;
   }
 
   async initialize(topic: string): Promise<string> {
@@ -151,7 +150,7 @@ class SqsProducer implements IProducer {
       : await callback(undefined);
   }
 
-  async disconnect() {}
+  async stop() {}
 
   async reconnect() {}
 }

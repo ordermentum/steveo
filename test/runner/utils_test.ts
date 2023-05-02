@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { safeParseInt } from '../../src/runner/utils';
+import { safeParseInt } from '../../src/lib/utils';
 
 describe('utils', () => {
   describe('safeParseInt', () => {

@@ -1,11 +1,11 @@
 import nullLogger from 'null-logger';
 
-import { Configuration, Logger, IProducer, IRegistry } from '../common';
+import { Logger, IProducer, IRegistry, DummyConfiguration } from '../common';
 
-import { createMessageMetadata } from './utils/createMessageMetadata';
+import { createMessageMetadata } from '../lib/context';
 
 class DummyProducer implements IProducer {
-  config: Configuration;
+  config: DummyConfiguration;
 
   registry: IRegistry;
 
@@ -14,7 +14,7 @@ class DummyProducer implements IProducer {
   queues: Set<string>;
 
   constructor(
-    config: Configuration,
+    config: DummyConfiguration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
@@ -53,7 +53,7 @@ class DummyProducer implements IProducer {
     }
   }
 
-  async disconnect() {}
+  async stop() {}
 
   async reconnect() {}
 }

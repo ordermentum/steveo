@@ -47,7 +47,7 @@ export type KafkaProducerConfig = {
   topic: ProducerTopicConfig;
 };
 
-export type KafkaConfiguration = {
+export interface KafkaConfiguration extends Configuration {
   bootstrapServers: string;
   securityProtocol?:
     | 'plaintext'
@@ -69,9 +69,9 @@ export type KafkaConfiguration = {
   consumer?: KafkaConsumerConfig;
   producer?: KafkaProducerConfig;
   admin?: GlobalConfig;
-};
+}
 
-export type SQSConfiguration = {
+export interface SQSConfiguration extends Configuration {
   region: string;
   apiVersion: string;
   messageRetentionPeriod: string;
@@ -84,53 +84,35 @@ export type SQSConfiguration = {
   endpoint?: string;
   httpOptions?: HTTPOptions;
   consumerPollInterval?: number;
-};
+}
 
-export type RedisConfiguration = {
+export interface RedisConfiguration extends Configuration {
   redisHost: string;
   redisPort: number;
   redisMessageMaxsize?: number;
-  workerConfig: any;
   consumerPollInterval?: number;
   visibilityTimeout?: number;
-};
+}
 
-export type DummyConfiguration = any;
+export interface DummyConfiguration extends Configuration {}
 
-export type ChildProcessConfig = {
-  /**
-   * @description the absolute path to the steveo instance to make child processes of
-   */
-  instancePath: string;
-  /**
-   * @description The arguments to be passed when forking child process (mainly for interoperability with typescript)
-   * @example for ts-node we'll pass ['-r', 'ts-node/register']
-   */
-  args: string[];
-};
-
-export type Configuration<Runner = any> = {
-  engine: 'sqs' | 'kafka' | 'redis';
+export interface Configuration {
+  engine: 'sqs' | 'kafka' | 'redis' | 'dummy';
   queuePrefix?: string;
   shuffleQueue?: boolean;
   workerConfig?: Options;
+  terminationWaitCount?: number;
   /**
    * @description Uppercase topic names
    */
   upperCaseNames?: boolean;
   /**
-   * @description [Consumers only] Create a child process of a consumer per topic
-   * @default false
-   * @summary 5 topics passed to the instance will fork 5 child processes
-   */
-  childProcesses?: ChildProcessConfig;
-  /**
    * @description the absolute path to the tasks that need to be registered with this instance
-   * This is required if you want to use the built in steveo runner and/or the child process functionality
+   * This is required if you want to use the built in steveo runner
    */
   tasksPath?: string;
   traceProvider?: TraceProvider;
-} & Runner;
+}
 
 export type Attribute = {
   name: string;
@@ -183,14 +165,13 @@ export interface IRunner<T = any, M = any> {
   logger: Logger;
   registry: IRegistry;
   receive(messages: M, topic: string, partition: number): Promise<void>;
-  process(topics: Array<string>): Promise<T>;
-  disconnect(): Promise<void>;
-  reconnect(): Promise<void>;
+  process(topics?: Array<string>): Promise<T>;
   createQueues(): Promise<void>;
 
   healthCheck: () => Promise<void>;
-  pause(): Promise<void>;
-  resume(): Promise<void>;
+
+  stop(): Promise<void>;
+  reconnect(): Promise<void>;
 }
 
 export type CustomTopicFunction = (topic: string) => string;
@@ -222,7 +203,6 @@ export interface ISteveo {
     opts?: TaskOpts
   ): ITask;
   runner(): IRunner;
-  disconnect(): void;
 }
 
 export type AsyncWrapper = {
@@ -238,6 +218,7 @@ export type Producer = {
   listQueuesAsync(): Array<string>;
   getQueueAttributesAsync(params: any): any;
   getQueueAttributes(params: any): any;
+  stop(): Promise<void>;
 };
 
 export interface IProducer<P = any> {
@@ -251,7 +232,7 @@ export interface IProducer<P = any> {
   // FIXME: Replace T = any with Record<string, any> or an explicit list of
   // types we will handle as first-class citizens,
   // e.g. `Record<string, any> | string`.
-  disconnect(): Promise<void>;
+  stop(): Promise<void>;
 }
 
 export interface TraceProvider {

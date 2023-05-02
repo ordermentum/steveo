@@ -1,6 +1,9 @@
 import {
   ITask,
-  Configuration,
+  KafkaConfiguration,
+  RedisConfiguration,
+  SQSConfiguration,
+  DummyConfiguration,
   Callback,
   IProducer,
   IRegistry,
@@ -8,7 +11,11 @@ import {
 } from './common';
 
 class Task<T = any, R = any> implements ITask<T, R> {
-  config: Configuration;
+  config:
+    | KafkaConfiguration
+    | RedisConfiguration
+    | SQSConfiguration
+    | DummyConfiguration;
 
   registry: IRegistry;
 
@@ -23,7 +30,11 @@ class Task<T = any, R = any> implements ITask<T, R> {
   attributes: Attribute[];
 
   constructor(
-    config: Configuration,
+    config:
+      | KafkaConfiguration
+      | RedisConfiguration
+      | SQSConfiguration
+      | DummyConfiguration,
     registry: IRegistry,
     producer: IProducer,
     name: string,

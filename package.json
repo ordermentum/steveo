@@ -1,6 +1,6 @@
 {
   "name": "steveo",
-  "version": "5.2.2",
+  "version": "6.0.0-beta1",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
@@ -81,6 +81,7 @@
     "eslint-plugin-unicorn": "45.0.2",
     "mocha": "10.2.0",
     "nyc": "15.1.0",
+    "pino": "^8.14.1",
     "prettier": "2.8.3",
     "sinon": "15.1.0",
     "source-map-support": "0.5.21",

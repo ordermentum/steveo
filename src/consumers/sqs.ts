@@ -2,16 +2,15 @@ import { SQS } from 'aws-sdk';
 import bluebird from 'bluebird';
 import nullLogger from 'null-logger';
 import BaseRunner from './base';
-import { safeParseInt, getContext } from './utils';
+import { safeParseInt } from '../lib/utils';
+import { getContext } from '../lib/context';
 import { getSqsInstance } from '../config/sqs';
 
 import {
   Hooks,
   IRunner,
-  Configuration,
   Pool,
   Logger,
-  IRegistry,
   CreateSqsTopic,
   SQSConfiguration,
   TraceProvider,
@@ -51,11 +50,9 @@ const deleteMessage = async ({
 };
 
 class SqsRunner extends BaseRunner implements IRunner {
-  config: Configuration<SQSConfiguration>;
+  config: SQSConfiguration;
 
   logger: Logger;
-
-  registry: IRegistry;
 
   sqsUrls: any;
 
@@ -74,13 +71,12 @@ class SqsRunner extends BaseRunner implements IRunner {
   constructor(steveo: Steveo) {
     super(steveo);
     this.hooks = steveo?.hooks;
-    this.config = steveo?.config || {};
-    this.registry = steveo?.registry;
+    this.config = steveo?.config as SQSConfiguration;
     this.logger = steveo?.logger ?? nullLogger;
     this.sqsUrls = {};
     this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
-    this.concurrency = safeParseInt(steveo.config.workerConfig?.max, 1);
+    this.concurrency = safeParseInt(steveo.config.workerConfig?.max ?? 1, 1);
     this.traceProvider = this.config.traceProvider as TraceProvider;
   }
 
@@ -143,6 +139,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
             const { context = null, ...value } = params;
             let result;
+
             await runFnAsSegment('runner.task', async () => {
               result = await task.subscribe(value, context);
             });
@@ -196,31 +193,32 @@ class SqsRunner extends BaseRunner implements IRunner {
     return data?.Messages;
   }
 
+  loop(topics?: string[]) {
+    this.logger.debug(`looping ${this.manager.state}`);
+    if (this.manager.state === 'terminating') {
+      this.manager.state = 'terminated';
+      this.logger.debug(`terminating sqs consumer ${this.state}`);
+      return;
+    }
+    if (this.currentTimeout) clearTimeout(this.currentTimeout);
+    this.currentTimeout = setTimeout(
+      this.process.bind(this, topics),
+      this.config.consumerPollInterval ?? 1000
+    );
+  }
+
   async process(topics?: string[]) {
-    const loop = () => {
-      if (this.state === 'terminating') {
-        this.registry.emit('terminate', true);
-        this.state = 'terminated';
-        return;
-      }
-
-      if (this.currentTimeout) clearTimeout(this.currentTimeout);
-
-      this.currentTimeout = setTimeout(
-        this.process.bind(this, topics),
-        this.config.consumerPollInterval ?? 1000
-      );
-    };
-
     if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
-      loop();
+      this.loop(topics);
       return;
     }
 
     const subscriptions = this.getActiveSubsciptions(topics);
     this.logger.debug(
-      `Polling for messages (${topics ? topics.join(',') : 'all'})`
+      `Polling for messages (name: ${this.name}) (state: ${
+        this.manager.state
+      }) (${topics ? topics.join(',') : 'all'})`
     );
 
     await bluebird.map(
@@ -256,7 +254,8 @@ class SqsRunner extends BaseRunner implements IRunner {
       },
       { concurrency: this.concurrency }
     );
-    loop();
+
+    this.loop(topics);
   }
 
   healthCheck = async function () {
@@ -311,10 +310,9 @@ class SqsRunner extends BaseRunner implements IRunner {
     await this.sqs.createQueue(params).promise();
   }
 
-  async disconnect() {
-    await this.terminate();
-
-    if (this.currentTimeout) clearTimeout(this.currentTimeout);
+  async stop() {
+    this.logger.debug(`stopping consumer ${this.name}`);
+    this.manager.state = 'terminating';
   }
 
   async reconnect() {}

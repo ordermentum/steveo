@@ -1,15 +1,15 @@
 import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 import nullLogger from 'null-logger';
+import { randomBytes } from 'crypto';
 import { Steveo } from '..';
 import {
   SQSConfiguration,
   Configuration,
   Logger,
-  IRegistry,
   RunnerState,
 } from '../common';
-import { sleep } from './utils';
+import { Manager } from '../lib/manager';
 
 class BaseRunner {
   async preProcess() {
@@ -23,25 +23,30 @@ class BaseRunner {
 
   errorCount: number;
 
-  registry?: IRegistry;
-
   steveo: Steveo;
 
-  state: RunnerState;
-
-  // @ts-ignore
   config: Configuration;
 
   logger: Logger;
 
-  constructor(steveo: Steveo) {
+  manager: Manager;
+
+  name: string;
+
+  constructor(steveo: Steveo, name?: string) {
     this.errorCount = 0;
     this.preProcess = steveo?.hooks?.preProcess || (() => Promise.resolve());
     this.steveo = steveo;
-    this.registry = steveo?.registry;
     this.config = steveo?.config || {};
     this.logger = steveo?.logger ?? nullLogger;
-    this.state = 'running';
+    this.manager = this.steveo.manager;
+    this.name =
+      name ||
+      `consumer-${this.constructor.name}-${randomBytes(16).toString('hex')}`;
+  }
+
+  get registry() {
+    return this.steveo.registry;
   }
 
   getActiveSubsciptions(topics?: string[]): string[] {
@@ -58,29 +63,19 @@ class BaseRunner {
     return filtered;
   }
 
-  async resume() {
-    this.logger.debug(`resuming runner`);
-    this.state = 'running';
-  }
-
-  async pause() {
-    this.logger.debug(`pausing runner`);
-    this.state = 'paused';
-  }
-
-  async terminate() {
-    if (['running', 'paused'].includes(this.state)) {
-      this.state = 'terminating';
-    }
-
-    while (this.state !== 'terminated') {
-      await sleep(5000);
-    }
-  }
-
   async healthCheck() {
     throw new Error('Unimplemented');
   }
+
+  get state() {
+    return this.manager.state;
+  }
+
+  set state(state: RunnerState) {
+    this.manager.state = state;
+  }
+
+  async stop() {}
 
   async createQueues(): Promise<any> {
     if (!this.registry) return false;

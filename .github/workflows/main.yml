@@ -33,5 +33,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+      - name: "Setup Localstack"
+        run: |
+          pip install localstack awscli-local[ver1]
+          docker pull localstack/localstack
+          localstack start -d
+          localstack wait -t 30
+          echo "Startup complete"
       - run: yarn
       - run: yarn test

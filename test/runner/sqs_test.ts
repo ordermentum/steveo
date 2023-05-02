@@ -1,11 +1,12 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import Runner from '../../src/runner/sqs';
-import { build } from '../../src/base/pool';
+import Runner from '../../src/consumers/sqs';
+import { build } from '../../src/lib/pool';
 import Registry from '../../src/registry';
+import { Steveo } from '../../src';
 
-describe('SQS Runner', () => {
+describe('runner/sqs', () => {
   let runner: Runner;
   let registry: Registry;
   let sandbox: sinon.SinonSandbox;
@@ -53,11 +54,13 @@ describe('SQS Runner', () => {
       },
     };
 
-    const steveo = {
-      config: {},
-      registry: anotherRegistry,
-      pool: build(),
+    const config = {
+      engine: 'dummy' as const,
     };
+
+    const steveo = new Steveo(config);
+    // @ts-ignore
+    steveo.registry = anotherRegistry;
 
     // @ts-ignore
     const anotherRunner = new Runner(steveo);
@@ -96,12 +99,14 @@ describe('SQS Runner', () => {
       },
     };
 
-    const steveo = {
-      config: {},
-      // @ts-ignore
-      registry: anotherRegistry,
-      pool: build(),
+    const config = {
+      engine: 'dummy' as const,
     };
+
+    const steveo = new Steveo(config);
+    // @ts-ignore
+    steveo.registry = anotherRegistry;
+
     // @ts-ignore
     const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
@@ -133,12 +138,13 @@ describe('SQS Runner', () => {
       },
     };
 
-    const steveo = {
-      // @ts-ignore
-      config: {},
-      registry: anotherRegistry,
-      pool: build(),
+    const config = {
+      engine: 'dummy' as const,
     };
+
+    const steveo = new Steveo(config);
+    // @ts-ignore
+    steveo.registry = anotherRegistry;
 
     // @ts-ignore
     const anotherRunner = new Runner(steveo);
@@ -175,11 +181,13 @@ describe('SQS Runner', () => {
         },
       };
 
-      const steveo = {
-        config: { shuffleQueue: true },
-        registry: anotherRegistry,
-        pool: build(),
+      const config = {
+        engine: 'dummy' as const,
       };
+
+      const steveo = new Steveo(config);
+      // @ts-ignore
+      steveo.registry = anotherRegistry;
       // @ts-ignore
       const anotherRunner = new Runner(steveo);
       anotherRunner.state = 'terminating';
@@ -203,12 +211,13 @@ describe('SQS Runner', () => {
         },
       };
 
-      const steveo = {
-        config: { shuffleQueue: true },
-        registry: anotherRegistry,
-        pool: build(),
+      const config = {
+        engine: 'dummy' as const,
       };
 
+      const steveo = new Steveo(config);
+      // @ts-ignore
+      steveo.registry = anotherRegistry;
       // @ts-ignore
       const anotherRunner = new Runner(steveo);
 
@@ -248,11 +257,13 @@ describe('SQS Runner', () => {
         },
       };
 
-      const steveo = {
-        config: { shuffleQueue: true },
-        registry: anotherRegistry,
-        pool: build(),
+      const config = {
+        engine: 'dummy' as const,
       };
+
+      const steveo = new Steveo(config);
+      // @ts-ignore
+      steveo.registry = anotherRegistry;
       // @ts-ignore
       const anotherRunner = new Runner(steveo);
 
@@ -289,11 +300,13 @@ describe('SQS Runner', () => {
         emit: emitStub,
       },
     };
-    const steveo = {
-      config: {},
-      registry: anotherRegistry,
-      pool: build(),
+    const config = {
+      engine: 'dummy' as const,
     };
+
+    const steveo = new Steveo(config);
+    // @ts-ignore
+    steveo.registry = anotherRegistry;
     // @ts-ignore
     const anotherRunner = new Runner(steveo);
     const deleteMessageStub = sandbox

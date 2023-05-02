@@ -24,14 +24,14 @@ const KafkaProducerDefault: KafkaProducerConfig = {
   topic: {},
 };
 
-export const getConfig = (config: Configuration): Configuration => {
+export const getConfig = (config: Configuration) => {
   const parameters: any = {};
   parameters.engine = config.engine ?? 'kafka';
   parameters.shuffleQueue = !!config.shuffleQueue;
   parameters.workerConfig = config.workerConfig ?? {};
   parameters.queuePrefix = config.queuePrefix ?? '';
   parameters.upperCaseNames = config.upperCaseNames ?? true;
-  parameters.childProcesses = config.childProcesses ?? null;
+  parameters.terminationWaitCount = config.terminationWaitCount ?? 10;
   parameters.tasksPath = config.tasksPath;
   parameters.traceProvider = config.traceProvider;
 

@@ -2,15 +2,13 @@
 import RedisSMQ from 'rsmq';
 import nullLogger from 'null-logger';
 import BaseRunner from './base';
-import { getContext } from './utils';
+import { getContext } from '../lib/context';
 import redisConf from '../config/redis';
 import {
   Hooks,
   IRunner,
-  Configuration,
   Pool,
   Logger,
-  IRegistry,
   CreateRedisTopic,
   RedisConfiguration,
 } from '../common';
@@ -44,11 +42,9 @@ const deleteMessage = async ({
 };
 
 class RedisRunner extends BaseRunner implements IRunner {
-  config: Configuration<RedisConfiguration>;
+  config: RedisConfiguration;
 
   logger: Logger;
-
-  registry: IRegistry;
 
   redis: RedisSMQ;
 
@@ -60,8 +56,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.config = steveo?.config;
-    this.registry = steveo?.registry;
+    this.config = steveo?.config as RedisConfiguration;
     this.logger = steveo?.logger ?? nullLogger;
     this.redis = redisConf.redis(steveo?.config);
     this.pool = steveo.pool;
@@ -135,7 +130,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   async process(topics?: string[]) {
     const loop = () => {
       if (this.state === 'terminating') {
-        this.registry.emit('terminate', true);
+        this.logger.debug(`terminating redis`);
         this.state = 'terminated';
         return;
       }
@@ -197,8 +192,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     await this.redis.createQueueAsync(params);
   }
 
-  async disconnect() {
-    await this.terminate();
+  async stop() {
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
     this.redis?.quit(() => {});
   }

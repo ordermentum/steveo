@@ -1,12 +1,13 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import Runner from '../../src/runner/base';
+import Runner from '../../src/consumers/base';
 import Registry from '../../src/registry';
+import { Steveo } from '../../src';
 
 describe('Base', () => {
   let sandbox;
-  let runner;
+  let runner: Runner;
   let registry;
   beforeEach(() => {
     registry = new Registry();
@@ -15,16 +16,9 @@ describe('Base', () => {
       topic: 'test-topic',
     });
 
-    const steveo = {
-      // @ts-ignore
-      config: {
-        bootstrapServers: 'kafka:9200',
-        engine: 'kafka',
-        securityProtocol: 'plaintext',
-      },
-      registry,
-    };
+    const steveo = new Steveo({ engine: 'dummy' as const });
     // @ts-ignore
+    steveo.registry = registry;
     runner = new Runner(steveo);
     sandbox = sinon.createSandbox();
   });
@@ -35,24 +29,14 @@ describe('Base', () => {
     expect(typeof runner).to.equal('object');
   });
 
-  it('should pause', async () => {
-    runner.state = 'running';
-    await runner.pause();
-    expect(runner.state).to.equal('paused');
-  });
-
-  it('should resume', async () => {
-    runner.state = 'paused';
-    await runner.resume();
-    expect(runner.state).to.equal('running');
-  });
-
   describe('getActiveSubscriptions', () => {
     it('returns empty', () => {
-      runner.registry = null;
+      // @ts-ignore
+      runner.steveo.registry = undefined;
       const active = runner.getActiveSubsciptions(['test']);
       expect(active).to.deep.equal([]);
-      runner.registry = registry;
+      // @ts-ignore
+      runner.steveo.registry = registry;
     });
 
     it('returns non-filtered', () => {
@@ -77,14 +61,5 @@ describe('Base', () => {
       const active = runner.getActiveSubsciptions(['test']);
       expect(active).to.deep.equal(['test']);
     });
-  });
-
-  it('should terminate', async () => {
-    runner.state = 'running';
-    setTimeout(() => {
-      runner.state = 'terminated';
-    }, 1000);
-    await runner.terminate();
-    expect(runner.state).to.equal('terminated');
   });
 });

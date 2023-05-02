@@ -1,17 +1,11 @@
 import nullLogger from 'null-logger';
 import { HighLevelProducer } from 'node-rdkafka';
 
-import {
-  Configuration,
-  KafkaConfiguration,
-  Logger,
-  IProducer,
-  IRegistry,
-} from '../common';
-import { createMessageMetadata } from './utils/createMessageMetadata';
+import { KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
+import { createMessageMetadata } from '../lib/context';
 
 class KafkaProducer implements IProducer<HighLevelProducer> {
-  config: Configuration;
+  config: KafkaConfiguration;
 
   registry: IRegistry;
 
@@ -20,20 +14,18 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
   producer: HighLevelProducer;
 
   constructor(
-    config: Configuration,
+    config: KafkaConfiguration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
     this.config = config;
     this.producer = new HighLevelProducer(
       {
-        'bootstrap.servers': (this.config as KafkaConfiguration)
-          .bootstrapServers,
-        'security.protocol': (this.config as KafkaConfiguration)
-          .securityProtocol,
-        ...((this.config as KafkaConfiguration).producer?.global ?? {}),
+        'bootstrap.servers': this.config.bootstrapServers,
+        'security.protocol': this.config.securityProtocol,
+        ...(this.config.producer?.global ?? {}),
       },
-      (this.config as KafkaConfiguration).producer?.topic ?? {}
+      this.config?.producer?.topic ?? {}
     );
     this.logger = logger;
     this.registry = registry;
@@ -103,7 +95,7 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
     });
   }
 
-  async disconnect() {
+  async stop() {
     this.producer.disconnect();
   }
 }

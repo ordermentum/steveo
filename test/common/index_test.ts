@@ -2,8 +2,8 @@
 import { expect } from 'chai';
 import NULL_LOGGER from 'null-logger';
 import sinon from 'sinon';
-import create, { Steveo } from '../../src';
-import DummyProducer from '../../src/producer/dummy';
+import create from '../../src';
+import DummyProducer from '../../src/producers/dummy';
 
 describe('Index', () => {
   let sandbox: sinon.SinonSandbox;
@@ -60,64 +60,14 @@ describe('Index', () => {
       sendStub.calledWith('PRODUCTION_TEST_TOPIC', { hello: 'world' })
     ).to.equal(true);
   });
-  it('creates 2 child processes for 2 topics', async () => {
-    const startChildStub = sandbox
-      // @ts-ignore
-      .stub(Steveo.prototype, 'startChild')
-      .resolves();
-    const steveo = create(
-      // @ts-ignore
-      {
-        engine: 'sqs',
-        tasksPath: __filename,
-        childProcesses: {
-          instancePath: '',
-          args: [],
-        },
-      },
-      NULL_LOGGER,
-      {}
-    );
-    steveo.task('TEST_TOPIC', () => {});
-    steveo.task('PRODUCTION_TEST_TOPIC', () => {});
-    await steveo.start();
-    expect(startChildStub.callCount).to.eqls(2);
-  });
 
   describe('lifecycle methods', () => {
-    it('terminates', async () => {
-      const disconnectStub = sandbox
-        // @ts-ignore
-        .stub(Steveo.prototype, 'disconnect')
-        .resolves();
-      const steveo = create(
-        // @ts-ignore
-        {
-          engine: 'dummy',
-          tasksPath: __filename,
-          childProcesses: {
-            instancePath: '',
-            args: [],
-          },
-        },
-        NULL_LOGGER,
-        {}
-      );
-      await steveo.terminate();
-      expect(steveo.exiting).to.equal(true);
-      expect(disconnectStub.callCount).to.eqls(1);
-    });
-
     it('pause and resume', async () => {
       const steveo = create(
         // @ts-ignore
         {
           engine: 'dummy',
           tasksPath: __filename,
-          childProcesses: {
-            instancePath: '',
-            args: [],
-          },
         },
         NULL_LOGGER,
         {}
@@ -126,7 +76,7 @@ describe('Index', () => {
       const pause = sandbox.stub().resolves();
       const resume = sandbox.stub().resolves();
       // @ts-ignore
-      steveo._runner = {
+      steveo.manager = {
         pause,
         resume,
       };

@@ -2,18 +2,12 @@ import nullLogger from 'null-logger';
 import RedisSMQ from 'rsmq';
 import redisConf from '../config/redis';
 
-import {
-  Configuration,
-  Logger,
-  IProducer,
-  IRegistry,
-  RedisConfiguration,
-} from '../common';
+import { Logger, IProducer, IRegistry, RedisConfiguration } from '../common';
 
-import { createMessageMetadata } from './utils/createMessageMetadata';
+import { createMessageMetadata } from '../lib/context';
 
 class RedisProducer implements IProducer {
-  config: Configuration;
+  config: RedisConfiguration;
 
   registry: IRegistry;
 
@@ -22,7 +16,7 @@ class RedisProducer implements IProducer {
   producer: RedisSMQ;
 
   constructor(
-    config: Configuration,
+    config: RedisConfiguration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
@@ -35,8 +29,8 @@ class RedisProducer implements IProducer {
   async initialize(topic: string) {
     const params = {
       qname: topic,
-      vt: (this.config as RedisConfiguration).visibilityTimeout,
-      maxsize: (this.config as RedisConfiguration).redisMessageMaxsize,
+      vt: this.config.visibilityTimeout,
+      maxsize: this.config.redisMessageMaxsize,
     };
     const queues = await this.producer.listQueuesAsync();
     if (!queues.find(q => q === topic)) {
@@ -69,7 +63,7 @@ class RedisProducer implements IProducer {
     }
   }
 
-  async disconnect() {}
+  async stop() {}
 
   async reconnect() {}
 }
