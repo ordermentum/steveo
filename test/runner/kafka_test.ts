@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import Runner from '../../src/runner/kafka';
-import { build } from '../../src/base/pool';
+import Runner from '../../src/consumers/kafka';
+import { build } from '../../src/lib/pool';
 import Registry from '../../src/registry';
 
-describe('Runner', () => {
+describe('runner/kafka', () => {
   let sandbox;
   let runner;
   let registry;

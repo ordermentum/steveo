@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import Producer from '../../src/producer/sqs';
+import Producer from '../../src/producers/sqs';
 import Registry from '../../src/registry';
 import Task from '../../src/task';
 
@@ -28,6 +28,7 @@ describe('SQS Producer', () => {
     sandbox = sinon.createSandbox();
     registry = new Registry();
     producer = new Producer(
+      // @ts-ignore
       {
         engine: 'sqs',
       },

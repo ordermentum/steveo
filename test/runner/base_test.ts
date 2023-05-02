@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import Runner from '../../src/runner/base';
+import Runner from '../../src/consumers/base';
 import Registry from '../../src/registry';
 
 describe('Base', () => {

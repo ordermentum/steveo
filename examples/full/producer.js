@@ -32,8 +32,8 @@ const logger = bunyan.createLogger({ name: 'producer' });
     },
   ];
   // create first Task
-  const firstTask = steveo.task('test-topic', () => { }, attributes);
-  const secondTask = steveo.task('test-spam', () => { }, attributes);
+  const firstTask = steveo.task('test-topic', () => {}, attributes);
+  const secondTask = steveo.task('test-spam', () => {}, attributes);
   await steveo.runner().createQueues();
 
   // let it run & publish messages in every second

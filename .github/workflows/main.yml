@@ -33,5 +33,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+      - name: "Setup Localstack"
+        run: |
+          pip install pyopenssl -U
+          pip install localstack
+          DNS_ADDRESS=0 localstack start -d
+          localstack wait -t 30
+          pip install awscli-local[ver1]
       - run: yarn
       - run: yarn test

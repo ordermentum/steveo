@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import Producer from '../../src/producer/kafka';
+import Producer from '../../src/producers/kafka';
 import Registry from '../../src/registry';
 
 describe('Kafka Producer', () => {

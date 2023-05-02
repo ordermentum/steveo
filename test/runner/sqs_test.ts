@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import Runner from '../../src/runner/sqs';
-import { build } from '../../src/base/pool';
+import Runner from '../../src/consumers/sqs';
+import { build } from '../../src/lib/pool';
 import Registry from '../../src/registry';
 
-describe('SQS Runner', () => {
+describe('runner/sqs', () => {
   let runner: Runner;
   let registry: Registry;
   let sandbox: sinon.SinonSandbox;

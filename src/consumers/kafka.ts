@@ -5,15 +5,15 @@ import Kafka, {
   Message,
 } from 'node-rdkafka';
 import nullLogger from 'null-logger';
+import { Pool } from 'generic-pool';
 import BaseRunner from './base';
-import { getDuration } from './utils';
+import { getDuration } from '../lib/context';
 import {
   Hooks,
   IRunner,
   Logger,
   IRegistry,
   KafkaConfiguration,
-  Configuration,
 } from '../common';
 import { Steveo } from '..';
 
@@ -23,7 +23,7 @@ class KafkaRunner
   extends BaseRunner
   implements IRunner<KafkaConsumer, Message>
 {
-  config: Configuration<KafkaConfiguration>;
+  config: KafkaConfiguration;
 
   logger: Logger;
 
@@ -37,11 +37,14 @@ class KafkaRunner
 
   consumerReady: boolean;
 
+  pool: Pool<any>;
+
   constructor(steveo: Steveo) {
     super(steveo);
     this.hooks = steveo?.hooks;
-    this.config = steveo?.config;
+    this.config = steveo?.config as KafkaConfiguration;
     this.registry = steveo?.registry;
+    this.pool = steveo?.pool;
     this.logger = steveo?.logger ?? nullLogger;
     this.consumerReady = false;
     this.consumer = new Kafka.KafkaConsumer(
@@ -75,8 +78,12 @@ class KafkaRunner
   receive = async (message: Message) => {
     const { topic } = message;
     const { waitToCommit } = this.config;
+    let resource;
 
     try {
+      this.logger.debug(`waiting for pool`);
+      resource = await this.pool.acquire();
+      this.logger.debug(`acquired pool`);
       const valueString = message.value?.toString() ?? '';
       let value = valueString;
       try {
@@ -93,6 +100,7 @@ class KafkaRunner
         ...message,
         start: getDuration(),
       });
+      this.logger.debug(`loading task`);
       const task = this.registry.getTask(topic);
 
       if (!task) {
@@ -138,6 +146,11 @@ class KafkaRunner
         this.consumer.commitMessage(message);
       }
     }
+
+    if (resource) {
+      this.logger.debug(`releasing pool`);
+      await this.pool.release(resource);
+    }
   };
 
   reconnect = async () =>
@@ -167,21 +180,21 @@ class KafkaRunner
        * don't be, it returns early if it has a local connection status
        * only fallsback to the kafka client if the local connection status is missing
        */
-      this.consumer.getMetadata({}, err => {
+      this.consumer.getMetadata({}, (err, meta) => {
+        this.logger.debug(`metadata response meta=${meta} err=${err}`);
         if (err) {
           return reject(err);
         }
-        return resolve();
+        return resolve(meta);
       });
     });
   };
 
   consumeCallback = async (err, messages) => {
-    this.logger.debug('Consumer callback', messages?.[0]);
-    await this.healthCheck();
+    this.logger.debug(`Consumer callback: ${messages?.[0]}`);
 
     if (this.state === 'terminating') {
-      this.registry.emit('terminate', true);
+      this.logger.debug(`terminating kafka consumer`);
       this.state = 'terminated';
       return;
     }
@@ -196,7 +209,7 @@ class KafkaRunner
       return;
     }
     try {
-      if (messages?.length) {
+      if (messages && messages?.length) {
         await this.receive(messages[0]);
       }
     } finally {
@@ -290,6 +303,7 @@ class KafkaRunner
   }
 
   async disconnect() {
+    this.logger.debug(`disconnecting ${this.constructor.name}`);
     await this.terminate();
     this.consumer.disconnect();
     this.adminClient.disconnect();

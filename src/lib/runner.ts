@@ -1,6 +1,6 @@
-import KafkaRunner from '../runner/kafka';
-import SqsRunner from '../runner/sqs';
-import RedisRunner from '../runner/redis';
+import KafkaRunner from '../consumers/kafka';
+import SqsRunner from '../consumers/sqs';
+import RedisRunner from '../consumers/redis';
 import { Steveo } from '..';
 
 type RunnersType = {

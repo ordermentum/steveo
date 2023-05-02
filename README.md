@@ -48,7 +48,7 @@ Holds the information about the type of task. It has below methods,
 
 Responsible for keeping the inventory of tasks & event manager. Whenever a new task is created, an entry will be added in the registry
 
-### Runner
+### Consumer
 
 Responsible for consuming messages,
 
@@ -122,7 +122,7 @@ On a highlevel, it works as below, Steveo has 3 main components
 ```
               +-----------+     +-----------+     +-----------+
               |           |     |           |     |           |
-PUBLISH ----->|   TASK    |     | REGISTRY  |     |   RUNNER  |-----> RECEIVE
+PUBLISH ----->|   TASK    |     | REGISTRY  |     |   CONSUMER |-----> RECEIVE
               |           |     |           |     |           |
               |           |     |           |     |           |
               +-----------+     +-----------+     +-----------+

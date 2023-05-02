@@ -9,7 +9,7 @@ import {
   IRegistry,
   RunnerState,
 } from '../common';
-import { sleep } from './utils';
+import { sleep } from '../lib/utils';
 
 class BaseRunner {
   async preProcess() {
@@ -27,9 +27,8 @@ class BaseRunner {
 
   steveo: Steveo;
 
-  state: RunnerState;
+  #state: RunnerState;
 
-  // @ts-ignore
   config: Configuration;
 
   logger: Logger;
@@ -41,7 +40,7 @@ class BaseRunner {
     this.registry = steveo?.registry;
     this.config = steveo?.config || {};
     this.logger = steveo?.logger ?? nullLogger;
-    this.state = 'running';
+    this.#state = 'running';
   }
 
   getActiveSubsciptions(topics?: string[]): string[] {
@@ -69,13 +68,45 @@ class BaseRunner {
   }
 
   async terminate() {
+    this.logger.debug(`terminating runner`);
+
     if (['running', 'paused'].includes(this.state)) {
       this.state = 'terminating';
     }
 
-    while (this.state !== 'terminated') {
-      await sleep(5000);
+    let count = 0;
+    const tries = this?.config?.terminationWaitCount || 10;
+    while (!this.isTerminated) {
+      if (count === tries) {
+        this.forceTerminate();
+        break;
+      }
+      this.logger.debug(
+        `waiting for runner to terminate ${this.constructor.name}`
+      );
+      await sleep(1000);
+      count += 1;
     }
+
+    this.registry?.emit('terminate', true);
+  }
+
+  forceTerminate() {
+    this.logger.debug(`force terminating runner`);
+    this.state = 'terminated';
+  }
+
+  get isTerminated() {
+    return this.#state === 'terminated';
+  }
+
+  set state(state: RunnerState) {
+    this.logger.debug(`runner state changed to ${state}`);
+    this.#state = state;
+  }
+
+  get state() {
+    return this.#state;
   }
 
   async healthCheck() {

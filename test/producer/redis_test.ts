@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import Producer from '../../src/producer/redis';
+import Producer from '../../src/producers/redis';
 import Registry from '../../src/registry';
 import redisConf from '../../src/config/redis';
 
