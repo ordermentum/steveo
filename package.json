@@ -57,7 +57,7 @@
     "@emotion/eslint-plugin": "11.10",
     "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@ordermentum/eslint-config-ordermentum": "2.0.0-rc2",
-    "@types/chai": "4.3.4",
+    "@types/chai": "4.3.5",
     "@types/generic-pool": "3.1.11",
     "@types/lodash.merge": "4.6.7",
     "@types/mocha": "10.0.1",
