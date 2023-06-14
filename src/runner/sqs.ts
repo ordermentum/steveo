@@ -172,8 +172,12 @@ class SqsRunner extends BaseRunner implements IRunner {
         };
 
         this.traceProvider
-          ? this.traceProvider.wrapHandler(`${topic}-runner`, context, callback)
-          : callback(undefined);
+          ? await this.traceProvider.wrapHandler(
+              `${topic}-runner`,
+              context,
+              callback
+            )
+          : await callback(undefined);
       },
       { concurrency: this.concurrency }
     );

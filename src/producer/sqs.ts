@@ -143,7 +143,11 @@ class SqsProducer implements IProducer {
     };
 
     this.traceProvider
-      ? this.traceProvider.wrapHandler(`${topic}-publish`, undefined, callback)
+      ? await this.traceProvider.wrapHandler(
+          `${topic}-publish`,
+          undefined,
+          callback
+        )
       : await callback(undefined);
   }
 
