@@ -67,7 +67,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   hooks?: Hooks;
 
-  currentTimeout?: ReturnType<typeof setTimeout>;
+  currentTimeout?: ReturnType<typeof setTimeout>; // can remove?
 
   private traceProvider?: TraceProvider;
 
@@ -197,82 +197,64 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   async process(topics?: string[]) {
-    const loop = () => {
-      if (this.state === 'terminating') {
-        this.state = 'terminated';
-        this.logger.debug(`terminating sqs consumer ${this.state}`);
+    while (this.state === 'running' || this.state === 'paused') {
+      // eslint-disable-next-line no-promise-executor-return
+      await new Promise(resolve => setTimeout(resolve, 250));
+
+      if (this.state === 'paused') {
+        this.logger.debug(`paused processing`);
         return;
       }
-      if (this.currentTimeout) clearTimeout(this.currentTimeout);
-      this.currentTimeout = setTimeout(
-        this.process.bind(this, topics),
-        this.config.consumerPollInterval ?? 1000
+
+      const subscriptions = this.getActiveSubsciptions(topics);
+      this.logger.debug(
+        `Polling for messages (${topics ? topics.join(',') : 'all'})`
       );
-    };
 
-    if (['terminating', 'terminated'].includes(this.state)) {
-      this.state = 'terminated';
-      this.logger.debug(`bailing on processing - ${this.state}`);
-      if (this.currentTimeout) clearTimeout(this.currentTimeout);
-      return;
-    }
-
-    if (this.state === 'paused') {
-      this.logger.debug(`paused processing`);
-      loop();
-      return;
-    }
-
-    const subscriptions = this.getActiveSubsciptions(topics);
-    this.logger.debug(
-      `Polling for messages (${topics ? topics.join(',') : 'all'})`
-    );
-
-    await bluebird.map(
-      subscriptions,
-      async topic => {
-        if (this.state === 'terminated') {
-          return;
-        }
-        const queueURL = await this.getQueueUrl(topic);
-        if (queueURL) {
-          this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
-
-          const params = {
-            MaxNumberOfMessages: this.config.maxNumberOfMessages,
-            QueueUrl: queueURL,
-            VisibilityTimeout: this.config.visibilityTimeout,
-            WaitTimeSeconds: this.config.waitTimeSeconds,
-          };
-          const messages = await this.dequeue(params);
-          if (!messages) {
+      await bluebird.map(
+        subscriptions,
+        async topic => {
+          if (this.state === 'terminated') {
             return;
           }
+          const queueURL = await this.getQueueUrl(topic);
+          if (queueURL) {
+            this.logger.debug(
+              `starting processing of ${topic} with ${queueURL}`
+            );
 
-          try {
-            await this.receive(messages, topic);
-          } catch (ex) {
-            this.logger.error('Error while invoking receive', {
-              error: ex,
-              topic,
-              messages,
-            });
+            const params = {
+              MaxNumberOfMessages: this.config.maxNumberOfMessages,
+              QueueUrl: queueURL,
+              VisibilityTimeout: this.config.visibilityTimeout,
+              WaitTimeSeconds: this.config.waitTimeSeconds,
+            };
+            const messages = await this.dequeue(params);
+            if (!messages) {
+              return;
+            }
+
+            try {
+              await this.receive(messages, topic);
+            } catch (ex) {
+              this.logger.error('Error while invoking receive', {
+                error: ex,
+                topic,
+                messages,
+              });
+            }
+          } else {
+            this.logger.error(`Queue URL ${topic} not found`);
           }
-        } else {
-          this.logger.error(`Queue URL ${topic} not found`);
-        }
-      },
-      { concurrency: this.concurrency }
-    );
+        },
+        { concurrency: this.concurrency }
+      );
+    }
 
     if (['terminating', 'terminated'].includes(this.state)) {
       this.state = 'terminated';
       this.logger.debug(`bailing on processing - ${this.state}`);
-      if (this.currentTimeout) clearTimeout(this.currentTimeout);
-      return;
     }
-
-    loop();
   }
 
   healthCheck = async function () {
@@ -330,8 +312,6 @@ class SqsRunner extends BaseRunner implements IRunner {
   async disconnect() {
     this.logger.debug(`disconnecting`);
     await this.terminate();
-
-    if (this.currentTimeout) clearTimeout(this.currentTimeout);
   }
 
   async reconnect() {}
