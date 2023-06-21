@@ -8,7 +8,7 @@ import nullLogger from 'null-logger';
 import { Pool } from 'generic-pool';
 import BaseRunner from './base';
 import { getDuration } from '../lib/context';
-import { Hooks, IRunner, Logger, KafkaConfiguration } from '../common';
+import { IRunner, Logger, KafkaConfiguration } from '../common';
 import { Steveo } from '..';
 
 class JsonParsingError extends Error {}
@@ -25,15 +25,12 @@ class KafkaRunner
 
   adminClient: IAdminClient;
 
-  hooks?: Hooks;
-
   consumerReady: boolean;
 
   pool: Pool<any>;
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.hooks = steveo?.hooks;
     this.config = steveo?.config as KafkaConfiguration;
     this.pool = steveo?.pool;
     this.logger = steveo?.logger ?? nullLogger;
@@ -106,15 +103,10 @@ class KafkaRunner
       }
 
       this.logger.debug('Start subscribe', topic, message);
-      if (this.hooks?.preTask) {
-        await this.hooks.preTask(parsed);
-      }
+
       // @ts-ignore
       const context = parsed.value.context ?? null;
-      const result = await task.subscribe(parsed, context);
-      if (this.hooks?.postTask) {
-        await this.hooks.postTask({ ...parsed, result });
-      }
+      await task.subscribe(parsed, context);
 
       if (waitToCommit) {
         this.logger.debug('committing message', message);
@@ -187,6 +179,7 @@ class KafkaRunner
     if (this.state === 'terminating') {
       this.logger.debug(`terminating kafka consumer`);
       this.state = 'terminated';
+      this.disconnect();
       return;
     }
 
@@ -267,11 +260,11 @@ class KafkaRunner
     return topicsWithTasks;
   }
 
-  async createQueue({ topic }) {
+  async createQueue(topic: string) {
     this.logger.info(`creating kafka topic ${topic}`);
 
     const task = this.registry.getTask(topic);
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<boolean>((resolve, reject) => {
       const options = task?.attributes ?? {};
       this.adminClient.createTopic(
         {
@@ -287,13 +280,13 @@ class KafkaRunner
           if (err) {
             return reject(err);
           }
-          resolve();
+          resolve(true);
         }
       );
     });
   }
 
-  async stop() {
+  async shutdown() {
     this.logger.debug(`stopping consumer ${this.name}`);
     this.consumer.disconnect();
     this.adminClient.disconnect();

@@ -19,10 +19,6 @@ describe('runner/sqs', () => {
       config: {},
       registry,
       pool: build(),
-      hooks: {
-        preTask: sandbox.spy(),
-        postTask: sandbox.spy(),
-      },
     };
     // @ts-ignore
     runner = new Runner(steveo);

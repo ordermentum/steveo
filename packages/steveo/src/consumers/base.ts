@@ -2,13 +2,9 @@ import intersection from 'lodash.intersection';
 import shuffle from 'lodash.shuffle';
 import nullLogger from 'null-logger';
 import { randomBytes } from 'crypto';
+import Bluebird from 'bluebird';
 import { Steveo } from '..';
-import {
-  SQSConfiguration,
-  Configuration,
-  Logger,
-  RunnerState,
-} from '../common';
+import { Configuration, Logger, RunnerState } from '../common';
 import { Manager } from '../lib/manager';
 
 class BaseRunner {
@@ -17,7 +13,7 @@ class BaseRunner {
   }
 
   // @ts-ignore
-  async createQueue(...data: any[]) {
+  async createQueue(topic: string): Promise<boolean> {
     throw new Error('Unimplemented');
   }
 
@@ -35,7 +31,6 @@ class BaseRunner {
 
   constructor(steveo: Steveo, name?: string) {
     this.errorCount = 0;
-    this.preProcess = steveo?.hooks?.preProcess || (() => Promise.resolve());
     this.steveo = steveo;
     this.config = steveo?.config || {};
     this.logger = steveo?.logger ?? nullLogger;
@@ -75,26 +70,31 @@ class BaseRunner {
     this.manager.state = state;
   }
 
-  async stop() {}
+  async disconnect() {}
+
+  async stop() {
+    this.logger.debug(`stopping consumer ${this.name}`);
+    this.manager.state = 'terminating';
+  }
 
   async createQueues(): Promise<any> {
     if (!this.registry) return false;
 
     const topics = this.registry.getTopics();
-    this.logger.debug('creating queues:', topics);
-    return Promise.all(
-      topics.map(topic =>
-        this.createQueue({
-          topic,
-          receiveMessageWaitTimeSeconds: (this.config as SQSConfiguration)
-            .receiveMessageWaitTimeSeconds,
-          messageRetentionPeriod: (this.config as SQSConfiguration)
-            .messageRetentionPeriod,
-        }).catch(er => {
-          this.logger.error('error creating queue for topic:', er);
-        })
-      )
+    this.logger.debug(`creating queues: ${topics}`);
+
+    if (!topics || topics.length === 0) {
+      this.logger.debug('no topics found');
+      return false;
+    }
+
+    await Bluebird.map(topics, (topic: string) =>
+      this.createQueue(topic).catch(er => {
+        this.logger.error('error creating queue for topic:', er);
+      })
     );
+
+    return true;
   }
 }
 

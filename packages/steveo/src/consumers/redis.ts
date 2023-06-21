@@ -1,17 +1,11 @@
 /* eslint-disable no-continue */
 import RedisSMQ from 'rsmq';
 import nullLogger from 'null-logger';
+import Bluebird from 'bluebird';
 import BaseRunner from './base';
 import { getContext } from '../lib/context';
 import redisConf from '../config/redis';
-import {
-  Hooks,
-  IRunner,
-  Pool,
-  Logger,
-  CreateRedisTopic,
-  RedisConfiguration,
-} from '../common';
+import { IRunner, Pool, Logger, RedisConfiguration } from '../common';
 import { Steveo } from '..';
 
 type DeleteMessage = {
@@ -50,8 +44,6 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   pool: Pool<any>;
 
-  hooks?: Hooks;
-
   currentTimeout?: ReturnType<typeof setTimeout>;
 
   constructor(steveo: Steveo) {
@@ -86,14 +78,8 @@ class RedisRunner extends BaseRunner implements IRunner {
             return;
           }
           this.logger.debug('Start subscribe', topic, params);
-          if (this.hooks?.preTask) {
-            await this.hooks.preTask(params);
-          }
           const { context = null, ...value } = params;
-          const result = await task.subscribe(value, context);
-          if (this.hooks?.postTask) {
-            await this.hooks.postTask({ ...(params ?? {}), result });
-          }
+          await task.subscribe(value, context);
           const completedContext = getContext(params);
           this.registry.emit(
             'runner_complete',
@@ -127,30 +113,26 @@ class RedisRunner extends BaseRunner implements IRunner {
     }
   }
 
-  async process(topics?: string[]) {
-    const loop = () => {
-      if (this.state === 'terminating') {
-        this.logger.debug(`terminating redis`);
-        this.state = 'terminated';
-        return;
-      }
-
-      if (this.currentTimeout) clearTimeout(this.currentTimeout);
-
-      this.currentTimeout = setTimeout(
-        this.process.bind(this, topics),
-        this.config.consumerPollInterval ?? 1000
-      );
-    };
-
+  poll(topics?: string[]) {
     if (this.state === 'terminating') {
-      this.logger.debug(`runner terminating`);
+      this.logger.debug(`terminating redis`);
+      this.state = 'terminated';
+      this.shutdown();
       return;
     }
 
+    if (this.currentTimeout) clearTimeout(this.currentTimeout);
+
+    this.currentTimeout = setTimeout(
+      this.process.bind(this, topics),
+      this.config.consumerPollInterval ?? 1000
+    );
+  }
+
+  async process(topics?: string[]) {
     if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
-      loop();
+      this.poll(topics);
       return;
     }
 
@@ -160,40 +142,39 @@ class RedisRunner extends BaseRunner implements IRunner {
 
     const subscriptions = this.getActiveSubsciptions(topics);
 
-    await Promise.all(
-      subscriptions.map(async topic => {
+    await Bluebird.map(
+      subscriptions,
+      async topic => {
         await this.dequeue(topic);
-      })
+      },
+      { concurrency: this.config.workerConfig?.max ?? 1 }
     );
 
-    loop();
+    this.poll(topics);
   }
 
-  async createQueue({
-    topic,
-    visibilityTimeout = 604800,
-    maxsize = -1,
-  }: CreateRedisTopic) {
-    this.logger.info(`creating redis queue ${topic}`);
-
+  async createQueue(topic: string): Promise<boolean> {
+    this.logger.debug(`loading existing queues to check topic ${topic}`);
     const queues = await this.redis.listQueuesAsync();
     const exists = queues.find(q => q === topic);
 
     if (exists) {
       this.logger.debug(`${topic} already exists`);
-      return;
+      return false;
     }
 
     const params = {
       qname: topic,
-      vt: visibilityTimeout,
-      maxsize,
+      vt: this.config.visibilityTimeout,
+      maxsize: this.config.redisMessageMaxsize,
     };
+    this.logger.info(`creating redis queue ${topic}`);
     await this.redis.createQueueAsync(params);
+
+    return true;
   }
 
-  async stop() {
-    if (this.currentTimeout) clearTimeout(this.currentTimeout);
+  async shutdown() {
     this.redis?.quit(() => {});
   }
 

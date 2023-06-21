@@ -1,9 +1,17 @@
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable global-require */
 import NULL_LOGGER from 'null-logger';
+/* eslint-disable no-underscore-dangle */
+import Task from './task';
+import Registry from './registry';
+import getRunner from './lib/runner';
+import getProducer from './lib/producer';
+import getConfig from './config';
+import { build } from './lib/pool';
+import { Manager } from './lib/manager';
+
 import {
   IRunner,
-  Hooks,
   ITask,
   Callback,
   Pool,
@@ -18,15 +26,10 @@ import {
   RedisConfiguration,
   SQSConfiguration,
   DummyConfiguration,
+  Middleware,
 } from './common';
-/* eslint-disable no-underscore-dangle */
-import Task from './task';
-import Registry from './registry';
-import getRunner from './lib/runner';
-import getProducer from './lib/producer';
-import getConfig from './config';
-import { build } from './lib/pool';
-import { Manager } from './lib/manager';
+
+export { Middleware };
 
 export class Steveo implements ISteveo {
   config: KafkaConfiguration | RedisConfiguration | SQSConfiguration;
@@ -43,8 +46,6 @@ export class Steveo implements ISteveo {
 
   pool: Pool<any>;
 
-  hooks?: Hooks;
-
   restarts: number;
 
   exiting: boolean;
@@ -55,25 +56,26 @@ export class Steveo implements ISteveo {
 
   manager: Manager;
 
+  middleware: Middleware[];
+
   constructor(
     configuration:
       | KafkaConfiguration
       | RedisConfiguration
       | SQSConfiguration
       | DummyConfiguration,
-    logger: Logger = NULL_LOGGER, // eslint-disable-line default-param-last
-    hooks?: Hooks
+    logger: Logger = NULL_LOGGER // eslint-disable-line default-param-last
   ) {
     this.logger = logger;
     this.registry = new Registry();
     this.config = getConfig(configuration);
     this.pool = build(this.config.workerConfig);
     this.events = this.registry.events;
-    this.hooks = hooks;
     this.restarts = 0;
     this.exiting = false;
     this.paused = false;
     this.manager = new Manager(this);
+    this.middleware = [];
   }
 
   task<T = any, R = any, C = any>(
@@ -198,6 +200,5 @@ export default (
     | RedisConfiguration
     | SQSConfiguration
     | DummyConfiguration,
-  logger: Logger,
-  hooks?: Hooks
-) => new Steveo(config, logger, hooks);
+  logger: Logger
+) => new Steveo(config, logger);

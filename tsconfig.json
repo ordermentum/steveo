@@ -21,6 +21,6 @@
     "esModuleInterop": true,
     "allowJs": true
   },
-  "include": ["src"],
+  "include": ["packages/steveo/src"],
   "exclude": ["node_modules"]
 }

@@ -1,0 +1,91 @@
+{
+  "name": "steveo",
+  "version": "6.0.0-beta1",
+  "description": "A Task Pub/Sub Background processing library",
+  "main": "lib/index.js",
+  "author": "engineering@ordermentum.com",
+  "license": "Apache-2.0",
+  "repository": "git@github.com:ordermentum/steveo.git",
+  "scripts": {
+    "test": "NODE_ENV=test nyc yarn spec",
+    "spec": "tsc && yarn mocha --bail=false 'test/**/*_test.ts'",
+    "lint": "yarn eslint 'src/**/*.{ts,js}'",
+    "lint:test": "yarn eslint 'test/**/*.{ts,js}'",
+    "autotest": "yarn run mocha --watch",
+    "prepublish": "yarn run build",
+    "build": "yarn run tsc",
+    "typecheck": "yarn run tsc --noEmit",
+    "steveo": "node ./lib/cli-task.js"
+  },
+  "files": [
+    "lib/*"
+  ],
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "all": true,
+    "exclude": [
+      "coverage",
+      "examples",
+      "test",
+      "lib"
+    ],
+    "reporter": [
+      "text",
+      "html",
+      "lcov"
+    ]
+  },
+  "dependencies": {
+    "@types/bluebird": "^3.5.38",
+    "bluebird": "^3.7.2",
+    "generic-pool": "^3.8.2",
+    "lazy-object": "^1.0.1",
+    "lodash.difference": "^4.5.0",
+    "lodash.intersection": "^4.4.0",
+    "lodash.merge": "4.6.2",
+    "lodash.shuffle": "^4.2.0",
+    "moment": "2.29.4",
+    "null-logger": "^2.0.0",
+    "uuid": "^8.0.0"
+  },
+  "peerDependencies": {
+    "aws-sdk": "^2.1043.0",
+    "node-rdkafka": "^2.15.0",
+    "rsmq": "^0.12.4"
+  },
+  "devDependencies": {
+    "@emotion/eslint-plugin": "11.11",
+    "@istanbuljs/nyc-config-typescript": "1.0.2",
+    "@ordermentum/eslint-config-ordermentum": "2.0.0-rc2",
+    "@types/chai": "4.3.5",
+    "@types/generic-pool": "3.1.11",
+    "@types/lodash.merge": "4.6.7",
+    "@types/mocha": "10.0.1",
+    "@types/newrelic": "9.14.0",
+    "@types/node": "16.18.3",
+    "@types/rsmq": "0.8.4",
+    "@types/sinon": "10.0.15",
+    "@types/uuid": "8.3.4",
+    "@typescript-eslint/eslint-plugin": "5.48.2",
+    "@typescript-eslint/parser": "5.48.2",
+    "chai": "4.3.7",
+    "cross-env": "7.0.3",
+    "eslint": "8.32.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-prettier": "8.8.0",
+    "eslint-plugin-import": "2.27.5",
+    "eslint-plugin-jsx-a11y": "6.7.1",
+    "eslint-plugin-mocha": "9.0.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-unicorn": "45.0.2",
+    "mocha": "10.2.0",
+    "nyc": "15.1.0",
+    "pino": "^8.14.1",
+    "prettier": "2.8.3",
+    "sinon": "15.1.0",
+    "source-map-support": "0.5.21",
+    "ts-node": "10.9.1",
+    "typescript": "4.9.4"
+  }
+}

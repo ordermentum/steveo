@@ -2,11 +2,18 @@ import nullLogger from 'null-logger';
 import RedisSMQ from 'rsmq';
 import redisConf from '../config/redis';
 
-import { Logger, IProducer, IRegistry, RedisConfiguration } from '../common';
+import {
+  Logger,
+  IProducer,
+  IRegistry,
+  RedisConfiguration,
+  Middleware,
+} from '../common';
 
 import { createMessageMetadata } from '../lib/context';
+import { BaseProducer } from './base';
 
-class RedisProducer implements IProducer {
+class RedisProducer extends BaseProducer implements IProducer {
   config: RedisConfiguration;
 
   registry: IRegistry;
@@ -15,15 +22,19 @@ class RedisProducer implements IProducer {
 
   producer: RedisSMQ;
 
+  middleware: Middleware[];
+
   constructor(
     config: RedisConfiguration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
+    super([]);
     this.config = config;
     this.producer = redisConf.redis(config);
     this.logger = logger;
     this.registry = registry;
+    this.middleware = [];
   }
 
   async initialize(topic: string) {
@@ -47,25 +58,22 @@ class RedisProducer implements IProducer {
   }
 
   async send<T = any>(topic: string, payload: T) {
-    const data = this.getPayload(payload, topic);
     try {
-      const response = await this.producer.sendMessageAsync(data);
-      this.logger.debug('Redis Publish Data', data, 'id', response);
-      const queueAttributes = await this.producer.getQueueAttributesAsync({
-        qname: topic,
+      await this.wrap(topic, payload, async (t, d) => {
+        const data = this.getPayload(d, t);
+        await this.producer.sendMessageAsync(data);
+        const queueAttributes = await this.producer.getQueueAttributesAsync({
+          qname: t,
+        });
+        this.logger.debug(`queue stats: ${queueAttributes}`);
+        this.registry.emit('producer_success', topic, payload);
       });
-      this.logger.debug('Queue status', queueAttributes);
-      this.registry.emit('producer_success', topic, payload);
     } catch (ex) {
       this.logger.error('Error while sending Redis payload', topic, ex);
-      this.registry.emit('producer_failure', topic, ex, data);
+      this.registry.emit('producer_failure', topic, ex, payload);
       throw ex;
     }
   }
-
-  async stop() {}
-
-  async reconnect() {}
 }
 
 export default RedisProducer;

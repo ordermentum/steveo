@@ -69,8 +69,7 @@ describe('Index', () => {
           engine: 'dummy',
           tasksPath: __filename,
         },
-        NULL_LOGGER,
-        {}
+        NULL_LOGGER
       );
 
       const pause = sandbox.stub().resolves();

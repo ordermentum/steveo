@@ -111,7 +111,6 @@ export interface Configuration {
    * This is required if you want to use the built in steveo runner
    */
   tasksPath?: string;
-  traceProvider?: TraceProvider;
 }
 
 export type Attribute = {
@@ -166,7 +165,7 @@ export interface IRunner<T = any, M = any> {
   registry: IRegistry;
   receive(messages: M, topic: string, partition: number): Promise<void>;
   process(topics?: Array<string>): Promise<T>;
-  createQueues(): Promise<void>;
+  createQueues(): Promise<boolean>;
 
   healthCheck: () => Promise<void>;
 
@@ -176,20 +175,8 @@ export interface IRunner<T = any, M = any> {
 
 export type CustomTopicFunction = (topic: string) => string;
 
-export type TaskHooks = {
-  /**
-   * Called with the message value
-   */
-  pre: (args: any) => Promise<void>;
-  /**
-   * Called with returned value from the task in conjuction with the message
-   */
-  post: (args: any) => Promise<void>;
-};
-
 export type TaskOpts = {
   queueName?: string;
-  hooks?: Partial<TaskHooks>;
 };
 export interface ISteveo {
   config: Configuration;
@@ -213,7 +200,7 @@ export type Producer = {
   send(data: any, sendParams: any): void;
   init(): void;
   createQueueAsync(params: any): Promise<void>;
-  createQueue(params: any): AsyncWrapper;
+  createQueue(params: any): Promise<boolean>;
   sendMessage(params: any): AsyncWrapper;
   listQueuesAsync(): Array<string>;
   getQueueAttributesAsync(params: any): any;
@@ -235,55 +222,10 @@ export interface IProducer<P = any> {
   stop(): Promise<void>;
 }
 
-export interface TraceProvider {
-  wrapHandler(
-    txName: string,
-    traceContext: unknown,
-    callback: (traceContext: unknown) => any
-  ): Promise<void>;
-  wrapHandlerSegment(
-    segmentName: string,
-    traceContext: unknown,
-    callback: any
-  ): Promise<void>;
-  onError(err: Error, traceContext: unknown): Promise<void>;
-  serializeTraceMetadata(traceContext: unknown): Promise<string>;
-  deserializeTraceMetadata(traceMetadata: string): Promise<unknown>;
+export interface Middleware {
+  // producer and consumer middleware
+  publish<T = any, C = Callback>(name: string, payload: T, callback: C);
+  consume<T = any, C = Callback>(name: string, payload: T, callback: C);
 }
 
 export type sqsUrls = Record<string, string>;
-
-export type CreateRedisTopic = {
-  topic: string;
-  visibilityTimeout: number;
-  maxsize: number;
-};
-
-export type CreateSqsTopic = {
-  topic: string;
-  messageRetentionPeriod: string;
-  receiveMessageWaitTimeSeconds: string;
-};
-
-export type CreateKafkaTopic = {
-  topic: string;
-};
-
-export type CreateQueueConfig =
-  | CreateRedisTopic
-  | CreateSqsTopic
-  | CreateKafkaTopic;
-
-export type Hooks = {
-  preProcess?: () => Promise<void>;
-  healthCheck?: () => Promise<void>;
-  terminationCheck?: () => Promise<boolean>;
-  /**
-   * A default before hook to run when a consumer runs a task
-   */
-  preTask?: (args?: any) => Promise<void>;
-  /**
-   * A default after hook to run when a consumer runs a task
-   */
-  postTask?: (args?: any) => Promise<void>;
-};

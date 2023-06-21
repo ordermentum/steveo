@@ -24,6 +24,15 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     strategy:
       matrix:
         node-version: [14.x, 16.x, 18.x]
@@ -34,6 +43,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: "Setup Localstack"
+
         run: |
           pip install localstack awscli-local[ver1]
           docker pull localstack/localstack
@@ -41,4 +51,7 @@ jobs:
           localstack wait -t 30
           echo "Startup complete"
       - run: yarn
-      - run: yarn test
+      - name: "Run tests"
+        run: yarn test
+        env:
+          REDIS_HOST: redis

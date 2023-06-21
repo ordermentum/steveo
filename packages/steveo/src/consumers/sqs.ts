@@ -6,15 +6,7 @@ import { safeParseInt } from '../lib/utils';
 import { getContext } from '../lib/context';
 import { getSqsInstance } from '../config/sqs';
 
-import {
-  Hooks,
-  IRunner,
-  Pool,
-  Logger,
-  CreateSqsTopic,
-  SQSConfiguration,
-  TraceProvider,
-} from '../common';
+import { IRunner, Pool, Logger, SQSConfiguration } from '../common';
 import { Steveo } from '..';
 
 type DeleteMessage = {
@@ -62,22 +54,16 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   concurrency: number;
 
-  hooks?: Hooks;
-
   currentTimeout?: ReturnType<typeof setTimeout>;
-
-  private traceProvider?: TraceProvider;
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.hooks = steveo?.hooks;
     this.config = steveo?.config as SQSConfiguration;
     this.logger = steveo?.logger ?? nullLogger;
     this.sqsUrls = {};
     this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
     this.concurrency = safeParseInt(steveo.config.workerConfig?.max ?? 1, 1);
-    this.traceProvider = this.config.traceProvider as TraceProvider;
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
@@ -89,92 +75,48 @@ class SqsRunner extends BaseRunner implements IRunner {
         let resource;
         const params = JSON.parse(message.Body as string);
         const runnerContext = getContext(params);
-        const context = await this.traceProvider?.deserializeTraceMetadata(
-          runnerContext.traceMetadata
-        );
 
-        const callback = async traceContext => {
-          try {
-            resource = await this.pool.acquire();
+        try {
+          resource = await this.pool.acquire();
 
-            this.registry.emit('runner_receive', topic, params, runnerContext);
-            this.logger.debug('Deleting message', topic, params);
+          this.registry.emit('runner_receive', topic, params, runnerContext);
+          this.logger.debug('Deleting message', topic, params);
 
-            await deleteMessage({
+          await deleteMessage({
             // eslint-disable-line
-              instance: this.sqs,
-              topic,
-              message,
-              sqsUrls: this.sqsUrls,
-              logger: this.logger,
-            });
+            instance: this.sqs,
+            topic,
+            message,
+            sqsUrls: this.sqsUrls,
+            logger: this.logger,
+          });
 
-            this.logger.debug('Message deleted', topic, params);
-            const task = this.registry.getTask(topic);
-            this.logger.debug('Start subscribe', topic, params);
-            if (!task) {
-              this.logger.error(`Unknown Task ${topic}`);
-              return;
-            }
-
-            const runFnAsSegment = async (
-              segmentName: string,
-              callback: (...args: any[]) => void
-            ) => {
-              if (!this.traceProvider) {
-                await callback();
-              } else {
-                await this.traceProvider.wrapHandlerSegment(
-                  segmentName,
-                  traceContext,
-                  // eslint-disable-next-line no-return-await
-                  async () => await callback() // using `await` so we get accurate segment timing
-                );
-              }
-            };
-
-            await runFnAsSegment('runner.hooks.preTask', async () =>
-              this.hooks?.preTask?.(params)
-            );
-
-            const { context = null, ...value } = params;
-            let result;
-
-            await runFnAsSegment('runner.task', async () => {
-              result = await task.subscribe(value, context);
-            });
-
-            await runFnAsSegment('runner.hooks.postTask', async () =>
-              this.hooks?.postTask?.({ ...(params ?? {}), result })
-            );
-
-            this.logger.debug('Completed subscribe', topic, params);
-            const completedContext = getContext(params);
-            this.registry.emit(
-              'runner_complete',
-              topic,
-              params,
-              completedContext
-            );
-          } catch (ex) {
-            this.logger.error('Error while executing consumer callback ', {
-              params,
-              topic,
-              error: ex,
-            });
-            this.registry.emit('runner_failure', topic, ex, params);
-            this.traceProvider?.onError?.(ex as Error, traceContext);
+          this.logger.debug('Message deleted', topic, params);
+          const task = this.registry.getTask(topic);
+          this.logger.debug('Start subscribe', topic, params);
+          if (!task) {
+            this.logger.error(`Unknown Task ${topic}`);
+            return;
           }
-          if (resource) await this.pool.release(resource);
-        };
 
-        this.traceProvider
-          ? await this.traceProvider.wrapHandler(
-              `${topic}-runner`,
-              context,
-              callback
-            )
-          : await callback(undefined);
+          await task.subscribe(params, runnerContext);
+          this.logger.debug('Completed subscribe', topic, params);
+          const completedContext = getContext(params);
+          this.registry.emit(
+            'runner_complete',
+            topic,
+            params,
+            completedContext
+          );
+        } catch (ex) {
+          this.logger.error('Error while executing consumer callback ', {
+            params,
+            topic,
+            error: ex,
+          });
+          this.registry.emit('runner_failure', topic, ex, params);
+        }
+        if (resource) await this.pool.release(resource);
       },
       { concurrency: this.concurrency }
     );
@@ -193,7 +135,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     return data?.Messages;
   }
 
-  loop(topics?: string[]) {
+  poll(topics?: string[]) {
     this.logger.debug(`looping ${this.manager.state}`);
     if (this.manager.state === 'terminating') {
       this.manager.state = 'terminated';
@@ -210,7 +152,7 @@ class SqsRunner extends BaseRunner implements IRunner {
   async process(topics?: string[]) {
     if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
-      this.loop(topics);
+      this.poll(topics);
       return;
     }
 
@@ -255,7 +197,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       { concurrency: this.concurrency }
     );
 
-    this.loop(topics);
+    this.poll(topics);
   }
 
   healthCheck = async function () {
@@ -293,26 +235,19 @@ class SqsRunner extends BaseRunner implements IRunner {
       });
   }
 
-  async createQueue({
-    topic,
-    receiveMessageWaitTimeSeconds = '20',
-    messageRetentionPeriod = '604800',
-  }: CreateSqsTopic) {
+  async createQueue(topic: string) {
     this.logger.info(`creating SQS queue ${topic}`);
 
     const params = {
       QueueName: topic,
       Attributes: {
-        ReceiveMessageWaitTimeSeconds: receiveMessageWaitTimeSeconds,
-        MessageRetentionPeriod: messageRetentionPeriod,
+        ReceiveMessageWaitTimeSeconds:
+          this.config.receiveMessageWaitTimeSeconds,
+        MessageRetentionPeriod: this.config.messageRetentionPeriod,
       },
     };
     await this.sqs.createQueue(params).promise();
-  }
-
-  async stop() {
-    this.logger.debug(`stopping consumer ${this.name}`);
-    this.manager.state = 'terminating';
+    return true;
   }
 
   async reconnect() {}

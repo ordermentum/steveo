@@ -3,8 +3,9 @@ import nullLogger from 'null-logger';
 import { Logger, IProducer, IRegistry, DummyConfiguration } from '../common';
 
 import { createMessageMetadata } from '../lib/context';
+import { BaseProducer } from './base';
 
-class DummyProducer implements IProducer {
+class DummyProducer extends BaseProducer implements IProducer {
   config: DummyConfiguration;
 
   registry: IRegistry;
@@ -18,6 +19,7 @@ class DummyProducer implements IProducer {
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
+    super([]);
     this.config = config;
     this.logger = logger;
     this.registry = registry;
@@ -43,19 +45,18 @@ class DummyProducer implements IProducer {
   }
 
   async send<T = any>(topic: string, payload: T) {
-    const data = this.getPayload(payload, topic);
     try {
+      await this.wrap(topic, payload, async (t, d) => {
+        const data = this.getPayload(d, t);
+        this.logger.debug(`dummy producer - topic: ${t}, payload: ${data}`);
+      });
       this.registry.emit('producer_success', topic, payload);
     } catch (ex) {
       this.logger.error('Error while sending Redis payload', topic, ex);
-      this.registry.emit('producer_failure', topic, ex, data);
+      this.registry.emit('producer_failure', topic, ex, payload);
       throw ex;
     }
   }
-
-  async stop() {}
-
-  async reconnect() {}
 }
 
 export default DummyProducer;

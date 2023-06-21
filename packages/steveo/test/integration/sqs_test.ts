@@ -7,7 +7,7 @@ import { Steveo } from '../../src';
 
 const sleep = promisify(setTimeout);
 
-describe('Integration Test', () => {
+describe('SQS Integration Test', () => {
   let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe('Integration Test', () => {
       accessKeyId: 'test',
       secretAccessKey: 'key',
       shuffleQueue: false,
-      endpoint: 'http://127.0.0.1:4566',
+      endpoint: 'http://localhost:4566',
       maxNumberOfMessages: 1,
       workerConfig: {
         max: 2,
@@ -40,12 +40,12 @@ describe('Integration Test', () => {
       upperCaseNames: true,
     };
     const steveo = new Steveo(configuration, logger({ level: 'debug' }));
-    await steveo?.runner().createQueues();
     const tasks = ['one', 'two', 'three'];
 
     for (const task of tasks) {
       steveo.task(`steveo_${task}`, async () => Promise.resolve());
     }
+    await steveo?.runner().createQueues();
 
     const iterations = 1000;
     await Bluebird.map(

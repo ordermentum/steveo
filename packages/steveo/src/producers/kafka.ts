@@ -3,8 +3,12 @@ import { HighLevelProducer } from 'node-rdkafka';
 
 import { KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
 import { createMessageMetadata } from '../lib/context';
+import { BaseProducer } from './base';
 
-class KafkaProducer implements IProducer<HighLevelProducer> {
+class KafkaProducer
+  extends BaseProducer
+  implements IProducer<HighLevelProducer>
+{
   config: KafkaConfiguration;
 
   registry: IRegistry;
@@ -18,6 +22,7 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
+    super([]);
     this.config = config;
     this.producer = new HighLevelProducer(
       {
@@ -66,33 +71,40 @@ class KafkaProducer implements IProducer<HighLevelProducer> {
     return Buffer.from(JSON.stringify({ ...payload, _meta: context }), 'utf-8');
   };
 
-  async send<T>(topic: string, payload: T, key: string | null = null) {
+  publish(topic: string, data, key: string | null = null) {
     return new Promise<void>((resolve, reject) => {
-      this.producer.produce(
-        topic,
-        null,
-        this.getPayload<T>(payload),
-        key,
-        Date.now(),
-        err => {
-          if (err) {
-            this.logger.error(
-              'Error while sending payload:',
-              JSON.stringify(payload, null, 2),
-              'topic :',
-              topic,
-              'Error :',
-              err
-            );
-            this.registry.emit('producer_failure', topic, err);
-            reject();
-          } else {
-            this.registry.emit('producer_success', topic, payload);
-            resolve();
-          }
+      this.producer.produce(topic, null, data, key, Date.now(), err => {
+        if (err) {
+          this.logger.error(
+            'Error while sending payload:',
+            JSON.stringify(data, null, 2),
+            'topic :',
+            topic,
+            'Error :',
+            err
+          );
+          this.registry.emit('producer_failure', topic, err);
+          reject();
+        } else {
+          this.registry.emit('producer_success', topic, data);
+          resolve();
         }
-      );
+      });
     });
+  }
+
+  async send<T = any>(topic: string, payload: T, key: string | null = null) {
+    try {
+      await this.wrap(topic, payload, async (t, d) => {
+        const data = this.getPayload(d);
+        await this.publish(t, data, key);
+        this.registry.emit('producer_success', topic, d);
+      });
+    } catch (ex) {
+      this.logger.error('Error while sending Redis payload', topic, ex);
+      this.registry.emit('producer_failure', topic, ex, payload);
+      throw ex;
+    }
   }
 
   async stop() {

@@ -1,21 +1,22 @@
+/* eslint-disable no-underscore-dangle */
 import moment from 'moment';
 import * as crypto from 'crypto';
 import os from 'os';
 
-export const createMessageMetadata = <T = any>(
-  message: T,
-  traceMetadata?: string
-) => {
+export const createMessageMetadata = <T = any>(message: T) => {
+  // @ts-expect-error
+  const _meta = message?._meta ?? {};
+
   const sha1 = crypto.createHash('sha1'); // can we change this to SHA256?
   const signature = sha1
-    .update(JSON.stringify(message))
+    .update(JSON.stringify({ ...message, _meta: undefined }))
     .digest('hex')
     .substring(0, 8);
   const timestamp = moment().unix();
   const start = process.hrtime();
   const hostname = os.hostname();
 
-  return { hostname, timestamp, traceMetadata, signature, start };
+  return { ..._meta, hostname, timestamp, signature, start };
 };
 
 export const getDuration = (start = undefined) => {

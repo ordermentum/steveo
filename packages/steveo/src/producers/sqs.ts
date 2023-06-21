@@ -9,12 +9,13 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
-  TraceProvider,
+  Middleware,
 } from '../common';
 
 import { createMessageMetadata } from '../lib/context';
+import { BaseProducer } from './base';
 
-class SqsProducer implements IProducer {
+class SqsProducer extends BaseProducer implements IProducer {
   config: SQSConfiguration;
 
   registry: IRegistry;
@@ -25,30 +26,33 @@ class SqsProducer implements IProducer {
 
   sqsUrls: sqsUrls;
 
-  private traceProvider?: TraceProvider;
+  middleware: Middleware[];
 
   constructor(
     config: SQSConfiguration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
+    super([]);
     this.config = config;
     this.producer = getSqsInstance(config);
     this.logger = logger;
     this.registry = registry;
+    this.middleware = [];
     this.sqsUrls = {};
-    this.traceProvider = this.config.traceProvider;
   }
 
   async initialize(topic: string): Promise<string> {
+    this.logger.debug(`Initializing topic: ${topic}`);
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
 
+    this.logger.debug(`calling producer: ${topic}`);
     const getQueueUrlResult = await this.producer
       .getQueueUrl({ QueueName: topic })
       .promise()
-      .catch(() => undefined);
+      .catch(_ => undefined);
     const queueUrl = getQueueUrlResult?.QueueUrl;
 
     if (queueUrl) {
@@ -56,13 +60,12 @@ class SqsProducer implements IProducer {
       return queueUrl;
     }
 
-    const config = this.config as SQSConfiguration;
     const params = {
       QueueName: topic,
       Attributes: {
         ReceiveMessageWaitTimeSeconds:
-          config.receiveMessageWaitTimeSeconds ?? '20',
-        MessageRetentionPeriod: config.messageRetentionPeriod ?? '604800',
+          this.config.receiveMessageWaitTimeSeconds ?? '20',
+        MessageRetentionPeriod: this.config.messageRetentionPeriod ?? '604800',
       },
     };
     this.logger.debug(`Creating queue`, util.inspect(params));
@@ -81,14 +84,13 @@ class SqsProducer implements IProducer {
 
   getPayload(
     msg: any,
-    topic: string,
-    traceMetadata?: string
+    topic: string
   ): {
     MessageAttributes: any;
     MessageBody: string;
     QueueUrl: string;
   } {
-    const context = createMessageMetadata(msg, traceMetadata);
+    const context = createMessageMetadata(msg);
 
     const task = this.registry.getTask(topic);
     const attributes = task ? task.attributes : [];
@@ -114,45 +116,22 @@ class SqsProducer implements IProducer {
     };
   }
 
-  async send<T = Record<string, any>>(topic: string, payload: T) {
-    const callback = async traceContext => {
-      // eslint-disable-next-line no-useless-catch
-      try {
-        if (!this.sqsUrls[topic]) {
-          await this.initialize(topic);
+  async send<T = any>(topic: string, payload: T) {
+    try {
+      await this.wrap(topic, payload, async (t, d) => {
+        if (!this.sqsUrls[t]) {
+          await this.initialize(t);
         }
-      } catch (ex) {
-        this.traceProvider?.onError?.(ex as Error, traceContext);
-        throw ex;
-      }
-
-      const traceMetadata = await this.traceProvider?.serializeTraceMetadata(
-        traceContext
-      );
-      const data = this.getPayload(payload, topic, traceMetadata);
-
-      try {
+        const data = this.getPayload(d, t);
         await this.producer.sendMessage(data).promise();
-        this.registry.emit('producer_success', topic, data);
-      } catch (ex) {
-        this.traceProvider?.onError?.(ex as Error, traceContext);
-        this.registry.emit('producer_failure', topic, ex, data);
-        throw ex;
-      }
-    };
-
-    this.traceProvider
-      ? await this.traceProvider.wrapHandler(
-          `${topic}-publish`,
-          undefined,
-          callback
-        )
-      : await callback(undefined);
+        this.registry.emit('producer_success', t, data);
+      });
+    } catch (ex) {
+      this.logger.error('Error while sending Payload', topic, ex);
+      this.registry.emit('producer_failure', topic, ex, payload);
+      throw ex;
+    }
   }
-
-  async stop() {}
-
-  async reconnect() {}
 }
 
 export default SqsProducer;
