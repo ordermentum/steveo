@@ -1,0 +1,17 @@
+#!/bin/bash
+
+DEFAULT_DB=$(yarn --silent conf db.uri)
+DB_URI="${DATABASE_INITIALIZATION_URI:-$DEFAULT_DB}"
+
+psql $DB_URI -v ON_ERROR_STOP=0 -t <<-EOSQL
+  CREATE USER ordermentum;
+  ALTER USER ordermentum WITH SUPERUSER;
+  CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+EOSQL
+
+psql $DB_URI -tc "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"";
+
+psql $DB_URI -tc "SELECT 1 FROM pg_database WHERE datname = 'ordermentum_development'" | grep -q 1 || psql $DB_URI -c "CREATE DATABASE ordermentum_development"
+
+psql $DB_URI -tc "SELECT 1 FROM pg_database WHERE datname = 'ordermentum_testing'" | grep -q 1 || psql $DB_URI -c "CREATE DATABASE ordermentum_testing"
+

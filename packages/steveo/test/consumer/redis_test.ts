@@ -18,7 +18,7 @@ describe('runner/redis', () => {
       // @ts-ignore
       config: {},
       registry,
-      pool: build(),
+      pool: build(registry),
     };
     // @ts-ignore
     runner = new Runner(steveo);
@@ -51,7 +51,8 @@ describe('runner/redis', () => {
       config: {},
       // @ts-ignore
       registry: anotherRegistry,
-      pool: build(),
+      // @ts-ignore
+      pool: build(anotherRegistry),
     };
 
     // @ts-ignore
@@ -88,7 +89,8 @@ describe('runner/redis', () => {
       config: {},
       // @ts-ignore
       registry: anotherRegistry,
-      pool: build(),
+      // @ts-ignore
+      pool: build(anotherRegistry),
     };
     // @ts-ignore
     const anotherRunner = new Runner(steveo);

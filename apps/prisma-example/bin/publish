@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+if (!process.env.NODE_ENV) process.env.NODE_ENV = 'development';
+
+let client;
+
+if (['testing', 'production'].includes(process.env.NODE_ENV)) {
+  client = require('../lib/client').client;
+} else {
+  require('ts-node').register({ transpileOnly: true }); // or babel-register
+  client = require('../src/client').client;
+}
+
+process.title = 'jobs';
+
+const start = async () => {
+  console.log('starting scheduler');
+
+  let count = 0;
+  while (count < 100) {
+    console.log(`creating job ${count}`);
+    await client.job.create({
+      data: {
+        name: 'example-task',
+        nextRunAt: new Date().toISOString(),
+        data: {
+          count,
+        },
+        repeatInterval: '',
+      },
+    });
+    count += 1;
+  }
+};
+
+start().catch(e => {
+  console.error(e);
+  process.exit();
+});

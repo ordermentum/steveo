@@ -84,11 +84,13 @@ export interface SQSConfiguration extends Configuration {
   endpoint?: string;
   httpOptions?: HTTPOptions;
   consumerPollInterval?: number;
+  waitToCommit?: boolean;
 }
 
 export interface RedisConfiguration extends Configuration {
   redisHost: string;
   redisPort: number;
+  namespace?: string;
   redisMessageMaxsize?: number;
   consumerPollInterval?: number;
   visibilityTimeout?: number;
@@ -111,6 +113,7 @@ export interface Configuration {
    * This is required if you want to use the built in steveo runner
    */
   tasksPath?: string;
+  middleware?: Middleware[];
 }
 
 export type Attribute = {
@@ -130,6 +133,18 @@ export interface IEvent {
 
 export type TaskList = {
   [key: string]: ITask;
+};
+
+export type TaskOptions = {
+  attributes?: Attribute[];
+
+  queueName?: string;
+
+  waitToCommit?: boolean;
+
+  // num_partitions and replication_factor are used for kafka
+  replication_factor?: number;
+  num_partitions?: number;
 };
 
 export interface IRegistry {
@@ -154,7 +169,7 @@ export interface ITask<T = any, R = any> {
   subscribe: Callback<T, R>;
   name: string;
   topic: string;
-  attributes: any;
+  options: TaskOptions;
   producer: any;
   publish(payload: T | T[]): Promise<void>;
 }
@@ -175,20 +190,12 @@ export interface IRunner<T = any, M = any> {
 
 export type CustomTopicFunction = (topic: string) => string;
 
-export type TaskOpts = {
-  queueName?: string;
-};
 export interface ISteveo {
   config: Configuration;
   logger: Logger;
   registry: IRegistry;
   producer: IProducer;
-  task(
-    topic: string,
-    callBack: Callback,
-    attributes?: Attribute[],
-    opts?: TaskOpts
-  ): ITask;
+  task(topic: string, callBack: Callback, opts?: TaskOptions): ITask;
   runner(): IRunner;
 }
 
@@ -222,10 +229,21 @@ export interface IProducer<P = any> {
   stop(): Promise<void>;
 }
 
+export type MiddlewareContext<P = any> = {
+  payload: P;
+  topic: string;
+};
+export type MiddlewareCallback = (context: MiddlewareContext) => Promise<void>;
 export interface Middleware {
   // producer and consumer middleware
-  publish<T = any, C = Callback>(name: string, payload: T, callback: C);
-  consume<T = any, C = Callback>(name: string, payload: T, callback: C);
+  publish<Ctx = any, C = MiddlewareCallback>(
+    context: MiddlewareContext<Ctx>,
+    callback: C
+  );
+  consume<Ctx = any, C = MiddlewareCallback>(
+    context: MiddlewareContext<Ctx>,
+    callback: C
+  );
 }
 
 export type sqsUrls = Record<string, string>;

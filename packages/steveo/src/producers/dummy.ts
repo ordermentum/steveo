@@ -19,7 +19,7 @@ class DummyProducer extends BaseProducer implements IProducer {
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
-    super([]);
+    super(config.middleware ?? []);
     this.config = config;
     this.logger = logger;
     this.registry = registry;
@@ -46,9 +46,11 @@ class DummyProducer extends BaseProducer implements IProducer {
 
   async send<T = any>(topic: string, payload: T) {
     try {
-      await this.wrap(topic, payload, async (t, d) => {
-        const data = this.getPayload(d, t);
-        this.logger.debug(`dummy producer - topic: ${t}, payload: ${data}`);
+      await this.wrap({ topic, payload }, async c => {
+        const data = this.getPayload(c.payload, c.topic);
+        this.logger.debug(
+          `dummy producer - topic: ${c.topic}, payload: ${data}`
+        );
       });
       this.registry.emit('producer_success', topic, payload);
     } catch (ex) {

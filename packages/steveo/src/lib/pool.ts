@@ -1,34 +1,29 @@
-import genericPool from 'generic-pool';
+import genericPool, { Options } from 'generic-pool';
+import { v4 } from 'uuid';
+import Registry from '../registry';
 
-class Factory {
-  created: number;
+export type Resource = {
+  id: string;
+};
 
-  destroyed: number;
+export class ConsumerPool {
+  registry: Registry;
 
-  bin: any[];
-
-  constructor() {
-    this.created = 0;
-    this.destroyed = 0;
-    this.bin = [];
+  constructor(registry: Registry) {
+    this.registry = registry;
   }
 
-  async create() {
-    this.created += 1;
-    const resource = {
-      id: this.created,
-    };
+  async create(): Promise<Resource> {
+    const resource = { id: v4() };
+    this.registry.emit('pool_create', resource);
     return resource;
   }
 
-  async destroy(resource) {
-    this.destroyed += 1;
-    this.bin.push(resource);
+  async destroy(resource: Resource) {
+    this.registry.emit('pool_destroy', resource);
   }
 }
 
-function build(options = {}, factory = new Factory()) {
-  return genericPool.createPool<any>(factory, options);
+export function build(registry: Registry, options: Options = {}) {
+  return genericPool.createPool<Resource>(new ConsumerPool(registry), options);
 }
-
-export { Factory, build };

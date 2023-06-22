@@ -74,7 +74,8 @@ describe('runner/kafka', () => {
       },
       // @ts-ignore
       registry: anotherRegistry,
-      pool: build(),
+      // @ts-ignore
+      pool: build(anotherRegistry),
     };
     // @ts-ignore
     const anotherRunner = new Runner(steveo);
@@ -117,7 +118,8 @@ describe('runner/kafka', () => {
       },
       // @ts-ignore
       registry: anotherRegistry,
-      pool: build(),
+      // @ts-ignore
+      pool: build(anotherRegistry),
     };
     // @ts-ignore
     const anotherRunner = new Runner(steveo);
@@ -156,7 +158,8 @@ describe('runner/kafka', () => {
         securityProtocol: 'plaintext',
       },
       registry: anotherRegistry,
-      pool: build(),
+      // @ts-ignore
+      pool: build(anotherRegistry),
     };
     // @ts-ignore
     const anotherRunner = new Runner(steveo);

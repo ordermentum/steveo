@@ -20,13 +20,12 @@ import {
   IRegistry,
   IProducer,
   IEvent,
-  Attribute,
-  TaskOpts,
   KafkaConfiguration,
   RedisConfiguration,
   SQSConfiguration,
   DummyConfiguration,
   Middleware,
+  TaskOptions,
 } from './common';
 
 export { Middleware };
@@ -69,7 +68,7 @@ export class Steveo implements ISteveo {
     this.logger = logger;
     this.registry = new Registry();
     this.config = getConfig(configuration);
-    this.pool = build(this.config.workerConfig);
+    this.pool = build(this.registry, this.config.workerConfig);
     this.events = this.registry.events;
     this.restarts = 0;
     this.exiting = false;
@@ -81,11 +80,10 @@ export class Steveo implements ISteveo {
   task<T = any, R = any, C = any>(
     name: string,
     callback: Callback<T, R, C>,
-    sqsAttributes: Attribute[] = [],
-    attributes: TaskOpts = {}
+    options: TaskOptions = {}
   ): ITask<T> {
     const topic =
-      attributes.queueName ??
+      options.queueName ??
       (this.config.queuePrefix ? `${this.config.queuePrefix}_${name}` : name);
 
     const task = new Task<T, R>(
@@ -95,7 +93,7 @@ export class Steveo implements ISteveo {
       name,
       this.config.upperCaseNames ? topic.toUpperCase() : topic,
       callback,
-      sqsAttributes
+      options
     );
     this.registry.addNewTask(task);
 

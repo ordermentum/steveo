@@ -67,20 +67,22 @@ describe('Registry', () => {
       name: 'hello',
       topic: 'hello',
       subscribe: () => {},
-      attributes: [
-        {
-          name: 'An Attribute',
-          dataType: 'string',
-          value: 'aaaaa',
-        },
-      ],
+      options: {
+        attributes: [
+          {
+            name: 'An Attribute',
+            dataType: 'string',
+            value: 'aaaaa',
+          },
+        ],
+      },
     });
 
     expect(registry.getTopics().length).to.equal(1);
     expect(registry.getTask('hello')?.name).to.equal('hello');
     expect(registry.items.size).to.equal(1);
     expect(registry.items.has('hello')).to.equal(true);
-    expect(registry.getTask('hello')?.attributes).to.deep.equal([
+    expect(registry.getTask('hello')?.options.attributes).to.deep.equal([
       { name: 'An Attribute', dataType: 'string', value: 'aaaaa' },
     ]);
   });

@@ -13,7 +13,7 @@
 [![npm](https://img.shields.io/npm/l/steveo.svg)](https://www.npmjs.com/package/steveo)
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
 
-A Task Pub/Sub Background processing library (Task Framework for Node.js)
+A Full Featured Job/Task Pub/Sub Background processing framework (Task Framework for Node.js)
 
 Steveo is a task management library that supports Kafka, SQS and Redis.
 
@@ -133,22 +133,42 @@ Event Emission: Steveo emits various events during task processing, allowing you
 
 Emitting events based on success/failures
 
-- runner_receive -> Received a message
-- runner_complete -> Completed running the associated task
-- runner_failure -> Failed running the associated task
-- runner_connection_failure -> Error while polling for message (Kafka only)
 
-- task_send
-- task_success
-- task_failure
-- task_added
-- task_removed
+| Event                     |                      Description                       |
+|---------------------------|:------------------------------------------------------:|
+| runner_receive            |                   Received a message                   |
+| runner_complete           |         Completed running the associated task          |
+| runner_failure            |           Failed running the associated task           |
+| runner_connection_failure |      Error while polling for message (Kafka only)      |
+| task_send                 |                                                        |
+| task_success              |                                                        |
+| task_failure              |                                                        |
+| task_added                |                                                        |
+| task_removed              |                                                        |
+| producer_success          |                                                        |
+| producer_failure          |                                                        |
+| pool_reserve              |  When a consumer reserves a handle in the worker pool  |
+| pool_release              | When a consumer releases a handle from the worker pool |
 
-- producer_success
-- producer_failure
+## Scheduler
 
-_Credits_
+This repo also contains two schedulers for scheduling tasks.
+## What?
 
-- [nokafka](https://github.com/oleksiyk/kafka)
-- [rsmq](https://github.com/smrchy/rsmq)
-- [aws-sdk](https://github.com/aws/aws-sdk-js)
+This is a lib that makes it quick and easy to set up an in-process job queue.
+
+This ships two version, one for use with a sequelize app, one for use with a prisma app
+
+It's tightly coupled Postgres so if that isn't your persistence layer, look elsewhere.
+
+You won't get as robust a solution as you could build on top of an actual distributed message queue, but it'll get you out of a tight spot. It's safe for multiple publishers and consumers to run against concurrently.
+
+## What's needed?
+
+Needs a jobs table to be created. See `prisma/migrations` or `sequelize/migrations` in the individual packages
+
+## How?
+
+See `apps/example/bin/jobs` and `apps/src/index`
+
+For prisma, you will need take the `prisma/prisma/schema.prisma` add put it into your app `prisma/schema.prisma` file. Prisma has no way to share or import schemas from packages.

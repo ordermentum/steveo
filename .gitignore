@@ -41,3 +41,5 @@ dist
 jsconfig.json
 
 example/docker-compose-ordermentum.yml
+
+packages/*/lib/

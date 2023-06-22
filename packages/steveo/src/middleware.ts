@@ -1,23 +1,24 @@
-import { Callback, Middleware } from './common';
+import { Middleware, MiddlewareContext, MiddlewareCallback } from './common';
 
 export function composePublish(middleware: Middleware[]) {
-  if (!Array.isArray(middleware))
-    throw new TypeError('Middleware stack must be an array!');
-
-  return function (name: string, payload: any, publish: Callback) {
-    // last called middleware #
+  return function (context: MiddlewareContext, next: MiddlewareCallback) {
     let index = -1;
 
-    function dispatch(i) {
+    function dispatch(i: number) {
       if (i <= index)
         return Promise.reject(new Error('next() called multiple times'));
 
       index = i;
       let fn = middleware[i]?.publish;
-      if (i === middleware.length) fn = publish;
+      if (i === middleware.length) {
+        fn = next;
+      }
       if (!fn) return Promise.resolve();
+
+      fn = fn.bind(middleware[i]);
+
       try {
-        return Promise.resolve(fn(name, payload, dispatch.bind(null, i + 1)));
+        return Promise.resolve(fn(context, dispatch.bind(null, i + 1)));
       } catch (err) {
         return Promise.reject(err);
       }
@@ -28,23 +29,21 @@ export function composePublish(middleware: Middleware[]) {
 }
 
 export function composeConsume(middleware: Middleware[]) {
-  if (!Array.isArray(middleware))
-    throw new TypeError('Middleware stack must be an array!');
-
-  return function (name: string, payload: any, consume: Callback) {
-    // last called middleware #
+  return function (context: MiddlewareContext, next: MiddlewareCallback) {
     let index = -1;
 
-    function dispatch(i) {
+    function dispatch(i: number) {
       if (i <= index)
         return Promise.reject(new Error('next() called multiple times'));
 
       index = i;
-      let fn = middleware[i].consume;
-      if (i === middleware.length) fn = consume;
+      let fn = middleware[i]?.consume;
+      if (i === middleware.length) fn = next;
       if (!fn) return Promise.resolve();
+      fn = fn.bind(middleware[i]);
+
       try {
-        return Promise.resolve(fn(name, payload, dispatch.bind(null, i + 1)));
+        return Promise.resolve(fn(context, dispatch.bind(null, i + 1)));
       } catch (err) {
         return Promise.reject(err);
       }

@@ -9,7 +9,6 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
-  Middleware,
 } from '../common';
 
 import { createMessageMetadata } from '../lib/context';
@@ -26,19 +25,16 @@ class SqsProducer extends BaseProducer implements IProducer {
 
   sqsUrls: sqsUrls;
 
-  middleware: Middleware[];
-
   constructor(
     config: SQSConfiguration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
-    super([]);
+    super(config.middleware ?? []);
     this.config = config;
     this.producer = getSqsInstance(config);
     this.logger = logger;
     this.registry = registry;
-    this.middleware = [];
     this.sqsUrls = {};
   }
 
@@ -48,7 +44,6 @@ class SqsProducer extends BaseProducer implements IProducer {
       throw new Error('Topic cannot be empty');
     }
 
-    this.logger.debug(`calling producer: ${topic}`);
     const getQueueUrlResult = await this.producer
       .getQueueUrl({ QueueName: topic })
       .promise()
@@ -93,7 +88,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     const context = createMessageMetadata(msg);
 
     const task = this.registry.getTask(topic);
-    const attributes = task ? task.attributes : [];
+    const attributes = task ? task.options.attributes : [];
     const messageAttributes = {
       Timestamp: {
         DataType: 'Number',
@@ -118,13 +113,13 @@ class SqsProducer extends BaseProducer implements IProducer {
 
   async send<T = any>(topic: string, payload: T) {
     try {
-      await this.wrap(topic, payload, async (t, d) => {
-        if (!this.sqsUrls[t]) {
-          await this.initialize(t);
+      await this.wrap({ topic, payload }, async c => {
+        if (!this.sqsUrls[c.topic]) {
+          await this.initialize(c.topic);
         }
-        const data = this.getPayload(d, t);
+        const data = this.getPayload(c.payload, c.topic);
         await this.producer.sendMessage(data).promise();
-        this.registry.emit('producer_success', t, data);
+        this.registry.emit('producer_success', c.topic, data);
       });
     } catch (ex) {
       this.logger.error('Error while sending Payload', topic, ex);

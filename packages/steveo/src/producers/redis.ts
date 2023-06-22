@@ -2,13 +2,7 @@ import nullLogger from 'null-logger';
 import RedisSMQ from 'rsmq';
 import redisConf from '../config/redis';
 
-import {
-  Logger,
-  IProducer,
-  IRegistry,
-  RedisConfiguration,
-  Middleware,
-} from '../common';
+import { Logger, IProducer, IRegistry, RedisConfiguration } from '../common';
 
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
@@ -22,19 +16,16 @@ class RedisProducer extends BaseProducer implements IProducer {
 
   producer: RedisSMQ;
 
-  middleware: Middleware[];
-
   constructor(
     config: RedisConfiguration,
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
-    super([]);
+    super(config.middleware ?? []);
     this.config = config;
     this.producer = redisConf.redis(config);
     this.logger = logger;
     this.registry = registry;
-    this.middleware = [];
   }
 
   async initialize(topic: string) {
@@ -59,11 +50,11 @@ class RedisProducer extends BaseProducer implements IProducer {
 
   async send<T = any>(topic: string, payload: T) {
     try {
-      await this.wrap(topic, payload, async (t, d) => {
-        const data = this.getPayload(d, t);
+      await this.wrap({ topic, payload }, async c => {
+        const data = this.getPayload(c.payload, c.topic);
         await this.producer.sendMessageAsync(data);
         const queueAttributes = await this.producer.getQueueAttributesAsync({
-          qname: t,
+          qname: c.topic,
         });
         this.logger.debug(`queue stats: ${queueAttributes}`);
         this.registry.emit('producer_success', topic, payload);

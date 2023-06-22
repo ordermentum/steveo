@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 
+import logger from 'pino';
+import { v4 } from 'uuid';
 import Runner from '../../src/consumers/sqs';
 import { build } from '../../src/lib/pool';
 import Registry from '../../src/registry';
@@ -18,7 +20,7 @@ describe('runner/sqs', () => {
     const steveo = {
       config: {},
       registry,
-      pool: build(),
+      pool: build(registry),
     };
     // @ts-ignore
     runner = new Runner(steveo);
@@ -50,15 +52,19 @@ describe('runner/sqs', () => {
       },
     };
 
+    const log = logger({ level: 'debug' });
     const config = {
-      engine: 'dummy' as const,
+      engine: 'sqs' as const,
+      logger: log,
+      registry: anotherRegistry,
     };
 
     const steveo = new Steveo(config);
     // @ts-ignore
     steveo.registry = anotherRegistry;
-
     // @ts-ignore
+    steveo.pool = build(anotherRegistry);
+
     const anotherRunner = new Runner(steveo);
 
     // @ts-ignore
@@ -69,8 +75,64 @@ describe('runner/sqs', () => {
 
     await anotherRunner.receive(
       [
-        { Body: JSON.stringify({ data: 'Hello' }) },
-        { Body: JSON.stringify({ data: 'World' }) },
+        { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'Hello' }) },
+        { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'World' }) },
+      ],
+      'a-topic'
+    );
+
+    expect(subscribeStub.callCount, 'subscribe is called twice').to.equal(2);
+    expect(
+      deleteMessageStub.callCount,
+      'deleteMessage is called twice'
+    ).to.equal(2);
+  });
+
+  it('should delete message if waitToCommit is true after processing', async () => {
+    const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+    const anotherRegistry = {
+      registeredTasks: [],
+      addNewTask: () => {},
+      removeTask: () => {},
+      getTopics: () => [],
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+        options: {
+          waitToCommit: true,
+        },
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const log = logger({ level: 'debug' });
+    const config = {
+      engine: 'sqs' as const,
+      logger: log,
+      registry: anotherRegistry,
+    };
+
+    const steveo = new Steveo(config);
+    // @ts-ignore
+    steveo.registry = anotherRegistry;
+    // @ts-ignore
+    steveo.pool = build(anotherRegistry);
+
+    const anotherRunner = new Runner(steveo);
+
+    // @ts-ignore
+    const deleteMessageStub = sandbox
+      .stub(anotherRunner.sqs, 'deleteMessage')
+      // @ts-ignore
+      .returns({ promise: async () => {} });
+
+    await anotherRunner.receive(
+      [
+        { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'Hello' }) },
+        { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'World' }) },
       ],
       'a-topic'
     );
@@ -103,7 +165,6 @@ describe('runner/sqs', () => {
     // @ts-ignore
     steveo.registry = anotherRegistry;
 
-    // @ts-ignore
     const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
       .stub(anotherRunner.sqs, 'getQueueUrl')
@@ -142,7 +203,6 @@ describe('runner/sqs', () => {
     // @ts-ignore
     steveo.registry = anotherRegistry;
 
-    // @ts-ignore
     const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
       .stub(anotherRunner.sqs, 'getQueueUrl')
@@ -184,7 +244,6 @@ describe('runner/sqs', () => {
       const steveo = new Steveo(config);
       // @ts-ignore
       steveo.registry = anotherRegistry;
-      // @ts-ignore
       const anotherRunner = new Runner(steveo);
       anotherRunner.state = 'terminating';
       await anotherRunner.process();
@@ -260,7 +319,7 @@ describe('runner/sqs', () => {
       const steveo = new Steveo(config);
       // @ts-ignore
       steveo.registry = anotherRegistry;
-      // @ts-ignore
+
       const anotherRunner = new Runner(steveo);
 
       const getQueueUrlAsyncStub = sandbox
@@ -303,8 +362,9 @@ describe('runner/sqs', () => {
     const steveo = new Steveo(config);
     // @ts-ignore
     steveo.registry = anotherRegistry;
-    // @ts-ignore
+
     const anotherRunner = new Runner(steveo);
+
     const deleteMessageStub = sandbox
       .stub(anotherRunner.sqs, 'deleteMessage')
       // @ts-ignore
@@ -312,8 +372,14 @@ describe('runner/sqs', () => {
 
     await anotherRunner.receive(
       [
-        { Body: JSON.stringify({ data: 'Hello' }) },
-        { Body: JSON.stringify({ data: 'World' }) },
+        {
+          ReceiptHandle: v4(),
+          Body: JSON.stringify({ data: 'Hello' }),
+        },
+        {
+          ReceiptHandle: v4(),
+          Body: JSON.stringify({ data: 'World' }),
+        },
       ],
       'a-topic'
     );

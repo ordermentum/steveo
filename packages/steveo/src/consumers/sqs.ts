@@ -8,45 +8,14 @@ import { getSqsInstance } from '../config/sqs';
 
 import { IRunner, Pool, Logger, SQSConfiguration } from '../common';
 import { Steveo } from '..';
-
-type DeleteMessage = {
-  instance: SQS;
-  topic: string;
-  message: any;
-  sqsUrls: any;
-  logger: Logger;
-};
-
-// FIXME: This is mostly boilerplate and doesn't need its own function
-/* istanbul ignore next */
-const deleteMessage = async ({
-  instance,
-  topic,
-  message,
-  sqsUrls,
-  logger,
-}: DeleteMessage) => {
-  const deleteParams = {
-    QueueUrl: sqsUrls[topic],
-    ReceiptHandle: message.ReceiptHandle,
-  };
-  try {
-    logger.debug('Deleting Message from Queue URL', deleteParams);
-    const data = await instance.deleteMessage(deleteParams).promise();
-    logger.debug('returned data', data);
-    return data;
-  } catch (ex) {
-    logger.error('sqs deletion error', ex, topic, message);
-    throw ex;
-  }
-};
+import { Resource } from '../lib/pool';
 
 class SqsRunner extends BaseRunner implements IRunner {
   config: SQSConfiguration;
 
   logger: Logger;
 
-  sqsUrls: any;
+  sqsUrls: { [key: string]: string };
 
   sqs: SQS;
 
@@ -72,54 +41,85 @@ class SqsRunner extends BaseRunner implements IRunner {
     return bluebird.map(
       messages,
       async message => {
-        let resource;
         const params = JSON.parse(message.Body as string);
-        const runnerContext = getContext(params);
+        await this.wrap({ topic, payload: params }, async c => {
+          let resource: Resource | null = null;
+          const runnerContext = getContext(c.payload);
 
-        try {
-          resource = await this.pool.acquire();
+          try {
+            resource = await this.pool.acquire();
 
-          this.registry.emit('runner_receive', topic, params, runnerContext);
-          this.logger.debug('Deleting message', topic, params);
+            this.registry.emit(
+              'runner_receive',
+              c.topic,
+              params,
+              runnerContext
+            );
 
-          await deleteMessage({
-            // eslint-disable-line
-            instance: this.sqs,
-            topic,
-            message,
-            sqsUrls: this.sqsUrls,
-            logger: this.logger,
-          });
+            const task = this.registry.getTask(topic);
 
-          this.logger.debug('Message deleted', topic, params);
-          const task = this.registry.getTask(topic);
-          this.logger.debug('Start subscribe', topic, params);
-          if (!task) {
-            this.logger.error(`Unknown Task ${topic}`);
-            return;
+            const waitToCommit =
+              (task?.options?.waitToCommit || this.config?.waitToCommit) ??
+              false;
+
+            if (!waitToCommit) {
+              await this.deleteMessage(c.topic, message);
+            }
+
+            this.logger.debug('Start subscribe', c.topic, params);
+            if (!task) {
+              this.logger.error(`Unknown Task ${c.topic}`);
+              return;
+            }
+
+            await task.subscribe(params, runnerContext);
+            this.logger.debug('Completed subscribe', c.topic, params);
+            const completedContext = getContext(params);
+
+            if (waitToCommit) {
+              await this.deleteMessage(c.topic, message);
+            }
+
+            this.registry.emit(
+              'runner_complete',
+              topic,
+              params,
+              completedContext
+            );
+          } catch (ex) {
+            this.logger.error('Error while executing consumer callback ', {
+              params,
+              topic,
+              error: ex,
+            });
+            this.registry.emit('runner_failure', topic, ex, params);
           }
-
-          await task.subscribe(params, runnerContext);
-          this.logger.debug('Completed subscribe', topic, params);
-          const completedContext = getContext(params);
-          this.registry.emit(
-            'runner_complete',
-            topic,
-            params,
-            completedContext
-          );
-        } catch (ex) {
-          this.logger.error('Error while executing consumer callback ', {
-            params,
-            topic,
-            error: ex,
-          });
-          this.registry.emit('runner_failure', topic, ex, params);
-        }
-        if (resource) await this.pool.release(resource);
+          if (resource) await this.pool.release(resource);
+        });
       },
       { concurrency: this.concurrency }
     );
+  }
+
+  async deleteMessage(topic: string, message: SQS.Message) {
+    if (!message.ReceiptHandle) {
+      return false;
+    }
+
+    const deleteParams = {
+      QueueUrl: this.sqsUrls[topic],
+      ReceiptHandle: message.ReceiptHandle,
+    };
+
+    try {
+      this.logger.debug('Deleting Message from Queue URL', deleteParams);
+      const data = await this.sqs.deleteMessage(deleteParams).promise();
+      this.logger.debug('returned data', data);
+      return true;
+    } catch (ex) {
+      this.logger.error('sqs deletion error', ex, topic, message);
+      throw ex;
+    }
   }
 
   async dequeue(params: SQS.ReceiveMessageRequest) {
@@ -249,8 +249,6 @@ class SqsRunner extends BaseRunner implements IRunner {
     await this.sqs.createQueue(params).promise();
     return true;
   }
-
-  async reconnect() {}
 }
 
 export default SqsRunner;

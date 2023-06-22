@@ -140,7 +140,7 @@ describe('SQS Producer', () => {
         'test-task-with-attributes',
         'test-topic',
         () => undefined,
-        attributes
+        { attributes }
       );
       registry.addNewTask(task);
 

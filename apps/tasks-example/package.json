@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "test steveo",
   "main": "index.js",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "aws-sdk": "^2.77.0",
     "bluebird": "^3.5.0",

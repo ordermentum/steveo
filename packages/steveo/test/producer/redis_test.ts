@@ -89,13 +89,15 @@ describe('Redis Producer', () => {
       name: 'test-topic',
       topic: 'test-topic',
       subscribe: () => {},
-      attributes: [
-        {
-          name: 'Hello',
-          dataType: 'String',
-          value: 'abc',
-        },
-      ],
+      options: {
+        attributes: [
+          {
+            name: 'Hello',
+            dataType: 'String',
+            value: 'abc',
+          },
+        ],
+      },
     });
     const sendMessageStub = sandbox.stub().throws({ error: 'mate' });
     sandbox.stub(p, 'initialize').resolves();

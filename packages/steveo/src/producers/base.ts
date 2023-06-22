@@ -9,7 +9,7 @@ export class BaseProducer {
   }
 
   get wrap() {
-    return composePublish(this.middleware ?? []);
+    return composePublish(this.middleware);
   }
 
   async reconnect() {}

@@ -4,8 +4,9 @@ import nullLogger from 'null-logger';
 import { randomBytes } from 'crypto';
 import Bluebird from 'bluebird';
 import { Steveo } from '..';
-import { Configuration, Logger, RunnerState } from '../common';
+import { Configuration, Logger, Middleware, RunnerState } from '../common';
 import { Manager } from '../lib/manager';
+import { composeConsume } from '../middleware';
 
 class BaseRunner {
   async preProcess() {
@@ -29,10 +30,13 @@ class BaseRunner {
 
   name: string;
 
+  middleware: Middleware[];
+
   constructor(steveo: Steveo, name?: string) {
     this.errorCount = 0;
     this.steveo = steveo;
     this.config = steveo?.config || {};
+    this.middleware = steveo?.config?.middleware || [];
     this.logger = steveo?.logger ?? nullLogger;
     this.manager = this.steveo.manager;
     this.name =
@@ -42,6 +46,10 @@ class BaseRunner {
 
   get registry() {
     return this.steveo.registry;
+  }
+
+  get wrap() {
+    return composeConsume(this.middleware ?? []);
   }
 
   getActiveSubsciptions(topics?: string[]): string[] {
@@ -71,6 +79,8 @@ class BaseRunner {
   }
 
   async disconnect() {}
+
+  async reconnect() {}
 
   async stop() {
     this.logger.debug(`stopping consumer ${this.name}`);

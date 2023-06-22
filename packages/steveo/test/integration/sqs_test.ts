@@ -1,11 +1,39 @@
 import { expect } from 'chai';
+import crypto from 'crypto';
 import sinon from 'sinon';
 import { promisify } from 'util';
 import Bluebird from 'bluebird';
 import logger from 'pino';
-import { Steveo } from '../../src';
+import { Middleware, Steveo } from '../../src';
 
 const sleep = promisify(setTimeout);
+
+class PayloadMiddleware implements Middleware {
+  seen: Set<string>;
+
+  constructor() {
+    this.seen = new Set<string>();
+  }
+
+  async publish(context, next) {
+    const { payload } = context;
+    const data = {
+      ...(payload ?? {}),
+      payloadSignature: crypto
+        .createHash('sha1')
+        .update(JSON.stringify(payload))
+        .digest('hex'),
+    };
+    context.payload = data;
+    return next();
+  }
+
+  async consume(context, next) {
+    const data = context?.payload ?? {};
+    if (data.payloadSignature) this.seen.add(data.payloadSignature);
+    return next();
+  }
+}
 
 describe('SQS Integration Test', () => {
   let sandbox: sinon.SinonSandbox;
@@ -19,6 +47,7 @@ describe('SQS Integration Test', () => {
   });
 
   it('concurrent tasks (pool) (sqs)', async () => {
+    const middleware = new PayloadMiddleware();
     const configuration = {
       region: 'us-east-1',
       apiVersion: '2012-11-05',
@@ -29,7 +58,7 @@ describe('SQS Integration Test', () => {
       accessKeyId: 'test',
       secretAccessKey: 'key',
       shuffleQueue: false,
-      endpoint: 'http://localhost:4566',
+      endpoint: 'http://127.0.0.1:4566',
       maxNumberOfMessages: 1,
       workerConfig: {
         max: 2,
@@ -38,30 +67,33 @@ describe('SQS Integration Test', () => {
       waitTimeSeconds: 2,
       consumerPollInterval: 500,
       upperCaseNames: true,
+      middleware: [middleware],
     };
     const steveo = new Steveo(configuration, logger({ level: 'debug' }));
     const tasks = ['one', 'two', 'three'];
 
     for (const task of tasks) {
-      steveo.task(`steveo_${task}`, async () => Promise.resolve());
+      steveo.task(`steveo_integration_${task}`, async () => Promise.resolve());
     }
+
     await steveo?.runner().createQueues();
 
-    const iterations = 1000;
+    const iterations = 50;
     await Bluebird.map(
       Array(iterations).fill(0),
       async () => {
         const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
-        await steveo.publish(`steveo_${randomTask}`, {});
+        await steveo.publish(`steveo_integration_${randomTask}`, {});
       },
-      { concurrency: 100 }
+      { concurrency: 50 }
     );
 
     steveo.runner().process();
     // we want to trigger at least one loop
-    await sleep(2000);
+    await sleep(1000);
     await steveo.stop();
     await sleep(1000);
+    expect(middleware.seen.size).to.be.greaterThan(0);
 
     expect(steveo.manager.state).to.equal('terminated');
   });

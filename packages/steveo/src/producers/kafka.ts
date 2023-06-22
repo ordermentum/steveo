@@ -22,7 +22,7 @@ class KafkaProducer
     registry: IRegistry,
     logger: Logger = nullLogger
   ) {
-    super([]);
+    super(config.middleware ?? []);
     this.config = config;
     this.producer = new HighLevelProducer(
       {
@@ -95,10 +95,10 @@ class KafkaProducer
 
   async send<T = any>(topic: string, payload: T, key: string | null = null) {
     try {
-      await this.wrap(topic, payload, async (t, d) => {
-        const data = this.getPayload(d);
-        await this.publish(t, data, key);
-        this.registry.emit('producer_success', topic, d);
+      await this.wrap({ topic, payload }, async c => {
+        const data = this.getPayload(c.payload);
+        await this.publish(c.topic, data, key);
+        this.registry.emit('producer_success', topic, c.payload);
       });
     } catch (ex) {
       this.logger.error('Error while sending Redis payload', topic, ex);

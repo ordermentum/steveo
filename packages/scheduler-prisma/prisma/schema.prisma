@@ -1,0 +1,34 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  createdAt      DateTime  @default(now()) @map(name: "created_at")
+  updatedAt      DateTime  @updatedAt @map(name: "updated_at")
+  deletedAt      DateTime? @map(name: "deleted_at")
+  name           String
+  data           Json?     @default("{}")
+  lastFinishedAt DateTime? @map(name: "last_finished_at")
+  lastRunAt      DateTime? @map(name: "last_run_at")
+  nextRunAt      DateTime? @map(name: "next_run_at")
+  acceptedAt     DateTime? @map(name: "accepted_at")
+  repeatInterval String    @map(name: "repeat_interval")
+  type           String    @default("task")
+  priority       Int       @default(1)
+  failReason     Json?     @default("{}") @map("fail_reason")
+  failedAt       DateTime? @map("failed_at")
+  queued         Boolean   @default(false)
+  timezone       String    @default("UTC")
+  failures       Int  @default(0)
+
+  @@map(name: "jobs")
+}

@@ -1,13 +1,13 @@
 import RedisSMQ from 'rsmq';
-import { Configuration, RedisConfiguration } from '../common';
+import { RedisConfiguration } from '../common';
 
-const redis = (config: Configuration): RedisSMQ => {
-  const redisConfig = config as RedisConfiguration;
+export const redis = (config: RedisConfiguration): RedisSMQ => {
   const instance = new RedisSMQ({
-    host: redisConfig.redisHost,
-    port: redisConfig.redisPort,
-    ns: 'rsmq',
+    host: config.redisHost,
+    port: config.redisPort,
+    ns: config.namespace ?? 'steveo',
   });
+
   return instance;
 };
 

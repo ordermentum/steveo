@@ -8,33 +8,6 @@ import redisConf from '../config/redis';
 import { IRunner, Pool, Logger, RedisConfiguration } from '../common';
 import { Steveo } from '..';
 
-type DeleteMessage = {
-  instance: any;
-  topic: string;
-  messageId: any;
-  logger: Logger;
-};
-
-/* istanbul ignore next */
-const deleteMessage = async ({
-  instance,
-  topic,
-  messageId,
-  logger,
-}: DeleteMessage) => {
-  const deleteParams = {
-    qname: topic,
-    id: messageId,
-  };
-  try {
-    const data = await instance.deleteMessageAsync(deleteParams);
-    return data;
-  } catch (ex) {
-    logger.debug('redis deletion error', ex, topic, messageId);
-    throw ex;
-  }
-};
-
 class RedisRunner extends BaseRunner implements IRunner {
   config: RedisConfiguration;
 
@@ -50,54 +23,71 @@ class RedisRunner extends BaseRunner implements IRunner {
     super(steveo);
     this.config = steveo?.config as RedisConfiguration;
     this.logger = steveo?.logger ?? nullLogger;
-    this.redis = redisConf.redis(steveo?.config);
+    this.redis = redisConf.redis(this.config);
     this.pool = steveo.pool;
   }
 
   async receive(messages: any[], topic: string): Promise<any> {
     return Promise.all(
       messages.map(async m => {
-        let params;
-        let resource;
-        try {
-          resource = await this.pool.acquire();
-          params = JSON.parse(m.message);
-          const runnerContext = getContext(params);
-          this.registry.emit('runner_receive', topic, params, runnerContext);
-          this.logger.debug('Deleting message', topic, params);
-          await deleteMessage({ // eslint-disable-line
-            instance: this.redis,
-            topic,
-            messageId: m.id,
-            logger: this.logger,
-          });
+        await this.wrap({ topic, payload: m }, async c => {
+          let params;
+          let resource;
+          try {
+            resource = await this.pool.acquire();
+            params = JSON.parse(c.payload.message);
+            const runnerContext = getContext(params);
+            this.registry.emit(
+              'runner_receive',
+              c.topic,
+              params,
+              runnerContext
+            );
+            this.logger.debug('Deleting message', c.topic, params);
+            await this.deleteMessage(topic, m.id);
 
-          const task = this.registry.getTask(topic);
-          if (!task) {
-            this.logger.error(`Unknown Task ${topic}`);
-            return;
+            const task = this.registry.getTask(topic);
+            if (!task) {
+              this.logger.error(`Unknown Task ${topic}`);
+              return;
+            }
+            this.logger.debug('Start subscribe', topic, params);
+            const { context = null, ...value } = params;
+            await task.subscribe(value, context);
+            const completedContext = getContext(params);
+            this.registry.emit(
+              'runner_complete',
+              topic,
+              params,
+              completedContext
+            );
+          } catch (ex) {
+            this.logger.error('Error while executing consumer callback ', {
+              params,
+              topic,
+              error: ex,
+            });
+            this.registry.emit('runner_failure', topic, ex, params);
           }
-          this.logger.debug('Start subscribe', topic, params);
-          const { context = null, ...value } = params;
-          await task.subscribe(value, context);
-          const completedContext = getContext(params);
-          this.registry.emit(
-            'runner_complete',
-            topic,
-            params,
-            completedContext
-          );
-        } catch (ex) {
-          this.logger.error('Error while executing consumer callback ', {
-            params,
-            topic,
-            error: ex,
-          });
-          this.registry.emit('runner_failure', topic, ex, params);
-        }
-        if (resource) await this.pool.release(resource);
+          if (resource) await this.pool.release(resource);
+        });
       })
     );
+  }
+
+  async deleteMessage(topic: string, messageId: string) {
+    const deleteParams = {
+      qname: topic,
+      id: messageId,
+    };
+
+    try {
+      const data = await this.redis.deleteMessageAsync(deleteParams);
+      return data;
+    } catch (ex) {
+      this.logger.error('redis deletion error', ex, topic, messageId);
+      throw ex;
+    }
   }
 
   async dequeue(topic: string) {
@@ -168,6 +158,7 @@ class RedisRunner extends BaseRunner implements IRunner {
       vt: this.config.visibilityTimeout,
       maxsize: this.config.redisMessageMaxsize,
     };
+
     this.logger.info(`creating redis queue ${topic}`);
     await this.redis.createQueueAsync(params);
 
@@ -177,8 +168,6 @@ class RedisRunner extends BaseRunner implements IRunner {
   async shutdown() {
     this.redis?.quit(() => {});
   }
-
-  async reconnect() {}
 }
 
 export default RedisRunner;

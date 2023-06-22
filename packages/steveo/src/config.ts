@@ -31,6 +31,7 @@ export const getConfig = (config: Configuration) => {
   parameters.workerConfig = config.workerConfig ?? {};
   parameters.queuePrefix = config.queuePrefix ?? '';
   parameters.upperCaseNames = config.upperCaseNames ?? true;
+  parameters.middleware = config.middleware ?? [];
   parameters.terminationWaitCount = config.terminationWaitCount ?? 10;
   parameters.tasksPath = config.tasksPath;
 

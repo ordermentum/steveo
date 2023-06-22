@@ -5,9 +5,9 @@ import {
   SQSConfiguration,
   DummyConfiguration,
   Callback,
+  TaskOptions,
   IProducer,
   IRegistry,
-  Attribute,
 } from './common';
 
 class Task<T = any, R = any> implements ITask<T, R> {
@@ -27,7 +27,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
 
   topic: string;
 
-  attributes: Attribute[];
+  options: TaskOptions;
 
   constructor(
     config:
@@ -40,7 +40,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
     name: string,
     topic: string,
     subscribe: Callback<T, R>,
-    attributes: Attribute[] = []
+    options: TaskOptions = {}
   ) {
     this.config = config;
     this.registry = registry;
@@ -48,7 +48,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
     this.producer = producer;
     this.name = name;
     this.topic = topic;
-    this.attributes = attributes;
+    this.options = options;
   }
 
   async publish(payload: T | T[]) {

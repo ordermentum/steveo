@@ -10,6 +10,7 @@ import BaseRunner from './base';
 import { getDuration } from '../lib/context';
 import { IRunner, Logger, KafkaConfiguration } from '../common';
 import { Steveo } from '..';
+import { Resource } from '../lib/pool';
 
 class JsonParsingError extends Error {}
 
@@ -27,7 +28,7 @@ class KafkaRunner
 
   consumerReady: boolean;
 
-  pool: Pool<any>;
+  pool: Pool<Resource>;
 
   constructor(steveo: Steveo) {
     super(steveo);
@@ -63,60 +64,62 @@ class KafkaRunner
     });
   }
 
-  receive = async (message: Message) => {
+  async receive(message: Message) {
     const { topic } = message;
     const { waitToCommit } = this.config;
-    let resource;
+    let resource: Resource | null = null;
 
     try {
-      this.logger.debug(`waiting for pool`);
-      resource = await this.pool.acquire();
-      this.logger.debug(`acquired pool`);
-      const valueString = message.value?.toString() ?? '';
-      let value = valueString;
-      try {
-        value = JSON.parse(valueString);
-      } catch (e) {
-        throw new JsonParsingError();
-      }
-      const parsed = {
-        ...message,
-        value,
-        key: message.key?.toString(),
-      };
-      this.registry.emit('runner_receive', topic, parsed, {
-        ...message,
-        start: getDuration(),
-      });
-      this.logger.debug(`loading task`);
-      const task = this.registry.getTask(topic);
+      await this.wrap({ topic, payload: message }, async c => {
+        this.logger.debug(`waiting for pool ${c.topic}`);
+        resource = await this.pool.acquire();
+        this.logger.debug(`acquired pool`);
+        const valueString = c.payload.value?.toString() ?? '';
+        let value = valueString;
+        try {
+          value = JSON.parse(valueString);
+        } catch (e) {
+          throw new JsonParsingError();
+        }
+        const parsed = {
+          ...message,
+          value,
+          key: message.key?.toString(),
+        };
+        this.registry.emit('runner_receive', c.topic, parsed, {
+          ...message,
+          start: getDuration(),
+        });
+        this.logger.debug(`loading task`);
+        const task = this.registry.getTask(c.topic);
 
-      if (!task) {
-        this.logger.error(`Unknown Task ${topic}`);
-        this.consumer.commitMessage(message);
-        return;
-      }
+        if (!task) {
+          this.logger.error(`Unknown Task ${c.topic}`);
+          this.consumer.commitMessage(message);
+          return;
+        }
 
-      if (!waitToCommit) {
-        this.logger.debug(`commit offset ${message.offset}`);
-        this.consumer.commitMessage(message);
-      }
+        if (!waitToCommit) {
+          this.logger.debug(`commit offset ${message.offset}`);
+          this.consumer.commitMessage(message);
+        }
 
-      this.logger.debug('Start subscribe', topic, message);
+        this.logger.debug('Start subscribe', c.topic, message);
 
-      // @ts-ignore
-      const context = parsed.value.context ?? null;
-      await task.subscribe(parsed, context);
+        // @ts-ignore
+        const context = parsed.value.context ?? null;
+        await task.subscribe(parsed, context);
 
-      if (waitToCommit) {
-        this.logger.debug('committing message', message);
-        this.consumer.commitMessage(message);
-      }
+        if (waitToCommit) {
+          this.logger.debug('committing message', message);
+          this.consumer.commitMessage(message);
+        }
 
-      this.logger.debug('Finish subscribe', topic, message);
-      this.registry.emit('runner_complete', topic, parsed, {
-        ...message,
-        end: getDuration(),
+        this.logger.debug('Finish subscribe', c.topic, message);
+        this.registry.emit('runner_complete', c.topic, parsed, {
+          ...message,
+          end: getDuration(),
+        });
       });
     } catch (ex) {
       this.logger.error('Error while executing consumer callback ', {
@@ -134,7 +137,7 @@ class KafkaRunner
       this.logger.debug(`releasing pool`);
       await this.pool.release(resource);
     }
-  };
+  }
 
   reconnect = async () =>
     new Promise<void>((resolve, reject) => {
@@ -265,15 +268,20 @@ class KafkaRunner
 
     const task = this.registry.getTask(topic);
     return new Promise<boolean>((resolve, reject) => {
-      const options = task?.attributes ?? {};
+      const options = task?.options ?? {};
+
+      const partitions =
+        options.num_partitions ?? this.config.defaultTopicPartitions ?? 1;
+      const replication =
+        options.replication_factor ??
+        this.config.defaultTopicReplicationFactor ??
+        1;
+
       this.adminClient.createTopic(
         {
           topic,
-          num_partitions:
-            options.num_partitions ?? this.config.defaultTopicPartitions,
-          replication_factor:
-            options.replication_factor ??
-            this.config.defaultTopicReplicationFactor,
+          num_partitions: partitions,
+          replication_factor: replication,
         },
         // eslint-disable-next-line consistent-return
         err => {
