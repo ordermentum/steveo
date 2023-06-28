@@ -1,0 +1,26 @@
+version: '2'
+services:
+  common:
+    build: .
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "4000:4000"
+  test:
+    extends: common
+    links:
+      - postgresql
+    depends_on:
+      - postgresql
+    environment:
+      - NODE_ENV=testing
+      - DATABASE_URI=postgres://steveo@postgresql/steveo_testing
+    command: "npm test"
+  postgresql:
+    image: postgres:9.5
+    command: postgres
+    volumes:
+      - ./test/db_config:/docker-entrypoint-initdb.d
+    ports:
+      - "5435:5432"
