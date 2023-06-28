@@ -28,6 +28,13 @@ import {
   TaskOptions,
 } from './common';
 
+export {
+  KafkaConfiguration,
+  RedisConfiguration,
+  SQSConfiguration,
+  DummyConfiguration,
+} from './common';
+
 export { Middleware };
 
 export class Steveo implements ISteveo {
@@ -74,7 +81,7 @@ export class Steveo implements ISteveo {
     this.exiting = false;
     this.paused = false;
     this.manager = new Manager(this);
-    this.middleware = [];
+    this.middleware = configuration.middleware ?? [];
   }
 
   task<T = any, R = any, C = any>(

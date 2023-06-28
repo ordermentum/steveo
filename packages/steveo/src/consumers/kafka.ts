@@ -186,8 +186,6 @@ class KafkaRunner
       return;
     }
 
-    await this.preProcess();
-
     if (err) {
       const message = 'Error while consumption';
       this.logger.error(`${message} - ${err}`);

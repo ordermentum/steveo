@@ -1,9 +1,10 @@
 {
   "name": "steveo",
-  "version": "6.0.0-beta1",
+  "version": "6.0.0-beta5",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",
   "author": "engineering@ordermentum.com",
+  "private": false,
   "license": "Apache-2.0",
   "repository": "git@github.com:ordermentum/steveo.git",
   "scripts": {
@@ -37,6 +38,7 @@
   },
   "dependencies": {
     "@types/bluebird": "^3.5.38",
+    "aws-sdk": "^2.1043.0",
     "bluebird": "^3.7.2",
     "generic-pool": "^3.9.0",
     "lazy-object": "^1.0.1",
@@ -45,14 +47,12 @@
     "lodash.merge": "4.6.2",
     "lodash.shuffle": "^4.2.0",
     "moment": "2.29.4",
+    "node-rdkafka": "^2.15.0",
     "null-logger": "^2.0.0",
+    "rsmq": "^0.12.4",
     "uuid": "^9.0.0"
   },
-  "peerDependencies": {
-    "aws-sdk": "^2.1043.0",
-    "node-rdkafka": "^2.15.0",
-    "rsmq": "^0.12.4"
-  },
+  "peerDependencies": {},
   "devDependencies": {
     "@emotion/eslint-plugin": "11.11",
     "@istanbuljs/nyc-config-typescript": "1.0.2",
@@ -81,8 +81,8 @@
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-unicorn": "45.0.2",
     "mocha": "10.2.0",
-    "nyc": "15.1.0",
     "node-rdkafka": "^2.15.0",
+    "nyc": "15.1.0",
     "pino": "^8.14.1",
     "prettier": "2.8.3",
     "rsmq": "^0.12.4",

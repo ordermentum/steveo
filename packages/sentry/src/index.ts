@@ -12,3 +12,5 @@ export const build = (steveo: Steveo) => {
     Sentry.captureException(ex);
   });
 };
+
+export default build;

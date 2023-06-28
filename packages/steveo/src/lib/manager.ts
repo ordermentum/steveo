@@ -1,9 +1,11 @@
+/* eslint-disable no-underscore-dangle */
 import { Steveo } from '..';
 import { Logger, RunnerState } from '../common';
 import { sleep } from './utils';
 
 export class Manager {
-  #state: RunnerState;
+  // FIXME: type issue with private property :/
+  _state: RunnerState;
 
   steveo: Steveo;
 
@@ -12,7 +14,7 @@ export class Manager {
   constructor(steveo: Steveo) {
     this.steveo = steveo;
     this.logger = steveo.logger;
-    this.#state = 'running';
+    this._state = 'running';
   }
 
   async resume() {
@@ -64,20 +66,20 @@ export class Manager {
   }
 
   get isTerminated() {
-    return this.#state === 'terminated';
+    return this._state === 'terminated';
   }
 
   set state(state: RunnerState) {
     this.logger.debug(`runner state changed to ${state}`);
-    this.#state = state;
+    this._state = state;
   }
 
   get state() {
-    this.logger.debug(`runner state is ${this.#state}`);
-    return this.#state;
+    this.logger.debug(`runner state is ${this._state}`);
+    return this._state;
   }
 
   get shouldTerminate() {
-    return ['terminating', 'terminated'].includes(this.#state);
+    return ['terminating', 'terminated'].includes(this._state);
   }
 }

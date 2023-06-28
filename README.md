@@ -13,23 +13,19 @@
 [![npm](https://img.shields.io/npm/l/steveo.svg)](https://www.npmjs.com/package/steveo)
 [![npm](https://img.shields.io/npm/dt/steveo.svg)](https://www.npmjs.com/package/steveo)
 
-A Full Featured Job/Task Pub/Sub Background processing framework (Task Framework for Node.js)
+Steveo is a comprehensive framework for handling background job processing in Node.js. It offers support for popular messaging systems such as Kafka, SQS, and Redis.
 
-Steveo is a task management library that supports Kafka, SQS and Redis.
+In Australian culture, it is common to abbreviate names, like "John" becoming "Johno," or add extra vowels, like "Sarah" becoming "Sazza." The name "Steveo" is a playful play on "Steve" inspired by Steve Jobs.
 
-Australian's have a habit of abbreviating names like "John" to "Johno" or "Michael" to "Micko," or elongating names with extra vowels like "Sarah" becoming "Sazza". In this case, Steve becomes Steveo and is a play on Steve Jobs -> Background Jobs -> Async Task Processing.
+The primary purpose of Steveo is to handle asynchronous task processing. It allows you to define tasks that involve time-consuming operations without causing a blockage in the main execution flow of an HTTP request. Think of it as [sidekiq](https://github.com/mperham/sidekiq) for node.js with support for multiple backends.
 
-Steveo is primarily used for asynchronous task processing. You can define tasks that perform time-consuming operations without blocking the main execution in a http request.
-
-With support for multiple backend systems like Kafka and SQS, Steveo enables scalable task processing. You can distribute tasks across multiple consumers and achieve high throughput scaling.
-
-Think of it as [sidekiq](https://github.com/mperham/sidekiq) for node.js with support for multiple backends.
+Steveo also bundles a task scheduling framework for Postgresql as an optional addon.
 
 ## Installation
 
 This is a Node.js module available through the npm registry.
 
-Before installing, download and install Node.js. Node.js 12 or higher is required.
+Before installing, download and install Node.js. Node.js 16  or higher is required.
 
 If this is a brand new project, make sure to create a package.json first with the npm init command.
 
@@ -150,22 +146,24 @@ Emitting events based on success/failures
 | pool_reserve              |  When a consumer reserves a handle in the worker pool  |
 | pool_release              | When a consumer releases a handle from the worker pool |
 
+
+## Packages
+
+| Package             |                                Description                                |
+|---------------------|:-------------------------------------------------------------------------:|
+| steveo              | Core steveo package that provides the async task processing functionality |
+| @steveojs/newrelic  |             New Relic addon for Steveo to provide APM tracing             |
+| @steveojs/sentry    |            Sentry addon to provide tracing and error tracking             |
+| @steveojs/statsd    |            Statsd addon to provide metrics to a statsd server             |
+| @steveojs/prisma    |                      Job Scheduler using Prisma ORM                       |
+| @steveojs/sequelize |                     Job Scheduler using Sequelize ORM                     |
+|                     |                                                                           |
+
 ## Scheduler
 
-This repo also contains two schedulers for scheduling tasks.
-## What?
+This repo also contains two schedulers for scheduling tasks using postgresql (prisma and sequelize).
 
-This is a lib that makes it quick and easy to set up an in-process job queue.
-
-This ships two version, one for use with a sequelize app, one for use with a prisma app
-
-It's tightly coupled Postgres so if that isn't your persistence layer, look elsewhere.
-
-You won't get as robust a solution as you could build on top of an actual distributed message queue, but it'll get you out of a tight spot. It's safe for multiple publishers and consumers to run against concurrently.
-
-## What's needed?
-
-Needs a jobs table to be created. See `prisma/migrations` or `sequelize/migrations` in the individual packages
+Needs a jobs table to be created. See `packages/prisma/migrations` or `packages/sequelize/migrations` in the individual packages
 
 ## How?
 

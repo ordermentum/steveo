@@ -1,21 +1,53 @@
 {
   "name": "@steveojs/sentry",
-  "version": "6.0.0-beta1",
+  "version": "6.0.0-beta4",
   "main": "lib/index.js",
   "repository": "git@github.com:ordermentum/steveo.git",
   "license": "Apache-2.0",
   "author": "Ordermentum <engineering@ordermentum.com>",
   "scripts": {
-    "build": "yarn run tsc"
+    "build": "yarn run tsc",
+    "test": "NODE_ENV=test nyc yarn spec",
+    "spec": "tsc && yarn mocha --bail=false 'test/**/*_test.ts'",
+    "lint": "yarn eslint 'src/**/*.{ts,js}'",
+    "lint:test": "yarn eslint 'test/**/*.{ts,js}'",
+    "autotest": "yarn run mocha --watch",
+    "prepublish": "yarn run build",
+    "typecheck": "yarn run tsc --noEmit"
   },
   "files": [
     "lib"
   ],
   "dependencies": {
     "@sentry/node": "^7.56.0",
-    "steveo": "6.0.0-beta1"
+    "steveo": "6.0.0-beta4"
   },
   "devDependencies": {
-    "@types/newrelic": "^9.4.0"
+    "@istanbuljs/nyc-config-typescript": "1.0.2",
+    "@ordermentum/eslint-config-ordermentum": "2.0.0-rc2",
+    "@types/chai": "4.3.5",
+    "@types/mocha": "10.0.1",
+    "@types/node": "16.18.3",
+    "@types/sinon": "10.0.15",
+    "@types/uuid": "8.3.4",
+    "@typescript-eslint/eslint-plugin": "5.48.2",
+    "@typescript-eslint/parser": "5.48.2",
+    "chai": "4.3.7",
+    "eslint": "8.32.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-prettier": "8.8.0",
+    "eslint-plugin-import": "2.27.5",
+    "eslint-plugin-jsx-a11y": "6.7.1",
+    "eslint-plugin-mocha": "9.0.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-unicorn": "45.0.2",
+    "mocha": "10.2.0",
+    "nyc": "15.1.0",
+    "prettier": "2.8.3",
+    "sinon": "15.1.0",
+    "source-map-support": "0.5.21",
+    "ts-node": "10.9.1",
+    "typescript": "5.1.3"
   }
 }

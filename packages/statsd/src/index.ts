@@ -25,3 +25,5 @@ export const build = (steveo: Steveo, stats: StatsD) => {
     stats.increment('runner_failure', { topic });
   });
 };
+
+export default build;

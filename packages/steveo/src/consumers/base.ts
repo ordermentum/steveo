@@ -9,10 +9,6 @@ import { Manager } from '../lib/manager';
 import { composeConsume } from '../middleware';
 
 class BaseRunner {
-  async preProcess() {
-    throw new Error('Unimplemented');
-  }
-
   // @ts-ignore
   async createQueue(topic: string): Promise<boolean> {
     throw new Error('Unimplemented');

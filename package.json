@@ -43,7 +43,7 @@
         "url": "git+https://github.com/ordermentum/steveo.git"
     },
     "author": "",
-    "private": false,
+    "private": true,
     "license": "Apache-2.0",
     "bugs": {
         "url": "https://github.com/ordermentum/steveo/issues"

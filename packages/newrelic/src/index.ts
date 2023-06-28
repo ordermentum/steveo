@@ -45,3 +45,5 @@ export class NewrelicMiddleware implements Middleware {
     });
   }
 }
+
+export default NewrelicMiddleware;

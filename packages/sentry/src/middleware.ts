@@ -21,3 +21,5 @@ export class SentryMiddleware implements Middleware {
     transaction.finish();
   }
 }
+
+export default SentryMiddleware;
