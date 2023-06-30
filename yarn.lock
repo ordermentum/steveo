@@ -1308,10 +1308,10 @@
   resolved "https://registry.yarnpkg.com/@types/triple-beam/-/triple-beam-1.3.2.tgz#38ecb64f01aa0d02b7c8f4222d7c38af6316fef8"
   integrity sha512-txGIh+0eDFzKGC25zORnswy+br1Ha7hj5cMVwKIU7+s0U2AxxJru/jZSMU6OC9MJWP6+pc/hc6ZjyZShpsyY2g==
 
-"@types/uuid@8.3.4":
-  version "8.3.4"
-  resolved "https://registry.npmjs.org/@types/uuid/-/uuid-8.3.4.tgz"
-  integrity sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==
+"@types/uuid@9.0.2":
+  version "9.0.2"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-9.0.2.tgz#ede1d1b1e451548d44919dc226253e32a6952c4b"
+  integrity sha512-kNnC1GFBLuhImSnV7w4njQkUiJi0ZXUycu1rUaouPqiKlXkh77JKgdRnTAp1x5eBwcIwbtI+3otwzuIDEuDoxQ==
 
 "@types/validator@13.7.1":
   version "13.7.1"
@@ -5752,6 +5752,26 @@ split2@^4.0.0, split2@^4.1.0:
 sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz"
+
+steveo@6.0.0-beta4:
+  version "6.0.0-beta4"
+  resolved "https://registry.yarnpkg.com/steveo/-/steveo-6.0.0-beta4.tgz#d970850bdf3d908ab9327503b244fcf0d4ee3a80"
+  integrity sha512-qNiDwEoVmAPoJuZaASDxZVDQhjxIsSBfQ2JXei9y2pQiIhopc1G8Iui/XlZa/yI6cZ3mu+dGuxUAeh+BEOu5hQ==
+  dependencies:
+    "@types/bluebird" "^3.5.38"
+    aws-sdk "^2.1043.0"
+    bluebird "^3.7.2"
+    generic-pool "^3.9.0"
+    lazy-object "^1.0.1"
+    lodash.difference "^4.5.0"
+    lodash.intersection "^4.4.0"
+    lodash.merge "4.6.2"
+    lodash.shuffle "^4.2.0"
+    moment "2.29.4"
+    node-rdkafka "^2.15.0"
+    null-logger "^2.0.0"
+    rsmq "^0.12.4"
+    uuid "^9.0.0"
 
 stop-iteration-iterator@^1.0.0:
   version "1.0.0"
