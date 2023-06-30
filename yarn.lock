@@ -2716,6 +2716,14 @@ eslint-plugin-jsx-a11y@6.7.1:
     object.fromentries "^2.0.6"
     semver "^6.3.0"
 
+eslint-plugin-mocha@10.1.0:
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-mocha/-/eslint-plugin-mocha-10.1.0.tgz#69325414f875be87fb2cb00b2ef33168d4eb7c8d"
+  integrity sha512-xLqqWUF17llsogVOC+8C6/jvQ+4IoOREbN7ZCHuOHuD6cT5cDD4h7f2LgsZuzMAiwswWE21tO7ExaknHVDrSkw==
+  dependencies:
+    eslint-utils "^3.0.0"
+    rambda "^7.1.0"
+
 eslint-plugin-mocha@9.0.0:
   version "9.0.0"
   resolved "https://registry.npmjs.org/eslint-plugin-mocha/-/eslint-plugin-mocha-9.0.0.tgz"
@@ -5176,6 +5184,11 @@ quick-lru@^4.0.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.1.tgz#5b8878f113a58217848c6482026c73e1ba57727f"
   integrity sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==
 
+rambda@^7.1.0:
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/rambda/-/rambda-7.5.0.tgz#1865044c59bc0b16f63026c6e5a97e4b1bbe98fe"
+  integrity sha512-y/M9weqWAH4iopRd7EHDEQQvpFPHj1AA3oHozE9tfITHUtTR7Z9PSlIRRG2l1GuW7sefC1cXFfIcF+cgnShdBA==
+
 ramda@^0.27.1:
   version "0.27.1"
   resolved "https://registry.npmjs.org/ramda/-/ramda-0.27.1.tgz"
@@ -5752,6 +5765,26 @@ split2@^4.0.0, split2@^4.1.0:
 sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz"
+
+steveo@6.0.0-beta4:
+  version "6.0.0-beta4"
+  resolved "https://registry.yarnpkg.com/steveo/-/steveo-6.0.0-beta4.tgz#d970850bdf3d908ab9327503b244fcf0d4ee3a80"
+  integrity sha512-qNiDwEoVmAPoJuZaASDxZVDQhjxIsSBfQ2JXei9y2pQiIhopc1G8Iui/XlZa/yI6cZ3mu+dGuxUAeh+BEOu5hQ==
+  dependencies:
+    "@types/bluebird" "^3.5.38"
+    aws-sdk "^2.1043.0"
+    bluebird "^3.7.2"
+    generic-pool "^3.9.0"
+    lazy-object "^1.0.1"
+    lodash.difference "^4.5.0"
+    lodash.intersection "^4.4.0"
+    lodash.merge "4.6.2"
+    lodash.shuffle "^4.2.0"
+    moment "2.29.4"
+    node-rdkafka "^2.15.0"
+    null-logger "^2.0.0"
+    rsmq "^0.12.4"
+    uuid "^9.0.0"
 
 stop-iteration-iterator@^1.0.0:
   version "1.0.0"
