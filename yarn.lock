@@ -4557,7 +4557,7 @@ node-preload@^0.2.1:
   dependencies:
     process-on-spawn "^1.0.0"
 
-node-rdkafka@^2.15.0:
+node-rdkafka@2.16.1, node-rdkafka@^2.15.0:
   version "2.16.1"
   resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-2.16.1.tgz#45efcf4bbf386240a88d51a6c9a1196ae044f78d"
   integrity sha512-fiZJGl/w9QnACLhfVTYuS4V4WxSmVSbxhXyxL+B0SgRWEa8kA1NpdiB+gHPG71C3CqjbvYEfTJWhjd/1y0OeSA==
@@ -5752,6 +5752,26 @@ split2@^4.0.0, split2@^4.1.0:
 sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz"
+
+steveo@6.0.0-beta4:
+  version "6.0.0-beta4"
+  resolved "https://registry.yarnpkg.com/steveo/-/steveo-6.0.0-beta4.tgz#d970850bdf3d908ab9327503b244fcf0d4ee3a80"
+  integrity sha512-qNiDwEoVmAPoJuZaASDxZVDQhjxIsSBfQ2JXei9y2pQiIhopc1G8Iui/XlZa/yI6cZ3mu+dGuxUAeh+BEOu5hQ==
+  dependencies:
+    "@types/bluebird" "^3.5.38"
+    aws-sdk "^2.1043.0"
+    bluebird "^3.7.2"
+    generic-pool "^3.9.0"
+    lazy-object "^1.0.1"
+    lodash.difference "^4.5.0"
+    lodash.intersection "^4.4.0"
+    lodash.merge "4.6.2"
+    lodash.shuffle "^4.2.0"
+    moment "2.29.4"
+    node-rdkafka "^2.15.0"
+    null-logger "^2.0.0"
+    rsmq "^0.12.4"
+    uuid "^9.0.0"
 
 stop-iteration-iterator@^1.0.0:
   version "1.0.0"
