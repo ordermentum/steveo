@@ -917,10 +917,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@ordermentum/eslint-config-ordermentum@2.0.0-rc2":
-  version "2.0.0-rc2"
-  resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-2.0.0-rc2.tgz#ae93598460957f970cbe633f6ae88d8b3979feb7"
-  integrity sha512-3eazNZ/5oJG68NXapAHM5GiK+QYnpj5kl7adzqCPxYPwOb6m/+wW4tiemGxqQAEMc/LUHJLVOyfTokpJ93kEHQ==
+"@ordermentum/eslint-config-ordermentum@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-2.1.0.tgz#f13720306aac8f26cf139bd83032d70690e95a63"
+  integrity sha512-FXPumiQoKGzRVBRYLXgaeJ1NhIVPl2yZ4K4BGzYHspLhe7DsQc05gQzIUzMj+mOLjx0SPkwafJx2oCQWdwzOig==
 
 "@ordermentum/lunartick@^0.0.19":
   version "0.0.19"
