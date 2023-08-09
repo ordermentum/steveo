@@ -185,7 +185,7 @@ class KafkaRunner
       this.disconnect();
       return;
     }
-    
+
     if (this.state === 'paused') {
       this.logger.debug('Consumer paused');
       this.consumer.consume(1, this.consumeCallback);
