@@ -185,6 +185,12 @@ class KafkaRunner
       this.disconnect();
       return;
     }
+    
+    if (this.state === 'paused') {
+      this.logger.debug('Consumer paused');
+      this.consumer.consume(1, this.consumeCallback);
+      return;
+    }
 
     if (err) {
       const message = 'Error while consumption';
@@ -198,11 +204,7 @@ class KafkaRunner
         await this.receive(messages[0]);
       }
     } finally {
-      if (this.state === 'paused') {
-        this.logger.debug('Consumer paused');
-      } else {
-        this.consumer.consume(1, this.consumeCallback);
-      }
+      this.consumer.consume(1, this.consumeCallback);
     }
   };
 
@@ -296,19 +298,6 @@ class KafkaRunner
     this.logger.debug(`stopping consumer ${this.name}`);
     this.consumer.disconnect();
     this.adminClient.disconnect();
-  }
-
-  async resume() {
-    if (!this.consumerReady) return;
-    if (!this.consumer.isConnected()) {
-      throw new Error('Lost connection to kafka');
-    }
-    if (this.state === 'terminating') return;
-    if (this.state === 'paused') {
-      this.logger.debug('Resuming consumer');
-      this.state = 'running';
-      this.consumer.consume(1, this.consumeCallback);
-    }
   }
 }
 

@@ -178,4 +178,55 @@ describe('runner/kafka', () => {
     });
     expect(stub.called).to.be.true;
   });
+
+  it('should not process a message when the instance in paused mode', async () => {
+    const subscribeStub = sinon.stub().rejects();
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const steveo = {
+      config: {
+        bootstrapServers: 'kafka:9200',
+        engine: 'kafka',
+        securityProtocol: 'plaintext',
+        waitToCommit: true,
+      },
+      // @ts-ignore
+      registry: anotherRegistry,
+      // @ts-ignore
+      pool: build(anotherRegistry),
+      manager: {
+        state: 'running'
+      }
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner(steveo);
+
+    // Pausing the steveo instance
+    anotherRunner.state = 'paused';
+
+    const commitOffsetStub = sandbox.stub(
+      anotherRunner.consumer,
+      'commitMessage'
+    );
+    await anotherRunner.consumeCallback(null, [{
+      value: Buffer.from(
+        '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
+      ),
+      size: 1000,
+      offset: 0,
+      topic: 'a-topic',
+      partition: 1,
+    }]);
+    expect(commitOffsetStub.callCount).to.equal(0);
+    expect(subscribeStub.callCount).to.equal(0);
+  });
 });
