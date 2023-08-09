@@ -38,7 +38,7 @@
     "workspaces": [
         "packages/*"
     ],
-    "packageManager": "yarn@1.22.17",
+    "packageManager": "yarn@1.22.19",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/ordermentum/steveo.git"
