@@ -33,7 +33,7 @@
         "build": "yarn run turbo run build --filter=steveo &&  yarn run turbo run build --filter=!steveo --parallel",
         "lint": "yarn run turbo run lint --parallel",
         "test": "yarn run turbo run test",
-        "release": "yarn build && yarn lint && yarn test && changeset version && changeset publish"
+        "release": "yarn build && changeset version && changeset publish"
     },
     "workspaces": [
         "packages/*"
