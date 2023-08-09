@@ -11,6 +11,7 @@ import { getDuration } from '../lib/context';
 import { IRunner, Logger, KafkaConfiguration } from '../common';
 import { Steveo } from '..';
 import { Resource } from '../lib/pool';
+import { sleep } from '../lib/utils';
 
 class JsonParsingError extends Error {}
 
@@ -188,6 +189,7 @@ class KafkaRunner
 
     if (this.state === 'paused') {
       this.logger.debug('Consumer paused');
+      await sleep(1000);
       this.consumer.consume(1, this.consumeCallback);
       return;
     }
