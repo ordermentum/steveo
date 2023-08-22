@@ -94,10 +94,13 @@ class BaseRunner {
       return false;
     }
 
-    await Bluebird.map(topics, (topic: string) =>
-      this.createQueue(topic).catch(er => {
-        this.logger.error('error creating queue for topic:', er);
-      })
+    await Bluebird.map(
+      topics,
+      (topic: string) =>
+        this.createQueue(topic).catch(er => {
+          this.logger.error(`error creating queue for topic: ${er.toString()}`);
+        }),
+      { concurrency: 10 }
     );
 
     return true;
