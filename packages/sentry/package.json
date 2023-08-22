@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "@sentry/node": "^7.56.0",
-    "steveo": "6.0.0"
+    "steveo": "^6.0.0"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.2",

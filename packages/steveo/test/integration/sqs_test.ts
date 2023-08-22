@@ -46,7 +46,7 @@ describe('SQS Integration Test', () => {
     sandbox.restore();
   });
 
-  it('concurrent tasks (pool) (sqs)', async () => {
+  it('processes messages concurrently (pool) (sqs)', async () => {
     const middleware = new PayloadMiddleware();
     const configuration = {
       region: 'us-east-1',

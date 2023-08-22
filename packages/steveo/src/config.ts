@@ -41,10 +41,10 @@ export const getConfig = (config: Configuration) => {
     parameters.securityProtocol = kafkaConfig.securityProtocol ?? 'ssl';
     parameters.connectionTimeout = kafkaConfig.connectionTimeout ?? 30000; // 30 seconds
     parameters.waitToCommit = kafkaConfig.waitToCommit ?? true;
-    parameters.consumer = merge(KafkaConsumerDefault, {
+    parameters.consumer = merge({}, KafkaConsumerDefault, {
       ...(kafkaConfig.consumer ?? {}),
     });
-    parameters.producer = merge(KafkaProducerDefault, {
+    parameters.producer = merge({}, KafkaProducerDefault, {
       ...(kafkaConfig.producer ?? {}),
     });
     parameters.admin = kafkaConfig.admin ?? {};

@@ -22,7 +22,7 @@
     "newrelic": "^9.8.0"
   },
   "dependencies": {
-    "steveo": "6.0.0"
+    "steveo": "^6.0.0"
   },
   "devDependencies": {
     "@types/newrelic": "^9.4.0",

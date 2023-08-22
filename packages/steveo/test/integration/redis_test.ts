@@ -42,7 +42,7 @@ describe('Integration Test', () => {
     sandbox.restore();
   });
 
-  it('concurrent tasks (pool) (redis)', async () => {
+  it('processes messages concurrently (pool) (redis)', async () => {
     const sample = new SampleMiddleware();
 
     const log = logger({ level: 'debug' });
