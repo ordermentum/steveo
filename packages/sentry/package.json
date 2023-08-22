@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/sentry",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "main": "lib/index.js",
   "repository": "git@github.com:ordermentum/steveo.git",
   "license": "Apache-2.0",
@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "@sentry/node": "^7.56.0",
-    "steveo": "^6.0.0"
+    "steveo": "^6.0.1"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.2",
