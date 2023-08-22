@@ -18,8 +18,9 @@ describe('Kafka Integration Test', () => {
     sandbox.restore();
   });
 
-  it('concurrent tasks (pool) (kafka)', async () => {
+  it('processes messages concurrently (pool) (kafka)', async () => {
     const consumerGroupId = 'steveo-integration-test';
+
     const configuration: KafkaConfiguration = {
       engine: 'kafka' as const,
       queuePrefix: `steveo`,
@@ -32,6 +33,10 @@ describe('Kafka Integration Test', () => {
         global: {
           'group.id': consumerGroupId,
         },
+        topic: {},
+      },
+      producer: {
+        global: {},
         topic: {},
       },
       waitToCommit: true,
