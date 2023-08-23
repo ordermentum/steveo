@@ -1,5 +1,11 @@
 # steveo
 
+## 6.1.0
+
+### Minor Changes
+
+- 28932c6: Change health check parameters - Kafka consumers
+
 ## 6.0.1
 
 ### Patch Changes
