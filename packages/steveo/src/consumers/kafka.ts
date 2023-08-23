@@ -165,15 +165,22 @@ class KafkaRunner
       /**
        * if you are concerned about potential performance issues,
        * don't be, it returns early if it has a local connection status
-       * only fallsback to the kafka client if the local connection status is missing
+       * only falls back to the kafka client if the local connection status is missing
        */
-      this.consumer.getMetadata({}, (err, meta) => {
-        this.logger.debug(`metadata response meta=${meta} err=${err}`);
-        if (err) {
-          return reject(err);
+      this.consumer.getMetadata(
+        {
+          allTopics: false,
+          topic: '',
+          timeout: 1000,
+        },
+        (err, meta) => {
+          this.logger.debug(`metadata response meta=${meta} err=${err}`);
+          if (err) {
+            return reject(err);
+          }
+          return resolve(meta);
         }
-        return resolve(meta);
-      });
+      );
     });
   };
 
