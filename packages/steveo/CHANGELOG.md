@@ -1,5 +1,11 @@
 # steveo
 
+## 6.1.1
+
+### Patch Changes
+
+- Fix build step
+
 ## 6.1.0
 
 ### Minor Changes
