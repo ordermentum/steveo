@@ -1,0 +1,17 @@
+name: Release Notification
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publisher:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post to a Slack Workflow
+        id: slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: ${{ toJSON(github.event.release) }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
