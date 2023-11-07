@@ -146,15 +146,8 @@ export const timestampHelperFactory =
   (jobScheduler: JobScheduler): TimestampHelper =>
   <T = any, R = any>(job: JobModel, task: TaskCallback<T, R>) =>
   async (args: T, context: JobContext): Promise<any> => {
-    if (!context) {
-      try {
-        return task(args, context);
-      } catch (e) {
-        return null;
-      }
-    }
-
-    const jobId = context.job?.id;
+    // @ts-expect-error: 'T' type mismatch expected for job args.
+    const jobId = args.context?.job?.id ?? context?.job?.id;
 
     if (!jobId) {
       try {
