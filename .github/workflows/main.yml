@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 18.x
       - run: yarn
-      - run: yarn lint
+      - run: yarn build && yarn lint
 
   build:
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
           - 6379:6379
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x]
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
