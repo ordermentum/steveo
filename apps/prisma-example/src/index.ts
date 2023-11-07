@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { JobScheduler } from '@ordermentum/prisma-jobs';
+import { JobScheduler } from '@steveojs/scheduler-prisma';
 import bunyan from 'bunyan';
 import exampleTask from './example_task';
 import { client } from './client';
