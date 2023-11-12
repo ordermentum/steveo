@@ -83,7 +83,10 @@ const retryDelay = (
   jitter = true
 ) => Math.round((jitter ? Math.random() : 1) * backoff * factor ** attempt);
 
-export type TimestampHelper = <T extends {context?: JobContext} = any, R = any>(
+export type TimestampHelper = <
+  T extends { context?: JobContext } = any,
+  R = any
+>(
   client: PrismaClient,
   task: TaskCallback<T, R>
 ) => (args: T, context: JobContext) => Promise<any>;
@@ -226,9 +229,15 @@ const updateFinishTask = async (
  */
 export const timestampHelperFactory =
   (jobScheduler: JobScheduler): TimestampHelper =>
-  <T extends {
-    context?: JobContext
-  } = any, R = any>(client: PrismaClient, task: TaskCallback<T, R>) =>
+  <
+    T extends {
+      context?: JobContext;
+    } = any,
+    R = any
+  >(
+    client: PrismaClient,
+    task: TaskCallback<T, R>
+  ) =>
   async (args: T, context: JobContext): Promise<any> => {
     const jobId = args.context?.job?.id ?? context?.job?.id;
 
