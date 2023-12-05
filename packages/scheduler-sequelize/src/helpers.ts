@@ -60,7 +60,10 @@ const updateStartTask = async (job?: JobInstance | null) => {
   });
 };
 
-export type TimestampHelper = <T = any, R = any>(
+export type TimestampHelper = <
+  T extends { context?: JobContext } = any,
+  R = any
+>(
   job: JobModel,
   task: TaskCallback<T, R>
 ) => (args: T, context: JobContext) => Promise<any>;
@@ -144,17 +147,12 @@ const updateFinishTask = async (job?: JobInstance | null) => {
  */
 export const timestampHelperFactory =
   (jobScheduler: JobScheduler): TimestampHelper =>
-  <T = any, R = any>(job: JobModel, task: TaskCallback<T, R>) =>
+  <T extends { context?: JobContext } = any, R = any>(
+    job: JobModel,
+    task: TaskCallback<T, R>
+  ) =>
   async (args: T, context: JobContext): Promise<any> => {
-    if (!context) {
-      try {
-        return task(args, context);
-      } catch (e) {
-        return null;
-      }
-    }
-
-    const jobId = context.job?.id;
+    const jobId = args.context?.job?.id ?? context?.job?.id;
 
     if (!jobId) {
       try {
