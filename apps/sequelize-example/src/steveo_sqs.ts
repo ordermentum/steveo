@@ -59,7 +59,7 @@ const steveo = Steveo(steveoConfig, logger);
 steveo.events.on(
   'runner_failure',
   async (topic: string, ex: Error, params: any) => {
-    exports.logger.error(ex, { tags: { topic }, params });
+    logger.error(ex, { tags: { topic }, params });
   }
 );
 
