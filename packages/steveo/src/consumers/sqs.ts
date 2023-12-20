@@ -246,6 +246,21 @@ class SqsRunner extends BaseRunner implements IRunner {
         MessageRetentionPeriod: this.config.messageRetentionPeriod,
       },
     };
+
+    if (this.config.fifoQueue) {
+      params.Attributes = {
+        ...params.Attributes,
+        ...{
+          FifoQueue: this.config.fifoQueue,
+          DeduplicationScope: this.config.deduplicationScope ?? 'queue',
+          ContentBasedDeduplication:
+            this.config.contentBasedDeduplication ?? false,
+          FifoThroughputLimit:
+            this.config.fifoThroughputLimit ?? 'perMessageGroupId',
+        },
+      };
+    }
+
     await this.sqs.createQueue(params).promise();
     return true;
   }

@@ -7,8 +7,8 @@ export const createMessageMetadata = <T = any>(message: T) => {
   // @ts-expect-error
   const _meta = message?._meta ?? {};
 
-  const sha1 = crypto.createHash('sha1'); // can we change this to SHA256?
-  const signature = sha1
+  const sha256 = crypto.createHash('sha256'); // can we change this to SHA256?
+  const signature = sha256
     .update(JSON.stringify({ ...message, _meta: undefined }))
     .digest('hex')
     .substring(0, 8);

@@ -85,6 +85,10 @@ export interface SQSConfiguration extends Configuration {
   httpOptions?: HTTPOptions;
   consumerPollInterval?: number;
   waitToCommit?: boolean;
+  deduplicationScope?: 'messageGroup' | 'queue';
+  fifoQueue?: boolean;
+  contentBasedDeduplication?: boolean;
+  fifoThroughputLimit?: 'perMessageGroupId' | 'perQueue';
 }
 
 export interface RedisConfiguration extends Configuration {

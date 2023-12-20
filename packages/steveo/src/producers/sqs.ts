@@ -1,6 +1,7 @@
 import nullLogger from 'null-logger';
 import { SQS } from 'aws-sdk';
 import util from 'util';
+import { SendMessageRequest } from 'aws-sdk/clients/sqs';
 import { getSqsInstance } from '../config/sqs';
 
 import {
@@ -77,14 +78,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     return res.QueueUrl;
   }
 
-  getPayload(
-    msg: any,
-    topic: string
-  ): {
-    MessageAttributes: any;
-    MessageBody: string;
-    QueueUrl: string;
-  } {
+  getPayload(msg: any, topic: string): SendMessageRequest {
     const context = createMessageMetadata(msg);
 
     const task = this.registry.getTask(topic);
@@ -108,6 +102,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       MessageAttributes: messageAttributes,
       MessageBody: JSON.stringify({ ...msg, _meta: context }),
       QueueUrl: this.sqsUrls[topic],
+      MessageDeduplicationId: context.signature,
     };
   }
 
