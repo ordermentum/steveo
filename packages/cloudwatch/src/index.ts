@@ -11,14 +11,18 @@ const Namespace = 'OM-DB-Jobs';
 
 export const schedulerMetrics = (scheduler: PrismaScheduler | SequelizeScheduler, service: string) => {
   scheduler.events.on('duration', (job: Job) => {
-    const MetricName = `${job!.name.toUpperCase()}_RUNNING`;
+    const MetricName = job!.name.toUpperCase();
     const command = new PutMetricDataCommand({
       MetricData: [{
         MetricName,
         Dimensions: [{
           Name: 'service',
           Value: service
-        }],
+        }, {
+          Name: 'status',
+          Value: 'completed'
+        }
+        ],
         Unit: 'Count',
         Timestamp: new Date(),
         Value: 1
@@ -31,13 +35,16 @@ export const schedulerMetrics = (scheduler: PrismaScheduler | SequelizeScheduler
 
   scheduler.events.on('lagged', (jobs: JobAttributes[]) => {
     for (let job of jobs) {
-      const MetricName = `${job!.name.toUpperCase()}_STUCK`;
+      const MetricName = job!.name.toUpperCase();
       const command = new PutMetricDataCommand({
         MetricData: [{
           MetricName,
           Dimensions: [{
             Name: 'service',
             Value: service
+          }, {
+            Name: 'status',
+            Value: 'stuck'
           }],
           Unit: 'Count',
           Timestamp: new Date(),
@@ -53,13 +60,16 @@ export const schedulerMetrics = (scheduler: PrismaScheduler | SequelizeScheduler
   });
 
   scheduler.events.on('reset', (job: JobAttributes) => {
-    const MetricName = `${job!.name.toUpperCase()}_RESTART`;
+    const MetricName = job!.name.toUpperCase();
     const command = new PutMetricDataCommand({
       MetricData: [{
         MetricName,
         Dimensions: [{
           Name: 'service',
           Value: service
+        }, {
+          Name: 'status',
+          Value: 'restarted'
         }],
         Unit: 'Count',
         Timestamp: new Date(),
