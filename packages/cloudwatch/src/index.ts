@@ -10,22 +10,16 @@ const client = new CloudWatchClient();
 const Namespace = 'OM-DB-Jobs';
 
 export const schedulerMetrics = (scheduler: PrismaScheduler | SequelizeScheduler, service: string) => {
-  scheduler.events.on('duration', (job: Job, timeSecs: number, success: boolean) => {
+  scheduler.events.on('duration', (job: Job) => {
     const MetricName = `${job!.name.toUpperCase()}_RUNNING`;
     const command = new PutMetricDataCommand({
       MetricData: [{
         MetricName,
         Dimensions: [{
-          Name: 'success',
-          Value: success ? 'true' : 'false',
-        }, {
           Name: 'service',
           Value: service
-        }, {
-          Name: 'duration_secs',
-          Value: timeSecs.toString()
         }],
-        Unit: 'None',
+        Unit: 'Count',
         Timestamp: new Date(),
         Value: 1
       }],
@@ -45,7 +39,7 @@ export const schedulerMetrics = (scheduler: PrismaScheduler | SequelizeScheduler
             Name: 'service',
             Value: service
           }],
-          Unit: 'None',
+          Unit: 'Count',
           Timestamp: new Date(),
           Value: 1
         }],
@@ -67,7 +61,7 @@ export const schedulerMetrics = (scheduler: PrismaScheduler | SequelizeScheduler
           Name: 'service',
           Value: service
         }],
-        Unit: 'None',
+        Unit: 'Count',
         Timestamp: new Date(),
         Value: 1
       }],
