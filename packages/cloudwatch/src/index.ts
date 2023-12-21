@@ -1,6 +1,6 @@
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
 import { JobContext as PrismaJobContext, JobScheduler as PrismaScheduler } from "@steveojs/scheduler-prisma";
-import { JobScheduler as SequelizeScheduler } from "@steveojs/scheduler-sequelize";
+import { PendingJobs, JobScheduler as SequelizeScheduler } from "@steveojs/scheduler-sequelize";
 import { JobCreationAttributes, JobInstance } from "@steveojs/scheduler-sequelize/lib/models/job";
 
 type Job = PrismaJobContext['job'] | JobInstance;
@@ -79,6 +79,30 @@ export const schedulerMetrics = (scheduler: PrismaScheduler | SequelizeScheduler
     });
 
     client.send(command);
+  });
+
+  scheduler.events.on('pending', (data: PendingJobs) => {
+    for (let [name, count] of Object.entries(data)) {
+      const MetricName = name.toUpperCase();
+      const command = new PutMetricDataCommand({
+        MetricData: [{
+          MetricName,
+          Dimensions: [{
+            Name: 'service',
+            Value: service
+          }, {
+            Name: 'status',
+            Value: 'pending'
+          }],
+          Unit: 'Count',
+          Timestamp: new Date(),
+          Value: count
+        }],
+        Namespace
+      });
+
+      client.send(command);
+    }
   });
 };
 

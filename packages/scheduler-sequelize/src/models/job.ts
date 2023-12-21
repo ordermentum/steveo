@@ -36,7 +36,7 @@ export type JobCreationAttributes = Sequelize.Optional<JobAttributes, 'id'> & {
 
 export interface JobInstance
   extends Sequelize.Model<JobAttributes, JobCreationAttributes>,
-    JobAttributes {
+  JobAttributes {
   failures: number;
 }
 
@@ -146,6 +146,7 @@ const jobModelFactory: modelFactory<JobInstance> = (
       },
     },
   }));
+
   return Job;
 };
 

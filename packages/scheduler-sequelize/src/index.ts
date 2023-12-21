@@ -21,6 +21,10 @@ const DEFAULT_RUN_INTERVAL = 5000; // run every 5 seconds;
 export const DEFAULT_MAX_RESTARTS_ON_FAILURE = 3;
 export const DEFAULT_BACKOFF = 60000; // 60 seconds
 
+export type PendingJobs = {
+  [name: string]: number;
+};
+
 export interface Events {
   /**
    * @description A list of jobs that have lagged and have not been restarted
@@ -36,6 +40,11 @@ export interface Events {
    * @description Job duration (only available when wrapped with the timestamp helper)
    */
   duration: (job: JobInstance, timeSecs: number, success: boolean) => void;
+
+  /**
+   * @description An object of job names against pending jobs to run
+   */
+  pending: (data: PendingJobs) => void;
 }
 
 export type JobContext = {
