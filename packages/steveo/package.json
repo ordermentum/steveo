@@ -62,7 +62,7 @@
     "@types/lodash.merge": "4.6.9",
     "@types/mocha": "10.0.1",
     "@types/newrelic": "9.14.3",
-    "@types/node": "16.18.39",
+    "@types/node": "16.18.68",
     "@types/rsmq": "0.8.4",
     "@types/sinon": "10.0.20",
     "@types/uuid": "8.3.4",
