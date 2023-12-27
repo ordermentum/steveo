@@ -46,7 +46,7 @@
     "lodash.intersection": "^4.4.0",
     "lodash.merge": "4.6.2",
     "lodash.shuffle": "^4.2.0",
-    "moment": "2.29.4",
+    "moment": "2.30.1",
     "node-rdkafka": "2.17.0",
     "null-logger": "^2.0.0",
     "rsmq": "^0.12.4",
