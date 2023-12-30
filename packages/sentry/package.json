@@ -27,7 +27,7 @@
     "@ordermentum/eslint-config-ordermentum": "2.0.0-rc2",
     "@types/chai": "4.3.11",
     "@types/mocha": "10.0.1",
-    "@types/node": "16.18.68",
+    "@types/node": "16.18.69",
     "@types/sinon": "10.0.20",
     "@types/uuid": "8.3.4",
     "@typescript-eslint/eslint-plugin": "5.48.2",
