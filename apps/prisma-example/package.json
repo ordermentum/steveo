@@ -41,7 +41,7 @@
   "dependencies": {
     "@ordermentum/lunartick": "^0.0.19",
     "@steveojs/scheduler-prisma": "*",
-    "@prisma/client": "5.5.2",
+    "@prisma/client": "5.7.1",
     "bunyan": "^1.8.15",
     "cron-parser": "^3.5.0",
     "moment-timezone": "^0.5.33",
@@ -63,7 +63,7 @@
     "eslint-config-ordermentum": "1.0.6",
     "mocha": "9.0.0",
     "nyc": "15.1.0",
-    "prisma": "5.5.2",
+    "prisma": "5.7.1",
     "sinon": "11.1.2",
     "ts-node": "10.9.2",
     "typescript": "4.9.5"
