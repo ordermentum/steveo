@@ -73,7 +73,7 @@ export type Tasks = {
   [name: string]: TaskCallback<any, any> | PublishableTask;
 };
 
-export const MAINTENANCE_JOB_NAME = 'check';
+const MAINTENANCE_JOB_NAME = 'check';
 export interface JobSchedulerInterface {
   logger: Logger;
 
@@ -194,11 +194,6 @@ export interface JobSchedulerInterface {
     "timezone","'UTC'::character varying","NO","character varying"
     "accepted_at",,"YES","timestamp with time zone"
     "priority","1","NO","integer" 
- * NOTE: Prerequisite is to have a job record as following in the DB:
-    ** PLEASE MODIFY IT ACCORDING TO YOUR JOB TABLE SCHEMA
-    INSERT INTO "public"."jobs"("id","name","data","last_finished_at","last_modified_by","last_run_at","next_run_at","repeat_interval","type","fail_reason","failed_at","queued","created_at","updated_at","deleted_at","timezone","accepted_at","sundial_next_run_at","priority")
-    VALUES
-    (uuid_generate_v4(),E'check',E'{}',NULL ,NULL,NULL,NULL,E'FREQ=MINUTELY;INTERVAL=30',NULL,E'{}',NULL,FALSE,NOW(),NOW(),NULL,E'UTC',NULL,500);
  */
 export class JobScheduler implements JobSchedulerInterface {
   logger: Logger;
@@ -413,7 +408,7 @@ export class JobScheduler implements JobSchedulerInterface {
           nextRunAt: new Date().toISOString(),
           queued: false,
           data: {},
-          repeatInterval: 'FREQ=MINUTELY;INTERVAL=5'
+          repeatInterval: 'FREQ=MINUTELY;INTERVAL=1'
         }
       });
     }

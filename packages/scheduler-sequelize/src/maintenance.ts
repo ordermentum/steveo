@@ -16,6 +16,9 @@ export const resetJob = async (
   job: JobInstance,
   events: TypedEventEmitter<Events>
 ) => {
+  if(!job.repeatInterval) {
+    return;
+  }
   const nextRunAt = computeNextRunAt(job.repeatInterval, job.timezone);
   events.emit('reset', job.get(), nextRunAt.toISOString());
   return job.update({
@@ -38,7 +41,7 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
 
   return async () => {
     try {
-      // Returns a grouped list of jobs that are pending (jobs that are not currently running and are due to run)
+      // Returns a grouped object of jobs that are pending (jobs that are not currently running and are due to run)
       const pendingJobs = await Job.findAll({
         where: {
           queued: false,
@@ -47,7 +50,8 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
           },
           name: {
             [Op.in]: allJobs
-          }
+          },
+          deletedAt: null
         },
         attributes: ['name', [fn('COUNT', 'name'), 'count']],
         group: ['name']

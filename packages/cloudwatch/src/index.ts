@@ -1,10 +1,10 @@
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
 import { JobContext as PrismaJobContext, JobScheduler as PrismaScheduler } from "@steveojs/scheduler-prisma";
 import { PendingJobs, JobScheduler as SequelizeScheduler } from "@steveojs/scheduler-sequelize";
-import { JobCreationAttributes, JobInstance } from "@steveojs/scheduler-sequelize/lib/models/job";
+import { JobAttributes as SequelizeJob, JobInstance } from "@steveojs/scheduler-sequelize/lib/models/job";
 
 type Job = PrismaJobContext['job'] | JobInstance;
-type JobAttributes = JobCreationAttributes | PrismaJobContext['job'];
+type JobAttributes = SequelizeJob | PrismaJobContext['job'];
 
 const client = new CloudWatchClient();
 const Namespace = 'OM-DB-Jobs';
