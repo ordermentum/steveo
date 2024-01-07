@@ -23,7 +23,7 @@ export type MaintenanceInfo = {
   stuck: number;
   restarted: number;
   completed: number;
-}
+};
 
 export type PendingJobs = {
   [name: string]: number;
@@ -263,7 +263,7 @@ export class JobScheduler implements JobSchedulerInterface {
     backOffMs = DEFAULT_BACKOFF,
     maxRestartsOnFailure = DEFAULT_MAX_RESTARTS_ON_FAILURE,
     namespace,
-    events = new EventEmitter() as TypedEmitter<Events>
+    events = new EventEmitter() as TypedEmitter<Events>,
   }: JobSchedulerInterface) {
     this.logger = logger;
     this.heartbeat = new Date().getTime();
@@ -347,7 +347,7 @@ export class JobScheduler implements JobSchedulerInterface {
             // @ts-ignore
             await task(item.data, {
               job: {
-                id: item.id
+                id: item.id,
               },
             });
           } catch (ex) {
@@ -398,8 +398,8 @@ export class JobScheduler implements JobSchedulerInterface {
     this.startupCheck = true;
     const maintenanceJob = await this.client.job.findFirst({
       where: {
-        name: MAINTENANCE_JOB_NAME
-      }
+        name: MAINTENANCE_JOB_NAME,
+      },
     });
     if (!maintenanceJob) {
       await this.client.job.create({
@@ -408,8 +408,8 @@ export class JobScheduler implements JobSchedulerInterface {
           nextRunAt: new Date().toISOString(),
           queued: false,
           data: {},
-          repeatInterval: 'FREQ=MINUTELY;INTERVAL=1'
-        }
+          repeatInterval: 'FREQ=MINUTELY;INTERVAL=1',
+        },
       });
     }
   }

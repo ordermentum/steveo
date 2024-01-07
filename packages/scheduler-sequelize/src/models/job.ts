@@ -40,8 +40,7 @@ export type JobModel = JobAttributes & {
   failures: number;
 };
 
-export interface JobInstance extends Sequelize.Model<JobAttributes>, JobModel {
-}
+export interface JobInstance extends Sequelize.Model<JobAttributes>, JobModel {}
 
 const jobModelFactory: modelFactory<JobInstance> = (
   sequelize: Sequelize.Sequelize,

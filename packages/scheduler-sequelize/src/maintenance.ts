@@ -16,12 +16,12 @@ export const resetJob = async (
   job: JobInstance,
   events: TypedEventEmitter<Events>
 ) => {
-  if(!job.repeatInterval) {
+  if (!job.repeatInterval) {
     return;
   }
   const nextRunAt = computeNextRunAt(job.repeatInterval, job.timezone);
   events.emit('reset', job.get(), nextRunAt.toISOString());
-  return job.update({
+  await job.update({
     queued: false,
     nextRunAt,
   });
@@ -46,22 +46,22 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
         where: {
           queued: false,
           nextRunAt: {
-            [Op.lt]: new Date().toISOString()
+            [Op.lt]: new Date().toISOString(),
           },
           name: {
-            [Op.in]: allJobs
+            [Op.in]: allJobs,
           },
-          deletedAt: null
+          deletedAt: null,
         },
         attributes: ['name', [fn('COUNT', 'name'), 'count']],
-        group: ['name']
+        group: ['name'],
       });
 
       events.emit(
         'pending',
         pendingJobs.reduce((acc, curr) => {
           const job = curr.get();
-          //@ts-expect-error
+          // @ts-expect-error
           acc[job.name] = +job.count;
           return acc;
         }, {})

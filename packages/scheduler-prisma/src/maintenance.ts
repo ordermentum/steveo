@@ -26,7 +26,9 @@ export default function initMaintenance(
 
     try {
       // Returns a grouped object of jobs that are pending (jobs that are not currently running and are due to run)
-      const pendingJobs = await client.$queryRaw<{ name: string; count: string; }[]>`
+      const pendingJobs = await client.$queryRaw<
+        { name: string; count: string }[]
+      >`
         SELECT name, count(name) from jobs
         WHERE queued = false AND next_run_at < CURRENT_TIMESTAMP
         AND name in (${Prisma.join(allJobs)})

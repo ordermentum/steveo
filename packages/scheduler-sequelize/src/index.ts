@@ -418,7 +418,7 @@ export class JobScheduler implements JobSchedulerInterface {
     this.startupCheck = true;
     await this.Job.findOrCreate({
       where: {
-        name: MAINTENANCE_JOB_NAME
+        name: MAINTENANCE_JOB_NAME,
       },
       paranoid: false,
       defaults: {
@@ -427,7 +427,7 @@ export class JobScheduler implements JobSchedulerInterface {
         queued: false,
         data: {},
         repeatInterval: 'FREQ=MINUTELY;INTERVAL=1',
-      }
+      },
     });
   }
 
