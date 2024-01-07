@@ -18,7 +18,7 @@ services:
       - DATABASE_URI=postgres://steveo@postgresql/steveo_testing
     command: "npm test"
   postgresql:
-    image: postgres:9.5
+    image: postgres:9.6
     command: postgres
     volumes:
       - ./test/db_config:/docker-entrypoint-initdb.d
