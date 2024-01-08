@@ -3,7 +3,7 @@ import {
   PutMetricDataCommand,
 } from '@aws-sdk/client-cloudwatch';
 import {
-  JobContext as PrismaJobContext,
+  Job as PrismaJob,
   JobScheduler as PrismaScheduler,
 } from '@steveojs/scheduler-prisma';
 import {
@@ -15,18 +15,18 @@ import {
   JobInstance,
 } from '@steveojs/scheduler-sequelize/lib/models/job';
 
-type Job = PrismaJobContext['job'] | JobInstance;
-type JobAttributes = SequelizeJob | PrismaJobContext['job'];
+type Job = PrismaJob | JobInstance;
+type JobAttributes = SequelizeJob | PrismaJob;
 
 const client = new CloudWatchClient();
-const Namespace = 'OM-DB-Jobs';
+const Namespace = 'Steveo-DB-Jobs';
 
 export const schedulerMetrics = (
   scheduler: PrismaScheduler | SequelizeScheduler,
   service: string
 ) => {
   scheduler.events.on('duration', (job: Job) => {
-    const MetricName = job!.name.toUpperCase();
+    const MetricName = job.name.toUpperCase();
     const command = new PutMetricDataCommand({
       MetricData: [
         {
@@ -54,7 +54,7 @@ export const schedulerMetrics = (
 
   scheduler.events.on('lagged', (jobs: JobAttributes[]) => {
     for (const job of jobs) {
-      const MetricName = job!.name.toUpperCase();
+      const MetricName = job.name.toUpperCase();
       const command = new PutMetricDataCommand({
         MetricData: [
           {
@@ -84,7 +84,7 @@ export const schedulerMetrics = (
   });
 
   scheduler.events.on('reset', (job: JobAttributes) => {
-    const MetricName = job!.name.toUpperCase();
+    const MetricName = job.name.toUpperCase();
     const command = new PutMetricDataCommand({
       MetricData: [
         {

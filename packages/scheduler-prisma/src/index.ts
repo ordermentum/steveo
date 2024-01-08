@@ -467,3 +467,4 @@ export class JobScheduler implements JobSchedulerInterface {
 }
 
 export * from './helpers';
+export { Job };
