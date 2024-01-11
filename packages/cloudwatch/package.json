@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/cloudwatch",
-  "version": "0.0.1-beta4",
+  "version": "0.0.1",
   "main": "lib/index.js",
   "repository": "git@github.com:ordermentum/steveo.git",
   "license": "Apache-2.0",

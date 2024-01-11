@@ -1,5 +1,13 @@
 # @steveojs/scheduler-prisma
 
+## 6.1.0
+
+### Minor Changes
+
+- a87d9d8: Fixed issue where `jobId` was not extracted correctly, causing jobs to not repeat. Updated argument handling to extract`jobId`, ensuring jobs reschedule as expected.
+- 7f46fa9: Add pending jobs event
+- 6fde555: Upgrade to latest prisma client
+
 ## 6.0.1
 
 ### Patch Changes
