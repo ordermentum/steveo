@@ -18,6 +18,7 @@ describe('Maintenance task', async () => {
         findAll: SinonStub;
       }
     >;
+    findAll: SinonStub;
   };
   let scopeStub: SinonStub;
   let updateStub: SinonStub;
@@ -28,9 +29,11 @@ describe('Maintenance task', async () => {
     D: moment.duration(15, 'minutes'),
   };
   let resetJobStub: SinonStub;
+  let findPendingJobsStub: SinonStub;
 
   beforeEach(() => {
     sandbox = createSandbox();
+    findPendingJobsStub = sandbox.stub();
     eventsStub = sandbox.stub().resolves();
     updateStub = sandbox.stub();
     findAllStub = sandbox.stub();
@@ -40,6 +43,7 @@ describe('Maintenance task', async () => {
     });
     JobStub = {
       scope: scopeStub,
+      findAll: findPendingJobsStub
     };
     resetJobStub = sandbox.stub(maintenance, 'resetJob').resolves();
     // @ts-ignore
@@ -95,9 +99,15 @@ describe('Maintenance task', async () => {
         },
       })
       .resolves(customLaggyJobs);
-
+    findPendingJobsStub.resolves([{
+      get: () => ({
+        name: 'pending',
+        count: '120'
+      })
+    }]);
     await maintenanceCallback();
     expect(JobStub.scope.callCount).to.eql(4);
+    expect(findPendingJobsStub.callCount).to.eql(1);
     expect(updateStub.callCount).to.eqls(2);
 
     // Restarts safe to restart blocked jobs
@@ -128,8 +138,14 @@ describe('Maintenance task', async () => {
     // Resets laggy risky jobs with custom restart
     expect(resetJobStub.args[1][0].get()).to.eqls('D');
 
+    // Expect a pending jobs event
+    expect(eventsStub.args[0][0]).to.eqls('pending');
+    expect(eventsStub.args[0][1]).to.eqls({
+      pending: 120
+    });
+
     // Emits an event for laggy jobs and don't have custom restart policy
-    expect(eventsStub.args[0][0]).to.eqls('lagged');
-    expect(eventsStub.args[0][1]).to.eqls(['B']);
+    expect(eventsStub.args[1][0]).to.eqls('lagged');
+    expect(eventsStub.args[1][1]).to.eqls(['B']);
   });
 });

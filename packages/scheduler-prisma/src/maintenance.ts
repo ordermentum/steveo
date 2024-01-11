@@ -15,6 +15,8 @@ export default function initMaintenance(
     events,
   } = jobScheduler;
 
+  const allJobs = [...jobsRiskyToRestart, ...jobsSafeToRestart];
+
   return async () => {
     // ** Blocked ** These are jobs that have been queued > 10m ago but not accepted for processing
     // Auto-restart blocked
@@ -23,6 +25,25 @@ export default function initMaintenance(
     const lagInMinutes = 6;
 
     try {
+      // Returns a grouped object of jobs that are pending (jobs that are not currently running and are due to run)
+      const pendingJobs = await client.$queryRaw<
+        { name: string; count: string }[]
+      >`
+        SELECT name, count(name) from jobs
+        WHERE queued = false AND next_run_at < CURRENT_TIMESTAMP
+        AND name in (${Prisma.join(allJobs)})
+        AND deleted_at is NULL
+        GROUP BY 1
+      `;
+
+      events.emit(
+        'pending',
+        pendingJobs.reduce((acc, curr) => {
+          acc[curr.name] = +curr.count;
+          return acc;
+        }, {})
+      );
+
       const rows = jobsSafeToRestart?.length
         ? await client.$queryRaw<Job[]>`
     SELECT * FROM jobs

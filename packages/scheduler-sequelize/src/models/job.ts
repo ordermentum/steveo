@@ -7,38 +7,40 @@ import { associable, modelFactory, Properties } from '../types';
 const { Op } = Sequelize;
 
 export interface JobAttributes {
-  id: string;
+  id?: string;
   name: string;
-  data: Properties;
+  data?: Properties;
   lastFinishedAt?: string;
-  lastRunAt: string;
-  lastModifiedBy: string;
-  nextRunAt: string;
-  acceptedAt: string;
-  repeatInterval: string;
-  type: string;
-  failReason: Properties;
-  failedAt: string | null;
+  lastRunAt?: string;
+  lastModifiedBy?: string;
+  nextRunAt?: string;
+  acceptedAt?: string;
+  repeatInterval?: string;
+  type?: string;
+  failReason?: Properties;
+  failedAt?: string | null;
   priority?: number;
   failures?: number;
+  queued?: boolean;
+  timezone?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+}
+
+export type JobModel = JobAttributes & {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  data: Properties;
+  failReason: Properties;
   queued: boolean;
   timezone: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string;
-}
-
-export type JobCreationAttributes = Sequelize.Optional<JobAttributes, 'id'> & {
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  deletedAt?: string | Date;
+  priority: number;
+  failures: number;
 };
 
-export interface JobInstance
-  extends Sequelize.Model<JobAttributes, JobCreationAttributes>,
-    JobAttributes {
-  failures: number;
-}
+export interface JobInstance extends Sequelize.Model<JobAttributes>, JobModel {}
 
 const jobModelFactory: modelFactory<JobInstance> = (
   sequelize: Sequelize.Sequelize,
@@ -102,7 +104,6 @@ const jobModelFactory: modelFactory<JobInstance> = (
   // where run:    queued == true && (accepted_at < last_finished_at < next_run_at < last_run_at < now())
   // and accepted: queued == true && (last_finished_at < next_run_at < last_run_at < accepted_at <= now())
   // First run case: accepted_at is null, last_finished_at is null, last_run_at is set
-  // @ts-expect-error
   Job.addScope('blocked', () => ({
     where: {
       queued: true,
@@ -146,6 +147,7 @@ const jobModelFactory: modelFactory<JobInstance> = (
       },
     },
   }));
+
   return Job;
 };
 

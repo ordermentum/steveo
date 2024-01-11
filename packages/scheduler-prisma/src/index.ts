@@ -19,6 +19,16 @@ const DEFAULT_RUN_INTERVAL = 5000; // run every 5 seconds;
 export const DEFAULT_MAX_RESTARTS_ON_FAILURE = 3;
 export const DEFAULT_BACKOFF = 60000; // 60 seconds
 
+export type MaintenanceInfo = {
+  stuck: number;
+  restarted: number;
+  completed: number;
+};
+
+export type PendingJobs = {
+  [name: string]: number;
+};
+
 export interface Events {
   /**
    * @description A list of jobs that have lagged and have not been restarted
@@ -34,6 +44,11 @@ export interface Events {
    * @description Job duration (only available when wrapped with the timestamp helper)
    */
   duration: (job: Job, timeSecs: number, success: boolean) => void;
+
+  /**
+   * @description An object of job names against pending jobs to run
+   */
+  pending: (data: PendingJobs) => void;
 }
 
 export type JobContext = {
@@ -57,6 +72,8 @@ export type TaskCallback<T, R, C = JobContext> =
 export type Tasks = {
   [name: string]: TaskCallback<any, any> | PublishableTask;
 };
+
+const MAINTENANCE_JOB_NAME = 'check';
 export interface JobSchedulerInterface {
   logger: Logger;
 
@@ -177,11 +194,6 @@ export interface JobSchedulerInterface {
     "timezone","'UTC'::character varying","NO","character varying"
     "accepted_at",,"YES","timestamp with time zone"
     "priority","1","NO","integer" 
- * NOTE: Prerequisite is to have a job record as following in the DB:
-    ** PLEASE MODIFY IT ACCORDING TO YOUR JOB TABLE SCHEMA
-    INSERT INTO "public"."jobs"("id","name","data","last_finished_at","last_modified_by","last_run_at","next_run_at","repeat_interval","type","fail_reason","failed_at","queued","created_at","updated_at","deleted_at","timezone","accepted_at","sundial_next_run_at","priority")
-    VALUES
-    (uuid_generate_v4(),E'check',E'{}',NULL ,NULL,NULL,NULL,E'FREQ=MINUTELY;INTERVAL=30',NULL,E'{}',NULL,FALSE,NOW(),NOW(),NULL,E'UTC',NULL,500);
  */
 export class JobScheduler implements JobSchedulerInterface {
   logger: Logger;
@@ -222,6 +234,8 @@ export class JobScheduler implements JobSchedulerInterface {
 
   exiting: boolean = false;
 
+  startupCheck: boolean = false;
+
   currentTimeout?: ReturnType<typeof setTimeout>;
 
   namespace?: string;
@@ -249,6 +263,7 @@ export class JobScheduler implements JobSchedulerInterface {
     backOffMs = DEFAULT_BACKOFF,
     maxRestartsOnFailure = DEFAULT_MAX_RESTARTS_ON_FAILURE,
     namespace,
+    events = new EventEmitter() as TypedEmitter<Events>,
   }: JobSchedulerInterface) {
     this.logger = logger;
     this.heartbeat = new Date().getTime();
@@ -265,7 +280,7 @@ export class JobScheduler implements JobSchedulerInterface {
     this.lagInMinutes = lagInMinutes ?? DEFAULT_LAG;
     this.blockedInMinutes = blockedInMinutes ?? DEFAULT_BLOCKED_DURATION;
     this.defaultRunInterval = defaultRunInterval ?? DEFAULT_RUN_INTERVAL;
-    this.events = new EventEmitter() as TypedEmitter<Events>;
+    this.events = events;
     this.timestampHelper = timestampHelperFactory(this);
     const maintenanceTask = this.timestampHelper(
       this.client,
@@ -273,7 +288,7 @@ export class JobScheduler implements JobSchedulerInterface {
     );
     this.tasks = {
       ...this.wrapTasks(tasks),
-      check: maintenanceTask,
+      [MAINTENANCE_JOB_NAME]: maintenanceTask,
     };
 
     this.allJobs = Array.from(
@@ -331,7 +346,9 @@ export class JobScheduler implements JobSchedulerInterface {
           try {
             // @ts-ignore
             await task(item.data, {
-              job: item,
+              job: {
+                id: item.id,
+              },
             });
           } catch (ex) {
             this.logger.error(`action ${name} failed to publish message`, ex);
@@ -376,6 +393,27 @@ export class JobScheduler implements JobSchedulerInterface {
     this.paused = false;
   }
 
+  async init() {
+    if (this.startupCheck) return;
+    this.startupCheck = true;
+    const maintenanceJob = await this.client.job.findFirst({
+      where: {
+        name: MAINTENANCE_JOB_NAME,
+      },
+    });
+    if (!maintenanceJob) {
+      await this.client.job.create({
+        data: {
+          name: MAINTENANCE_JOB_NAME,
+          nextRunAt: new Date().toISOString(),
+          queued: false,
+          data: {},
+          repeatInterval: 'FREQ=MINUTELY;INTERVAL=1',
+        },
+      });
+    }
+  }
+
   async healthCheck() {
     if (this.processing) return true;
 
@@ -400,6 +438,7 @@ export class JobScheduler implements JobSchedulerInterface {
      */
     waitTime: number = this.defaultRunInterval
   ): Promise<void> => {
+    await this.init();
     const loop = async () => {
       if (this.currentTimeout) {
         clearTimeout(this.currentTimeout);
@@ -428,3 +467,4 @@ export class JobScheduler implements JobSchedulerInterface {
 }
 
 export * from './helpers';
+export { Job };

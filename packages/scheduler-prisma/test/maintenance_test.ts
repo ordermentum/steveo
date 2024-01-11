@@ -70,12 +70,13 @@ describe('Maintenance task', async () => {
       name: 'D',
     });
 
-    queryStub.onFirstCall().resolves([{ id: 2 }, { id: 5 }]);
-    queryStub.onSecondCall().resolves([{ id: 2 }, { id: 5 }]);
-    queryStub.onThirdCall().resolves([{ id: 3 }, { id: 4, name: 'D' }]);
+    queryStub.onCall(0).resolves([{ id: 10 }, { id: 9 }]);
+    queryStub.onCall(1).resolves([{ id: 2 }, { id: 5 }]);
+    queryStub.onCall(2).resolves([{ id: 2 }, { id: 5 }]);
+    queryStub.onCall(3).resolves([{ id: 3 }, { id: 4, name: 'D' }]);
 
     await maintenanceCallback();
-
+    expect(eventsStub.callCount).to.eqls(1);
     expect(updateStub.callCount).to.eql(2);
     expect(resetJobStub.callCount).to.eql(2);
     // Reset blocked risky to restart jobs

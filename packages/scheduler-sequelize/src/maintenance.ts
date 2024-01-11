@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import { Op } from 'sequelize';
+import { Op, fn } from 'sequelize';
 import TypedEventEmitter from 'typed-emitter';
 import { JobScheduler, Events } from './index';
 import { JobInstance } from './models/job';
@@ -16,9 +16,12 @@ export const resetJob = async (
   job: JobInstance,
   events: TypedEventEmitter<Events>
 ) => {
+  if (!job.repeatInterval) {
+    return;
+  }
   const nextRunAt = computeNextRunAt(job.repeatInterval, job.timezone);
   events.emit('reset', job.get(), nextRunAt.toISOString());
-  return job.update({
+  await job.update({
     queued: false,
     nextRunAt,
   });
@@ -34,8 +37,36 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
     Job,
   } = jobScheduler;
 
+  const allJobs = [...jobsSafeToRestart, ...jobsRiskyToRestart];
+
   return async () => {
     try {
+      // Returns a grouped object of jobs that are pending (jobs that are not currently running and are due to run)
+      const pendingJobs = await Job.findAll({
+        where: {
+          queued: false,
+          nextRunAt: {
+            [Op.lt]: new Date().toISOString(),
+          },
+          name: {
+            [Op.in]: allJobs,
+          },
+          deletedAt: null,
+        },
+        attributes: ['name', [fn('COUNT', 'name'), 'count']],
+        group: ['name'],
+      });
+
+      events.emit(
+        'pending',
+        pendingJobs.reduce((acc, curr) => {
+          const job = curr.get();
+          // @ts-expect-error
+          acc[job.name] = +job.count;
+          return acc;
+        }, {})
+      );
+
       // ** Blocked ** These are jobs that have been queued > 10m ago but not accepted for processing
       // Auto-restart blocked
       await Job.scope('blocked').update(
