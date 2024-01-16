@@ -19,7 +19,8 @@ type Job = PrismaJob | JobInstance;
 type JobAttributes = SequelizeJob | PrismaJob;
 
 const client = new CloudWatchClient({
-  region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1'
+  region:
+    process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1',
 });
 const Namespace = 'Steveo-DB-Jobs';
 
