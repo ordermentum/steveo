@@ -1,5 +1,14 @@
 # @steveojs/cloudwatch
 
+## 0.0.2
+
+### Patch Changes
+
+- 28fc2b5: Set aws region
+- Updated dependencies [06f8a49]
+  - @steveojs/scheduler-sequelize@6.1.1
+  - @steveojs/scheduler-prisma@6.1.1
+
 ## 0.0.1
 
 ### Patch Changes
