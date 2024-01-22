@@ -1,5 +1,11 @@
 # @steveojs/scheduler-sequelize
 
+## 6.1.1
+
+### Patch Changes
+
+- 06f8a49: Don't fail if no task not called with any arguments
+
 ## 6.1.0
 
 ### Minor Changes
