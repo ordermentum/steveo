@@ -27,9 +27,6 @@
     "exclude": [
       "lib",
       "node_modules"
-    ],
-    "files": [
-      "src/definitions/lunartick.d.ts"
     ]
   }
   

@@ -1,5 +1,5 @@
-import Rule from '@ordermentum/lunartick';
-import moment, { Moment } from 'moment-timezone';
+import { RRuleSet } from 'rrule-rust';
+import moment from 'moment-timezone';
 import { JobModel } from './models/index';
 import { JobInstance } from './models/job';
 import {
@@ -19,27 +19,20 @@ export const isHealthy = (heartbeat: number, timeout: number) =>
 export const computeNextRunAt = (
   interval: string,
   timezone = 'UTC'
-): Moment => {
+): string => {
   if (!interval) {
     throw new Error('Invalid interval argument supplied to computeNextRunAt');
   }
 
-  const rule = Rule.parse(interval);
-
-  if (!rule.tzId) {
-    rule.tzId = timezone;
-  }
-
-  if (!rule.byMinute) {
-    rule.byMinute = [0];
-  }
-
-  if (!rule.bySecond) {
-    rule.bySecond = [0];
-  }
-
-  const rrule = new Rule(rule);
-  return rrule.getNext(new Date()).date;
+  const rule = interval
+    .split(';')
+    .filter(b => !b.includes('TZID'))
+    .join(';');
+  const timeISO8601 = moment().tz(timezone).format('YYYYMMDDTHHmmss');
+  const rrule = RRuleSet.parse(
+    `DTSTART;TZID=${timezone}:${timeISO8601}\nRRULE:${rule}\nEXDATE;TZID=${timezone}:${timeISO8601}`
+  );
+  return new Date(rrule.all(1)[0]).toISOString();
 };
 
 /**
@@ -119,10 +112,7 @@ const updateFinishTask = async (job?: JobInstance | null) => {
       force: true,
     });
   } else {
-    const nextRunAt = computeNextRunAt(
-      job.repeatInterval,
-      job.timezone
-    ).toISOString();
+    const nextRunAt = computeNextRunAt(job.repeatInterval, job.timezone);
     await job.update({
       queued: false,
       nextRunAt,
