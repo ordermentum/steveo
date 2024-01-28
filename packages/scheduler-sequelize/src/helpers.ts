@@ -12,6 +12,8 @@ import {
 
 import { Properties } from './types';
 
+const SIX_MONTHS_IN_MS = 15778476000;
+
 export const isHealthy = (heartbeat: number, timeout: number) =>
   new Date().getTime() - timeout < heartbeat;
 
@@ -24,15 +26,30 @@ export const computeNextRunAt = (
     throw new Error('Invalid interval argument supplied to computeNextRunAt');
   }
 
-  const rule = interval
-    .split(';')
-    .filter(b => !b.includes('TZID'))
-    .join(';');
-  const timeISO8601 = moment().tz(timezone).format('YYYYMMDDTHHmmss');
-  const rrule = RRuleSet.parse(
-    `DTSTART;TZID=${timezone}:${timeISO8601}\nRRULE:${rule}\nEXDATE;TZID=${timezone}:${timeISO8601}`
-  );
-  return new Date(rrule.all(1)[0]).toISOString();
+  const isValidRule = interval.includes('DTSTART');
+
+  if (!isValidRule) {
+    const rule = interval
+      .split(';')
+      .filter(b => !b.includes('TZID'))
+      .join(';');
+
+    const timeISO8601 = moment().tz(timezone).format('YYYYMMDDTHHmmss');
+    const rrule = RRuleSet.parse(
+      `DTSTART;TZID=${timezone}:${timeISO8601}\nRRULE:${rule}\nEXDATE;TZID=${timezone}:${timeISO8601}`
+    );
+    return new Date(rrule.all(1)[0]).toISOString();
+  }
+
+  const rrule = RRuleSet.parse(interval);
+
+  return new Date(
+    rrule.between(
+      new Date().getTime(),
+      new Date().getTime() + SIX_MONTHS_IN_MS,
+      true
+    )[0]
+  ).toISOString();
 };
 
 /**
