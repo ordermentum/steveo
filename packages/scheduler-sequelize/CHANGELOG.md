@@ -1,5 +1,11 @@
 # @steveojs/scheduler-sequelize
 
+## 7.0.0
+
+### Major Changes
+
+- 00e72e8: Use rrule-rust instead of lunartick for rrule strings
+
 ## 6.1.1
 
 ### Patch Changes
