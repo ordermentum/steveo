@@ -6,11 +6,14 @@ import { computeNextRunAt, isHealthy } from '../src/helpers';
 describe('helpers', () => {
   let sandbox: SinonSandbox;
   let clock: SinonFakeTimers;
+
   beforeEach(() => {
+    process.env.TZ = 'Australia/Sydney';
     sandbox = sinon.createSandbox();
   });
 
   afterEach(() => {
+    process.env.TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if(clock) clock.restore();
     sandbox.restore();
   });
