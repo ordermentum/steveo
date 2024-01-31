@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import Rule from '@ordermentum/lunartick';
+import { RRuleSet } from 'rrule-rust';
 import TypedEventEmitter from 'typed-emitter';
 import { Job, PrismaClient } from '@prisma/client';
 import {
@@ -12,6 +12,8 @@ import {
 } from './index';
 import { Properties } from './types';
 
+const SIX_MONTHS_IN_MS = 15778476000;
+
 export const isHealthy = (heartbeat: number, timeout: number) =>
   new Date().getTime() - timeout < heartbeat;
 
@@ -19,27 +21,35 @@ export const isHealthy = (heartbeat: number, timeout: number) =>
 export const computeNextRunAt = (
   interval: string,
   timezone = 'UTC'
-): moment.Moment => {
+): string => {
   if (!interval) {
     throw new Error('Invalid interval argument supplied to computeNextRunAt');
   }
 
-  const rule = Rule.parse(interval);
+  const isValidRule = interval.includes('DTSTART');
 
-  if (!rule.tzId) {
-    rule.tzId = timezone;
+  if (!isValidRule) {
+    const rule = interval
+      .split(';')
+      .filter(b => !b.includes('TZID'))
+      .join(';');
+
+    const timeISO8601 = moment().tz(timezone).format('YYYYMMDDTHHmmss');
+    const rrule = RRuleSet.parse(
+      `DTSTART;TZID=${timezone}:${timeISO8601}\nRRULE:${rule}\nEXDATE;TZID=${timezone}:${timeISO8601}`
+    );
+    return new Date(rrule.all(1)[0]).toISOString();
   }
 
-  if (!rule.byMinute) {
-    rule.byMinute = [0];
-  }
+  const rrule = RRuleSet.parse(interval);
 
-  if (!rule.bySecond) {
-    rule.bySecond = [0];
-  }
-
-  const rrule = new Rule(rule);
-  return rrule.getNext(new Date()).date;
+  return new Date(
+    rrule.between(
+      new Date().getTime(),
+      new Date().getTime() + SIX_MONTHS_IN_MS,
+      true
+    )[0]
+  ).toISOString();
 };
 
 /**
@@ -65,14 +75,14 @@ export const resetJob = async (
   events: TypedEventEmitter<Events>
 ) => {
   const nextRunAt = computeNextRunAt(job.repeatInterval, job.timezone);
-  events.emit('reset', job, nextRunAt.toISOString());
+  events.emit('reset', job, nextRunAt);
   return client.job.update({
     // @ts-expect-error namespace is an optional feature
     where: job.namespace
       ? // @ts-expect-error
         { id_namespace: { id: job.id, namespace: job.namespace } }
       : { id: job.id },
-    data: { queued: false, nextRunAt: nextRunAt.toISOString(), failures: 0 },
+    data: { queued: false, nextRunAt, failures: 0 },
   });
 };
 
@@ -196,10 +206,7 @@ const updateFinishTask = async (
         : { id },
     });
   }
-  const nextRunAt = computeNextRunAt(
-    job.repeatInterval,
-    job.timezone
-  ).toISOString();
+  const nextRunAt = computeNextRunAt(job.repeatInterval, job.timezone);
   await client.job.update({
     where: namespace
       ? // @ts-expect-error namespace is an optional feature

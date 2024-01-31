@@ -20,7 +20,7 @@ export const resetJob = async (
     return;
   }
   const nextRunAt = computeNextRunAt(job.repeatInterval, job.timezone);
-  events.emit('reset', job.get(), nextRunAt.toISOString());
+  events.emit('reset', job.get(), nextRunAt);
   await job.update({
     queued: false,
     nextRunAt,

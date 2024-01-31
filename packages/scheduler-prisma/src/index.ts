@@ -139,7 +139,7 @@ export interface JobSchedulerInterface {
    * Timestamp helper will perform the following:
    * 1. Adds an accepted at timestamp (as the current timestamp) on the job to signal the job was accepted at this time
    * 2. Runs the callback (whatever the task is)
-   * 3. When the callback runs successfully without any issues, it calculates the next run at for the job using its lunartick (https://www.npmjs.com/package/lunartick) rule and adds the following to the job
+   * 3. When the callback runs successfully without any issues, it calculates the next run at for the job using its ical rrule and adds the following to the job
    * - queued: false //signalling the job is now over and ready to be picked up at the next run time
    * - nextRunAt: timestamp //time to pick up the job
    * - lastFinishedAt: timestamp //when did the job finish
