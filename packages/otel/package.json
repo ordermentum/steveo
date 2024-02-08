@@ -10,9 +10,7 @@
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/sdk-node": "^0.48.0",
     "@opentelemetry/sdk-trace-node": "^1.21.0",
-    "mocha": "^10.2.0",
-    "steveo": "^6.1.2",
-    "ts-node": "^10.9.2"
+    "steveo": "^6.1.2"
   },
   "scripts": {
     "build": "yarn run tsc",
@@ -32,6 +30,10 @@
     "@types/chai": "^4.3.11",
     "chai": "^5.0.3",
     "nyc": "^15.1.0",
+    "mocha": "^10.2.0",
+    "prettier": "2.8.8",
+    "source-map-support": "0.5.21",
+    "ts-node": "10.9.2",
     "typescript": "^5.3.3"
   }
 }

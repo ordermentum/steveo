@@ -1,3 +1,6 @@
+# TS build info for incremental builds
+tsconfig.tsbuildinfo
+
 # Logs
 logs
 *.log
