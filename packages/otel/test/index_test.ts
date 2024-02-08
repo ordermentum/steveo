@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { expect } from 'chai';
 import { Steveo } from 'steveo';
 import OpenTelemetryMiddleware from '../src';
