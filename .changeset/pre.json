@@ -1,0 +1,17 @@
+{
+  "mode": "pre",
+  "tag": "otel",
+  "initialVersions": {
+    "@steveojs/cloudwatch": "1.0.0",
+    "@steveojs/newrelic": "6.0.1",
+    "@steveojs/otel": "0.0.1",
+    "@steveojs/scheduler-prisma": "7.0.0",
+    "@steveojs/scheduler-sequelize": "7.0.0",
+    "@steveojs/sentry": "6.0.1",
+    "@steveojs/statsd": "6.0.1",
+    "steveo": "6.1.2"
+  },
+  "changesets": [
+    "tidy-dancers-kneel"
+  ]
+}
