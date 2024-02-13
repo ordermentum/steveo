@@ -1,5 +1,12 @@
 # @steveojs/sentry
 
+## 6.0.2-otel.0
+
+### Patch Changes
+
+- Updated dependencies [92711b0]
+  - steveo@6.1.3-otel.0
+
 ## 6.0.1
 
 ### Patch Changes

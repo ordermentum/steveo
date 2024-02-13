@@ -7,5 +7,18 @@
     "no-unused-expressions": "off",
     "no-empty-function": "off",
     "@typescript-eslint/no-shadow": "off"
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "project": [
+          "packages/*/tsconfig.json",
+          "tsconfig.json"
+        ]
+      }
+    }
   }
 }

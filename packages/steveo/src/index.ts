@@ -33,9 +33,10 @@ export {
   RedisConfiguration,
   SQSConfiguration,
   DummyConfiguration,
+  MiddlewareContext,
 } from './common';
 
-export { Middleware };
+export { Middleware, Logger };
 
 export class Steveo implements ISteveo {
   config: KafkaConfiguration | RedisConfiguration | SQSConfiguration;

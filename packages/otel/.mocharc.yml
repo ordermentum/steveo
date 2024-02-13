@@ -1,0 +1,9 @@
+recursive: true
+timeout: 160000
+retries: 1
+exit: true
+colors: true
+max-http-header-size: 16384
+require:
+  - "ts-node/register"
+  - "source-map-support/register"
