@@ -5333,6 +5333,13 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
+"lunartick-deprecated@npm:@ordermentum/lunartick@0.0.19":
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/@ordermentum/lunartick/-/lunartick-0.0.19.tgz#4cc0b0bc56a9377f44e6dfad4238acc020160b92"
+  integrity sha512-gL03DvxsIvhiG90AMDLo+R0RKWFl4JdGf56c8jaWtxqNpq6fASAcpzwnPjYbZdG284keQ67AJ04IO5gQljrBEQ==
+  dependencies:
+    moment-timezone "^0.5.11"
+
 luxon@^1.26.0:
   version "1.28.1"
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.28.1.tgz#528cdf3624a54506d710290a2341aa8e6e6c61b0"
@@ -5509,6 +5516,13 @@ moment-timezone@*, moment-timezone@^0.5.33, moment-timezone@^0.5.43:
   version "0.5.44"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.44.tgz#a64a4e47b68a43deeab5ae4eb4f82da77cdf595f"
   integrity sha512-nv3YpzI/8lkQn0U6RkLd+f0W/zy/JnoR5/EyPz/dNkPTBjA2jNLCVxaiQ8QpeLymhSZvX0wCL5s27NQWdOPwAw==
+  dependencies:
+    moment "^2.29.4"
+
+moment-timezone@^0.5.11:
+  version "0.5.45"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.45.tgz#cb685acd56bac10e69d93c536366eb65aa6bcf5c"
+  integrity sha512-HIWmqA86KcmCAhnMAN0wuDOARV/525R2+lOLotuGFzn4HO+FH+/645z2wx0Dt3iDv6/p61SIvKnDstISainhLQ==
   dependencies:
     moment "^2.29.4"
 

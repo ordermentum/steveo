@@ -6,7 +6,6 @@ import { computeNextRunAt, isHealthy } from '../src/helpers';
 describe('helpers', () => {
   let sandbox: SinonSandbox;
   let clock: SinonFakeTimers;
-  let systemTZ = process.env.TZ;
 
   beforeEach(() => {
     process.env.TZ = 'Australia/Sydney';
