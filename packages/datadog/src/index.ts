@@ -5,28 +5,25 @@ import { Middleware } from 'steveo';
 export class DataDogMiddleware implements Middleware {
   publish(context, next) {
     return tracer.trace(
-      context.topic,
+      'steveo.publish',
       {
-        service: 'steveo',
         resource: context.topic,
-        type: 'publish',
+        tags: {
+          ...context.payload,
+        },
       },
-      span => {
-        if (span) {
-          span.setBaggageItem('task', context.topic);
-        }
-        return next();
-      }
+      () => next()
     );
   }
 
   async consume(context, next) {
     return tracer.trace(
-      context.topic,
+      'steveo.consume',
       {
-        service: 'steveo',
         resource: context.topic,
-        type: 'consume',
+        tags: {
+          ...context.payload,
+        },
       },
       () => next()
     );
