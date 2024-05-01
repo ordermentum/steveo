@@ -19,8 +19,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-      - run: yarn
-      - run: yarn build && yarn lint
+
+      - name: Add NPM Token to .npmrc file
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Build and lint
+        run: yarn build && yarn lint
 
   build:
     runs-on: ubuntu-latest
@@ -52,7 +59,13 @@ jobs:
           localstack start -d
           localstack wait -t 30
           echo "Startup complete"
-      - run: yarn
+
+      - name: Add NPM Token to .npmrc file
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
+
+      - name: Install Dependencies
+        run: yarn
+
       - name: "Run tests"
         run: yarn test
         env:
