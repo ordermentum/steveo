@@ -112,7 +112,7 @@ describe('Kafka Producer', () => {
     expect(sendStub.args[0][2] instanceof Buffer).to.be.true;
   });
 
-  it.only('should terminate cleanly if the producer is connected', async () => {
+  it('should terminate cleanly if the producer is connected', async () => {
     const registry = new Registry();
     const p = new Producer(
       {
