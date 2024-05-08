@@ -108,7 +108,13 @@ class KafkaProducer
   }
 
   async stop() {
-    this.producer.disconnect();
+    if (this.producer.isConnected()) {
+      this.producer.disconnect(err => {
+        if (err) {
+          this.logger.error('Error while disconnecting producer', err);
+        }
+      });
+    }
   }
 }
 
