@@ -51,7 +51,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
     this.options = options;
   }
 
-  async publish(payload: T | T[]) {
+  async publish(payload: T | T[], partition?: number, key?: string) {
     let params;
     if (!Array.isArray(payload)) {
       params = [payload];
@@ -65,7 +65,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
       await Promise.all(
         params.map(data => {
           this.registry.emit('task_send', this.topic, data);
-          return this.producer.send(this.topic, data);
+          return this.producer.send(this.topic, data, partition, key);
         })
       );
       this.registry.emit('task_success', this.topic, payload);

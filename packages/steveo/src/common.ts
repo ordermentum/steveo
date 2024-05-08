@@ -171,7 +171,7 @@ export interface ITask<T = any, R = any> {
   topic: string;
   options: TaskOptions;
   producer: any;
-  publish(payload: T | T[]): Promise<void>;
+  publish(payload: T | T[], partition?: number, key?: string): Promise<void>;
 }
 
 export interface IRunner<T = any, M = any> {
@@ -222,7 +222,12 @@ export interface IProducer<P = any> {
   producer?: any;
   initialize(topic?: string): Promise<P>;
   getPayload(msg: any, topic: string): any;
-  send<T = any>(topic: string, payload: T, key?: string): Promise<void>;
+  send<T = any>(
+    topic: string,
+    payload: T,
+    partition?: number,
+    key?: string
+  ): Promise<void>;
   // FIXME: Replace T = any with Record<string, any> or an explicit list of
   // types we will handle as first-class citizens,
   // e.g. `Record<string, any> | string`.

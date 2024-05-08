@@ -71,9 +71,14 @@ class KafkaProducer
     return Buffer.from(JSON.stringify({ ...payload, _meta: context }), 'utf-8');
   };
 
-  publish(topic: string, data, key: string | null = null) {
+  publish(
+    topic: string,
+    data,
+    partition: number | null = null,
+    key: string | null = null
+  ) {
     return new Promise<void>((resolve, reject) => {
-      this.producer.produce(topic, null, data, key, Date.now(), err => {
+      this.producer.produce(topic, partition, data, key, Date.now(), err => {
         if (err) {
           this.logger.error(
             'Error while sending payload:',
@@ -93,11 +98,16 @@ class KafkaProducer
     });
   }
 
-  async send<T = any>(topic: string, payload: T, key: string | null = null) {
+  async send<T = any>(
+    topic: string,
+    payload: T,
+    partition: number | null = null,
+    key: string | null = null
+  ) {
     try {
       await this.wrap({ topic, payload }, async c => {
         const data = this.getPayload(c.payload);
-        await this.publish(c.topic, data, key);
+        await this.publish(c.topic, data, partition, key);
         this.registry.emit('producer_success', topic, c.payload);
       });
     } catch (ex) {
