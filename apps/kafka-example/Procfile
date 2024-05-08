@@ -1,0 +1,2 @@
+producer: KAFKA_BROKERS=localhost:9092 ./producer.ts
+consumer: KAFKA_BROKERS=localhost:9092 ./consumer.ts
