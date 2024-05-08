@@ -142,6 +142,8 @@ export type TaskOptions = {
 
   waitToCommit?: boolean;
 
+  partitioner?: (payload: any) => number;
+
   // num_partitions and replication_factor are used for kafka
   replication_factor?: number;
   num_partitions?: number;
@@ -171,7 +173,7 @@ export interface ITask<T = any, R = any> {
   topic: string;
   options: TaskOptions;
   producer: any;
-  publish(payload: T | T[], partition?: number, key?: string): Promise<void>;
+  publish(payload: T | T[]): Promise<void>;
 }
 
 export interface IRunner<T = any, M = any> {
