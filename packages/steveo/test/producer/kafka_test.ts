@@ -111,4 +111,37 @@ describe('Kafka Producer', () => {
     await p.send('test-topic', JSON.stringify({ a: 'payload', b: '¼' }));
     expect(sendStub.args[0][2] instanceof Buffer).to.be.true;
   });
+
+  it('should terminate cleanly if the producer is connected', async () => {
+    const registry = new Registry();
+    const p = new Producer(
+      {
+        engine: 'kafka',
+        bootstrapServers: 'kafka:9200',
+        securityProtocol: 'plaintext',
+        tasksPath: '',
+      },
+      registry
+    );
+    sandbox.stub(p.producer, 'isConnected').resolves(true);
+    const disconnectStub = sandbox.stub(p.producer, 'disconnect');
+    await p.stop();
+    expect(disconnectStub.callCount).to.equal(1);
+  });
+
+  it('should terminate cleanly if the producer is not connected', async () => {
+    const registry = new Registry();
+    const p = new Producer(
+      {
+        engine: 'kafka',
+        bootstrapServers: 'kafka:9200',
+        securityProtocol: 'plaintext',
+        tasksPath: '',
+      },
+      registry
+    );
+    const disconnectStub = sandbox.spy(p.producer, 'disconnect');
+    await p.stop();
+    expect(disconnectStub.callCount).to.equal(0);
+  });
 });
