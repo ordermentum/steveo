@@ -51,7 +51,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
     this.options = options;
   }
 
-  async publish(payload: T | T[]) {
+  async publish(payload: T | T[], key?: string) {
     let params;
     if (!Array.isArray(payload)) {
       params = [payload];
@@ -64,13 +64,19 @@ class Task<T = any, R = any> implements ITask<T, R> {
       await this.producer.initialize(this.topic);
       await Promise.all(
         params.map(data => {
-          let partition: number | undefined;
-          if (this.options.partitioner) {
-            partition = this.options.partitioner(data);
+          // Partition key is defined by the key argument or
+          // the partition key callback from the task's options
+          let partitionKey = key;
+          if (!partitionKey && this.options.partitionKeyResolver) {
+            try {
+              partitionKey = this.options.partitionKeyResolver(data);
+            } catch (_) {
+              partitionKey = undefined;
+            }
           }
 
           this.registry.emit('task_send', this.topic, data);
-          return this.producer.send(this.topic, data, partition);
+          return this.producer.send(this.topic, data, partitionKey);
         })
       );
       this.registry.emit('task_success', this.topic, payload);
