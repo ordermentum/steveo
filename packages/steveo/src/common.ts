@@ -172,7 +172,7 @@ export interface ITask<T = any, R = any> {
   topic: string;
   options: TaskOptions;
   producer: any;
-  publish(payload: T | T[], key?: string): Promise<void>;
+  publish(payload: T | T[], context?: { key: string }): Promise<void>;
 }
 
 export interface IRunner<T = any, M = any> {
