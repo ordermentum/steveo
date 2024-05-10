@@ -143,7 +143,6 @@ export type TaskOptions = {
   waitToCommit?: boolean;
 
   // num_partitions and replication_factor are used for kafka
-  partitionKeyResolver?: (payload: any) => string;
   replication_factor?: number;
   num_partitions?: number;
 };
