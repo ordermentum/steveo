@@ -1141,25 +1141,25 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@datadog/native-appsec@7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@datadog/native-appsec/-/native-appsec-7.0.0.tgz#a380174dd49aef2d9bb613a0ec8ead6dc7822095"
-  integrity sha512-bywstWFW2hWxzPuS0+mFMVHHL0geulx5yQFtsjfszaH2LTAgk2D+Rt40MKbAoZ8q3tRw2dy6aYQ7svO3ca8jpA==
+"@datadog/native-appsec@7.1.1":
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/@datadog/native-appsec/-/native-appsec-7.1.1.tgz#eee96ae4c309e5b811611e968668f6744452c584"
+  integrity sha512-1XVrCY4g1ArN79SQANMtiIkaxKSPfgdAGv0VAM4Pz+NQuxKfl+2xQPXjQPm87LI1KQIO6MU6qzv3sUUSesb9lA==
   dependencies:
     node-gyp-build "^3.9.0"
 
-"@datadog/native-iast-rewriter@2.2.2":
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/@datadog/native-iast-rewriter/-/native-iast-rewriter-2.2.2.tgz#3f7feaf6be1af4c83ad063065b8ed509bbaf11cb"
-  integrity sha512-13ZBhJpjZ/tiV6rYfyAf/ITye9cyd3x12M/2NKhD4Ivev4N4uKBREAjpArOtzKtPXZ5b6oXwVV4ofT1SHoYyzA==
+"@datadog/native-iast-rewriter@2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@datadog/native-iast-rewriter/-/native-iast-rewriter-2.3.0.tgz#67abddc698504ad76736c0d49681bcf9e330e1bd"
+  integrity sha512-78ivSaaSXOaHn3VumF9kcSI443nbPfVAWsnDTH9X1ZbqXjHpSlHHTZgK9z/TNbkvuJarS/X1GBioPMcgea1Ejg==
   dependencies:
     lru-cache "^7.14.0"
     node-gyp-build "^4.5.0"
 
-"@datadog/native-iast-taint-tracking@1.6.4":
-  version "1.6.4"
-  resolved "https://registry.yarnpkg.com/@datadog/native-iast-taint-tracking/-/native-iast-taint-tracking-1.6.4.tgz#16c21ad7c36a53420c0d3c5a3720731809cc7e98"
-  integrity sha512-Owxk7hQ4Dxwv4zJAoMjRga0IvE6lhvxnNc8pJCHsemCWBXchjr/9bqg05Zy5JnMbKUWn4XuZeJD6RFZpRa8bfw==
+"@datadog/native-iast-taint-tracking@1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@datadog/native-iast-taint-tracking/-/native-iast-taint-tracking-1.7.0.tgz#0bcd4f287c25403d2a965939b33c35ae8544b363"
+  integrity sha512-p3qnYJrUr9TQ38tuOFoutDAQWOobLdaaWpTl0SHu126JH3ANBxWL/QirtJy6czfzLpm5eXwYHwHidD1Y0mNPdg==
   dependencies:
     node-gyp-build "^3.9.0"
 
@@ -1171,15 +1171,15 @@
     node-addon-api "^6.1.0"
     node-gyp-build "^3.9.0"
 
-"@datadog/pprof@5.0.0":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.0.0.tgz#0c0aaf06def6d2bc4b2d353ec7b264dadbfbefab"
-  integrity sha512-vhNan4SBuNWLpexunDJQ+hNbRAgWdk2qy5Iyh7Nn94uSSHXigAJMAvu4jwMKKQKFfchtobOkWT8GQUWW3tgpFg==
+"@datadog/pprof@5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.2.0.tgz#a6c2779335b4f0fd51754e4de193e98591de387e"
+  integrity sha512-pSwLARpNLAIV1JttxXOBRKTn/NQYXDy1PJaV458YFDdAYxnBqpsYTat3/nX+8V5GoN4SfdHDci3zqXM+Ym66gQ==
   dependencies:
     delay "^5.0.0"
     node-gyp-build "<4.0"
     p-limit "^3.1.0"
-    pprof-format "^2.0.7"
+    pprof-format "^2.1.0"
     source-map "^0.7.4"
 
 "@datadog/sketches-js@^2.1.0":
@@ -3308,26 +3308,26 @@ damerau-levenshtein@^1.0.6, damerau-levenshtein@^1.0.8:
   resolved "https://registry.yarnpkg.com/damerau-levenshtein/-/damerau-levenshtein-1.0.8.tgz#b43d286ccbd36bc5b2f7ed41caf2d0aba1f8a6e7"
   integrity sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==
 
-dc-polyfill@^0.1.2:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/dc-polyfill/-/dc-polyfill-0.1.4.tgz#4118cec81a8fab9a5729c41c285c715ffa42495a"
-  integrity sha512-8iwEduR2jR9wWYggeaYtYZWRiUe3XZPyAQtMTL1otv8X3kfR8xUIVb4l5awHEeyDrH6Je7N324lKzMKlMMN6Yw==
+dc-polyfill@^0.1.4:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/dc-polyfill/-/dc-polyfill-0.1.5.tgz#c21751413ef98320a646a9b5420409f620e6cc3b"
+  integrity sha512-vFlX8cfX8vGPnfZnDZHUz9T4PX9Y8JrOTt+MwUjjoH3NnZGHWb+Nm+h/6JrjLYlkxNTzTm9dahSfGToZnXXJ5A==
 
 dd-trace@^5.2.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.2.0.tgz#6ca2d76ece95f08d98468d7782c22f24192afa53"
-  integrity sha512-Z5ql3ZKzVW3DPstHPkTPcIPvKljHNtzTYY/WuZRlgT4XK7rMaN0j5nA8LlUh7m+tOPWs05IiKngbYVZjsqhRgA==
+  version "5.12.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.12.0.tgz#51ad4cace07f0ba7cf90f91be272ffe75c13a979"
+  integrity sha512-bO86NxlkvH7Qn6sJ6wduaZe/tmTX476WJFR7127kjssZbw2+wDFi/f5iFf0Ai6HbQf9ymMhYeeptx1zQvRmigQ==
   dependencies:
-    "@datadog/native-appsec" "7.0.0"
-    "@datadog/native-iast-rewriter" "2.2.2"
-    "@datadog/native-iast-taint-tracking" "1.6.4"
+    "@datadog/native-appsec" "7.1.1"
+    "@datadog/native-iast-rewriter" "2.3.0"
+    "@datadog/native-iast-taint-tracking" "1.7.0"
     "@datadog/native-metrics" "^2.0.0"
-    "@datadog/pprof" "5.0.0"
+    "@datadog/pprof" "5.2.0"
     "@datadog/sketches-js" "^2.1.0"
     "@opentelemetry/api" "^1.0.0"
     "@opentelemetry/core" "^1.14.0"
     crypto-randomuuid "^1.0.0"
-    dc-polyfill "^0.1.2"
+    dc-polyfill "^0.1.4"
     ignore "^5.2.4"
     import-in-the-middle "^1.7.3"
     int64-buffer "^0.1.9"
@@ -3344,10 +3344,11 @@ dd-trace@^5.2.0:
     node-abort-controller "^3.1.1"
     opentracing ">=0.12.1"
     path-to-regexp "^0.1.2"
-    pprof-format "^2.0.7"
+    pprof-format "^2.1.0"
     protobufjs "^7.2.5"
     retry "^0.13.1"
     semver "^7.5.4"
+    shell-quote "^1.8.1"
     tlhunter-sorted-set "^0.1.0"
 
 debug@4, debug@4.3.4, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.2, debug@^4.3.4:
@@ -6510,10 +6511,10 @@ postgres-interval@^1.1.0:
   dependencies:
     xtend "^4.0.0"
 
-pprof-format@^2.0.7:
-  version "2.0.7"
-  resolved "https://registry.yarnpkg.com/pprof-format/-/pprof-format-2.0.7.tgz#526e4361f8b37d16b2ec4bb0696b5292de5046a4"
-  integrity sha512-1qWaGAzwMpaXJP9opRa23nPnt2Egi7RMNoNBptEE/XwHbcn4fC2b/4U4bKc5arkGkIh2ZabpF2bEb+c5GNHEKA==
+pprof-format@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/pprof-format/-/pprof-format-2.1.0.tgz#acc8d7773bcf4faf0a3d3df11bceefba7ac06664"
+  integrity sha512-0+G5bHH0RNr8E5hoZo/zJYsL92MhkZjwrHp3O2IxmY8RJL9ooKeuZ8Tm0ZNBw5sGZ9TiM71sthTjWoR2Vf5/xw==
 
 preferred-pm@^3.0.0:
   version "3.1.2"
@@ -7173,6 +7174,11 @@ shebang-regex@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/shebang-regex/-/shebang-regex-3.0.0.tgz"
   integrity sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
+
+shell-quote@^1.8.1:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.8.1.tgz#6dbf4db75515ad5bac63b4f1894c3a154c766680"
+  integrity sha512-6j1W9l1iAs/4xYBI1SYOVZyFcCis9b4KCLQ8fgAGG07QvzaRLVVRQvAy85yNmmZSjYjg4MWh4gNvlPujU/5LpA==
 
 side-channel@^1.0.4:
   version "1.0.4"
