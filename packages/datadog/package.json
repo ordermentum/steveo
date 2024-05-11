@@ -29,7 +29,7 @@
   "devDependencies": {
     "@ordermentum/eslint-config-ordermentum": "^2.1.0",
     "@types/chai": "^4.3.11",
-    "chai": "4.3.10",
+    "chai": "4.4.1",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "prettier": "2.8.8",
