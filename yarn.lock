@@ -2135,12 +2135,12 @@
   dependencies:
     "@types/ms" "*"
 
-"@types/generic-pool@3.1.11":
-  version "3.1.11"
-  resolved "https://registry.npmjs.org/@types/generic-pool/-/generic-pool-3.1.11.tgz"
-  integrity sha512-3mcD3ewmaKPbiAZglGj8We4ohlSMfw/xS+bbYUhTv/ALgqrrtJjyL4Ju9IgapXooBCTFEew5LAKQqzZV6/43xg==
+"@types/generic-pool@3.8.1":
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/@types/generic-pool/-/generic-pool-3.8.1.tgz#b9b25b2ba4733057fa5df1818352d3205c48e87b"
+  integrity sha512-eaMAbZS0EfKvaP5PUZ/Cdf5uJBO2t6T3RdvQTKuMqUwGhNpCnPAsKWEMyV+mCeCQG3UiHrtgdzni8X6DmhxRaQ==
   dependencies:
-    "@types/node" "*"
+    generic-pool "*"
 
 "@types/json-schema@^7.0.7":
   version "7.0.12"
@@ -4441,7 +4441,7 @@ functions-have-names@^1.2.3:
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.3.tgz#0404fe4ee2ba2f607f0e0ec3c80bae994133b834"
   integrity sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==
 
-generic-pool@^3.9.0:
+generic-pool@*, generic-pool@^3.9.0:
   version "3.9.0"
   resolved "https://registry.yarnpkg.com/generic-pool/-/generic-pool-3.9.0.tgz#36f4a678e963f4fdb8707eab050823abc4e8f5e4"
   integrity sha512-hymDOu5B53XvN4QT9dBmZxPX4CWhBPPLguTZ9MMFeFa/Kg0xWVfylOVNlJji/E7yTZWFd/q9GO5TxDLq156D7g==
