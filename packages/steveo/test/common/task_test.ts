@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import sinon from 'sinon';
+import sinon, { SinonStub } from 'sinon';
 import Task from '../../src/task';
 
 describe('Task', () => {
@@ -8,13 +8,15 @@ describe('Task', () => {
   let producer;
   let subscribe;
   let sandbox;
+  let producerSendStub: SinonStub;
 
   afterEach(() => sandbox.restore());
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+    producerSendStub = sandbox.stub();
     producer = {
-      send: sandbox.stub().resolves(),
+      send: producerSendStub.resolves(),
       initialize: sandbox.stub().resolves(),
     };
     registry = {
@@ -100,5 +102,13 @@ describe('Task', () => {
   it('should have subscribe method to invoke', () => {
     task.subscribe({ payload: 'something-small' });
     expect(subscribe.callCount).to.equal(1);
+  });
+
+  it('should be able to publish with a partition key', async () => {
+    await task.publish({ payload: 'something-small' }, { key: 'sample key' });
+    const args = producerSendStub.args[0];
+    expect(args[0]).to.equals(task.topic);
+    expect(args[1]).to.deep.equals({ payload: 'something-small' });
+    expect(args[2]).to.equals('sample key');
   });
 });
