@@ -10,7 +10,7 @@ import { JobInstance } from './models/job';
  * laggy - These are jobs that are in accepted state without transitioning to finished/dormant after 6 minutes. Fields -> queued == true && (last_finished_at < next_run_at < last_run_at < accepted_at <= (now() - 6m))
  * are restarted
  */
-import { computeNextRunAt } from './helpers';
+import { computeNextRun } from './helpers';
 
 export const resetJob = async (
   job: JobInstance,
@@ -19,7 +19,9 @@ export const resetJob = async (
   if (!job.repeatInterval) {
     return;
   }
-  const nextRunAt = computeNextRunAt(job.repeatInterval, job.timezone);
+  const nextRunAt = computeNextRun(job.repeatInterval, {
+    timezone: job.timezone,
+  });
   events.emit('reset', job.get(), nextRunAt);
   await job.update({
     queued: false,
