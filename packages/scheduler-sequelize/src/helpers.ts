@@ -34,7 +34,7 @@ const getValidRule = (recurrence: string, timezone?: string) => {
     .join(';');
 
   const timeISO8601 = moment().tz(derivedTimezone).format('YYYYMMDDTHHmmss');
-  return `DTSTART;TZID=${derivedTimezone}:${timeISO8601}\nRRULE:${rule}\nEXDATE;TZID=${derivedTimezone}:${timeISO8601}`;
+  return `DTSTART;TZID=${derivedTimezone}:${timeISO8601}\nRRULE:${rule}`;
 };
 
 // interval should be iCal String.
