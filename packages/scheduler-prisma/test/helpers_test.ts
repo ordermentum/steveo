@@ -14,7 +14,7 @@ describe('helpers', () => {
 
   afterEach(() => {
     process.env.TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if(clock) clock.restore();
+    if (clock) clock.restore();
     sandbox.restore();
   });
 
@@ -27,13 +27,37 @@ describe('helpers', () => {
 
     // List of recurrence rules to test
     // comparator that returns boolean
-    ([
-      ['FREQ=HOURLY;INTERVAL=1', 'UTC', (m: Moment) => moment().tz('utc').diff(m, 'minutes') === -59],
-      ['FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;BYHOUR=16;BYMINUTE=40', { timezone: 'Australia/Sydney'}, (m: Moment) => m.day() === 1 && m.hour() === 16 && m.minute() === 40 && ['+1100', '+1000'].some(x => x === m.format('ZZ'))],
-      ['FREQ=WEEKLY;INTERVAL=1;BYDAY=WE;BYHOUR=17;BYMINUTE=40;BYSECOND=0', { timezone: 'Australia/Sydney'}, (m: Moment) => m.day() === 3 && m.hour() === 17 && m.minute() === 40 && m.second() === 0  && ['+1100', '+1000'].some(x => x === m.format('ZZ'))],
-    ] as [string, string, (m: Moment) => boolean][]).forEach( ([rule, timezone, comparator]) => {
+    (
+      [
+        [
+          'FREQ=HOURLY;INTERVAL=1',
+          'UTC',
+          (m: Moment) => moment().tz('utc').diff(m, 'minutes') === -59,
+        ],
+        [
+          'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;BYHOUR=16;BYMINUTE=40',
+          'Australia/Sydney',
+          (m: Moment) =>
+            m.day() === 1 &&
+            m.hour() === 16 &&
+            m.minute() === 40 &&
+            ['+1100', '+1000'].some(x => x === m.format('ZZ')),
+        ],
+        [
+          'FREQ=WEEKLY;INTERVAL=1;BYDAY=WE;BYHOUR=17;BYMINUTE=40;BYSECOND=0',
+          'Australia/Sydney',
+          (m: Moment) =>
+            m.day() === 3 &&
+            m.hour() === 17 &&
+            m.minute() === 40 &&
+            m.second() === 0 &&
+            ['+1100', '+1000'].some(x => x === m.format('ZZ')),
+        ],
+      ] as [string, string, (m: Moment) => boolean][]
+    ).forEach(([rule, timezone, comparator]) => {
       it(`Calculates the next date for rule ${rule} correctly`, () => {
-        expect(comparator(moment(computeNextRun(rule, { timezone })))).to.be.true;
+        expect(comparator(moment(computeNextRun(rule, { timezone })))).to.be
+          .true;
       });
     });
 
@@ -41,45 +65,73 @@ describe('helpers', () => {
       // set the current date to a thursday
       // At AEDT this will be 2024-01-25T03:00:00+11:00
       clock = sinon.useFakeTimers(new Date('2024-01-24T16:00:00Z').getTime());
-      const rule = 'FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;BYHOUR=12;BYMINUTE=0;BYSECOND=0';
-      const nextDate = moment(computeNextRun(rule, { timezone: 'Australia/Sydney'}));
-      expect([nextDate.date(), nextDate.month(), nextDate.year()]).to.eqls([7, 1, 2024]); 
+      const rule =
+        'FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;BYHOUR=12;BYMINUTE=0;BYSECOND=0';
+      const nextDate = moment(
+        computeNextRun(rule, { timezone: 'Australia/Sydney' })
+      );
+      expect([nextDate.date(), nextDate.month(), nextDate.year()]).to.eqls([
+        7, 1, 2024,
+      ]);
     });
 
     it('Can handle DST switchover with a rrule', () => {
       // set the current date to 6th April 2024
       // At AEDT this will be 2024-04-06T03:00:00+11:00
       clock = sinon.useFakeTimers(new Date('2024-04-05T16:00:00Z').getTime());
-      const rule = 'FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;BYHOUR=12;BYMINUTE=0;BYSECOND=0';
-      const nextDate = computeNextRun(rule, { timezone: 'Australia/Sydney'});
+      const rule =
+        'FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;BYHOUR=12;BYMINUTE=0;BYSECOND=0';
+      const nextDate = computeNextRun(rule, { timezone: 'Australia/Sydney' });
       expect(nextDate).to.eqls('2024-04-17T02:00:00.000Z');
       const parsed = moment(nextDate);
-      expect([parsed.date(), parsed.month(), parsed.year(), parsed.hours(), parsed.minutes(), parsed.format('ZZ')]).to.eqls([17, 3, 2024, 12, 0, '+1000']);
+      expect([
+        parsed.date(),
+        parsed.month(),
+        parsed.year(),
+        parsed.hours(),
+        parsed.minutes(),
+        parsed.format('ZZ'),
+      ]).to.eqls([17, 3, 2024, 12, 0, '+1000']);
     });
 
     it('Can handle fortnightly rrule with a dtstart', () => {
-      const rule = 'DTSTART;TZID=Australia/Sydney:20230126T030000\nRRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;BYHOUR=12;BYMINUTE=0;BYSECOND=0';
+      const rule =
+        'DTSTART;TZID=Australia/Sydney:20230126T030000\nRRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;BYHOUR=12;BYMINUTE=0;BYSECOND=0';
       // set the current date to a thursday
       // At AEDT this will be 2024-01-25T03:00:00+11:00
       clock = sinon.useFakeTimers(new Date('2023-01-25T16:00:00Z').getTime());
-      let nextDate = moment(computeNextRun(rule, { timezone: 'Australia/Sydney'}));
-      expect([nextDate.date(), nextDate.month(), nextDate.year()]).to.eqls([8, 1, 2023]); 
+      let nextDate = moment(
+        computeNextRun(rule, { timezone: 'Australia/Sydney' })
+      );
+      expect([nextDate.date(), nextDate.month(), nextDate.year()]).to.eqls([
+        8, 1, 2023,
+      ]);
       clock.restore();
       // After 16/02/2023, starting from 26/01/2023, the next run should be 22/02/2023
       clock = sinon.useFakeTimers(new Date('2023-02-16T16:00:00Z').getTime());
-      nextDate = moment(computeNextRun(rule, { timezone: 'Australia/Sydney'}));
-      expect([nextDate.date(), nextDate.month(), nextDate.year()]).to.eqls([22, 1, 2023]); 
+      nextDate = moment(computeNextRun(rule, { timezone: 'Australia/Sydney' }));
+      expect([nextDate.date(), nextDate.month(), nextDate.year()]).to.eqls([
+        22, 1, 2023,
+      ]);
     });
 
     it('Can handle DST switchover with a rrule with DTSTART', () => {
       // set the current date to 6th April 2024
       // At AEDT this will be 2024-04-06T03:00:00+11:00
       clock = sinon.useFakeTimers(new Date('2024-04-05T16:00:00Z').getTime());
-      const rule = 'DTSTART;TZID=Australia/Sydney:20240406T030000\nRRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;BYHOUR=12;BYMINUTE=0;BYSECOND=0';
-      const nextDate = computeNextRun(rule, { timezone: 'Australia/Sydney'});
+      const rule =
+        'DTSTART;TZID=Australia/Sydney:20240406T030000\nRRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=WE;BYHOUR=12;BYMINUTE=0;BYSECOND=0';
+      const nextDate = computeNextRun(rule, { timezone: 'Australia/Sydney' });
       expect(nextDate).to.eqls('2024-04-17T02:00:00.000Z');
       const parsed = moment(nextDate);
-      expect([parsed.date(), parsed.month(), parsed.year(), parsed.hours(), parsed.minutes(), parsed.format('ZZ')]).to.eqls([17, 3, 2024, 12, 0, '+1000']);
+      expect([
+        parsed.date(),
+        parsed.month(),
+        parsed.year(),
+        parsed.hours(),
+        parsed.minutes(),
+        parsed.format('ZZ'),
+      ]).to.eqls([17, 3, 2024, 12, 0, '+1000']);
     });
   });
 
