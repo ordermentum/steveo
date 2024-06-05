@@ -1,7 +1,7 @@
 import moment, { Moment } from 'moment-timezone';
 import { expect } from 'chai';
 import sinon, { SinonSandbox, SinonFakeTimers } from 'sinon';
-import { computeNextRunAt } from '../../scheduler-prisma/src/helpers';
+import { computeNextRun } from '../../scheduler-prisma/src/helpers';
 import lunartick from 'lunartick-deprecated';
 
 const MAX_SKEW_MILLI_SECONDS = 60 * 1000; // Max skew b/w comparative dates
@@ -32,7 +32,7 @@ const generateLunartickRecurrence = (interval: string, timezone: string) => {
 };
 
 const generateRRuleRecurrence = (interval: string, timezone: string) => {
-    return computeNextRunAt(interval, timezone);
+    return computeNextRun(interval, { timezone });
 };
 
 describe('helpers', () => {
