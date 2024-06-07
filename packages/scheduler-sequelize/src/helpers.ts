@@ -37,56 +37,29 @@ const getValidRule = (recurrence: string, timezone?: string) => {
   return `DTSTART;TZID=${derivedTimezone}:${timeISO8601}\nRRULE:${rule}`;
 };
 
-// interval should be iCal String.
-export const computeNextRun = (
-  interval: string,
-  {
-    /**
-     * @description Timezone to compute the next run at
-     * @default UTC
-     */
-    timezone = 'UTC',
-    /**
-     * @description Start date to compute the next run at
-     * @default now()
-     */
-    startDate = moment().toISOString(),
-  } = {}
-): string => {
-  if (!interval) {
-    throw new Error('Need a valid interval to compute next run at');
-  }
-
-  const rule = getValidRule(interval, timezone);
-  const rrule = RRuleSet.parse(rule);
-  const start = moment(startDate).valueOf();
-  const end = moment(start).add(SIX_MONTHS_IN_MS, 'ms').valueOf();
-  return new Date(rrule.between(start, end, true)[0]).toISOString();
-};
-
 export const computeNextRuns = (
   interval: string,
   {
     /**
-     * @description Timezone to compute the next run at
+     * @description Timezone to compute the next runs
      * @default UTC
      */
     timezone = 'UTC',
     /**
-     * @description Start date to compute the next run at
+     * @description Start date to compute the next runs
      * @default now()
      */
     startDate = moment().toISOString(),
     /**
      * @description The number of runs to compute
      * @default 1
-     * @max 10
+     * @max 30
      */
     count = 1,
   } = {}
 ): string[] => {
   if (!interval) {
-    throw new Error('Need a valid interval to compute next run at');
+    throw new Error('Need a valid interval to compute next runs');
   }
 
   const rule = getValidRule(interval, timezone);
@@ -99,6 +72,35 @@ export const computeNextRuns = (
     .between(start, end, true)
     .slice(0, runCount)
     .map(run => new Date(run).toISOString());
+};
+
+// interval should be iCal String.
+// This function should be in sync with packages/scheduler-prisma/src/helpers.ts
+export const computeNextRun = (
+  interval: string,
+  {
+    /**
+     * @description Timezone to compute the next run
+     * @default UTC
+     */
+    timezone = 'UTC',
+    /**
+     * @description Start date to compute the next run
+     * @default now()
+     */
+    startDate = moment().toISOString(),
+  } = {}
+): string => {
+  if (!interval) {
+    throw new Error('Need a valid interval to compute next run');
+  }
+
+  const [nextRun] = computeNextRuns(interval, {
+    timezone,
+    startDate,
+    count: 1,
+  });
+  return nextRun;
 };
 
 /**
