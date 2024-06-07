@@ -22,7 +22,7 @@
     "@steveojs/scheduler-sequelize": "*"
   },
   "devDependencies": {
-    "@ordermentum/eslint-config-ordermentum": "2.1.0",
+    "@ordermentum/eslint-config-ordermentum": "2.3.1",
     "@steveojs/scheduler-prisma": "*",
     "@steveojs/scheduler-sequelize": "*",
     "@typescript-eslint/eslint-plugin": "5.48.2",
