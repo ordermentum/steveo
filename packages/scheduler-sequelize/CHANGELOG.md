@@ -1,5 +1,11 @@
 # @steveojs/scheduler-sequelize
 
+## 7.1.0
+
+### Minor Changes
+
+- 6517b6e: Deprecated computeNextRunAt method replaced by computeNextRun that leverages on the new rrule-rust library. Added computeNextRuns that generates n next occurences also leveraging on the new rrule-rust library.
+
 ## 7.0.0
 
 ### Major Changes

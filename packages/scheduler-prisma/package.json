@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/scheduler-prisma",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "A helper lib for a Prisma/Postgres backed in-process job queue",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
