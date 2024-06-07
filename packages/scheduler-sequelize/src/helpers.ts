@@ -17,39 +17,90 @@ const SIX_MONTHS_IN_MS = 15778476000;
 export const isHealthy = (heartbeat: number, timeout: number) =>
   new Date().getTime() - timeout < heartbeat;
 
-// interval should be iCal String.
-export const computeNextRunAt = (
+const getValidRule = (recurrence: string, timezone?: string) => {
+  const isICalRule = recurrence.includes('DTSTART');
+  if (isICalRule) return recurrence;
+
+  let derivedTimezone = timezone ?? 'Australia/Sydney';
+  const rule = recurrence
+    .split(';')
+    .filter(b => {
+      const [key, value] = b.split('=');
+      if (key === 'TZID') {
+        derivedTimezone = value;
+      }
+      return key !== 'TZID';
+    })
+    .join(';');
+
+  const timeISO8601 = moment().tz(derivedTimezone).format('YYYYMMDDTHHmmss');
+  return `DTSTART;TZID=${derivedTimezone}:${timeISO8601}\nRRULE:${rule}`;
+};
+
+export const computeNextRuns = (
   interval: string,
-  timezone = 'UTC'
+  {
+    /**
+     * @description Timezone to compute the next runs
+     * @default UTC
+     */
+    timezone = 'UTC',
+    /**
+     * @description Start date to compute the next runs
+     * @default now()
+     */
+    startDate = moment().toISOString(),
+    /**
+     * @description The number of runs to compute
+     * @default 1
+     * @max 30
+     */
+    count = 1,
+  } = {}
+): string[] => {
+  if (!interval) {
+    throw new Error('Need a valid interval to compute next runs');
+  }
+
+  const rule = getValidRule(interval, timezone);
+  const rrule = RRuleSet.parse(rule);
+  const runCount = Math.min(count, 30);
+
+  const start = moment(startDate).valueOf();
+  const end = moment(start).add(SIX_MONTHS_IN_MS, 'ms').valueOf();
+  return rrule
+    .between(start, end, true)
+    .slice(0, runCount)
+    .map(run => new Date(run).toISOString());
+};
+
+// interval should be iCal String.
+// This function should be in sync with packages/scheduler-prisma/src/helpers.ts
+export const computeNextRun = (
+  interval: string,
+  {
+    /**
+     * @description Timezone to compute the next run
+     * @default UTC
+     */
+    timezone = 'UTC',
+    /**
+     * @description Start date to compute the next run
+     * @default now()
+     */
+    startDate = moment().toISOString(),
+  } = {}
 ): string => {
   if (!interval) {
-    throw new Error('Invalid interval argument supplied to computeNextRunAt');
+    throw new Error('Need a valid interval to compute next run');
   }
 
-  const isValidRule = interval.includes('DTSTART');
-
-  if (!isValidRule) {
-    const rule = interval
-      .split(';')
-      .filter(b => !b.includes('TZID'))
-      .join(';');
-
-    const timeISO8601 = moment().tz(timezone).format('YYYYMMDDTHHmmss');
-    const rrule = RRuleSet.parse(
-      `DTSTART;TZID=${timezone}:${timeISO8601}\nRRULE:${rule}\nEXDATE;TZID=${timezone}:${timeISO8601}`
-    );
-    return new Date(rrule.all(1)[0]).toISOString();
-  }
-
-  const rrule = RRuleSet.parse(interval);
-
-  return new Date(
-    rrule.between(
-      new Date().getTime(),
-      new Date().getTime() + SIX_MONTHS_IN_MS,
-      true
-    )[0]
-  ).toISOString();
+  const [nextRun] = computeNextRuns(interval, {
+    timezone,
+    startDate,
+    count: 1,
+  });
+  return nextRun;
 };
 
 /**
@@ -129,7 +180,9 @@ const updateFinishTask = async (job?: JobInstance | null) => {
       force: true,
     });
   } else {
-    const nextRunAt = computeNextRunAt(job.repeatInterval, job.timezone);
+    const nextRunAt = computeNextRun(job.repeatInterval, {
+      timezone: job.timezone,
+    });
     await job.update({
       queued: false,
       nextRunAt,
