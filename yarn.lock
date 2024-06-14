@@ -1462,11 +1462,6 @@
   resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-2.1.0.tgz#f13720306aac8f26cf139bd83032d70690e95a63"
   integrity sha512-FXPumiQoKGzRVBRYLXgaeJ1NhIVPl2yZ4K4BGzYHspLhe7DsQc05gQzIUzMj+mOLjx0SPkwafJx2oCQWdwzOig==
 
-"@ordermentum/eslint-config-ordermentum@2.3.3":
-  version "2.3.3"
-  resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-2.3.3.tgz#10d073563a288f3c46b1c05377716c60feaa1ef9"
-  integrity sha512-kWEk27Luw6OrkscwOb7lk3SzYKZk7ZBq+qEPZ/8sJdhmTpzzyIclNYLzte4H/6jnpe22937rj5TzXMwyZhAOgg==
-
 "@prisma/client@5.7.1":
   version "5.7.1"
   resolved "https://registry.yarnpkg.com/@prisma/client/-/client-5.7.1.tgz#a124afd05663267f7255a639a81d28303684a063"
