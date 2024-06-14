@@ -1457,15 +1457,15 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.21.0.tgz#83f7479c524ab523ac2df702ade30b9724476c72"
   integrity sha512-lkC8kZYntxVKr7b8xmjCVUgE0a8xgDakPyDo9uSWavXPyYqLgYYGdEd2j8NxihRyb6UwpX3G/hFUF4/9q2V+/g==
 
-"@ordermentum/eslint-config-ordermentum@2.0.0-rc2":
-  version "2.0.0-rc2"
-  resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-2.0.0-rc2.tgz#ae93598460957f970cbe633f6ae88d8b3979feb7"
-  integrity sha512-3eazNZ/5oJG68NXapAHM5GiK+QYnpj5kl7adzqCPxYPwOb6m/+wW4tiemGxqQAEMc/LUHJLVOyfTokpJ93kEHQ==
-
 "@ordermentum/eslint-config-ordermentum@2.1.0", "@ordermentum/eslint-config-ordermentum@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-2.1.0.tgz#f13720306aac8f26cf139bd83032d70690e95a63"
   integrity sha512-FXPumiQoKGzRVBRYLXgaeJ1NhIVPl2yZ4K4BGzYHspLhe7DsQc05gQzIUzMj+mOLjx0SPkwafJx2oCQWdwzOig==
+
+"@ordermentum/eslint-config-ordermentum@2.3.3":
+  version "2.3.3"
+  resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-2.3.3.tgz#10d073563a288f3c46b1c05377716c60feaa1ef9"
+  integrity sha512-kWEk27Luw6OrkscwOb7lk3SzYKZk7ZBq+qEPZ/8sJdhmTpzzyIclNYLzte4H/6jnpe22937rj5TzXMwyZhAOgg==
 
 "@prisma/client@5.7.1":
   version "5.7.1"
