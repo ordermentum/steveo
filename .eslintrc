@@ -1,7 +1,12 @@
 {
-  "extends": ["@ordermentum/ordermentum"],
+  "extends": [
+    "@ordermentum/ordermentum"
+  ],
   "globals": {
     "SequelizeAttributes": "readonly"
+  },
+  "parserOptions": {
+    "project": "./tsconfig.json"
   },
   "rules": {
     "no-unused-expressions": "off",

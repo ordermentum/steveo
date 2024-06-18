@@ -6,7 +6,9 @@
     "checkJs": false,
     "declaration": true,
     "esModuleInterop": true,
-    "lib": ["ES2019"],
+    "lib": [
+      "ES2019"
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
@@ -20,6 +22,10 @@
     "strict": true,
     "target": "ES2019"
   },
-  "include": ["packages/**/*"],
-  "exclude": ["node_modules"]
+  "include": [
+    "packages/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
