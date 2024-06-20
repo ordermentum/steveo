@@ -40,6 +40,9 @@ dist
 .vscode/
 jsconfig.json
 
+# Jetbrains IDEs
+.idea
+
 example/docker-compose-ordermentum.yml
 
 packages/*/lib/
