@@ -25,11 +25,13 @@ describe('helpers', () => {
       expect(nextDate.diff(moment().tz('utc').minute(0), 'hours')).to.equal(3);
     });
 
-    it.skip('Calculates the next date correctly with DTSTART rule', () => {
+    it('Calculates the next date correctly with DTSTART rule', () => {
+      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss')
       const every3Hours =
-        'DTSTART;TZID=Australia/Sydney:20240120T050000\nRRULE:FREQ=HOURLY;BYMINUTE=0;INTERVAL=4';
-      const nextDate = moment(computeNextRun(every3Hours));
-      expect(nextDate.diff(moment().tz('utc').minute(0), 'hours')).to.equal(3);
+        `DTSTART;TZID=UTC:${start}\nRRULE:FREQ=HOURLY;BYMINUTE=0;INTERVAL=3`;
+      const nextRun = moment(computeNextRun(every3Hours));
+      const nextDate = moment().tz('Australia/Sydney').add(3, 'hours').minute(0).second(0).millisecond(0);
+      expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
     });
 
     // List of recurrence rules to test
@@ -150,12 +152,14 @@ describe('helpers', () => {
       expect(nextDate.diff(moment().tz('utc').minute(0), 'hours')).to.equal(3);
     });
 
-    it.skip('Calculates the next dates correctly with DTSTART rule', () => {
+    it('Calculates the next dates correctly with DTSTART rule', () => {
+      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss')
       const every3Hours =
-        'DTSTART;TZID=Australia/Sydney:20240120T050000\nRRULE:FREQ=HOURLY;BYMINUTE=0;INTERVAL=4';
-      const [nextDates] = computeNextRuns(every3Hours);
-      const nextDate = moment(nextDates);
-      expect(nextDate.diff(moment().tz('utc').minute(0), 'hours')).to.equal(3);
+        `DTSTART;TZID=UTC:${start}\nRRULE:FREQ=HOURLY;BYMINUTE=0;INTERVAL=3`;
+      const [nextRuns] = computeNextRuns(every3Hours);
+      const nextRun = moment(nextRuns);
+      const nextDate = moment().tz('Australia/Sydney').add(3, 'hours').minute(0).second(0).millisecond(0);
+      expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
     });
 
     it('Returns correct number of next runs', () => {
@@ -171,10 +175,11 @@ describe('helpers', () => {
       expect(nextDates).to.have.length(10);
     });
 
-    it.skip('Lunartick rule and DTSTART rule should match', () => {
-      const lunartickRecurrence = 'FREQ=DAILY;INTERVAL=1;BYMINUTE=0;BYSECOND=0';
+    it('Lunartick rule and DTSTART rule should match', () => {
+      const lunartickRecurrence = 'FREQ=DAILY;INTERVAL=1;BYMINUTE=0;BYSECOND=0;';
+      const start = moment().tz('UTC').millisecond(0).format('YYYYMMDDTHHmmss')
       const rruleRecurrence =
-        'DTSTART;TZID=UTC:20240120T030000\nRRULE:FREQ=DAILY;BYMINUTE=0;BYSECOND=0;INTERVAL=1';
+        `DTSTART;TZID=UTC:${start}\nRRULE:FREQ=DAILY;BYMINUTE=0;BYSECOND=0;INTERVAL=1`;
 
       const lunartickDates = computeNextRuns(lunartickRecurrence, {
         count: 10,
