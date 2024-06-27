@@ -28,7 +28,7 @@
     "@types/newrelic": "^9.4.0",
     "newrelic": "^9.8.0",
     "@istanbuljs/nyc-config-typescript": "1.0.2",
-    "@ordermentum/eslint-config-ordermentum": "2.0.0-rc2",
+    "@ordermentum/eslint-config-ordermentum": "2.4.0",
     "@types/chai": "4.3.16",
     "@types/mocha": "10.0.1",
     "@types/node": "16.18.97",

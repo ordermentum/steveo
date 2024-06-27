@@ -313,6 +313,7 @@ export class JobScheduler implements JobSchedulerInterface {
    * - if {wrapAllTasksWithTimestampHelper} is true, wraps the task with a timestamp helper {timestampHelperFactory}
    */
   wrapTasks = (tasks: Tasks): Tasks =>
+    // eslint-disable-next-line unicorn/no-array-reduce
     Object.keys(tasks).reduce((acc, taskName) => {
       const task = tasks[taskName];
       if ('publish' in task) {
