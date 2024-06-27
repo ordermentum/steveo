@@ -72,12 +72,14 @@ class SqsRunner extends BaseRunner implements IRunner {
               return;
             }
 
-            const { context = null, ...data } = c.payload;
+            const { context = {} } = c.payload;
+
             this.logger.info(
-              { context, data },
+              { context, params },
               `Start Subscribe to ${task.name}`
             );
-            await task.subscribe(data, context);
+
+            await task.subscribe(params, { ...context, ...runnerContext });
             this.logger.debug('Completed subscribe', c.topic, c.payload);
             const completedContext = getContext(c.payload);
 

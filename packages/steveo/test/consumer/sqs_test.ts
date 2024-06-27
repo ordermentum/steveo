@@ -121,12 +121,13 @@ describe('runner/sqs', () => {
     const anotherRunner = new Runner(steveo);
 
     // @ts-ignore
-    const deleteMessageStub = sandbox
+    sandbox
       .stub(anotherRunner.sqs, 'deleteMessage')
       // @ts-ignore
       .returns({ promise: async () => {} });
 
     const inputContext = { contextKey: 'contextValue' };
+    const runnerContext = { duration: 0 };
     await anotherRunner.receive(
       [
         {
@@ -139,8 +140,8 @@ describe('runner/sqs', () => {
 
     sinon.assert.calledWith(
       subscribeStub,
-      { data: 'Hello' },
-      inputContext
+      { data: 'Hello', context: inputContext },
+      { ...inputContext, ...runnerContext }
     );
   });
 
