@@ -46,7 +46,6 @@ class SqsRunner extends BaseRunner implements IRunner {
         await this.wrap({ topic, payload: params }, async c => {
           this.logger.info(message, `Message received for task: ${c.topic}`);
           let resource: Resource | null = null;
-          // Not sure whether runnerContext still necessary.
           const runnerContext = getContext(c.payload);
           try {
             resource = await this.pool.acquire();
@@ -72,14 +71,12 @@ class SqsRunner extends BaseRunner implements IRunner {
               return;
             }
 
-            const { context = {} } = c.payload;
-
             this.logger.info(
-              { context, params },
+              { context: runnerContext, params },
               `Start Subscribe to ${task.name}`
             );
 
-            await task.subscribe(params, { ...context, ...runnerContext });
+            await task.subscribe(params, runnerContext);
             this.logger.debug('Completed subscribe', c.topic, c.payload);
             const completedContext = getContext(c.payload);
 
