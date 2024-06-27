@@ -1,5 +1,17 @@
 # @steveojs/sentry
 
+## 6.1.0
+
+### Minor Changes
+
+- 2ed3a1e: Bump dependencies
+
+### Patch Changes
+
+- Updated dependencies [2ed3a1e]
+- Updated dependencies [7ab3a45]
+  - steveo@6.3.0
+
 ## 6.0.1
 
 ### Patch Changes
