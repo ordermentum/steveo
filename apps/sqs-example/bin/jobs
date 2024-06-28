@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+const { promisify } = require('util');
+const writeFile = promisify(require('fs').writeFile);
+const path = require('path');
+
+if (!process.env.NODE_ENV) process.env.NODE_ENV = 'development';
+
+let logger;
+let JobScheduler;
+
+if (['testing', 'production'].includes(process.env.NODE_ENV)) {
+  logger = require('../lib/logger').default;
+  JobScheduler = require('../lib').default;
+} else {
+  require('ts-node').register({ transpileOnly: true }); // or babel-register
+  logger = require('../src/logger').default;
+  JobScheduler = require('../src').default;
+}
+
+process.title = 'jobs';
+
+const start = async () => {
+  try {
+    await JobScheduler.runScheduledJobs();
+    logger.info('scheduled jobs are ready to publish messages...');
+  } catch (e) {
+    logger.error(e);
+    process.exit(1);
+  }
+};
+
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.on(signal, async () => {
+    if (process.env.NODE_ENV === 'development') {
+      process.exit();
+    }
+    logger.info(`Received ${signal}, setting termination lock`);
+    await writeFile(path.join(process.cwd(), 'termination.lock'), signal);
+  });
+}
+
+start();

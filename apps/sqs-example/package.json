@@ -1,0 +1,60 @@
+{
+  "name": "@ordermentum/sqs-example",
+  "version": "3.0.4",
+  "description": "A playground for steveo SQS",
+  "main": "src/index.js",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "files": [
+    "src/*"
+  ],
+  "scripts": {
+    "start": "node ./lib/index.js",
+    "lint": "yarn eslint 'src/**/*.{ts,js}'",
+    "build:coverage": "nyc check-coverage --statements 74 --branches 60 --functions 66 --lines 72",
+    "test": "NODE_ENV=test nyc npm run spec",
+    "report": "./node_modules/.bin/nyc report --reporter=html",
+    "spec": "mocha -R spec -r ts-node/register/transpile-only test/*.*",
+    "spec:runner": "mocha -R spec -r ts-node/register/transpile-only",
+    "build": "yarn clean && yarn tsc",
+    "prepublish": "yarn run build && yarn spec",
+    "clean": "rm -rf lib",
+    "reporter": "nyc --reporter=html yarn run test",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ordermentum/steveo.git"
+  },
+  "keywords": [
+    "sqs",
+    "queue"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "bunyan": "^1.8.15",
+    "config": "^3.3.7",
+    "moment-timezone": "^0.5.33",
+    "steveo": "*",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/bunyan": "1.8.8",
+    "@types/chai": "4.3.16",
+    "@types/config": "0.0.41",
+    "@types/mocha": "8.2.3",
+    "@types/node": "17.0.45",
+    "@types/qs": "6.9.15",
+    "@types/sinon": "10.0.20",
+    "@types/uuid": "8.3.4",
+    "@types/validator": "13.11.10",
+    "chai": "4.4.1",
+    "cross-env": "7.0.3",
+    "eslint-config-ordermentum": "1.0.6",
+    "nyc": "15.1.0",
+    "ts-node": "10.9.2",
+    "typescript": "4.9.5"
+  }
+}
