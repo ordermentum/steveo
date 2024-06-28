@@ -89,10 +89,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     let redrivePolicy: QueueAttributeMap | undefined;
     if (task?.options?.deadLetterQueue) {
       // Fetch existing or create new queue for DLQ
-      redrivePolicy = await this.getDeadLetterQueuePocily(
-        queueName,
-        task.options.deadLetterQueue?.maxReceivedCount
-      );
+      redrivePolicy = await this.getDeadLetterQueuePolicy(queueName);
 
       // Append RedrivePolicy to support DLQ
       params.Attributes = {
@@ -118,9 +115,8 @@ class SqsProducer extends BaseProducer implements IProducer {
     return res.QueueUrl;
   }
 
-  async getDeadLetterQueuePocily(
-    queueName: string,
-    maxReceivedCount: number
+  async getDeadLetterQueuePolicy(
+    queueName: string
   ): Promise<QueueAttributeMap> {
     const dlQueueName = `${queueName}_DLQ`;
     // try to fetch if there is an existing queueURL for QLQ
@@ -183,9 +179,11 @@ class SqsProducer extends BaseProducer implements IProducer {
       throw new Error('Failed to retrieve the DLQ ARN');
     }
 
+    const task = this.registry.getTask(queueName);
+
     return {
       deadLetterTargetArn: dlQueueArn,
-      maxReceivedCount: `${maxReceivedCount}`,
+      maxReceivedCount: `${task?.options.deadLetterQueue?.maxReceivedCount}`,
     };
   }
 
