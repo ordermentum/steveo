@@ -140,6 +140,9 @@ export type TaskOptions = {
   queueName?: string;
   waitToCommit?: boolean;
   fifo?: boolean;
+  deadLetterQueue?: {
+    maxReceivedCount: number;
+  };
 
   // num_partitions and replication_factor are used for kafka
   replication_factor?: number;

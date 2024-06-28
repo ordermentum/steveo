@@ -1,6 +1,7 @@
 import nullLogger from 'null-logger';
 import { SQS } from 'aws-sdk';
 import util from 'util';
+import { CreateQueueRequest, QueueAttributeMap } from 'aws-sdk/clients/sqs';
 import { getSqsInstance } from '../config/sqs';
 
 import {
@@ -74,7 +75,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       return queueUrl;
     }
 
-    const params = {
+    const params: CreateQueueRequest = {
       QueueName: queueName,
       Attributes: {
         ReceiveMessageWaitTimeSeconds:
@@ -83,6 +84,22 @@ class SqsProducer extends BaseProducer implements IProducer {
         ...fifoAttributes,
       },
     };
+
+    // check if queue supports DLQ on the task config
+    let redrivePolicy: QueueAttributeMap | undefined;
+    if (task?.options?.deadLetterQueue) {
+      // Fetch existing or create new queue for DLQ
+      redrivePolicy = await this.getDeadLetterQueuePocily(
+        queueName,
+        task.options.deadLetterQueue?.maxReceivedCount
+      );
+
+      // Append RedrivePolicy to support DLQ
+      params.Attributes = {
+        ...params.Attributes,
+        RedrivePolicy: JSON.stringify(redrivePolicy),
+      };
+    }
 
     this.logger.debug(`Creating queue`, util.inspect(params));
 
@@ -99,6 +116,77 @@ class SqsProducer extends BaseProducer implements IProducer {
 
     this.sqsUrls[queueName] = res.QueueUrl;
     return res.QueueUrl;
+  }
+
+  async getDeadLetterQueuePocily(
+    queueName: string,
+    maxReceivedCount: number
+  ): Promise<QueueAttributeMap> {
+    const dlQueueName = `${queueName}_DLQ`;
+    // try to fetch if there is an existing queueURL for QLQ
+    const queueResult = await this.producer
+      .getQueueUrl({ QueueName: dlQueueName })
+      .promise()
+      .catch(_ => undefined);
+
+    let dlQueueUrl = queueResult?.QueueUrl;
+
+    // if we don't have existing DLQ, create one
+    if (!dlQueueUrl) {
+      const params = {
+        QueueName: dlQueueName,
+        Attributes: {
+          ReceiveMessageWaitTimeSeconds:
+            this.config.receiveMessageWaitTimeSeconds ?? '20',
+          MessageRetentionPeriod:
+            this.config.messageRetentionPeriod ?? '604800',
+        },
+      };
+
+      this.logger.debug(
+        `Creating DLQ for orginal queue ${queueName}`,
+        util.inspect(params)
+      );
+
+      const res = await this.producer
+        .createQueue(params)
+        .promise()
+        .catch(err => {
+          throw new Error(`Failed to call SQS createQueue: ${err}`);
+        });
+
+      if (!res.QueueUrl) {
+        throw new Error(
+          'SQS createQueue response does not contain a queue name'
+        );
+      }
+
+      dlQueueUrl = res.QueueUrl;
+    }
+
+    // get the ARN of the DQL
+    const getQueueAttributesParams = {
+      QueueUrl: dlQueueUrl,
+      AttributeNames: ['QueueArn'],
+    };
+
+    const attributesResult = await this.producer
+      .getQueueAttributes(getQueueAttributesParams)
+      .promise()
+      .catch(err => {
+        throw new Error(`Failed to call SQS getQueueAttributes: ${err}`);
+      });
+
+    const dlQueueArn = attributesResult.Attributes?.QueueArn;
+
+    if (!dlQueueArn) {
+      throw new Error('Failed to retrieve the DLQ ARN');
+    }
+
+    return {
+      deadLetterTargetArn: dlQueueArn,
+      maxReceivedCount: `${maxReceivedCount}`,
+    };
   }
 
   getPayload(
