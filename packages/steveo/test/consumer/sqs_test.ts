@@ -3,6 +3,7 @@ import sinon from 'sinon';
 
 import logger from 'pino';
 import { v4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import Runner from '../../src/consumers/sqs';
 import { build } from '../../src/lib/pool';
 import Registry from '../../src/registry';
@@ -142,6 +143,75 @@ describe('runner/sqs', () => {
       deleteMessageStub.callCount,
       'deleteMessage is called twice'
     ).to.equal(2);
+  });
+
+  it('should delete message using the FIFO QueueUrl if enabled in task', async () => {
+    const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+    const anotherRegistry = {
+      registeredTasks: [],
+      addNewTask: () => {},
+      removeTask: () => {},
+      getTopics: () => [],
+      getTaskTopics: () => [],
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+        options: {
+          fifo: true,
+        },
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const log = logger({ level: 'debug' });
+    const config = {
+      engine: 'sqs' as const,
+      logger: log,
+      registry: anotherRegistry,
+    };
+
+    const steveo = new Steveo(config);
+    // @ts-ignore
+    steveo.registry = anotherRegistry;
+    // @ts-ignore
+    steveo.pool = build(anotherRegistry);
+
+    const anotherRunner = new Runner(steveo);
+
+    // @ts-ignore
+    const deleteMessageStub = sandbox
+      .stub(anotherRunner.sqs, 'deleteMessage')
+      // @ts-ignore
+      .returns({ promise: async () => {} });
+
+    const randomId = randomUUID();
+    sandbox.stub(anotherRunner.sqs, 'getQueueUrl').returns({
+      // @ts-ignore
+      promise: async () => ({
+        QueueUrl: `https://ap-southeast2.aws.com/${randomId}/a-topic.fifo`,
+      }),
+    });
+
+    await anotherRunner.getQueueUrl('a-topic');
+
+    await anotherRunner.receive(
+      [
+        { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'Hello' }) },
+        { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'World' }) },
+      ],
+      'a-topic'
+    );
+
+    expect(subscribeStub.callCount, 'subscribe is called twice').to.equal(2);
+
+    expect(
+      // @ts-expect-error
+      deleteMessageStub.args[0][0].QueueUrl,
+      'FIFO should be automatically appended if the task config has it'
+    ).to.eqls(`https://ap-southeast2.aws.com/${randomId}/a-topic.fifo`);
   });
 
   it('get all urls for queues', async () => {
@@ -339,6 +409,66 @@ describe('runner/sqs', () => {
       await anotherRunner.process();
       expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
       expect(receiveMessageAsyncStub.calledOnce).to.equal(true);
+    });
+
+    it('processes a message from a FIFO queue', async () => {
+      const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+
+      const anotherRegistry = {
+        getTask: () => ({
+          publish: () => {},
+          subscribe: subscribeStub,
+          options: {
+            fifo: true,
+          },
+        }),
+        getTopics: () => ['test'],
+        getTaskTopics: () => ['test'],
+        emit: sandbox.stub(),
+        events: {
+          emit: sandbox.stub(),
+        },
+      };
+
+      const config = {
+        engine: 'dummy' as const,
+      };
+
+      const steveo = new Steveo(config);
+      // @ts-ignore
+      steveo.registry = anotherRegistry;
+
+      const anotherRunner = new Runner(steveo);
+
+      const randomId = randomUUID();
+      const getQueueUrlAsyncStub = sandbox
+        .stub(anotherRunner.sqs, 'getQueueUrl')
+        // @ts-expect-error - if are logic is correct, and that it appends .fifo to the plain `test` topic
+        //  this would be the argument passed on the getQueueUrl to SQS
+        .withArgs({ QueueName: 'test.fifo' })
+        .returns({
+          // @ts-ignore
+          promise: async () => ({
+            QueueUrl: `https://ap-southeast2.aws.com/${randomId}/test.fifo`,
+          }),
+        });
+
+      const receiveMessageAsyncStub = sandbox
+        .stub(anotherRunner.sqs, 'receiveMessage')
+        .returns({
+          // @ts-ignore
+          promise: async () => [],
+        });
+
+      await anotherRunner.process();
+      expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
+      expect(receiveMessageAsyncStub.calledOnce).to.equal(true);
+
+      expect(
+        // @ts-expect-error
+        receiveMessageAsyncStub.args[0][0].QueueUrl,
+        'Should have the same value as the specified getQueueUrl stub'
+      ).to.eqls(`https://ap-southeast2.aws.com/${randomId}/test.fifo`);
     });
   });
 
