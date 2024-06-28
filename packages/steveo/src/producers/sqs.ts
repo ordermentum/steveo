@@ -85,13 +85,12 @@ class SqsProducer extends BaseProducer implements IProducer {
       },
     };
 
-    // check if queue supports DLQ on the task config
-    let redrivePolicy: QueueAttributeMap | undefined;
-    if (task?.options?.deadLetterQueue) {
-      // Fetch existing or create new queue for DLQ
-      redrivePolicy = await this.getDeadLetterQueuePolicy(queueName);
+    // Check if queue supports DLQ on the task config
+    const redrivePolicy: QueueAttributeMap | null =
+      await this.getDeadLetterQueuePolicy(queueName);
 
-      // Append RedrivePolicy to support DLQ
+    // Append RedrivePolicy if supported
+    if (redrivePolicy) {
       params.Attributes = {
         ...params.Attributes,
         RedrivePolicy: JSON.stringify(redrivePolicy),
@@ -117,7 +116,13 @@ class SqsProducer extends BaseProducer implements IProducer {
 
   async getDeadLetterQueuePolicy(
     queueName: string
-  ): Promise<QueueAttributeMap> {
+  ): Promise<QueueAttributeMap | null> {
+    const task = this.registry.getTask(queueName);
+
+    if (!task?.options?.deadLetterQueue) {
+      return null;
+    }
+
     const dlQueueName = `${queueName}_DLQ`;
     // try to fetch if there is an existing queueURL for QLQ
     const queueResult = await this.producer
@@ -178,8 +183,6 @@ class SqsProducer extends BaseProducer implements IProducer {
     if (!dlQueueArn) {
       throw new Error('Failed to retrieve the DLQ ARN');
     }
-
-    const task = this.registry.getTask(queueName);
 
     return {
       deadLetterTargetArn: dlQueueArn,
