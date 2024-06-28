@@ -106,8 +106,9 @@ class SqsRunner extends BaseRunner implements IRunner {
       return false;
     }
 
+    const sqsTopic = this.getTopic(topic);
     const deleteParams = {
-      QueueUrl: this.sqsUrls[topic],
+      QueueUrl: this.sqsUrls[sqsTopic],
       ReceiptHandle: message.ReceiptHandle,
     };
 
@@ -213,15 +214,22 @@ class SqsRunner extends BaseRunner implements IRunner {
   };
 
   async getQueueUrl(topic: string) {
-    if (!this.sqsUrls[topic]) {
-      this.logger.debug(`url not cached for ${topic}`);
-      const url = await this.getUrl(topic);
+    const sqsTopic = this.getTopic(topic);
+    if (!this.sqsUrls[sqsTopic]) {
+      this.logger.debug(`url not cached for ${sqsTopic}`);
+      const url = await this.getUrl(sqsTopic);
       if (url) {
-        this.sqsUrls[topic] = url;
+        this.sqsUrls[sqsTopic] = url;
       }
     }
 
-    return this.sqsUrls[topic];
+    return this.sqsUrls[sqsTopic];
+  }
+
+  getTopic(topic: string) {
+    const task = this.registry.getTask(topic);
+    const fifo = !!task?.options.fifo;
+    return fifo ? `${topic}.fifo` : topic;
   }
 
   getUrl(topic: string) {

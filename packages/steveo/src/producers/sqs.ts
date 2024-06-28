@@ -40,50 +40,76 @@ class SqsProducer extends BaseProducer implements IProducer {
 
   async initialize(topic: string): Promise<string> {
     this.logger.debug(`Initializing topic: ${topic}`);
+
     if (!topic) {
       throw new Error('Topic cannot be empty');
     }
 
+    let queueName = topic;
+
+    // task options
+    const task = this.registry.getTask(topic);
+    const fifo = !!task?.options.fifo;
+
+    const fifoAttributes: {
+      FifoQueue?: string;
+      ContentBasedDeduplication?: string;
+    } = {};
+
+    if (fifo) {
+      queueName = `${queueName}.fifo`;
+      fifoAttributes.FifoQueue = 'true';
+      fifoAttributes.ContentBasedDeduplication = 'true';
+    }
+
     const getQueueUrlResult = await this.producer
-      .getQueueUrl({ QueueName: topic })
+      .getQueueUrl({ QueueName: queueName })
       .promise()
       .catch(_ => undefined);
+
     const queueUrl = getQueueUrlResult?.QueueUrl;
 
     if (queueUrl) {
-      this.sqsUrls[topic] = queueUrl;
+      this.sqsUrls[queueName] = queueUrl;
       return queueUrl;
     }
 
     const params = {
-      QueueName: topic,
+      QueueName: queueName,
       Attributes: {
         ReceiveMessageWaitTimeSeconds:
           this.config.receiveMessageWaitTimeSeconds ?? '20',
         MessageRetentionPeriod: this.config.messageRetentionPeriod ?? '604800',
+        ...fifoAttributes,
       },
     };
+
     this.logger.debug(`Creating queue`, util.inspect(params));
+
     const res = await this.producer
       .createQueue(params)
       .promise()
       .catch(err => {
         throw new Error(`Failed to call SQS createQueue: ${err}`);
       });
+
     if (!res.QueueUrl) {
       throw new Error('SQS createQueue response does not contain a queue name');
     }
-    this.sqsUrls[topic] = res.QueueUrl;
+
+    this.sqsUrls[queueName] = res.QueueUrl;
     return res.QueueUrl;
   }
 
   getPayload(
     msg: any,
-    topic: string
+    topic: string,
+    key?: string
   ): {
     MessageAttributes: any;
     MessageBody: string;
     QueueUrl: string;
+    MessageGroupId?: string;
   } {
     const context = createMessageMetadata(msg);
 
@@ -104,20 +130,25 @@ class SqsProducer extends BaseProducer implements IProducer {
       });
     }
 
+    const fifo = !!task?.options.fifo;
+
+    const sqsTopic = fifo ? `${topic}.fifo` : topic;
+
     return {
       MessageAttributes: messageAttributes,
       MessageBody: JSON.stringify({ ...msg, _meta: context }),
-      QueueUrl: this.sqsUrls[topic],
+      QueueUrl: this.sqsUrls[sqsTopic],
+      MessageGroupId: fifo && key ? key : undefined,
     };
   }
 
-  async send<T = any>(topic: string, payload: T) {
+  async send<T = any>(topic: string, payload: T, key?: string) {
     try {
       await this.wrap({ topic, payload }, async c => {
         if (!this.sqsUrls[c.topic]) {
           await this.initialize(c.topic);
         }
-        const data = this.getPayload(c.payload, c.topic);
+        const data = this.getPayload(c.payload, c.topic, key);
         await this.producer.sendMessage(data).promise();
         this.registry.emit('producer_success', c.topic, data);
       });
