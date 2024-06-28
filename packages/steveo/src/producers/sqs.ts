@@ -66,6 +66,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       .getQueueUrl({ QueueName: queueName })
       .promise()
       .catch(_ => undefined);
+
     const queueUrl = getQueueUrlResult?.QueueUrl;
 
     if (queueUrl) {
@@ -131,10 +132,12 @@ class SqsProducer extends BaseProducer implements IProducer {
 
     const fifo = !!task?.options.fifo;
 
+    const sqsTopic = fifo ? `${topic}.fifo` : topic;
+
     return {
       MessageAttributes: messageAttributes,
       MessageBody: JSON.stringify({ ...msg, _meta: context }),
-      QueueUrl: this.sqsUrls[topic],
+      QueueUrl: this.sqsUrls[sqsTopic],
       MessageGroupId: fifo && key ? key : undefined,
     };
   }
