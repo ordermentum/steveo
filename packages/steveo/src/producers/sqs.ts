@@ -49,7 +49,7 @@ class SqsProducer extends BaseProducer implements IProducer {
 
     // task options
     const task = this.registry.getTask(topic);
-    const fifo = !!task?.options.fifo;
+    const fifo = !!task?.options?.fifo;
 
     const fifoAttributes: {
       FifoQueue?: string;
@@ -130,7 +130,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       });
     }
 
-    const fifo = !!task?.options.fifo;
+    const fifo = !!task?.options?.fifo;
 
     const sqsTopic = fifo ? `${topic}.fifo` : topic;
 

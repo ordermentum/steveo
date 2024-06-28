@@ -228,7 +228,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   getTopic(topic: string) {
     const task = this.registry.getTask(topic);
-    const fifo = !!task?.options.fifo;
+    const fifo = !!task?.options?.fifo;
     return fifo ? `${topic}.fifo` : topic;
   }
 
