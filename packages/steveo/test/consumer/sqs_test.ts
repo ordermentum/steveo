@@ -89,6 +89,63 @@ describe('runner/sqs', () => {
     ).to.equal(2);
   });
 
+  it('should invoke callback with context if context is present in message body', async () => {
+    const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+    const anotherRegistry = {
+      registeredTasks: [],
+      addNewTask: () => {},
+      removeTask: () => {},
+      getTopics: () => [],
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const log = logger({ level: 'debug' });
+    const config = {
+      engine: 'sqs' as const,
+      logger: log,
+      registry: anotherRegistry,
+    };
+
+    const steveo = new Steveo(config);
+    // @ts-ignore
+    steveo.registry = anotherRegistry;
+    // @ts-ignore
+    steveo.pool = build(anotherRegistry);
+
+    const anotherRunner = new Runner(steveo);
+
+    // @ts-ignore
+    sandbox
+      .stub(anotherRunner.sqs, 'deleteMessage')
+      // @ts-ignore
+      .returns({ promise: async () => {} });
+
+    const inputContext = { contextKey: 'contextValue' };
+    const runnerContext = { duration: 0 };
+    await anotherRunner.receive(
+      [
+        {
+          ReceiptHandle: v4(),
+          Body: JSON.stringify({ data: 'Hello', context: inputContext }),
+        },
+      ],
+      'a-topic'
+    );
+
+    sinon.assert.calledWith(
+      subscribeStub,
+      { data: 'Hello', context: inputContext },
+      { ...inputContext, ...runnerContext }
+    );
+  });
+
   it('should delete message if waitToCommit is true after processing', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
     const anotherRegistry = {

@@ -38,13 +38,14 @@ export default function initMaintenance(
 
       events.emit(
         'pending',
+        // eslint-disable-next-line unicorn/no-array-reduce
         pendingJobs.reduce((acc, curr) => {
           acc[curr.name] = +curr.count;
           return acc;
         }, {})
       );
 
-      const rows = jobsSafeToRestart?.length
+      const rows = jobsSafeToRestart.length
         ? await client.$queryRaw<Job[]>`
     SELECT * FROM jobs
     WHERE queued = true AND deleted_at is NULL AND
@@ -68,7 +69,7 @@ export default function initMaintenance(
         });
       }
 
-      const blockedJobs = jobsRiskyToRestart?.length
+      const blockedJobs = jobsRiskyToRestart.length
         ? await client.$queryRaw<Job[]>`
     SELECT * FROM jobs
     WHERE queued = true AND deleted_at is NULL AND
@@ -87,7 +88,7 @@ export default function initMaintenance(
 
       // ** Laggy ** These are jobs that are in accepted state without transitioning to finished/dormant after 6 minutes
       // queued == true && (last_finished_at < next_run_at < last_run_at < accepted_at <= (now() - 6m))
-      const laggedRestartJobs = jobsSafeToRestart?.length
+      const laggedRestartJobs = jobsSafeToRestart.length
         ? await client.$queryRaw<Job[]>`
     SELECT * FROM jobs
     WHERE queued = true AND last_run_at < accepted_at
@@ -113,7 +114,7 @@ export default function initMaintenance(
         });
       }
 
-      const laggyJobs = jobsSafeToRestart?.length
+      const laggyJobs = jobsSafeToRestart.length
         ? await client.$queryRaw<Job[]>`
     SELECT * FROM jobs
     WHERE queued = true AND last_run_at < accepted_at
@@ -128,7 +129,7 @@ export default function initMaintenance(
         const resetJobs: Job[] = [];
 
         // Final automated reset check for jobs that we consider safe to do so, otherwise notify
-        laggyJobs.forEach(laggyJob => {
+        for (const laggyJob of laggyJobs) {
           const restartAfter = jobsCustomRestart[laggyJob.name];
           if (restartAfter) {
             if (
@@ -140,7 +141,7 @@ export default function initMaintenance(
           } else {
             notifyJobs.push(laggyJob);
           }
-        });
+        }
 
         await Promise.all(
           resetJobs.map(async job =>

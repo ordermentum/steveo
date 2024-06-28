@@ -210,12 +210,12 @@ class SqsProducer extends BaseProducer implements IProducer {
       },
     };
     if (attributes) {
-      attributes.forEach(a => {
+      for (const a of attributes) {
         messageAttributes[a.name] = {
           DataType: a.dataType || 'String',
           StringValue: a.value.toString(),
         };
-      });
+      }
     }
 
     const fifo = !!task?.options?.fifo;

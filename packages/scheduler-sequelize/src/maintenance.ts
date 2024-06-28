@@ -61,6 +61,7 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
 
       events.emit(
         'pending',
+        // eslint-disable-next-line unicorn/no-array-reduce
         pendingJobs.reduce((acc, curr) => {
           const job = curr.get();
           // @ts-expect-error
@@ -128,7 +129,7 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
         const resetJobs: JobInstance[] = [];
 
         // Final automated reset check for jobs that we consider safe to do so, otherwise notify
-        laggyJobs.forEach(laggyJob => {
+        for (const laggyJob of laggyJobs) {
           const restartAfter = jobsCustomRestart[laggyJob.name];
           if (restartAfter) {
             if (moment(laggyJob.acceptedAt).add(restartAfter) > moment()) {
@@ -137,7 +138,7 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
           } else {
             notifyJobs.push(laggyJob);
           }
-        });
+        }
 
         await Promise.all(
           resetJobs.map(async job =>

@@ -1,5 +1,16 @@
 # steveo
 
+## 6.3.0
+
+### Minor Changes
+
+- 2ed3a1e: Bump dependencies
+
+### Patch Changes
+
+- 7ab3a45: Fix SQS consumer issue preventing message context from being unpacked.
+  The code responsible for unpacking the context was accidentally removed during Steveo migration from v5 to v6.
+
 ## 6.2.0
 
 ### Minor Changes

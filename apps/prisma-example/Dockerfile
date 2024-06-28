@@ -1,4 +1,4 @@
-FROM node:17
+FROM node:20
 MAINTAINER David Banham <david@banham.id.au>
 
 WORKDIR /usr/src/app

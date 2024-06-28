@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/datadog",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "lib/index.js",
   "repository": "git@github.com:ordermentum/steveo.git",
   "license": "Apache-2.0",
@@ -19,7 +19,7 @@
     "lib"
   ],
   "peerDependencies": {
-    "steveo": "^6.2.0"
+    "steveo": "^6.3.0"
   },
   "peerDependenciesMeta": {
     "steveo": {
@@ -27,14 +27,14 @@
     }
   },
   "devDependencies": {
-    "@ordermentum/eslint-config-ordermentum": "^2.1.0",
+    "@ordermentum/eslint-config-ordermentum": "^2.3.3",
     "@types/chai": "^4.3.11",
     "chai": "4.4.1",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "prettier": "2.8.8",
     "source-map-support": "0.5.21",
-    "steveo": "^6.2.0",
+    "steveo": "^6.3.0",
     "ts-node": "10.9.2",
     "typescript": "^5.3.3"
   },

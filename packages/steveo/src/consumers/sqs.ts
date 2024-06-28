@@ -33,6 +33,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
     this.concurrency = safeParseInt(steveo.config.workerConfig?.max ?? 1, 1);
+    this.logger.info('SQS Runner started');
   }
 
   async receive(messages: SQS.MessageList, topic: string): Promise<any> {
@@ -43,21 +44,20 @@ class SqsRunner extends BaseRunner implements IRunner {
       async message => {
         const params = JSON.parse(message.Body as string);
         await this.wrap({ topic, payload: params }, async c => {
+          this.logger.info(message, `Message received for task: ${c.topic}`);
           let resource: Resource | null = null;
           const runnerContext = getContext(c.payload);
-
           try {
             resource = await this.pool.acquire();
 
             this.registry.emit(
               'runner_receive',
               c.topic,
-              params,
+              c.payload,
               runnerContext
             );
 
             const task = this.registry.getTask(topic);
-
             const waitToCommit =
               (task?.options?.waitToCommit || this.config?.waitToCommit) ??
               false;
@@ -66,15 +66,19 @@ class SqsRunner extends BaseRunner implements IRunner {
               await this.deleteMessage(c.topic, message);
             }
 
-            this.logger.debug('Start subscribe', c.topic, params);
             if (!task) {
               this.logger.error(`Unknown Task ${c.topic}`);
               return;
             }
 
+            this.logger.info(
+              { context: runnerContext, params },
+              `Start Subscribe to ${task.name}`
+            );
+
             await task.subscribe(params, runnerContext);
-            this.logger.debug('Completed subscribe', c.topic, params);
-            const completedContext = getContext(params);
+            this.logger.debug('Completed subscribe', c.topic, c.payload);
+            const completedContext = getContext(c.payload);
 
             if (waitToCommit) {
               await this.deleteMessage(c.topic, message);

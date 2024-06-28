@@ -1,5 +1,11 @@
 # @steveojs/scheduler-sequelize
 
+## 7.2.0
+
+### Minor Changes
+
+- 2ed3a1e: Bump dependencies
+
 ## 7.1.0
 
 ### Minor Changes
