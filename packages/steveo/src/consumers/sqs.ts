@@ -324,8 +324,10 @@ class SqsRunner extends BaseRunner implements IRunner {
   async createQueue(topic: string) {
     this.logger.info(`creating SQS queue ${topic}`);
 
+    let queueName = topic;
+
     const params: CreateQueueRequest = {
-      QueueName: topic,
+      QueueName: queueName,
       Attributes: {
         ReceiveMessageWaitTimeSeconds:
           this.config.receiveMessageWaitTimeSeconds,
@@ -333,9 +335,22 @@ class SqsRunner extends BaseRunner implements IRunner {
       },
     };
 
+    const task = this.registry.getTask(topic);
+
+    // Append FIFO attributes if it's enabled
+    if (task?.options?.fifo) {
+      queueName = `${queueName}.fifo`;
+      params.QueueName = queueName;
+      params.Attributes = {
+        ...params.Attributes,
+        FifoQueue: 'true',
+        ContentBasedDeduplication: 'true',
+      };
+    }
+
     // Check if queue supports DLQ on the task config
     const redrivePolicy: QueueAttributeMap | null =
-      await this.getDeadLetterQueuePolicy(topic);
+      await this.getDeadLetterQueuePolicy(queueName);
 
     // Append RedrivePolicy if supported
     if (redrivePolicy) {
