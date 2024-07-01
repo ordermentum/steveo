@@ -186,7 +186,7 @@ class SqsProducer extends BaseProducer implements IProducer {
 
     return {
       deadLetterTargetArn: dlQueueArn,
-      maxReceivedCount: (task?.options.maxReceivedCount ?? 5).toString(),
+      maxReceiveCount: (task?.options.maxReceiveCount ?? 5).toString(),
     };
   }
 
