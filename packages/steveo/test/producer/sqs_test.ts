@@ -98,6 +98,87 @@ describe('SQS Producer', () => {
       expect(getQueueUrlStub.calledOnce, 'getQueueUrl is called').to.be.true;
       expect(createQueueStub.notCalled, 'createQueue is not called').to.be.true;
     });
+
+    it('when a task config includes deadletterQueue, it should create or fetch an existing queue for RedrivePolicy on main queue', async () => {
+      const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+      const anotherRegistry = {
+        registeredTasks: [],
+        addNewTask: () => {},
+        removeTask: () => {},
+        getTopics: () => [],
+        getTaskTopics: () => [],
+        getTask: () => ({
+          publish: () => {},
+          subscribe: subscribeStub,
+          options: {
+            deadLetterQueue: true,
+          },
+        }),
+        emit: sandbox.stub(),
+        events: {
+          emit: sandbox.stub(),
+        },
+      };
+
+      const newProducer = new Producer(
+        // @ts-ignore
+        {
+          engine: 'sqs',
+        },
+        anotherRegistry
+      );
+
+      const createQueueStub = sandbox
+        .stub(newProducer.producer, 'createQueue')
+        .onCall(0)
+        // Creating DLQ
+        .returns(
+          // @ts-expect-error
+          awsPromiseResolves({
+            QueueUrl:
+              'https://sqs.ap-southeast-2.amazonaws.com/123456123456/dlq-topic_DLQ',
+          })
+        )
+        .onCall(1)
+        .returns(
+          // @ts-expect-error
+          awsPromiseResolves({
+            QueueUrl:
+              'https://sqs.ap-southeast-2.amazonaws.com/123456123456/dlq-topic',
+          })
+        );
+
+      const testArn = 'arn:aws:sqs:ap-southeast-2:000000000000:dlq-topic_DLQ';
+      const getQueueAttributeStub = sandbox
+        .stub(newProducer.producer, 'getQueueAttributes')
+        .returns(
+          // @ts-expect-error
+          awsPromiseResolves({
+            Attributes: {
+              QueueArn: testArn,
+            },
+          })
+        );
+
+      const getQueueStub = sandbox
+        .stub(newProducer.producer, 'getQueueUrl')
+        // @ts-expect-error
+        .returns(awsPromiseRejects('unable to find existing'));
+
+      await newProducer.initialize('dlq-topic');
+
+      expect(getQueueAttributeStub.called).to.be.true;
+      expect(getQueueStub.calledTwice, 'getQueueUrl is called twice').to.be
+        .true;
+      expect(createQueueStub.calledTwice, 'createQueue is called twice').to.be
+        .true;
+
+      const mainQueueCreateArgs: any = createQueueStub.args[1][0];
+      expect(
+        mainQueueCreateArgs.Attributes.RedrivePolicy,
+        'includes RedrivePolicy when DLQ is enabled'
+      ).to.equals(`{"deadLetterTargetArn":"${testArn}","maxReceiveCount":"5"}`);
+    });
   });
 
   describe('send', () => {
