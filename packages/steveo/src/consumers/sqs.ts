@@ -10,8 +10,12 @@ import { getSqsInstance } from '../config/sqs';
 import { IRunner, Pool, Logger, SQSConfiguration } from '../common';
 import { Steveo } from '..';
 import { Resource } from '../lib/pool';
+import { SQSMessagingMixin } from '../mixins/sqs';
 
-class SqsRunner extends BaseRunner implements IRunner {
+class SqsRunner
+  extends SQSMessagingMixin<typeof BaseRunner>(BaseRunner)
+  implements IRunner
+{
   config: SQSConfiguration;
 
   logger: Logger;
@@ -248,79 +252,6 @@ class SqsRunner extends BaseRunner implements IRunner {
       });
   }
 
-  async getDeadLetterQueuePolicy(
-    queueName: string
-  ): Promise<QueueAttributeMap | null> {
-    const task = this.registry.getTask(queueName);
-
-    if (!task?.options?.deadLetterQueue) {
-      return null;
-    }
-
-    const dlQueueName = `${queueName}_DLQ`;
-    // try to fetch if there is an existing queueURL for QLQ
-    const queueResult = await this.sqs
-      .getQueueUrl({ QueueName: dlQueueName })
-      .promise()
-      .catch(_ => undefined);
-
-    let dlQueueUrl = queueResult?.QueueUrl;
-
-    // if we don't have existing DLQ, create one
-    if (!dlQueueUrl) {
-      const params = {
-        QueueName: dlQueueName,
-        Attributes: {
-          ReceiveMessageWaitTimeSeconds:
-            this.config.receiveMessageWaitTimeSeconds ?? '20',
-          MessageRetentionPeriod:
-            this.config.messageRetentionPeriod ?? '604800',
-        },
-      };
-
-      this.logger.debug(`Creating DLQ for orginal queue ${queueName}`, params);
-
-      const res = await this.sqs
-        .createQueue(params)
-        .promise()
-        .catch(err => {
-          throw new Error(`Failed to call SQS createQueue: ${err}`);
-        });
-
-      if (!res.QueueUrl) {
-        throw new Error(
-          'SQS createQueue response does not contain a queue name'
-        );
-      }
-
-      dlQueueUrl = res.QueueUrl;
-    }
-
-    // get the ARN of the DQL
-    const getQueueAttributesParams = {
-      QueueUrl: dlQueueUrl,
-      AttributeNames: ['QueueArn'],
-    };
-
-    const attributesResult = await this.sqs
-      .getQueueAttributes(getQueueAttributesParams)
-      .promise()
-      .catch(err => {
-        throw new Error(`Failed to call SQS getQueueAttributes: ${err}`);
-      });
-
-    const dlQueueArn = attributesResult.Attributes?.QueueArn;
-
-    if (!dlQueueArn) {
-      throw new Error('Failed to retrieve the DLQ ARN');
-    }
-
-    return {
-      deadLetterTargetArn: dlQueueArn,
-      maxReceiveCount: (task?.options.maxReceiveCount ?? 5).toString(),
-    };
-  }
-
   async createQueue(topic: string) {
     this.logger.info(`creating SQS queue ${topic}`);
 
@@ -335,7 +266,13 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     // Check if queue supports DLQ on the task config
     const redrivePolicy: QueueAttributeMap | null =
-      await this.getDeadLetterQueuePolicy(topic);
+      await this.getDeadLetterQueuePolicy(
+        topic,
+        this.sqs,
+        this.registry,
+        this.config,
+        this.logger
+      );
 
     // Append RedrivePolicy if supported
     if (redrivePolicy) {
