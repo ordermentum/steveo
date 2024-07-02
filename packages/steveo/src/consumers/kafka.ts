@@ -7,7 +7,7 @@ import Kafka, {
 import nullLogger from 'null-logger';
 import { Pool } from 'generic-pool';
 import BaseRunner from './base';
-import { getDuration } from '../lib/context';
+import { getContext, getDuration } from '../lib/context';
 import { IRunner, Logger, KafkaConfiguration } from '../common';
 import { Steveo } from '..';
 import { Resource } from '../lib/pool';
@@ -75,18 +75,26 @@ class KafkaRunner
         this.logger.debug(`waiting for pool ${c.topic}`);
         resource = await this.pool.acquire();
         this.logger.debug(`acquired pool`);
-        const valueString = c.payload.value?.toString() ?? '';
+
+        const { value: payloadValue, ...rest } = c.payload;
+
+        const valueString = payloadValue?.toString() ?? '';
         let value = valueString;
+
         try {
           value = JSON.parse(valueString);
         } catch (e) {
           throw new JsonParsingError();
         }
+
+        const runnerContext = getContext(value);
         const parsed = {
-          ...message,
-          value,
-          key: message.key?.toString(),
+          metadata: {
+            ...rest,
+          },
+          ...value,
         };
+
         this.registry.emit('runner_receive', c.topic, parsed, {
           ...message,
           start: getDuration(),
@@ -107,9 +115,7 @@ class KafkaRunner
 
         this.logger.debug('Start subscribe', c.topic, message);
 
-        // @ts-ignore
-        const context = parsed.value.context ?? null;
-        await task.subscribe(parsed, context);
+        await task.subscribe(parsed, runnerContext);
 
         if (waitToCommit) {
           this.logger.debug('committing message', message);
