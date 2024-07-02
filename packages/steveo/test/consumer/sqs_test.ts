@@ -36,6 +36,53 @@ describe('runner/sqs', () => {
     expect(typeof runner.process).to.equal('function');
   });
 
+  it('should create queue with fifo suffix if enabled', async () => {
+    const anotherRegistry = {
+      registeredTasks: [],
+      addNewTask: () => {},
+      removeTask: () => {},
+      getTopics: () => [],
+      getTask: () => ({
+        options: {
+          fifo: true,
+        },
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const log = logger({ level: 'debug' });
+    const config = {
+      engine: 'sqs' as const,
+      logger: log,
+      registry: anotherRegistry,
+    };
+
+    const steveo = new Steveo(config);
+    // @ts-ignore
+    steveo.registry = anotherRegistry;
+    // @ts-ignore
+    steveo.pool = build(anotherRegistry);
+
+    const anotherRunner = new Runner(steveo);
+
+    const createQueueStub = sandbox
+      .stub(anotherRunner.sqs, 'createQueue')
+      // @ts-ignore
+      .returns({ promise: async () => {} });
+
+    await anotherRunner.createQueue('a-topic');
+
+    expect(createQueueStub.called).to.be.true;
+
+    const createQueueArgs: any = createQueueStub.args[0][0];
+    expect(createQueueArgs.QueueName, 'should have fifo suffix').to.eqls(
+      'a-topic.fifo'
+    );
+  });
+
   it('should invoke callback when receives a message on topic', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
     const anotherRegistry = {

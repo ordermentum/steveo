@@ -333,9 +333,21 @@ class SqsRunner extends BaseRunner implements IRunner {
       },
     };
 
+    const task = this.registry.getTask(topic);
+
+    // Append FIFO attributes if it's enabled
+    if (task?.options?.fifo) {
+      params.QueueName = `${topic}.fifo`;
+      params.Attributes = {
+        ...params.Attributes,
+        FifoQueue: 'true',
+        ContentBasedDeduplication: 'true',
+      };
+    }
+
     // Check if queue supports DLQ on the task config
     const redrivePolicy: QueueAttributeMap | null =
-      await this.getDeadLetterQueuePolicy(topic);
+      await this.getDeadLetterQueuePolicy(params.QueueName);
 
     // Append RedrivePolicy if supported
     if (redrivePolicy) {
