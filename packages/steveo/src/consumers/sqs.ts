@@ -46,6 +46,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         await this.wrap({ topic, payload: params }, async c => {
           this.logger.info(message, `Message received for task: ${c.topic}`);
           let resource: Resource | null = null;
+          const { _meta, context, ...data } = c.payload;
           const runnerContext = getContext(c.payload);
           try {
             resource = await this.pool.acquire();
@@ -76,9 +77,9 @@ class SqsRunner extends BaseRunner implements IRunner {
               `Start Subscribe to ${task.name}`
             );
 
-            await task.subscribe(params, runnerContext);
+            await task.subscribe(data, runnerContext);
             this.logger.debug('Completed subscribe', c.topic, c.payload);
-            const completedContext = getContext(c.payload);
+            const completedContext = getContext(runnerContext);
 
             if (waitToCommit) {
               await this.deleteMessage(c.topic, message);
