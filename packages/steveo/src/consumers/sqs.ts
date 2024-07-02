@@ -72,14 +72,17 @@ class SqsRunner extends BaseRunner implements IRunner {
               return;
             }
 
+            // const { _meta, context, ...data } = c.payload;
+            const data = { ...c.payload };
+            delete data.context;
             this.logger.info(
-              { context: runnerContext, params },
+              { context: runnerContext, data },
               `Start Subscribe to ${task.name}`
             );
 
-            await task.subscribe(params, runnerContext);
+            await task.subscribe(data, runnerContext);
             this.logger.debug('Completed subscribe', c.topic, c.payload);
-            const completedContext = getContext(c.payload);
+            const completedContext = getContext(runnerContext);
 
             if (waitToCommit) {
               await this.deleteMessage(c.topic, message);

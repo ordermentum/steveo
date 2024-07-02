@@ -188,7 +188,7 @@ describe('runner/sqs', () => {
 
     sinon.assert.calledWith(
       subscribeStub,
-      { data: 'Hello', context: inputContext },
+      { data: 'Hello' },
       { ...inputContext, ...runnerContext }
     );
   });
