@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-
+import { randomUUID } from 'crypto';
 import Runner from '../../src/consumers/kafka';
 import { build } from '../../src/lib/pool';
 import Registry from '../../src/registry';
@@ -204,8 +204,8 @@ describe('runner/kafka', () => {
       // @ts-ignore
       pool: build(anotherRegistry),
       manager: {
-        state: 'running'
-      }
+        state: 'running',
+      },
     };
     // @ts-ignore
     const anotherRunner = new Runner(steveo);
@@ -217,16 +217,89 @@ describe('runner/kafka', () => {
       anotherRunner.consumer,
       'commitMessage'
     );
-    await anotherRunner.consumeCallback(null, [{
-      value: Buffer.from(
-        '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
-      ),
-      size: 1000,
-      offset: 0,
-      topic: 'a-topic',
-      partition: 1,
-    }]);
+    await anotherRunner.consumeCallback(null, [
+      {
+        value: Buffer.from(
+          '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
+        ),
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1,
+      },
+    ]);
     expect(commitOffsetStub.callCount).to.equal(0);
     expect(subscribeStub.callCount).to.equal(0);
+  });
+
+  it('should process a message', async () => {
+    const subscribeStub = sinon.stub().rejects();
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const steveo = {
+      config: {
+        bootstrapServers: 'kafka:9200',
+        engine: 'kafka',
+        securityProtocol: 'plaintext',
+        waitToCommit: true,
+      },
+      // @ts-ignore
+      registry: anotherRegistry,
+      // @ts-ignore
+      pool: build(anotherRegistry),
+      manager: {
+        state: 'running',
+      },
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner(steveo);
+
+    sandbox.stub(anotherRunner.consumer, 'commitMessage');
+
+    const jobId = randomUUID();
+    const payload = {
+      message: 'test runner',
+      context: {
+        jobId,
+      },
+    };
+
+    await anotherRunner.consumeCallback(null, [
+      {
+        value: JSON.stringify(payload),
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1,
+      },
+    ]);
+
+    expect(subscribeStub.called).to.be.true;
+    const data = subscribeStub.args[0][0];
+    const context = subscribeStub.args[0][1];
+    expect(data, 'expected data').to.deep.equals({
+      metadata: {
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1,
+      },
+      message: 'test runner',
+      context: {
+        jobId,
+      },
+    });
+    expect(context, 'expected context').to.deep.equals({
+      jobId,
+    });
   });
 });
