@@ -1,5 +1,13 @@
 # steveo
 
+## 6.4.0
+
+### Minor Changes
+
+- b307437: Added SQS dead letter queue support
+- 4fcf0da: Added support to FIFO queue on task level
+- b77b951: Set FIFO on SQS createQueue
+
 ## 6.3.0
 
 ### Minor Changes
