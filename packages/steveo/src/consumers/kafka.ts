@@ -7,7 +7,7 @@ import Kafka, {
 import nullLogger from 'null-logger';
 import { Pool } from 'generic-pool';
 import BaseRunner from './base';
-import { getDuration } from '../lib/context';
+import { getContext, getDuration } from '../lib/context';
 import { IRunner, Logger, KafkaConfiguration } from '../common';
 import { Steveo } from '..';
 import { Resource } from '../lib/pool';
@@ -87,6 +87,7 @@ class KafkaRunner
           throw new JsonParsingError();
         }
 
+        const runnerContext = getContext(value);
         const parsed = {
           metadata: {
             ...rest,
@@ -114,9 +115,7 @@ class KafkaRunner
 
         this.logger.debug('Start subscribe', c.topic, message);
 
-        // @ts-ignore
-        const context = parsed?.context ?? null;
-        await task.subscribe(parsed, context);
+        await task.subscribe(parsed, runnerContext);
 
         if (waitToCommit) {
           this.logger.debug('committing message', message);

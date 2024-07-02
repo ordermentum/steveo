@@ -299,6 +299,7 @@ describe('runner/kafka', () => {
       },
     });
     expect(context, 'expected context').to.deep.equals({
+      duration: 0,
       jobId,
     });
   });
