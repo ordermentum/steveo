@@ -28,17 +28,16 @@ export const getDuration = (start = undefined) => {
 };
 
 export const getContext = params => {
-  const { _meta: meta, context = {} } = params;
+  const { _meta: meta } = params;
 
   if (!meta) {
-    return { ...context, duration: 0 };
+    return { duration: 0 };
   }
 
   const duration = getDuration(meta.start);
 
   return {
-    ...context,
+    ...meta,
     duration,
-    traceMetadata: meta.traceMetadata,
   };
 };

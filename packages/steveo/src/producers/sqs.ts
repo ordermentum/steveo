@@ -193,14 +193,18 @@ class SqsProducer extends BaseProducer implements IProducer {
   getPayload(
     msg: any,
     topic: string,
-    key?: string
+    key?: string,
+    jobContext?: unknown
   ): {
     MessageAttributes: any;
     MessageBody: string;
     QueueUrl: string;
     MessageGroupId?: string;
   } {
-    const context = createMessageMetadata(msg);
+    const context = {
+      ...createMessageMetadata(msg),
+      ...(jobContext ?? {}),
+    };
 
     const task = this.registry.getTask(topic);
     const attributes = task ? task.options.attributes : [];
@@ -231,13 +235,18 @@ class SqsProducer extends BaseProducer implements IProducer {
     };
   }
 
-  async send<T = any>(topic: string, payload: T, key?: string) {
+  async send<T = any>(
+    topic: string,
+    payload: T,
+    key?: string,
+    context: unknown = {}
+  ) {
     try {
       await this.wrap({ topic, payload }, async c => {
         if (!this.sqsUrls[c.topic]) {
           await this.initialize(c.topic);
         }
-        const data = this.getPayload(c.payload, c.topic, key);
+        const data = this.getPayload(c.payload, c.topic, key, context);
         await this.producer.sendMessage(data).promise();
         this.registry.emit('producer_success', c.topic, data);
       });
