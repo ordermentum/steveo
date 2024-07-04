@@ -1,7 +1,8 @@
 import moment, { Moment } from 'moment-timezone';
 import { expect } from 'chai';
 import sinon, { SinonSandbox, SinonFakeTimers } from 'sinon';
-import { computeNextRun, computeNextRuns, isHealthy } from '../src/helpers';
+import { computeNextRun, computeNextRuns, isHealthy, taskRunner } from '../src/helpers';
+import { PublishableTask } from '../src';
 
 describe('helpers', () => {
   let sandbox: SinonSandbox;
@@ -201,4 +202,23 @@ describe('helpers', () => {
         .be.false;
     });
   });
+
+  describe('taskRunner Helper', () => {
+    it('should not merge context with data before publishing message to queue', () => {
+      const publishStub = sandbox.stub();
+      const fakeTask: PublishableTask = {
+        publish: publishStub
+      };
+      const wrappedTask = taskRunner(fakeTask);
+      const payload: any = {
+        fake: 'payload',
+      }
+      const context: any = {
+        job: {}
+      }
+      wrappedTask(payload, context)
+      sinon.assert.calledWith(publishStub, payload, context);
+    });
+  });
+
 });

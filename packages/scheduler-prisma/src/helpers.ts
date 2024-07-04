@@ -9,6 +9,7 @@ import {
   TaskCallback,
   JobContext,
   JobScheduler,
+  PublishableTask,
 } from './index';
 import { Properties } from './types';
 
@@ -109,8 +110,8 @@ export const computeNextRun = (
  * @returns
  */
 export const taskRunner =
-  (task: any) => (payload: Properties, context?: JobContext) =>
-    task.publish({ ...payload, context });
+  (task: PublishableTask) => (payload: Properties, context?: JobContext) =>
+    task.publish(payload, context);
 
 /**
  * Maintenace is done as follows:

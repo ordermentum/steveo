@@ -59,7 +59,7 @@ export type TaskArguments = {
   [key: string]: any;
   context: JobContext;
 };
-type PublishableTask = {
+export type PublishableTask = {
   publish: (...args: any) => Promise<void>;
   [key: string]: any;
 };
