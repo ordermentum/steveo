@@ -3,6 +3,8 @@ import sinon from 'sinon';
 import Producer from '../../src/producers/sqs';
 import Registry from '../../src/registry';
 import Task from '../../src/task';
+import { ITask, TaskOptions } from '../../src/common';
+import { createMessageMetadata } from '../../src/lib/context';
 
 describe('SQS Producer', () => {
   let sandbox: sinon.SinonSandbox;
@@ -183,9 +185,18 @@ describe('SQS Producer', () => {
 
   describe('send', () => {
     let initializeStub: sinon.SinonStub;
+    let clock: sinon.SinonFakeTimers;
 
     beforeEach(() => {
       initializeStub = sandbox.stub(producer, 'initialize');
+      clock = sinon.useFakeTimers({
+        shouldAdvanceTime: false,
+      });
+    });
+
+    afterEach(() => {
+      initializeStub.restore();
+      clock.restore();
     });
 
     it(`when the topic's SQS URL is not known, initialize() should be called`, async () => {
@@ -246,6 +257,69 @@ describe('SQS Producer', () => {
       ).to.equal(attributes[0].value);
     });
 
+    it('should merge the context object into payload metadata if context given', async () => {
+      const taskOptions: TaskOptions = {};
+      const task: ITask = new Task(
+        {engine: 'sqs'},
+        registry,
+        producer,
+        'test-task-with-attributes',
+        'test-topic',
+        () => undefined,
+        taskOptions
+      );
+      registry.addNewTask(task);
+
+      const messagePayload: any = { a: 'payload' };
+      const messageContext: any = { any: 'context' };
+      const messageGroupId: undefined = undefined;
+      const expectedMessageBody = {
+        ...messagePayload,
+        _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
+      }
+      const expectedPayload = {
+        MessageAttributes: {Timestamp: {DataType: 'Number', StringValue: clock.now.toString()}},
+        MessageBody: JSON.stringify(expectedMessageBody),
+        QueueUrl: undefined,
+        MessageGroupId: undefined,
+      };
+
+      await producer.send('test-topic', messagePayload, messageGroupId, messageContext);
+      sinon.assert.calledWith(sendMessageStub, expectedPayload);
+    });
+
+    it('should use key as MessageGroupId if task is configured as fifo and key is present', async () => {
+      const taskOptions: TaskOptions = { fifo: true };
+      const task: ITask = new Task(
+        {engine: 'sqs'},
+        registry,
+        producer,
+        'test-task-with-attributes',
+        'test-topic',
+        () => undefined,
+        taskOptions
+      );
+      registry.addNewTask(task);
+
+      const messagePayload: any = { a: 'payload' };
+      const messageContext: any = { any: 'context' };
+      const messageGroupId: string = 'any-key'
+      const expectedMessageBody = {
+        ...messagePayload,
+        _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
+      }
+
+      const expectedPayload = {
+        MessageAttributes: {Timestamp: {DataType: 'Number', StringValue: clock.now.toString()}},
+        MessageBody: JSON.stringify(expectedMessageBody),
+        QueueUrl: undefined,
+        MessageGroupId: messageGroupId,
+      };
+
+      await producer.send('test-topic', messagePayload, messageGroupId, messageContext);
+      sinon.assert.calledWith(sendMessageStub, expectedPayload);
+    });
+
     it('should throw an error if initialize() throws an error', async () => {
       initializeStub.throws();
 
@@ -292,10 +366,6 @@ describe('SQS Producer', () => {
         expect(ex).not.equal(null, 'error is not null');
       }
       expect(didCatchError, 'didCatchError is true').to.equal(true);
-    });
-
-    afterEach(() => {
-      initializeStub.restore();
     });
   });
 });

@@ -10,6 +10,8 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
+  Attribute,
+  ITask,
 } from '../common';
 
 import { createMessageMetadata } from '../lib/context';
@@ -193,30 +195,37 @@ class SqsProducer extends BaseProducer implements IProducer {
   getPayload(
     msg: any,
     topic: string,
-    key?: string
+    key?: string,
+    context?: { [key: string]: string }
   ): {
     MessageAttributes: any;
     MessageBody: string;
     QueueUrl: string;
     MessageGroupId?: string;
   } {
-    const context = createMessageMetadata(msg);
+    const messageMetadata = {
+      ...createMessageMetadata(msg),
+      ...context,
+    };
 
-    const task = this.registry.getTask(topic);
-    const attributes = task ? task.options.attributes : [];
+    const task: ITask | null = this.registry.getTask(topic);
+    let attributes: Attribute[] = [] as Attribute[];
+    if (task) {
+      attributes = (task.options.attributes ?? []) as Attribute[];
+    }
+
     const messageAttributes = {
       Timestamp: {
         DataType: 'Number',
-        StringValue: context.timestamp.toString(),
+        StringValue: messageMetadata.timestamp.toString(),
       },
     };
-    if (attributes) {
-      for (const a of attributes) {
-        messageAttributes[a.name] = {
-          DataType: a.dataType || 'String',
-          StringValue: a.value.toString(),
-        };
-      }
+
+    for (const a of attributes) {
+      messageAttributes[a.name] = {
+        DataType: a.dataType || 'String',
+        StringValue: a.value.toString(),
+      };
     }
 
     const fifo = !!task?.options?.fifo;
@@ -225,19 +234,24 @@ class SqsProducer extends BaseProducer implements IProducer {
 
     return {
       MessageAttributes: messageAttributes,
-      MessageBody: JSON.stringify({ ...msg, _meta: context }),
+      MessageBody: JSON.stringify({ ...msg, _meta: messageMetadata }),
       QueueUrl: this.sqsUrls[sqsTopic],
       MessageGroupId: fifo && key ? key : undefined,
     };
   }
 
-  async send<T = any>(topic: string, payload: T, key?: string) {
+  async send<T = any>(
+    topic: string,
+    payload: T,
+    key?: string,
+    context?: { [key: string]: string }
+  ) {
     try {
       await this.wrap({ topic, payload }, async c => {
         if (!this.sqsUrls[c.topic]) {
           await this.initialize(c.topic);
         }
-        const data = this.getPayload(c.payload, c.topic, key);
+        const data = this.getPayload(c.payload, c.topic, key, context);
         await this.producer.sendMessage(data).promise();
         this.registry.emit('producer_success', c.topic, data);
       });
