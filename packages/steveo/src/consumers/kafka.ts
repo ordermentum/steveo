@@ -76,9 +76,7 @@ class KafkaRunner
         resource = await this.pool.acquire();
         this.logger.debug(`acquired pool`);
 
-        const { value: payloadValue, ...rest } = c.payload;
-
-        const valueString = payloadValue?.toString() ?? '';
+        const valueString = c.payload.value?.toString() ?? '';
         let value = valueString;
 
         try {
@@ -87,12 +85,10 @@ class KafkaRunner
           throw new JsonParsingError();
         }
 
-        const runnerContext = getContext(value);
         const parsed = {
-          metadata: {
-            ...rest,
-          },
-          ...value,
+          ...message,
+          value,
+          key: message.key?.toString(),
         };
 
         this.registry.emit('runner_receive', c.topic, parsed, {
@@ -114,8 +110,9 @@ class KafkaRunner
         }
 
         this.logger.debug('Start subscribe', c.topic, message);
-
-        await task.subscribe(parsed, runnerContext);
+        const runnerContext = getContext(value);
+        const { _meta: _ = {}, ...data } = parsed.value;
+        await task.subscribe(data, runnerContext);
 
         if (waitToCommit) {
           this.logger.debug('committing message', message);
