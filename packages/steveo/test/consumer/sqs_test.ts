@@ -194,7 +194,6 @@ describe('runner/sqs', () => {
 
     const expectedContext = {
       duration: 0,
-      traceMetadata: undefined,
       ...inputContext
     };
 
