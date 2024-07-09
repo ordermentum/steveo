@@ -58,14 +58,13 @@ class Task<T = any, R = any> implements ITask<T, R> {
     } else {
       params = payload;
     }
-
     try {
       // sqs calls this method twice
       await this.producer.initialize(this.topic);
       await Promise.all(
         params.map(data => {
           this.registry.emit('task_send', this.topic, data);
-          return this.producer.send(this.topic, data, context?.key);
+          return this.producer.send(this.topic, data, context?.key, context);
         })
       );
       this.registry.emit('task_success', this.topic, payload);

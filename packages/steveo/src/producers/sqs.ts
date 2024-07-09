@@ -196,7 +196,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     msg: any,
     topic: string,
     key?: string,
-    context?: { [key: string]: string }
+    context: { [key: string]: string } = {}
   ): {
     MessageAttributes: any;
     MessageBody: string;

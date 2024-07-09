@@ -223,7 +223,12 @@ export interface IProducer<P = any> {
   registry: IRegistry;
   producer?: any;
   initialize(topic?: string): Promise<P>;
-  getPayload(msg: any, topic: string): any;
+  getPayload<T = any>(
+    msg: T,
+    topic: string,
+    key?: string,
+    context?: { [key: string]: string }
+  ): any;
   send<T = any>(
     topic: string,
     payload: T,

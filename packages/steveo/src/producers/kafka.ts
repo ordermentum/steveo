@@ -30,7 +30,7 @@ class KafkaProducer
         'security.protocol': this.config.securityProtocol,
         ...(this.config.producer?.global ?? {}),
       },
-      this.config?.producer?.topic ?? {}
+      this.config.producer?.topic ?? {}
     );
     this.logger = logger;
     this.registry = registry;
@@ -63,12 +63,23 @@ class KafkaProducer
     });
   }
 
-  getPayload = <T>(payload: T) => {
-    const context = createMessageMetadata(payload);
+  getPayload = <T>(
+    payload: T,
+    _topic: string,
+    _key?: string | unknown,
+    context?: { [key: string]: string }
+  ) => {
+    const messageMetadata = {
+      ...createMessageMetadata(payload),
+      ...context,
+    };
     if (typeof payload === 'string') {
       return Buffer.from(payload, 'utf-8');
     }
-    return Buffer.from(JSON.stringify({ ...payload, _meta: context }), 'utf-8');
+    return Buffer.from(
+      JSON.stringify({ ...payload, _meta: messageMetadata }),
+      'utf-8'
+    );
   };
 
   publish(topic: string, data, key: string | null = null) {
@@ -93,10 +104,20 @@ class KafkaProducer
     });
   }
 
-  async send<T = any>(topic: string, payload: T, key: string | null = null) {
+  async send<T = any>(
+    topic: string,
+    payload: T,
+    key: string | null = null,
+    context: { [key: string]: string } = {}
+  ) {
     try {
       await this.wrap({ topic, payload }, async c => {
-        const data = this.getPayload(c.payload);
+        const data = this.getPayload(
+          c.payload,
+          topic,
+          key ?? undefined,
+          context
+        );
         await this.publish(c.topic, data, key);
         this.registry.emit('producer_success', topic, c.payload);
       });
