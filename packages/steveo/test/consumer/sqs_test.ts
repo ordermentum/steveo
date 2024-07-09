@@ -13,9 +13,14 @@ describe('runner/sqs', () => {
   let runner: Runner;
   let registry: Registry;
   let sandbox: sinon.SinonSandbox;
+  let clock: sinon.SinonFakeTimers;
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+    clock = sinon.useFakeTimers({
+      now: 0,
+      shouldAdvanceTime: true
+    });
     registry = new Registry();
 
     const steveo = {
@@ -29,6 +34,7 @@ describe('runner/sqs', () => {
 
   afterEach(() => {
     sandbox.restore();
+    clock.restore();
   });
 
   it('should create an instance', () => {
@@ -175,21 +181,27 @@ describe('runner/sqs', () => {
       .returns({ promise: async () => {} });
 
     const inputContext = { contextKey: 'contextValue' };
-    const runnerContext = { duration: 0 };
+    const messageBody = { data: 'Hello', _meta: inputContext }
     await anotherRunner.receive(
       [
         {
           ReceiptHandle: v4(),
-          Body: JSON.stringify({ data: 'Hello', context: inputContext }),
+          Body: JSON.stringify(messageBody),
         },
       ],
       'a-topic'
     );
 
+    const expectedContext = {
+      duration: 0,
+      traceMetadata: undefined,
+      ...inputContext
+    };
+
     sinon.assert.calledWith(
       subscribeStub,
-      { data: 'Hello', context: inputContext },
-      { ...inputContext, ...runnerContext }
+      { data: 'Hello' },
+      expectedContext
     );
   });
 
