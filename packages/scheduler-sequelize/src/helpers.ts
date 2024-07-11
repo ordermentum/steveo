@@ -8,6 +8,7 @@ import {
   DEFAULT_MAX_RESTARTS_ON_FAILURE,
   JobContext,
   JobScheduler,
+  PublishableTask,
 } from './index';
 
 import { Properties } from './types';
@@ -104,13 +105,13 @@ export const computeNextRun = (
 };
 
 /**
- * @description }
+ * @description Call publish method on Publishable Tasks passing JobContext
  * @param task {SteveoTask}
  * @returns
  */
 export const taskRunner =
-  (task: any) => (payload: Properties, context?: JobContext) =>
-    task.publish({ ...payload, context });
+  (task: PublishableTask) => (payload: Properties, context?: JobContext) =>
+    task.publish(payload, context);
 
 const updateStartTask = async (job?: JobInstance | null) => {
   if (!job) {

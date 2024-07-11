@@ -2,14 +2,23 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producers/kafka';
 import Registry from '../../src/registry';
+import {createMessageMetadata} from "../../src/lib/context";
 
 describe('Kafka Producer', () => {
   let sandbox: sinon.SinonSandbox;
+  let clock: sinon.SinonFakeTimers;
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+    clock = sinon.useFakeTimers({
+      now: 0,
+      shouldAdvanceTime: true
+    });
   });
 
-  afterEach(() => sandbox.restore());
+  afterEach(() => {
+    sandbox.restore();
+    clock.restore();
+  });
 
   it('should initialize', async () => {
     const registry = new Registry();
@@ -45,6 +54,33 @@ describe('Kafka Producer', () => {
     const sendStub = sandbox.stub(p.producer, 'produce').callsArgWith(5);
     await p.send('test-topic', { a: 'payload' });
     expect(sendStub.callCount).to.equal(1);
+  });
+
+  it('should merge the context object into payload metadata if context given', async () => {
+    const registry = new Registry();
+    registry.addTopic("test-topic");
+    const p = new Producer(
+      {
+        engine: "kafka",
+        bootstrapServers: "kafka:9200",
+        securityProtocol: "plaintext",
+        tasksPath: "",
+      },
+      registry
+    );
+    const messageContext = { any: 'context' };
+    const messagePayload: any = { a: "payload" };
+    const expectedMessage = JSON.stringify({
+      ...messagePayload,
+      _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
+    });
+
+    const sendStub = sandbox.stub(p.producer, "produce").callsArgWith(5);
+    await p.send("test-topic", messagePayload, null, messageContext);
+
+
+    const inputMessageBuffer: Buffer = sendStub.args[0][2];
+    expect(inputMessageBuffer.toString()).to.be.equal(expectedMessage);
   });
 
   it('should log error on failure', async () => {

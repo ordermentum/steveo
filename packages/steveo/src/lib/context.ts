@@ -19,26 +19,23 @@ export const createMessageMetadata = <T = any>(message: T) => {
   return { ..._meta, hostname, timestamp, signature, start };
 };
 
-export const getDuration = (start = undefined) => {
-  const durationComponents = process.hrtime(start);
-  const seconds = durationComponents[0];
-  const nanoseconds = durationComponents[1];
-  const duration = seconds * 1000 + nanoseconds / 1e6;
-  return duration;
+export const getDuration = (
+  start: [number, number] | undefined = undefined
+): number => {
+  const durationComponents: [number, number] = process.hrtime(start);
+  const seconds: number = durationComponents[0];
+  const nanoseconds: number = durationComponents[1];
+
+  return seconds * 1000 + nanoseconds / 1e6;
 };
 
 export const getContext = params => {
-  const { _meta: meta, context = {} } = params;
+  const { _meta: meta = {} } = params;
 
-  if (!meta) {
-    return { ...context, duration: 0 };
+  let duration: number = 0;
+  if (meta) {
+    duration = getDuration(meta.start);
   }
 
-  const duration = getDuration(meta.start);
-
-  return {
-    ...context,
-    duration,
-    traceMetadata: meta.traceMetadata,
-  };
+  return { ...meta, duration };
 };

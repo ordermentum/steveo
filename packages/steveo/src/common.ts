@@ -223,8 +223,18 @@ export interface IProducer<P = any> {
   registry: IRegistry;
   producer?: any;
   initialize(topic?: string): Promise<P>;
-  getPayload(msg: any, topic: string): any;
-  send<T = any>(topic: string, payload: T, key?: string): Promise<void>;
+  getPayload<T = any>(
+    msg: T,
+    topic: string,
+    key?: string,
+    context?: { [key: string]: string }
+  ): any;
+  send<T = any>(
+    topic: string,
+    payload: T,
+    key?: string,
+    context?: { [key: string]: string }
+  ): Promise<void>;
   // FIXME: Replace T = any with Record<string, any> or an explicit list of
   // types we will handle as first-class citizens,
   // e.g. `Record<string, any> | string`.

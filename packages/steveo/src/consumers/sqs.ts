@@ -43,10 +43,12 @@ class SqsRunner extends BaseRunner implements IRunner {
     return bluebird.map(
       messages,
       async message => {
+        this.logger.info(message, `Message received for task: ${topic}`);
         const params = JSON.parse(message.Body as string);
         await this.wrap({ topic, payload: params }, async c => {
           this.logger.info(message, `Message received for task: ${c.topic}`);
           let resource: Resource | null = null;
+          const { _meta: _, ...data } = c.payload;
           const runnerContext = getContext(c.payload);
           try {
             resource = await this.pool.acquire();
@@ -77,7 +79,7 @@ class SqsRunner extends BaseRunner implements IRunner {
               `Start Subscribe to ${task.name}`
             );
 
-            await task.subscribe(params, runnerContext);
+            await task.subscribe(data, runnerContext);
             this.logger.debug('Completed subscribe', c.topic, c.payload);
             const completedContext = getContext(c.payload);
 

@@ -4,11 +4,14 @@ import { randomUUID } from 'crypto';
 import Runner from '../../src/consumers/kafka';
 import { build } from '../../src/lib/pool';
 import Registry from '../../src/registry';
+import {getContext} from "../../lib/lib/context";
 
 describe('runner/kafka', () => {
   let sandbox;
   let runner;
   let registry;
+  let clock: sinon.SinonFakeTimers;
+
   beforeEach(() => {
     registry = new Registry();
     registry.addNewTask({
@@ -28,9 +31,15 @@ describe('runner/kafka', () => {
     // @ts-ignore
     runner = new Runner(steveo);
     sandbox = sinon.createSandbox();
+    clock = sinon.useFakeTimers({
+      now: 0,
+    });
   });
 
-  afterEach(() => sandbox.restore());
+  afterEach(() => {
+    clock.restore();
+    sandbox.restore();
+  });
 
   it('should create an instance', () => {
     expect(typeof runner).to.equal('object');
@@ -94,6 +103,57 @@ describe('runner/kafka', () => {
     });
     expect(commitOffsetStub.callCount).to.equal(1);
     expect(subscribeStub.callCount).to.equal(1);
+  });
+
+  it('should invoke callback when with context if context present in message', async () => {
+    const subscribeStub = sinon
+    .stub()
+    .returns(Promise.resolve({ some: 'success' }));
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+    const steveo = {
+      config: {
+        bootstrapServers: 'kafka:9200',
+        engine: 'kafka',
+        securityProtocol: 'plaintext',
+      },
+      // @ts-ignore
+      registry: anotherRegistry,
+      // @ts-ignore
+      pool: build(anotherRegistry),
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner(steveo);
+    const commitOffsetStub = sandbox.stub(
+      anotherRunner.consumer,
+      'commitMessage'
+    );
+    const expectedPayload: any = { attr: 'value' };
+    const messageContext: any = { any: 'context' };
+    const messagePayload: Buffer = Buffer.from(
+      JSON.stringify({ ...expectedPayload, _meta: messageContext })
+    );
+    await anotherRunner.receive({
+      value: messagePayload,
+      size: 1000,
+      offset: 0,
+      topic: 'a-topic',
+      partition: 1,
+    });
+    const expectedContext: any = {
+      duration: 0,
+      ...messageContext
+    }
+    sinon.assert.called(commitOffsetStub);
+    sinon.assert.calledWith(subscribeStub, expectedPayload, expectedContext);
   });
 
   it('should not commit when the subsribe fails and wait to commit config is true', async () => {
@@ -266,16 +326,17 @@ describe('runner/kafka', () => {
     sandbox.stub(anotherRunner.consumer, 'commitMessage');
 
     const jobId = randomUUID();
-    const payload = {
+    const messageData = {
       message: 'test runner',
-      context: {
-        jobId,
-      },
+    };
+    const messageContext = {
+      jobId,
     };
 
+    const messagePayload = { ...messageData, _meta: messageContext };
     await anotherRunner.consumeCallback(null, [
       {
-        value: JSON.stringify(payload),
+        value: JSON.stringify(messagePayload),
         size: 1000,
         offset: 0,
         topic: 'a-topic',
@@ -286,21 +347,8 @@ describe('runner/kafka', () => {
     expect(subscribeStub.called).to.be.true;
     const data = subscribeStub.args[0][0];
     const context = subscribeStub.args[0][1];
-    expect(data, 'expected data').to.deep.equals({
-      metadata: {
-        size: 1000,
-        offset: 0,
-        topic: 'a-topic',
-        partition: 1,
-      },
-      message: 'test runner',
-      context: {
-        jobId,
-      },
-    });
-    expect(context, 'expected context').to.deep.equals({
-      duration: 0,
-      jobId,
-    });
+    expect(data, 'expected data').to.deep.equals(messageData);
+    const expectedContext = getContext(messagePayload);
+    expect(context, 'expected context').to.deep.equals(expectedContext);
   });
 });
