@@ -35,6 +35,15 @@ describe('helpers', () => {
       expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
     });
 
+    it('Calculates the next date correctly with DTSTART at the end', () => {
+      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss')
+      const daily =
+        `FREQ=DAILY;INTERVAL=1;BYMINUTE=0;TZID=UTC;DTSTART=${start}`;
+      const nextRun = moment(computeNextRun(daily));
+      const nextDate = moment(start).tz('UTC').add(1, 'day').minute(0).second(0).millisecond(0);
+      expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
+    });
+
     // List of recurrence rules to test
     // comparator that returns boolean
     (
@@ -160,6 +169,16 @@ describe('helpers', () => {
       const [nextRuns] = computeNextRuns(every3Hours);
       const nextRun = moment(nextRuns);
       const nextDate = moment().tz('Australia/Sydney').add(3, 'hours').minute(0).second(0).millisecond(0);
+      expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
+    });
+
+    it('Calculates the next dates correctly with DTSTART at the end', () => {
+      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss')
+      const daily =
+        `FREQ=DAILY;INTERVAL=1;BYMINUTE=0;TZID=UTC;DTSTART=${start}`;
+        const [nextRuns] = computeNextRuns(daily);
+        const nextRun = moment(nextRuns);
+      const nextDate = moment(start).tz('UTC').add(1, 'day').minute(0).second(0).millisecond(0);
       expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
     });
 

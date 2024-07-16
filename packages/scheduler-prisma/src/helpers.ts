@@ -19,10 +19,11 @@ export const isHealthy = (heartbeat: number, timeout: number) =>
   new Date().getTime() - timeout < heartbeat;
 
 const getValidRule = (recurrence: string, timezone?: string) => {
-  const isICalRule = recurrence.includes('DTSTART');
+  const isICalRule = recurrence.startsWith('DTSTART');
   if (isICalRule) return recurrence;
 
-  let derivedTimezone = timezone ?? 'Australia/Sydney';
+  let derivedTimezone = timezone ?? 'UTC';
+  let dateStart = moment().toISOString();
   const rule = recurrence
     .split(';')
     .filter(b => {
@@ -30,11 +31,16 @@ const getValidRule = (recurrence: string, timezone?: string) => {
       if (key === 'TZID') {
         derivedTimezone = value;
       }
-      return key !== 'TZID';
+      if (key === 'DTSTART') {
+        dateStart = value;
+      }
+      return key !== 'TZID' && key !== 'DTSTART';
     })
     .join(';');
 
-  const timeISO8601 = moment().tz(derivedTimezone).format('YYYYMMDDTHHmmss');
+  const timeISO8601 = moment(dateStart)
+    .tz(derivedTimezone)
+    .format('YYYYMMDDTHHmmss');
   return `DTSTART;TZID=${derivedTimezone}:${timeISO8601}\nRRULE:${rule}`;
 };
 
