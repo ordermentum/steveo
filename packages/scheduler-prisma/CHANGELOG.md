@@ -1,5 +1,11 @@
 # @steveojs/scheduler-prisma
 
+## 7.3.0
+
+### Minor Changes
+
+- eb96d41: Support recurrence rules that have DTSTART at the end of the recurrence string
+
 ## 7.2.1
 
 ### Patch Changes
