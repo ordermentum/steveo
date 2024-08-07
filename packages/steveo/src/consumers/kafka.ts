@@ -112,7 +112,13 @@ class KafkaRunner
         this.logger.debug('Start subscribe', c.topic, message);
         const runnerContext = getContext(value);
         const { _meta: _ = {}, ...data } = parsed.value;
-        await task.subscribe(data, runnerContext);
+
+        /**
+         * We still need the `value` property on the callback payload
+         * to have backwards compatibility when upgrading steveo version
+         * without needing to update every task with the new shape
+         */
+        await task.subscribe({ ...data, value: data }, runnerContext);
 
         if (waitToCommit) {
           this.logger.debug('committing message', message);
