@@ -1,5 +1,11 @@
 # steveo
 
+## 6.5.0
+
+### Minor Changes
+
+- 223f9f2: Added back `value` property for backwards compatibility
+
 ## 6.4.0
 
 ### Minor Changes
