@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 import Runner from '../../src/consumers/kafka';
 import { build } from '../../src/lib/pool';
 import Registry from '../../src/registry';
-import {getContext} from "../../lib/lib/context";
+import { getContext } from '../../src/lib/context';
 
 describe('runner/kafka', () => {
   let sandbox;
@@ -107,8 +107,8 @@ describe('runner/kafka', () => {
 
   it('should invoke callback when with context if context present in message', async () => {
     const subscribeStub = sinon
-    .stub()
-    .returns(Promise.resolve({ some: 'success' }));
+      .stub()
+      .returns(Promise.resolve({ some: 'success' }));
     const anotherRegistry = {
       getTask: () => ({
         publish: () => {},
@@ -150,10 +150,14 @@ describe('runner/kafka', () => {
     });
     const expectedContext: any = {
       duration: 0,
-      ...messageContext
-    }
+      ...messageContext,
+    };
     sinon.assert.called(commitOffsetStub);
-    sinon.assert.calledWith(subscribeStub, expectedPayload, expectedContext);
+    sinon.assert.calledWith(
+      subscribeStub,
+      { ...expectedPayload, value: expectedPayload },
+      expectedContext
+    );
   });
 
   it('should not commit when the subsribe fails and wait to commit config is true', async () => {
@@ -347,7 +351,10 @@ describe('runner/kafka', () => {
     expect(subscribeStub.called).to.be.true;
     const data = subscribeStub.args[0][0];
     const context = subscribeStub.args[0][1];
-    expect(data, 'expected data').to.deep.equals(messageData);
+    expect(data, 'expected data').to.deep.equals({
+      ...messageData,
+      value: messageData,
+    });
     const expectedContext = getContext(messagePayload);
     expect(context, 'expected context').to.deep.equals(expectedContext);
   });
