@@ -46,7 +46,7 @@ export class Manager {
     }
 
     let count = 0;
-    const tries = this?.steveo.config?.terminationWaitCount || 10;
+    const tries = this?.steveo.config?.terminationWaitCount || 180;
     while (!this.isTerminated) {
       if (count === tries) {
         this.forceTerminate();
