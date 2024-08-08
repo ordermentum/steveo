@@ -1,5 +1,12 @@
 # @steveojs/datadog
 
+## 5.0.0
+
+### Patch Changes
+
+- Updated dependencies [c09d72e]
+  - steveo@6.6.0
+
 ## 4.0.0
 
 ### Patch Changes
