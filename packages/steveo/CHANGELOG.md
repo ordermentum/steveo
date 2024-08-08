@@ -1,5 +1,11 @@
 # steveo
 
+## 6.6.0
+
+### Minor Changes
+
+- c09d72e: Increase the default termination wait count to give the process longer to complete
+
 ## 6.5.0
 
 ### Minor Changes
