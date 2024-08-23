@@ -1,5 +1,11 @@
 # steveo
 
+## 6.7.0
+
+### Minor Changes
+
+- 3a11696: Ensure manger waits for runners and producers to shutdown
+
 ## 6.6.0
 
 ### Minor Changes
