@@ -32,7 +32,7 @@ export const getConfig = (config: Configuration) => {
   parameters.queuePrefix = config.queuePrefix ?? '';
   parameters.upperCaseNames = config.upperCaseNames ?? true;
   parameters.middleware = config.middleware ?? [];
-  parameters.terminationWaitCount = config.terminationWaitCount ?? 10;
+  parameters.terminationWaitCount = config.terminationWaitCount ?? 180;
   parameters.tasksPath = config.tasksPath;
 
   if (parameters.engine === 'kafka') {

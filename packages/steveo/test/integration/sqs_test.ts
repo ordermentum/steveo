@@ -88,10 +88,18 @@ describe('SQS Integration Test', () => {
       { concurrency: 50 }
     );
 
+    let receivedTerminate = false;
+    steveo.registry.events.on('terminate', () => {
+      receivedTerminate = true;
+    });
+
     steveo.runner().process();
     // we want to trigger at least one loop
     await sleep(1000);
     await steveo.stop();
+
+    // Make sure stop() blocks before it properly shuts down
+    expect(receivedTerminate).to.be.true;
     await sleep(1000);
     expect(middleware.seen.size).to.be.greaterThan(0);
 

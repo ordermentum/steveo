@@ -35,7 +35,7 @@ export class Manager {
       this.steveo?.producer?.stop(),
     ]);
 
-    this.shutdown();
+    await this.shutdown();
   }
 
   async shutdown() {
