@@ -1,13 +1,24 @@
-import { SQS } from 'aws-sdk';
+import {
+  CreateQueueCommandInput,
+  CreateQueueCommandOutput,
+  GetQueueUrlCommandOutput,
+  DeleteMessageCommandInput,
+  DeleteMessageCommandOutput,
+  GetQueueAttributesCommandInput,
+  GetQueueAttributesCommandOutput,
+  Message,
+  ReceiveMessageCommandInput,
+  ReceiveMessageCommandOutput,
+  SQS,
+} from '@aws-sdk/client-sqs';
 import bluebird from 'bluebird';
 import nullLogger from 'null-logger';
-import { CreateQueueRequest, QueueAttributeMap } from 'aws-sdk/clients/sqs';
 import BaseRunner from './base';
 import { safeParseInt } from '../lib/utils';
 import { getContext } from '../lib/context';
 import { getSqsInstance } from '../config/sqs';
 
-import { IRunner, Pool, Logger, SQSConfiguration } from '../common';
+import { IRunner, Pool, Logger, SQSConfiguration, ITask } from '../common';
 import { Steveo } from '..';
 import { Resource } from '../lib/pool';
 
@@ -28,8 +39,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.config = steveo?.config as SQSConfiguration;
-    this.logger = steveo?.logger ?? nullLogger;
+    this.config = steveo.config as SQSConfiguration;
+    this.logger = steveo.logger ?? nullLogger;
     this.sqsUrls = {};
     this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
@@ -37,7 +48,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.logger.info('SQS Runner started');
   }
 
-  async receive(messages: SQS.MessageList, topic: string): Promise<any> {
+  async receive(messages: Array<Message>, topic: string): Promise<any> {
     this.registry.emit('runner_messages', topic, messages);
 
     return bluebird.map(
@@ -108,20 +119,25 @@ class SqsRunner extends BaseRunner implements IRunner {
     );
   }
 
-  async deleteMessage(topic: string, message: SQS.Message) {
+  private async deleteMessage(
+    topic: string,
+    message: Message
+  ): Promise<boolean> {
     if (!message.ReceiptHandle) {
       return false;
     }
 
-    const sqsTopic = this.getTopic(topic);
-    const deleteParams = {
+    const sqsTopic: string = this.getTopic(topic);
+    const deleteParams: DeleteMessageCommandInput = {
       QueueUrl: this.sqsUrls[sqsTopic],
       ReceiptHandle: message.ReceiptHandle,
     };
 
     try {
       this.logger.debug('Deleting Message from Queue URL', deleteParams);
-      const data = await this.sqs.deleteMessage(deleteParams).promise();
+      const data: DeleteMessageCommandOutput = await this.sqs.deleteMessage(
+        deleteParams
+      );
       this.logger.debug('returned data', data);
       return true;
     } catch (ex) {
@@ -130,20 +146,21 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
   }
 
-  async dequeue(params: SQS.ReceiveMessageRequest) {
-    const data = await this.sqs
+  private async dequeue(
+    params: ReceiveMessageCommandInput
+  ): Promise<Message[] | undefined> {
+    const data: ReceiveMessageCommandOutput | undefined = await this.sqs
       .receiveMessage(params)
-      .promise()
       .catch(e => {
         this.logger.error('Error while receiving message from queue', e);
-        return null;
+        return undefined;
       });
 
     this.logger.debug('Message from sqs', data);
     return data?.Messages;
   }
 
-  poll(topics?: string[]) {
+  private poll(topics?: string[]) {
     this.logger.debug(`looping ${this.manager.state}`);
     if (this.manager.state === 'terminating') {
       this.manager.state = 'terminated';
@@ -157,14 +174,14 @@ class SqsRunner extends BaseRunner implements IRunner {
     );
   }
 
-  async process(topics?: string[]) {
+  async process(topics?: string[]): Promise<void> {
     if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
       this.poll(topics);
       return;
     }
 
-    const subscriptions = this.getActiveSubsciptions(topics);
+    const subscriptions: string[] = this.getActiveSubsciptions(topics);
     this.logger.debug(
       `Polling for messages (name: ${this.name}) (state: ${
         this.manager.state
@@ -174,7 +191,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     await bluebird.map(
       subscriptions,
       async topic => {
-        const queueURL = await this.getQueueUrl(topic);
+        const queueURL: string = await this.getQueueUrl(topic);
         if (queueURL) {
           this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
 
@@ -217,11 +234,11 @@ class SqsRunner extends BaseRunner implements IRunner {
       throw new Error('No queues registered');
     }
 
-    await this.sqs.getQueueUrl({ QueueName: item }).promise();
+    await this.sqs.getQueueUrl({ QueueName: item });
   };
 
   async getQueueUrl(topic: string) {
-    const sqsTopic = this.getTopic(topic);
+    const sqsTopic: string = this.getTopic(topic);
     if (!this.sqsUrls[sqsTopic]) {
       this.logger.debug(`url not cached for ${sqsTopic}`);
       const url = await this.getUrl(sqsTopic);
@@ -233,26 +250,25 @@ class SqsRunner extends BaseRunner implements IRunner {
     return this.sqsUrls[sqsTopic];
   }
 
-  getTopic(topic: string) {
-    const task = this.registry.getTask(topic);
-    const fifo = !!task?.options?.fifo;
+  private getTopic(topic: string): string {
+    const task: ITask<any, any> | null = this.registry.getTask(topic);
+    const fifo: boolean = !!task?.options?.fifo;
     return fifo ? `${topic}.fifo` : topic;
   }
 
-  getUrl(topic: string) {
+  private getUrl(topic: string): Promise<string | null | undefined> {
     return this.sqs
       .getQueueUrl({ QueueName: topic })
-      .promise()
-      .then(data => data && data?.QueueUrl)
+      .then((data: GetQueueUrlCommandOutput) => data.QueueUrl)
       .catch(e => {
         this.logger.error(e);
         return null;
       });
   }
 
-  async getDeadLetterQueuePolicy(
+  private async getDeadLetterQueuePolicy(
     queueName: string
-  ): Promise<QueueAttributeMap | null> {
+  ): Promise<Record<string, string> | null> {
     const task = this.registry.getTask(queueName);
 
     if (!task?.options?.deadLetterQueue) {
@@ -261,16 +277,15 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     const dlQueueName = `${queueName}_DLQ`;
     // try to fetch if there is an existing queueURL for QLQ
-    const queueResult = await this.sqs
+    const queueResult: GetQueueUrlCommandOutput | undefined = await this.sqs
       .getQueueUrl({ QueueName: dlQueueName })
-      .promise()
       .catch(_ => undefined);
 
     let dlQueueUrl = queueResult?.QueueUrl;
 
     // if we don't have existing DLQ, create one
     if (!dlQueueUrl) {
-      const params = {
+      const params: CreateQueueCommandInput = {
         QueueName: dlQueueName,
         Attributes: {
           ReceiveMessageWaitTimeSeconds:
@@ -282,9 +297,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
       this.logger.debug(`Creating DLQ for orginal queue ${queueName}`, params);
 
-      const res = await this.sqs
+      const res: CreateQueueCommandOutput = await this.sqs
         .createQueue(params)
-        .promise()
         .catch(err => {
           throw new Error(`Failed to call SQS createQueue: ${err}`);
         });
@@ -299,14 +313,13 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
 
     // get the ARN of the DQL
-    const getQueueAttributesParams = {
+    const getQueueAttributesParams: GetQueueAttributesCommandInput = {
       QueueUrl: dlQueueUrl,
       AttributeNames: ['QueueArn'],
     };
 
-    const attributesResult = await this.sqs
+    const attributesResult: GetQueueAttributesCommandOutput = await this.sqs
       .getQueueAttributes(getQueueAttributesParams)
-      .promise()
       .catch(err => {
         throw new Error(`Failed to call SQS getQueueAttributes: ${err}`);
       });
@@ -323,43 +336,34 @@ class SqsRunner extends BaseRunner implements IRunner {
     };
   }
 
-  async createQueue(topic: string) {
+  async createQueue(topic: string): Promise<boolean> {
     this.logger.info(`creating SQS queue ${topic}`);
 
-    const params: CreateQueueRequest = {
-      QueueName: topic,
-      Attributes: {
-        ReceiveMessageWaitTimeSeconds:
-          this.config.receiveMessageWaitTimeSeconds,
-        MessageRetentionPeriod: this.config.messageRetentionPeriod,
-      },
+    let queueName: string = topic;
+    const commandAttributes: Record<string, string> = {
+      ReceiveMessageWaitTimeSeconds: this.config.receiveMessageWaitTimeSeconds,
+      MessageRetentionPeriod: this.config.messageRetentionPeriod,
     };
 
-    const task = this.registry.getTask(topic);
-
-    // Append FIFO attributes if it's enabled
-    if (task?.options?.fifo) {
-      params.QueueName = `${topic}.fifo`;
-      params.Attributes = {
-        ...params.Attributes,
-        FifoQueue: 'true',
-        ContentBasedDeduplication: 'true',
-      };
+    const task: ITask<any, any> | null = this.registry.getTask(topic);
+    const isFifoTask: boolean = task?.options?.fifo ?? false;
+    if (isFifoTask) {
+      queueName = `${queueName}.fifo`;
+      commandAttributes.FifoQueue = 'true';
+      commandAttributes.ContentBasedDeduplication = 'true';
     }
 
-    // Check if queue supports DLQ on the task config
-    const redrivePolicy: QueueAttributeMap | null =
-      await this.getDeadLetterQueuePolicy(params.QueueName);
-
-    // Append RedrivePolicy if supported
+    const redrivePolicy: Record<string, string> | null =
+      await this.getDeadLetterQueuePolicy(topic);
     if (redrivePolicy) {
-      params.Attributes = {
-        ...params.Attributes,
-        RedrivePolicy: JSON.stringify(redrivePolicy),
-      };
+      commandAttributes.RedrivePolicy = JSON.stringify(redrivePolicy);
     }
 
-    await this.sqs.createQueue(params).promise();
+    const params: CreateQueueCommandInput = {
+      QueueName: queueName,
+      Attributes: commandAttributes,
+    };
+    await this.sqs.createQueue(params);
     return true;
   }
 }

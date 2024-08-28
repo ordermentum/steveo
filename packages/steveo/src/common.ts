@@ -1,4 +1,4 @@
-import { HTTPOptions } from 'aws-sdk';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
 import { Pool as GenericPool, Options } from 'generic-pool';
 import {
   ConsumerGlobalConfig,
@@ -82,7 +82,7 @@ export interface SQSConfiguration extends Configuration {
   visibilityTimeout: number;
   waitTimeSeconds: number;
   endpoint?: string;
-  httpOptions?: HTTPOptions;
+  httpOptions?: NodeHttpHandler;
   consumerPollInterval?: number;
   waitToCommit?: boolean;
 }

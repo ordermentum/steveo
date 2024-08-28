@@ -299,19 +299,15 @@ describe('runner/sqs', () => {
     // @ts-ignore
     const deleteMessageStub = sandbox
       .stub(anotherRunner.sqs, 'deleteMessage')
-      // @ts-ignore
-      .returns({ promise: async () => {} });
+      .resolves({});
 
     const randomId = randomUUID();
-    sandbox.stub(anotherRunner.sqs, 'getQueueUrl').returns({
-      // @ts-ignore
-      promise: async () => ({
+    sandbox.stub(anotherRunner.sqs, 'getQueueUrl').resolves({
         QueueUrl: `https://ap-southeast2.aws.com/${randomId}/a-topic.fifo`,
-      }),
-    });
+      });
 
-    await anotherRunner.getQueueUrl('a-topic');
-
+    const url: string = await anotherRunner.getQueueUrl('a-topic');
+  
     await anotherRunner.receive(
       [
         { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'Hello' }) },
@@ -323,10 +319,9 @@ describe('runner/sqs', () => {
     expect(subscribeStub.callCount, 'subscribe is called twice').to.equal(2);
 
     expect(
-      // @ts-expect-error
       deleteMessageStub.args[0][0].QueueUrl,
       'FIFO should be automatically appended if the task config has it'
-    ).to.eqls(`https://ap-southeast2.aws.com/${randomId}/a-topic.fifo`);
+    ).to.eqls(url);
   });
 
   it('get all urls for queues', async () => {
@@ -352,11 +347,7 @@ describe('runner/sqs', () => {
 
     const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
-      .stub(anotherRunner.sqs, 'getQueueUrl')
-      .returns({
-        // @ts-ignore
-        promise: async () => ({ QueueUrl: 'https://ap-southeast2.aws.com' }),
-      });
+      .stub(anotherRunner.sqs, 'getQueueUrl').resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
 
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
@@ -390,13 +381,7 @@ describe('runner/sqs', () => {
 
     const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
-      .stub(anotherRunner.sqs, 'getQueueUrl')
-      // @ts-ignore
-      .returns({
-        promise: async () => {
-          throw new Error();
-        },
-      });
+      .stub(anotherRunner.sqs, 'getQueueUrl').rejects(new Error());
 
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
@@ -462,18 +447,10 @@ describe('runner/sqs', () => {
       const anotherRunner = new Runner(steveo);
 
       const getQueueUrlAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'getQueueUrl')
-        .returns({
-          // @ts-ignore
-          promise: async () => ({ QueueUrl: 'https://ap-southeast2.aws.com' }),
-        });
+        .stub(anotherRunner.sqs, 'getQueueUrl').resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
 
       const receiveMessageAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'receiveMessage')
-        .returns({
-          // @ts-ignore
-          promise: async () => [],
-        });
+        .stub(anotherRunner.sqs, 'receiveMessage').resolves([]);
 
       anotherRunner.state = 'paused';
       await anotherRunner.process();
@@ -508,18 +485,10 @@ describe('runner/sqs', () => {
       const anotherRunner = new Runner(steveo);
 
       const getQueueUrlAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'getQueueUrl')
-        .returns({
-          // @ts-ignore
-          promise: async () => ({ QueueUrl: 'https://ap-southeast2.aws.com' }),
-        });
+        .stub(anotherRunner.sqs, 'getQueueUrl').resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
 
       const receiveMessageAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'receiveMessage')
-        .returns({
-          // @ts-ignore
-          promise: async () => [],
-        });
+        .stub(anotherRunner.sqs, 'receiveMessage').resolves([]);
 
       await anotherRunner.process();
       expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
@@ -558,29 +527,20 @@ describe('runner/sqs', () => {
       const randomId = randomUUID();
       const getQueueUrlAsyncStub = sandbox
         .stub(anotherRunner.sqs, 'getQueueUrl')
-        // @ts-expect-error - if are logic is correct, and that it appends .fifo to the plain `test` topic
+        // if are logic is correct, and that it appends .fifo to the plain `test` topic
         //  this would be the argument passed on the getQueueUrl to SQS
-        .withArgs({ QueueName: 'test.fifo' })
-        .returns({
-          // @ts-ignore
-          promise: async () => ({
+        .withArgs({ QueueName: 'test.fifo' }).resolves({
             QueueUrl: `https://ap-southeast2.aws.com/${randomId}/test.fifo`,
-          }),
-        });
+          });
 
       const receiveMessageAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'receiveMessage')
-        .returns({
-          // @ts-ignore
-          promise: async () => [],
-        });
+        .stub(anotherRunner.sqs, 'receiveMessage').resolves([]);
 
       await anotherRunner.process();
       expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
       expect(receiveMessageAsyncStub.calledOnce).to.equal(true);
 
       expect(
-        // @ts-expect-error
         receiveMessageAsyncStub.args[0][0].QueueUrl,
         'Should have the same value as the specified getQueueUrl stub'
       ).to.eqls(`https://ap-southeast2.aws.com/${randomId}/test.fifo`);
