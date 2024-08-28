@@ -1,7 +1,16 @@
 import nullLogger from 'null-logger';
-import { SQS } from 'aws-sdk';
+// import { SQS } from 'aws-sdk';
+import {
+  CreateQueueCommandInput,
+  CreateQueueCommandOutput,
+  GetQueueAttributesCommandInput,
+  GetQueueAttributesCommandOutput,
+  GetQueueUrlCommandInput,
+  GetQueueUrlCommandOutput,
+  SendMessageCommandInput,
+  SQS,
+} from '@aws-sdk/client-sqs';
 import util from 'util';
-import { CreateQueueRequest, QueueAttributeMap } from 'aws-sdk/clients/sqs';
 import { getSqsInstance } from '../config/sqs';
 
 import {
@@ -50,9 +59,8 @@ class SqsProducer extends BaseProducer implements IProducer {
 
     let queueName = topic;
 
-    // task options
-    const task = this.registry.getTask(topic);
-    const fifo = !!task?.options?.fifo;
+    const task: ITask<any, any> | null = this.registry.getTask(topic);
+    const fifo: boolean = !!task?.options?.fifo;
 
     const fifoAttributes: {
       FifoQueue?: string;
@@ -65,19 +73,20 @@ class SqsProducer extends BaseProducer implements IProducer {
       fifoAttributes.ContentBasedDeduplication = 'true';
     }
 
-    const getQueueUrlResult = await this.producer
-      .getQueueUrl({ QueueName: queueName })
-      .promise()
-      .catch(_ => undefined);
-
-    const queueUrl = getQueueUrlResult?.QueueUrl;
+    const getQueueUrlResult: GetQueueUrlCommandOutput | undefined =
+      await this.producer
+        .getQueueUrl({
+          QueueName: queueName,
+        } as GetQueueUrlCommandInput)
+        .catch(_ => undefined);
+    const queueUrl: string | undefined = getQueueUrlResult?.QueueUrl;
 
     if (queueUrl) {
       this.sqsUrls[queueName] = queueUrl;
       return queueUrl;
     }
 
-    const params: CreateQueueRequest = {
+    const params: CreateQueueCommandInput = {
       QueueName: queueName,
       Attributes: {
         ReceiveMessageWaitTimeSeconds:
@@ -88,7 +97,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     };
 
     // Check if queue supports DLQ on the task config
-    const redrivePolicy: QueueAttributeMap | null =
+    const redrivePolicy: Record<string, string> | null =
       await this.getDeadLetterQueuePolicy(queueName);
 
     // Append RedrivePolicy if supported
@@ -101,9 +110,8 @@ class SqsProducer extends BaseProducer implements IProducer {
 
     this.logger.debug(`Creating queue`, util.inspect(params));
 
-    const res = await this.producer
+    const res: CreateQueueCommandOutput = await this.producer
       .createQueue(params)
-      .promise()
       .catch(err => {
         throw new Error(`Failed to call SQS createQueue: ${err}`);
       });
@@ -118,25 +126,25 @@ class SqsProducer extends BaseProducer implements IProducer {
 
   async getDeadLetterQueuePolicy(
     queueName: string
-  ): Promise<QueueAttributeMap | null> {
+  ): Promise<Record<string, string> | null> {
     const task = this.registry.getTask(queueName);
 
-    if (!task?.options?.deadLetterQueue) {
+    if (!task?.options.deadLetterQueue) {
       return null;
     }
 
-    const dlQueueName = `${queueName}_DLQ`;
+    const dlQueueName: string = `${queueName}_DLQ`;
     // try to fetch if there is an existing queueURL for QLQ
-    const queueResult = await this.producer
-      .getQueueUrl({ QueueName: dlQueueName })
-      .promise()
-      .catch(_ => undefined);
+    const queueResult: GetQueueUrlCommandOutput | undefined =
+      await this.producer
+        .getQueueUrl({ QueueName: dlQueueName })
+        .catch(_ => undefined);
 
-    let dlQueueUrl = queueResult?.QueueUrl;
+    let dlQueueUrl: string = queueResult?.QueueUrl ?? '';
 
     // if we don't have existing DLQ, create one
     if (!dlQueueUrl) {
-      const params = {
+      const params: CreateQueueCommandInput = {
         QueueName: dlQueueName,
         Attributes: {
           ReceiveMessageWaitTimeSeconds:
@@ -151,9 +159,8 @@ class SqsProducer extends BaseProducer implements IProducer {
         util.inspect(params)
       );
 
-      const res = await this.producer
+      const res: CreateQueueCommandOutput = await this.producer
         .createQueue(params)
-        .promise()
         .catch(err => {
           throw new Error(`Failed to call SQS createQueue: ${err}`);
         });
@@ -168,27 +175,27 @@ class SqsProducer extends BaseProducer implements IProducer {
     }
 
     // get the ARN of the DQL
-    const getQueueAttributesParams = {
+    const getQueueAttributesParams: GetQueueAttributesCommandInput = {
       QueueUrl: dlQueueUrl,
       AttributeNames: ['QueueArn'],
     };
 
-    const attributesResult = await this.producer
-      .getQueueAttributes(getQueueAttributesParams)
-      .promise()
-      .catch(err => {
-        throw new Error(`Failed to call SQS getQueueAttributes: ${err}`);
-      });
+    const attributesResult: GetQueueAttributesCommandOutput =
+      await this.producer
+        .getQueueAttributes(getQueueAttributesParams)
+        .catch(err => {
+          throw new Error(`Failed to call SQS getQueueAttributes: ${err}`);
+        });
 
-    const dlQueueArn = attributesResult.Attributes?.QueueArn;
-
+    const dlQueueArn: string | undefined =
+      attributesResult.Attributes?.QueueArn;
     if (!dlQueueArn) {
       throw new Error('Failed to retrieve the DLQ ARN');
     }
 
     return {
       deadLetterTargetArn: dlQueueArn,
-      maxReceiveCount: (task?.options.maxReceiveCount ?? 5).toString(),
+      maxReceiveCount: (task.options.maxReceiveCount ?? 5).toString(),
     };
   }
 
@@ -197,12 +204,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     topic: string,
     key?: string,
     context: { [key: string]: string } = {}
-  ): {
-    MessageAttributes: any;
-    MessageBody: string;
-    QueueUrl: string;
-    MessageGroupId?: string;
-  } {
+  ): SendMessageCommandInput {
     const messageMetadata = {
       ...createMessageMetadata(msg),
       ...context,
@@ -228,7 +230,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       };
     }
 
-    const fifo = !!task?.options?.fifo;
+    const fifo = !!task?.options.fifo;
 
     const sqsTopic = fifo ? `${topic}.fifo` : topic;
 
@@ -237,7 +239,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       MessageBody: JSON.stringify({ ...msg, _meta: messageMetadata }),
       QueueUrl: this.sqsUrls[sqsTopic],
       MessageGroupId: fifo && key ? key : undefined,
-    };
+    } as SendMessageCommandInput;
   }
 
   async send<T = any>(
@@ -245,14 +247,19 @@ class SqsProducer extends BaseProducer implements IProducer {
     payload: T,
     key?: string,
     context?: { [key: string]: string }
-  ) {
+  ): Promise<void> {
     try {
       await this.wrap({ topic, payload }, async c => {
         if (!this.sqsUrls[c.topic]) {
           await this.initialize(c.topic);
         }
-        const data = this.getPayload(c.payload, c.topic, key, context);
-        await this.producer.sendMessage(data).promise();
+        const data: SendMessageCommandInput = this.getPayload(
+          c.payload,
+          c.topic,
+          key,
+          context
+        );
+        await this.producer.sendMessage(data);
         this.registry.emit('producer_success', c.topic, data);
       });
     } catch (ex) {
