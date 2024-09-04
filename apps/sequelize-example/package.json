@@ -50,7 +50,7 @@
   "devDependencies": {
     "@types/bunyan": "1.8.8",
     "@types/chai": "4.3.16",
-    "@types/config": "0.0.41",
+    "@types/config": "3.3.5",
     "@types/mocha": "8.2.3",
     "@types/moment-timezone": "0.5.30",
     "@types/node": "20.14.9",
