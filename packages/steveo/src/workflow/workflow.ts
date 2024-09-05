@@ -1,9 +1,11 @@
-import { randomUUID } from "crypto";
+import { v4 } from 'uuid';
 import { Step } from "./workflow-step";
 import { WorkflowState } from "./workflow-state";
+import { get, last, select } from 'radash';
+import assert from 'node:assert';
 
 
-class Workflow {
+export class Workflow {
 
   /**
    * The execution step definitions.
@@ -13,7 +15,9 @@ class Workflow {
   steps: object[] = [];
 
 
-  constructor(private flowName: string) {}
+  constructor(private flowName: string) {
+    assert(flowName, `flowId must be specified`);
+  }
 
   /**
    *
@@ -28,13 +32,27 @@ class Workflow {
    *
    */
   async exec(flowId: string) {
+    assert(this.steps?.length, `Steps must be defined before a flow is executed ${this.flowName}`);
+    assert(flowId, `flowId cannot be empty`);
+
     const state = await this.loadState(flowId);
+
+    assert(state.current < 0, `Workflow ${flowId} step ${state.current} cannot be less than zero`);
+    assert(state.current < state.results.length, `Workflow ${flowId} step ${state.current} exceeds available steps ${state.results.length}`);
+
+    const step = state.results.length[state.current];
 
     if (state.failedStep) {
       this.rollback(state);
     }
 
+    // TODO: Protect out of order excution or step re-execution
 
+
+
+
+
+    this.forward()
   }
 
   /**
@@ -65,7 +83,12 @@ class Workflow {
   /**
    *
    */
-  private async failedStep(error: Error) {
+  private async failedStep(state: WorkflowState, error: Error) {
+
+    state.failedStep = state.current;
+    state.failedErrMsg = error.message;
+    state.failedErrStack = error.stack;
+
 
     // update state with error
 
@@ -88,9 +111,10 @@ class Workflow {
     }
 
     return {
-      flowId: `${this.flowName}-${randomUUID()}`,
+      current: 0,
+      flowId: `${this.flowName}-${v4()}`,
       started: new Date(),
-      steps: {},
+      results: {},
     };
   }
 
@@ -99,16 +123,9 @@ class Workflow {
    */
   private async rollback(state: WorkflowState) {
 
-    
+
     // this.previous.rollback();
   }
 }
 
-/**
- * Creates a new flow instance to be initialised.
- * The flow name is used for diagnostic purposes
- */
-export function flow(flowName: string) {
-  return new Workflow(flowName);
-}
 

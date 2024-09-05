@@ -27,6 +27,7 @@ import {
   Middleware,
   TaskOptions,
 } from './common';
+import { Workflow } from './workflow/workflow';
 
 export {
   KafkaConfiguration,
@@ -84,6 +85,29 @@ export class Steveo implements ISteveo {
     this.middleware = configuration.middleware ?? [];
   }
 
+  /**
+   * Start the [fluent](https://en.wikipedia.org/wiki/Fluent_interface) declaration
+   * and registration of a new workflow.
+   * @param flowName
+   * @returns
+   */
+  flow(flowName: string) {
+    const flow = new Workflow(flowName);
+
+    this.registry.addNewWorkflow(flow);
+
+    return flow;
+  }
+
+  /**
+   * Declare a task consumer.
+   * Given the steveo instance configuration, this will monitor the queue for the
+   * message `name` and call back the given function.
+   * @param name
+   * @param callback
+   * @param options
+   * @returns
+   */
   task<T = any, R = any, C = any>(
     name: string,
     callback: Callback<T, R, C>,

@@ -49,6 +49,7 @@
     "moment": "2.30.1",
     "node-rdkafka": "2.18.0",
     "null-logger": "^2.0.0",
+    "radash": "^12.1.0",
     "redlock": "^5.0.0-beta.2",
     "rsmq": "^0.12.4",
     "uuid": "^9.0.0"
