@@ -5,9 +5,22 @@ import assert from 'node:assert';
 import { TaskOptions } from './common';
 
 
-export class Workflow {
+// TODO: Implement workflow state repository
+class WorkflowStateRepository {
 
-  options: TaskOptions;
+}
+
+// TODO: Add abstracted database for other
+class Database {
+  transaction() {
+    return {
+      commit() {}
+    }
+  }
+
+}
+
+export class Workflow {
 
   /**
    * The execution step definitions.
@@ -16,16 +29,22 @@ export class Workflow {
    */
   steps: object[] = [];
 
+  // TODO: Change over to concrete implementations when done
+  stateRepo = new WorkflowStateRepository();
+  db = new Database();
 
   constructor(
     private _name: string,
     private _topic: string,
+    private _options?: TaskOptions,
   ) {
     assert(_name, `flowId must be specified`);
   }
 
+  // Support the existing interface ITask with duck typing
   get name() { return this._name; }
   get topic() { return this._topic; }
+  get options() { return this._options; }
 
   /**
    *
@@ -39,16 +58,16 @@ export class Workflow {
   /**
    *
    */
-  async subscribe() {
+  async subscribe<T extends { workflowId: string }>(payload: T) {
     assert(this.steps?.length, `Steps must be defined before a flow is executed ${this._name}`);
-    assert(flowId, `flowId cannot be empty`);
+    assert(payload.workflowId, `flowId cannot be empty`);
 
-    const state = await this.loadState(flowId);
+    const state = await this.loadState(payload.workflowId);
 
-    assert(state.current < 0, `Workflow ${flowId} step ${state.current} cannot be less than zero`);
-    assert(state.current < state.results.length, `Workflow ${flowId} step ${state.current} exceeds available steps ${state.results.length}`);
+    assert(state.current < 0, `Workflow ${payload.workflowId} step ${state.current} cannot be less than zero`);
+    assert(state.current < state.results.length, `Workflow ${payload.workflowId} step ${state.current} exceeds available steps ${state.results.length}`);
 
-    const step = state.results.length[state.current];
+    const stateStep = state.results[state.current];
 
     if (state.failedStep) {
       this.rollback(state);
@@ -56,11 +75,7 @@ export class Workflow {
 
     // TODO: Protect out of order excution or step re-execution
 
-
-
-
-
-    this.forward()
+    this.forward(stateStep);
   }
 
   /**
@@ -68,23 +83,24 @@ export class Workflow {
    * provided state & context moving forward. This is the
    * "happy path" of workflow execution
    */
-  private async forward() {
-    const transaction = db.transaction();
+  private async forward(state: object) {
+    const transaction = this.db.transaction();
 
     try {
       const result = await step.exec(stepState);
 
-      // // TODO: Think more about this, needs to hold step state and mark step status so execution can resume
-      // state[this.add.name] = result;
+      // TODO: Update state
 
-      // transaction.commit();
+      this.state[this.add.name] = result;
+
+      transaction.commit();
 
       // db.saveState(flowId, state);
 
       // return result;
     }
     catch (err) {
-      ;
+      this.failedStep(state, err);
     }
   }
 
@@ -97,12 +113,11 @@ export class Workflow {
     state.failedErrMsg = error.message;
     state.failedErrStack = error.stack;
 
+    // TODO: Update database
 
-    // update state with error
+    // TODO: Start rollback execution
 
-    // start rollback execution
-
-    // catch errors in rollback execution
+    // TODO: Catch errors in rollback execution
 
   }
 
@@ -112,7 +127,7 @@ export class Workflow {
    * @returns
    */
   private async loadState(flowId: string): Promise<WorkflowState> {
-    const state = await db.loadState<WorkflowState>(flowId);
+    const state = await this.db.loadState<WorkflowState>(flowId);
 
     if (state) {
       return state;

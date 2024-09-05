@@ -11,7 +11,6 @@ import {
   sqsUrls,
   SQSConfiguration,
   Attribute,
-  ITask,
 } from '../common';
 
 import { createMessageMetadata } from '../lib/context';
@@ -211,7 +210,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     const task = this.registry.getTask(topic);
     let attributes: Attribute[] = [] as Attribute[];
     if (task) {
-      attributes = (task.options.attributes ?? []) as Attribute[];
+      attributes = (task.options?.attributes ?? []) as Attribute[];
     }
 
     const messageAttributes = {
