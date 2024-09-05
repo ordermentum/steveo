@@ -27,4 +27,6 @@ export interface Step<StepState, StepResult> {
   rollback?: (state: StepState) => void;
 }
 
+export type StepUnknown = Step<unknown, unknown>;
+
 

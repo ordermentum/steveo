@@ -93,7 +93,7 @@ export class Steveo implements ISteveo {
    * @returns
    */
   flow(name: string, topic: string) {
-    const flow = new Workflow(name, topic);
+    const flow = new Workflow(this, name, topic);
 
     this.registry.addNewTask(flow);
 

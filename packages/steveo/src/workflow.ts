@@ -1,13 +1,20 @@
 import { v4 } from 'uuid';
-import { Step } from "./types/workflow-step";
+import { Step, StepUnknown } from "./types/workflow-step";
 import { WorkflowState } from "./types/workflow-state";
 import assert from 'node:assert';
-import { TaskOptions } from './common';
+import { Logger, TaskOptions } from './common';
+import nullLogger from 'null-logger';
+import { Steveo } from '.';
 
 
 // TODO: Implement workflow state repository
 class WorkflowStateRepository {
-
+  loadState(_flowId: string): Promise<WorkflowState> {
+    return Promise.resolve({} as WorkflowState);
+  }
+  saveState(_flowId: string, _state: unknown): Promise<WorkflowState> {
+    return Promise.resolve({} as WorkflowState);
+  }
 }
 
 // TODO: Add abstracted database for other
@@ -22,23 +29,28 @@ class Database {
 
 export class Workflow {
 
+  logger: Logger;
+
   /**
    * The execution step definitions.
    * Uses an object type as the generic types of the steps
    * will vary from step to step.
    */
-  steps: object[] = [];
+  steps: Step<unknown, unknown>[] = [];
 
   // TODO: Change over to concrete implementations when done
   stateRepo = new WorkflowStateRepository();
   db = new Database();
 
   constructor(
+    steveo: Steveo,
     private _name: string,
     private _topic: string,
     private _options?: TaskOptions,
   ) {
     assert(_name, `flowId must be specified`);
+
+    this.logger = steveo?.logger ?? nullLogger;
   }
 
   // Support the existing interface ITask with duck typing
@@ -50,7 +62,7 @@ export class Workflow {
    *
    */
   next<State, Result>(step: Step<State, Result>): Workflow {
-    this.steps.push(step);
+    this.steps.push(step as Step<unknown, unknown>);
 
     return this;
   }
@@ -60,22 +72,28 @@ export class Workflow {
    */
   async subscribe<T extends { workflowId: string }>(payload: T) {
     assert(this.steps?.length, `Steps must be defined before a flow is executed ${this._name}`);
-    assert(payload.workflowId, `flowId cannot be empty`);
+    assert(payload.workflowId, `workflowId cannot be empty`);
 
-    const state = await this.loadState(payload.workflowId);
+    const flowState = await this.loadState(payload.workflowId, payload);
 
-    assert(state.current < 0, `Workflow ${payload.workflowId} step ${state.current} cannot be less than zero`);
-    assert(state.current < state.results.length, `Workflow ${payload.workflowId} step ${state.current} exceeds available steps ${state.results.length}`);
+    assert(flowState.current < 0, `Workflow ${payload.workflowId} step ${flowState.current} cannot be less than zero`);
+    assert(flowState.current < flowState.results.length, `Workflow ${payload.workflowId} step ${flowState.current} exceeds available steps ${flowState.results.length}`);
 
-    const stateStep = state.results[state.current];
+    const stepState = flowState.results[flowState.current];
 
-    if (state.failedStep) {
-      this.rollback(state);
+    // If this state has failed then we pass control over to the
+    // rollback executor.
+    if (flowState.failedStep) {
+      this.rollback(flowState);
     }
 
     // TODO: Protect out of order excution or step re-execution
 
-    this.forward(stateStep);
+    const step = this.steps[flowState.current];
+
+    // TODO: Further step validation
+
+    this.forward(step, stepState, flowState);
   }
 
   /**
@@ -83,7 +101,7 @@ export class Workflow {
    * provided state & context moving forward. This is the
    * "happy path" of workflow execution
    */
-  private async forward(state: object) {
+  private async forward(step: StepUnknown, stepState: unknown, flowState: WorkflowState) {
     const transaction = this.db.transaction();
 
     try {
@@ -91,34 +109,30 @@ export class Workflow {
 
       // TODO: Update state
 
-      this.state[this.add.name] = result;
+      flowState.results[flowState.current] = result;
+      flowState.current++;
+
+      this.stateRepo.saveState(flowState.flowId, flowState);
 
       transaction.commit();
 
-      // db.saveState(flowId, state);
-
-      // return result;
+      return result;
     }
-    catch (err) {
-      this.failedStep(state, err);
+    catch (error) {
+      const isError = error instanceof Error;
+
+      flowState.failedStep = flowState.current;
+      flowState.failedErrMsg = isError ? error.message : `Unknown error: ${error?.toString()}`;
+      flowState.failedErrStack = isError ? error.stack : undefined;
+
+      // TODO: Update database
+
+      // TODO: Start rollback execution
+
+      // TODO: Catch errors in rollback execution
+
+      throw error;
     }
-  }
-
-  /**
-   *
-   */
-  private async failedStep(state: WorkflowState, error: Error) {
-
-    state.failedStep = state.current;
-    state.failedErrMsg = error.message;
-    state.failedErrStack = error.stack;
-
-    // TODO: Update database
-
-    // TODO: Start rollback execution
-
-    // TODO: Catch errors in rollback execution
-
   }
 
   /**
@@ -126,28 +140,35 @@ export class Workflow {
    * @param flowId
    * @returns
    */
-  private async loadState(flowId: string): Promise<WorkflowState> {
-    const state = await this.db.loadState<WorkflowState>(flowId);
+  private async loadState(flowId: string, initial: unknown): Promise<WorkflowState> {
+    const state = await this.stateRepo.loadState(flowId);
 
     if (state) {
       return state;
     }
 
     return {
+      initial,
       current: 0,
       flowId: `${this._name}-${v4()}`,
       started: new Date(),
-      results: {},
+      results: [],
     };
   }
 
   /**
    *
    */
-  private async rollback(state: WorkflowState) {
+  private async rollback(flowState: WorkflowState) {
 
+    try {
 
-    // this.previous.rollback();
+      flowState.current--;
+
+    }
+    catch (error) {
+
+    }
   }
 }
 

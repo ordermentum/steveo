@@ -28,14 +28,14 @@ export interface WorkflowState {
    * The initial value that started the flow execution.
    * The engine will pass this value to the first step.
    */
-  initial: object;
+  initial: unknown;
 
   /**
    * Step state tracking.
    * The next step in the chain will be executed with the result
    * of the previous step as its argument.
    */
-  results: object[];
+  results: unknown[];
 
   /**
    * Diagnostic and auditing tracking of the step a flow execution failed
