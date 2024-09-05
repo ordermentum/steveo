@@ -21,7 +21,8 @@ class WorkflowStateRepository {
 class Database {
   transaction() {
     return {
-      commit() {}
+      commit() {},
+      rollback() {}
     }
   }
 
@@ -131,6 +132,8 @@ export class Workflow {
 
       // TODO: Catch errors in rollback execution
 
+      transaction.rollback();
+
       throw error;
     }
   }
@@ -160,14 +163,21 @@ export class Workflow {
    *
    */
   private async rollback(flowState: WorkflowState) {
+    const transaction = this.db.transaction();
 
     try {
+      // TODO: Execute rollback function
 
       flowState.current--;
 
+      // TODO: Update flow state properly
+
+      transaction.commit();
     }
     catch (error) {
+      // TODO: Handle rollback exception
 
+      transaction.rollback();
     }
   }
 }
