@@ -1,11 +1,13 @@
 import { v4 } from 'uuid';
-import { Step } from "./workflow-step";
-import { WorkflowState } from "./workflow-state";
-import { get, last, select } from 'radash';
+import { Step } from "./types/workflow-step";
+import { WorkflowState } from "./types/workflow-state";
 import assert from 'node:assert';
+import { TaskOptions } from './common';
 
 
 export class Workflow {
+
+  options: TaskOptions;
 
   /**
    * The execution step definitions.
@@ -15,9 +17,15 @@ export class Workflow {
   steps: object[] = [];
 
 
-  constructor(private flowName: string) {
-    assert(flowName, `flowId must be specified`);
+  constructor(
+    private _name: string,
+    private _topic: string,
+  ) {
+    assert(_name, `flowId must be specified`);
   }
+
+  get name() { return this._name; }
+  get topic() { return this._topic; }
 
   /**
    *
@@ -31,8 +39,8 @@ export class Workflow {
   /**
    *
    */
-  async exec(flowId: string) {
-    assert(this.steps?.length, `Steps must be defined before a flow is executed ${this.flowName}`);
+  async subscribe() {
+    assert(this.steps?.length, `Steps must be defined before a flow is executed ${this._name}`);
     assert(flowId, `flowId cannot be empty`);
 
     const state = await this.loadState(flowId);
@@ -112,7 +120,7 @@ export class Workflow {
 
     return {
       current: 0,
-      flowId: `${this.flowName}-${v4()}`,
+      flowId: `${this._name}-${v4()}`,
       started: new Date(),
       results: {},
     };

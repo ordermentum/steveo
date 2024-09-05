@@ -208,7 +208,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       ...context,
     };
 
-    const task: ITask | null = this.registry.getTask(topic);
+    const task = this.registry.getTask(topic);
     let attributes: Attribute[] = [] as Attribute[];
     if (task) {
       attributes = (task.options.attributes ?? []) as Attribute[];

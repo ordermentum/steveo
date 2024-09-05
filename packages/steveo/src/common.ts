@@ -7,6 +7,7 @@ import {
   ProducerGlobalConfig,
   ProducerTopicConfig,
 } from 'node-rdkafka';
+import { Workflow } from './workflow';
 
 /**
  * FIXME: for callbacks that don't take an argument, need to specify
@@ -124,15 +125,13 @@ export type Attribute = {
 
 export type Pool<T> = GenericPool<T>;
 
-export type Registry = {};
-
 export interface IEvent {
   emit(eventName: string, ...any): any;
   on(eventName: string, ...any): any;
 }
 
 export type TaskList = {
-  [key: string]: ITask;
+  [key: string]: ITask | Workflow;
 };
 
 export type TaskOptions = {
@@ -149,20 +148,22 @@ export type TaskOptions = {
   num_partitions?: number;
 };
 
+export type RegistryElem = ITask | Workflow;
+
 export interface IRegistry {
   registeredTasks: TaskList;
   events: IEvent;
   items: Map<string, string>;
   heartbeat: number;
 
-  addNewTask(task: ITask, topic?: string): void;
-  removeTask(task: ITask): void;
+  addNewTask(task: RegistryElem, topic?: string): void;
+  removeTask(task: RegistryElem): void;
   getTopics(): string[];
   getTaskTopics(): string[];
   getTopic(name: string): string;
   emit(name: string, ...args: any): void;
   addTopic(name: string, topic?: string): void;
-  getTask(topic: string): ITask | null;
+  getTask(topic: string): RegistryElem | null;
 }
 
 export interface ITask<T = any, R = any> {

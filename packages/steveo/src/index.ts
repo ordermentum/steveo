@@ -27,7 +27,7 @@ import {
   Middleware,
   TaskOptions,
 } from './common';
-import { Workflow } from './workflow/workflow';
+import { Workflow } from './workflow';
 
 export {
   KafkaConfiguration,
@@ -88,13 +88,14 @@ export class Steveo implements ISteveo {
   /**
    * Start the [fluent](https://en.wikipedia.org/wiki/Fluent_interface) declaration
    * and registration of a new workflow.
-   * @param flowName
+   * @param name
+   * @param topic
    * @returns
    */
-  flow(flowName: string) {
-    const flow = new Workflow(flowName);
+  flow(name: string, topic: string) {
+    const flow = new Workflow(name, topic);
 
-    this.registry.addNewWorkflow(flow);
+    this.registry.addNewTask(flow);
 
     return flow;
   }

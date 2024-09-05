@@ -45,6 +45,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       async message => {
         this.logger.info(message, `Message received for task: ${topic}`);
         const params = JSON.parse(message.Body as string);
+
         await this.wrap({ topic, payload: params }, async c => {
           this.logger.info(message, `Message received for task: ${c.topic}`);
           let resource: Resource | null = null;
@@ -80,7 +81,9 @@ class SqsRunner extends BaseRunner implements IRunner {
             );
 
             await task.subscribe(data, runnerContext);
+
             this.logger.debug('Completed subscribe', c.topic, c.payload);
+            
             const completedContext = getContext(c.payload);
 
             if (waitToCommit) {
