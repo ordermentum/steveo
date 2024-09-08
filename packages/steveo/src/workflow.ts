@@ -1,31 +1,15 @@
 import { v4 } from 'uuid';
-import { Step, StepUnknown } from "./types/workflow-step";
+import { WorkflowStateRepository } from './storage/workflow.repo';
+import { Database, Transaction } from './storage/connection';
+import { Step } from "./types/workflow-step";
 import { WorkflowState } from "./types/workflow-state";
 import assert from 'node:assert';
-import { Logger, TaskOptions } from './common';
+import { IProducer, IRegistry, Logger, TaskOptions } from './common';
 import nullLogger from 'null-logger';
 import { Steveo } from '.';
 
-
-// TODO: Implement workflow state repository
-class WorkflowStateRepository {
-  loadState(_flowId: string): Promise<WorkflowState> {
-    return Promise.resolve({} as WorkflowState);
-  }
-  saveState(_flowId: string, _state: unknown): Promise<WorkflowState> {
-    return Promise.resolve({} as WorkflowState);
-  }
-}
-
-// TODO: Add abstracted database for other
-class Database {
-  transaction() {
-    return {
-      commit() {},
-      rollback() {}
-    }
-  }
-
+export interface WorkflowPayload {
+  workflowId?: string;
 }
 
 export class Workflow {
@@ -47,6 +31,8 @@ export class Workflow {
     steveo: Steveo,
     private _name: string,
     private _topic: string,
+    private _registry: IRegistry,
+    private _producer: IProducer,
     private _options?: TaskOptions,
   ) {
     assert(_name, `flowId must be specified`);
@@ -54,7 +40,7 @@ export class Workflow {
     this.logger = steveo?.logger ?? nullLogger;
   }
 
-  // Support the existing interface ITask with duck typing
+  // Support the existing interface ITask by duck typing members
   get name() { return this._name; }
   get topic() { return this._topic; }
   get options() { return this._options; }
@@ -69,44 +55,110 @@ export class Workflow {
   }
 
   /**
+   * ITask implementation of the subscribe method
+   * On a Task this will execute the configured handler, but for a workflow
+   * it will load the current state and execute the step, or continue
+   * executing the rollback chain if there was an unrecoverable error.
    *
+   * (Yes the name is confusing, I'm following precedent 😁)
    */
-  async subscribe<T extends { workflowId: string }>(payload: T) {
-    assert(this.steps?.length, `Steps must be defined before a flow is executed ${this._name}`);
-    assert(payload.workflowId, `workflowId cannot be empty`);
-
-    const flowState = await this.loadState(payload.workflowId, payload);
-
-    assert(flowState.current < 0, `Workflow ${payload.workflowId} step ${flowState.current} cannot be less than zero`);
-    assert(flowState.current < flowState.results.length, `Workflow ${payload.workflowId} step ${flowState.current} exceeds available steps ${flowState.results.length}`);
-
-    const stepState = flowState.results[flowState.current];
-
-    // If this state has failed then we pass control over to the
-    // rollback executor.
-    if (flowState.failedStep) {
-      this.rollback(flowState);
-    }
-
-    // TODO: Protect out of order excution or step re-execution
-
-    const step = this.steps[flowState.current];
-
-    // TODO: Further step validation
-
-    this.forward(step, stepState, flowState);
+  async subscribe<T extends WorkflowPayload>(payload: T) {
+    return this.execute(payload);
   }
 
   /**
-   * Executes the steps from the given step using the
-   * provided state & context moving forward. This is the
-   * "happy path" of workflow execution
+   *
    */
-  private async forward(step: StepUnknown, stepState: unknown, flowState: WorkflowState) {
-    const transaction = this.db.transaction();
+  async execute<T extends WorkflowPayload>(payload: T) {
+    const transaction = await this.db.transaction();
 
     try {
-      const result = await step.exec(stepState);
+      const workflowId = payload.workflowId ?? `${this._name}-${v4()}`;
+
+      if (!payload.workflowId) {
+
+      }
+
+      // TODO: Save workflow state
+
+      await this.executeForward(workflowId, payload, transaction);
+
+      transaction.commit();
+    }
+    catch (err) {
+      transaction.rollback();
+
+      throw err;
+    }
+  }
+
+  /**
+   *
+   * @param payload
+   */
+  async publish<T>(payload: T | T[], context?: { key: string }) {
+    const transaction = await this.db.transaction();
+    const params = Array.isArray(payload) ? payload : [payload];
+
+    try {
+      // sqs calls this method twice
+      await this._producer.initialize(this.topic);
+
+      await Promise.all(
+        params.map((data: T) => {
+          this._registry.emit('task_send', this.topic, data);
+          return this._producer.send(this.topic, data, context?.key, context);
+        })
+      );
+
+      transaction.commit();
+
+      this._registry.emit('task_success', this.topic, payload);
+    }
+    catch (err) {
+      transaction.rollback();
+
+      this._registry.emit('task_failure', this.topic, err);
+      throw err;
+    }
+  }
+
+  /**
+   *
+   */
+  private async executeForward(workflowId: string, payload: unknown, transaction: Transaction): Promise<void> {
+
+    if (!this.steps?.length) {
+      throw new Error(`Steps must be defined before a flow is executed ${this._name}`);
+    }
+
+    const flowState = await this.loadState(workflowId);
+
+    try {
+
+      if (flowState.current < 0) {
+        throw new Error(`Workflow ${workflowId} step ${flowState.current} cannot be less than zero`);
+      }
+
+      if (flowState.current > flowState.results.length) {
+        throw new Error(`Workflow ${workflowId} step ${flowState.current} exceeds available steps ${flowState.results.length}`)
+      }
+
+      // If this state has failed then we pass control over to the
+      // rollback executor.
+      if (flowState.failedStep) {
+        return this.rollbackContinue(flowState, transaction);
+      }
+
+      // TODO: Add `source` to the workflow state to check the current steveo instance service name it is running in  and prevent accidental network boundary crossing
+
+      // TODO: Protect out of order excution or step re-execution
+
+      const step = this.steps[flowState.current];
+
+      // TODO: Further step validation (What? what were you thinking Paul? 🤦)
+
+      const result = await step.execute(payload);
 
       // TODO: Update state
 
@@ -116,15 +168,13 @@ export class Workflow {
       this.stateRepo.saveState(flowState.flowId, flowState);
 
       transaction.commit();
-
-      return result;
     }
-    catch (error) {
-      const isError = error instanceof Error;
+    catch (err) {
+      const isError = err instanceof Error;
 
       flowState.failedStep = flowState.current;
-      flowState.failedErrMsg = isError ? error.message : `Unknown error: ${error?.toString()}`;
-      flowState.failedErrStack = isError ? error.stack : undefined;
+      flowState.failedErrMsg = isError ? err.message : `Unknown error: ${err?.toString()}`;
+      flowState.failedErrStack = isError ? err.stack : undefined;
 
       // TODO: Update database
 
@@ -132,10 +182,20 @@ export class Workflow {
 
       // TODO: Catch errors in rollback execution
 
-      transaction.rollback();
-
-      throw error;
+      throw err;
     }
+  }
+
+  /**
+   *
+   */
+  private async rollbackContinue(flowState: WorkflowState, transaction: Transaction): Promise<void> {
+
+    // TODO: Execute rollback function
+
+    flowState.current--;
+
+    // TODO: Update flow state properly
   }
 
   /**
@@ -143,42 +203,18 @@ export class Workflow {
    * @param flowId
    * @returns
    */
-  private async loadState(flowId: string, initial: unknown): Promise<WorkflowState> {
+  private async loadState(flowId: string): Promise<WorkflowState> {
     const state = await this.stateRepo.loadState(flowId);
 
-    if (state) {
-      return state;
+    if (!flowId) {
+      throw new Error(`workflowId was empty for ${this.name} run`);
     }
 
-    return {
-      initial,
-      current: 0,
-      flowId: `${this._name}-${v4()}`,
-      started: new Date(),
-      results: [],
-    };
-  }
-
-  /**
-   *
-   */
-  private async rollback(flowState: WorkflowState) {
-    const transaction = this.db.transaction();
-
-    try {
-      // TODO: Execute rollback function
-
-      flowState.current--;
-
-      // TODO: Update flow state properly
-
-      transaction.commit();
+    if (!state) {
+      throw new Error(`State was not found for workflowId ${flowId} in workflow ${this._name}`);
     }
-    catch (error) {
-      // TODO: Handle rollback exception
 
-      transaction.rollback();
-    }
+    return state;
   }
 }
 

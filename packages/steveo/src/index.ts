@@ -88,12 +88,18 @@ export class Steveo implements ISteveo {
   /**
    * Start the [fluent](https://en.wikipedia.org/wiki/Fluent_interface) declaration
    * and registration of a new workflow.
-   * @param name
    * @param topic
    * @returns
    */
-  flow(name: string, topic: string) {
-    const flow = new Workflow(this, name, topic);
+  flow(
+    name: string,
+    options: TaskOptions = {}
+  ) {
+    const topic =
+      options.queueName ??
+      (this.config.queuePrefix ? `${this.config.queuePrefix}_${name}` : name);
+
+    const flow = new Workflow(this, name, topic, this.registry, this.producer, options);
 
     this.registry.addNewTask(flow);
 

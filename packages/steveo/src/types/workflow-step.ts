@@ -14,12 +14,12 @@ export interface Step<StepState, StepResult> {
    * with a unique random id to allow for multiple uses
    * of the same step within a single workflow run.
    */
-  task: string;
+  trigger: string;
 
   /**
    * Execute the step's implementation
    */
-  exec: (state: StepState) => StepResult | Promise<StepResult>;
+  execute: (state: StepState) => StepResult | Promise<StepResult>;
 
   /**
    *
