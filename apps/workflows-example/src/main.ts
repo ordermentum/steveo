@@ -1,4 +1,4 @@
-import { WorkflowPayload } from '@steveojs/common';
+import { WorkflowPayload } from '../../../packages/steveo/src/workflow';
 import { logger, steveo } from './config';
 import { createInvoiceStep } from './steps/order-fulfilment.step';
 import { placeOrderStep } from './steps/place-order.step';

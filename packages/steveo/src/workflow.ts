@@ -1,8 +1,8 @@
 import { v4 } from 'uuid';
-import { WorkflowStateRepository } from './storage/workflow.repo';
-import { Database, Transaction } from './storage/connection';
+import { WorkflowStateRepository } from '../../common/src/storage/workflow.repo';
+import { Database, Transaction } from '../../common/src/storage/connection';
 import { Step } from "./types/workflow-step";
-import { WorkflowState } from "./types/workflow-state";
+import { WorkflowState } from "../../common/src/types/workflow-state";
 import assert from 'node:assert';
 import { IProducer, IRegistry, Logger, TaskOptions } from './common';
 import nullLogger from 'null-logger';
@@ -25,6 +25,7 @@ export class Workflow {
 
   // TODO: Change over to concrete implementations when done
   stateRepo = new WorkflowStateRepository();
+
   db = new Database();
 
   constructor(
@@ -76,10 +77,9 @@ export class Workflow {
       const workflowId = payload.workflowId ?? `${this._name}-${v4()}`;
 
       if (!payload.workflowId) {
-
+        // TODO: Save new workflow state in DB
+        // await this.db.
       }
-
-      // TODO: Save workflow state
 
       await this.executeForward(workflowId, payload, transaction);
 
