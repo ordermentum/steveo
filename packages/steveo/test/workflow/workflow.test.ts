@@ -28,6 +28,8 @@ describe('Workflow tests', () => {
 
     await flow.publish({ order: 123 });
 
+    await steveo.runner().process();
+    
     setTimeout(() => {
       expect(finalMock.callCount).eq(1);
       done();

@@ -1,5 +1,5 @@
 {
-  "name": "@steveo/store.postgres",
+  "name": "@steveojs/store.postgres",
   "version": "6.7.0",
   "description": "Postgres persistence implementation for Steveo",
   "main": "lib/index.js",
@@ -21,6 +21,9 @@
   "files": [
     "lib/*"
   ],
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
   "nyc": {
     "extends": "@istanbuljs/nyc-config-typescript",
     "all": true,

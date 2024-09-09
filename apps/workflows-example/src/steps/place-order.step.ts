@@ -1,7 +1,5 @@
-import { Step } from 'steveo/src/types/workflow-step';
 import { Invoice } from '../types/invoice';
 import { Customer } from '../types/customer';
-import { Workflow } from 'steveo/src/workflow';
 
 export function placeOrderStep(customer: Customer): Invoice {
 
