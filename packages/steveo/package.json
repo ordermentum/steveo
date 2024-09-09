@@ -18,6 +18,12 @@
     "typecheck": "yarn run tsc --noEmit",
     "steveo": "node ./lib/cli-task.js"
   },
+  "exports": {
+    "./workflow": {
+      "types": "./src/workflow.ts",
+      "default": "./lib/workflow.js"
+    }
+  },
   "files": [
     "lib/*"
   ],

@@ -1,10 +1,23 @@
 {
-  "name": "test-kafka",
+  "name": "@steveo/workflows-example",
   "version": "1.0.0",
   "description": "test steveo",
   "main": "index.js",
   "license": "Apache-2.0",
+  "scripts": {
+    "lint": "yarn eslint 'src/**/*.{ts,js}'",
+    "build:coverage": "nyc check-coverage --statements 74 --branches 60 --functions 66 --lines 72",
+    "test": "NODE_ENV=test nyc npm run spec",
+    "report": "./node_modules/.bin/nyc report --reporter=html",
+    "spec": "mocha -R spec -r ts-node/register/transpile-only test/*.*",
+    "spec:runner": "mocha -R spec -r ts-node/register/transpile-only",
+    "build": "yarn tsc --build",
+    "clean": "rm -rf lib",
+    "reporter": "nyc --reporter=html yarn run test",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
+    "@steveo/steveo": "*",
     "aws-sdk": "^2.77.0",
     "bluebird": "^3.5.0",
     "bunyan": "^1.8.15",

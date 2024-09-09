@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es2022"
+    ],
+    "target": "es2022",
+    "module": "commonjs",
+    "allowJs": false,
+    "declaration": true,
+    "outDir": "../../build/workflow-example",
+    "strict": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "resolveJsonModule": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "lib",
+    "node_modules"
+  ],
+}

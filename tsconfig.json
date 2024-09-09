@@ -22,6 +22,9 @@
     "strict": true,
     "target": "ES2022"
   },
+  "paths": {
+    "@steveo/steveo": ["/packages/steveo/src/index.ts"]
+  },
   "include": [
     "packages/**/*"
   ],
