@@ -1,24 +1,18 @@
-import { Step } from 'steveo/src/types/workflow-step';
 import { Order } from '../types/order';
 import { Invoice } from '../types/invoice';
 
 
-export const createInvoiceStep: Step<Order, Invoice> = {
+export function createInvoiceStep(order: Order): Invoice {
 
-  trigger: 'create-invoice-step',
+  // ...
+  // Do fancy invoice creation steps
+  // ...
 
-  execute: (payload: Order) => {
-
-    // ...
-    // Do fancy invoice creation steps
-    // ...
-
-    return {
-      invoiceDate: new Date(),
-      customerId: payload.customerId,
-      reference: `REF-#823923`
-    };
-  }
+  return {
+    invoiceDate: new Date(),
+    customerId: order.customerId,
+    reference: `INV-823923`
+  };
 }
 
 

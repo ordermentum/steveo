@@ -1,14 +1,14 @@
-import { Invoice } from '../types/invoice';
+import { Order } from '../types/order';
 import { Customer } from '../types/customer';
 
-export function placeOrderStep(customer: Customer): Invoice {
+export function placeOrderStep(customer: Customer): Order {
 
   // ...
   // Do fancy invoice creation steps
   // ...
 
   return {
-    invoiceDate: new Date(),
+    amount: 712,
     customerId: customer.customerId,
     reference: `REF-#823923`
   };

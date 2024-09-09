@@ -1,8 +1,6 @@
 import { v4 } from 'uuid';
-import { WorkflowStateRepository } from '../../common/src/storage/workflow.repo';
-import { Database, Transaction } from '../../common/src/storage/connection';
+import { WorkflowStateRepository, WorkflowState, Database, Transaction } from '@steveojs/common';
 import { Step } from "./types/workflow-step";
-import { WorkflowState } from "../../common/src/types/workflow-state";
 import assert from 'node:assert';
 import { IProducer, IRegistry, Logger, TaskOptions } from './common';
 import nullLogger from 'null-logger';

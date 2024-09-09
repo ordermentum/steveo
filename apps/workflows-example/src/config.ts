@@ -1,6 +1,5 @@
 import { load } from 'ts-dotenv';
-import Steveo from 'steveo/src/index';
-import { SQSConfiguration,  } from 'steveo/lib/common';
+import Steveo, { SQSConfiguration }  from 'steveo-steveo';
 import bunyan from 'bunyan';
 
 export const logger = bunyan.createLogger({ name: 'workflow-test' });
