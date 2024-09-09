@@ -160,7 +160,6 @@ Emitting events based on success/failures
 | Package             |                                Description                                |
 |---------------------|:-------------------------------------------------------------------------:|
 | steveo              | Core steveo package that provides the async task processing functionality |
-| @steveojs/common    |            Common types and abstractions use by add-on modules            |
 | @steveojs/newrelic  |             New Relic addon for Steveo to provide APM tracing             |
 | @steveojs/sentry    |            Sentry addon to provide tracing and error tracking             |
 | @steveojs/statsd    |            Statsd addon to provide metrics to a statsd server             |

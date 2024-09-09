@@ -27,8 +27,11 @@ import {
   Middleware,
   TaskOptions,
 } from './common';
+
 import { Workflow } from './workflow';
 
+export { WorkflowState } from './types/workflow-state';
+export { WorkflowPayload } from './workflow';
 export {
   KafkaConfiguration,
   RedisConfiguration,

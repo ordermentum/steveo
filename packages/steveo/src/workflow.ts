@@ -1,10 +1,11 @@
 import { v4 } from 'uuid';
-import { WorkflowStateRepository, WorkflowState, Database, Transaction } from '@steveojs/common';
 import { Step } from "./types/workflow-step";
 import assert from 'node:assert';
 import { IProducer, IRegistry, Logger, TaskOptions } from './common';
 import nullLogger from 'null-logger';
-import { Steveo } from '.';
+import { Steveo, WorkflowState } from '.';
+import { WorkflowStateRepository } from './types/workflow.repo';
+import { Database, Transaction } from './types/connection';
 
 export interface WorkflowPayload {
   workflowId?: string;
