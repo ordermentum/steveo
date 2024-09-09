@@ -3,11 +3,11 @@ import Redis from 'ioredis';
 const REDIS_URL = process.env.REDIS_URL;
 
 const redisOptions = {
-  retryStrategy: times => {
+  retryStrategy: (times: number) => {
     // logger.error('attempting to connect/reconnect to redis');
     return Math.min(times * 100, 3000);
   },
-  reconnectOnError: err => {
+  reconnectOnError: (_err: unknown) => {
     // logger.error('connection error', err);
     return true;
   },
@@ -26,7 +26,7 @@ const client = new Redis({
   ...redisOptions,
 });
 
-process.on('exit', code => {
+process.on('exit', _code => {
   // logger.info(`exiting with code: ${code}`);
   client.quit();
 });

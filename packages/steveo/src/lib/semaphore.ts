@@ -27,7 +27,7 @@ const redlock = new Redlock(
   }
 );
 
-redlock.on('clientError', (err: Error) => {
+redlock.on('clientError', (_err: Error) => {
   // logger.error(`ERR! Redlock error`, err);
 });
 

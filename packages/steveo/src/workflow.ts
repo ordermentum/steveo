@@ -189,7 +189,7 @@ export class Workflow {
   /**
    *
    */
-  private async rollbackContinue(flowState: WorkflowState, transaction: Transaction): Promise<void> {
+  private async rollbackContinue(flowState: WorkflowState, _transaction: Transaction): Promise<void> {
 
     // TODO: Execute rollback function
 
