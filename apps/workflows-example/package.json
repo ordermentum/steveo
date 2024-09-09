@@ -1,9 +1,12 @@
 {
-  "name": "@steveo/workflows-example",
+  "name": "@ordermentum/example-workflows-app",
   "version": "1.0.0",
   "description": "test steveo",
-  "main": "index.js",
-  "license": "Apache-2.0",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/*"
+  ],
   "scripts": {
     "lint": "yarn eslint 'src/**/*.{ts,js}'",
     "build:coverage": "nyc check-coverage --statements 74 --branches 60 --functions 66 --lines 72",
@@ -16,7 +19,13 @@
     "reporter": "nyc --reporter=html yarn run test",
     "typecheck": "tsc --noEmit"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ordermentum/steveo.git"
+  },
+  "license": "Apache-2.0",
   "dependencies": {
+    "steveo": "*",
     "aws-sdk": "^2.77.0",
     "bluebird": "^3.5.0",
     "bunyan": "^1.8.15",
@@ -32,5 +41,7 @@
     "rsmq": "^0.12.3",
     "ts-dotenv": "^0.9.1",
     "uuid": "^3.1.0"
+  },
+  "devDependencies": {
   }
 }
