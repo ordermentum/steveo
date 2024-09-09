@@ -1,18 +1,16 @@
 
 /**
- *
+ * Type definition for a single workflow step that defines
+ * what the engine is to execute to complete the task, or
+ * (optionally), what to execute if the step fails irretrievably.
  */
 export interface Step<StepState, StepResult> {
 
   /**
-   * The steveo task name that will kick off this
+   * The steveo workflow step name that will kick off this
    * step. As the step is part of a workflow, this will
    * be intercepted and executed as a part of the
-   * workflow middleware.
-   *
-   * Execution state storage will use this name in conjunction
-   * with a unique random id to allow for multiple uses
-   * of the same step within a single workflow run.
+   * workflow execution engine.
    */
   trigger: string;
 
@@ -24,7 +22,7 @@ export interface Step<StepState, StepResult> {
   /**
    *
    */
-  rollback?: (state: StepState) => void;
+  rollback?: (state: StepState) => void | Promise<void>;
 }
 
 export type StepUnknown = Step<unknown, unknown>;
