@@ -1,5 +1,12 @@
 # steveo
 
+## 7.0.0
+
+### New functionality
+
+- Added general purpose, extensible & optional storage capability
+- Added workflows for durable chains of action execution with retry and rollback functionality
+
 ## 6.7.0
 
 ### Minor Changes
