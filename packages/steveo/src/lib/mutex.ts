@@ -32,7 +32,7 @@ redlock.on('clientError', (_err: Error) => {
 });
 
 /**
- * A semaphore can be used to coordinate access to a shared resource
+ * A mutex can be used to coordinate access to a shared resource ([Wikipedia](https://en.wikipedia.org/wiki/Lock_(computer_science)))
  * across process or machine boundaries. It uses [redlock](https://redis.io/docs/latest/develop/use/patterns/distributed-locks/)
  * under the hood to ensure distributed code executions against a common
  * resource; analogous to how a database transaction can lock a row
@@ -40,7 +40,7 @@ redlock.on('clientError', (_err: Error) => {
  *
  * Reference: https://en.wikipedia.org/wiki/Semaphore_(programming)
  */
-export async function semaphore<T>(name: string, task: () => Promise<T>) {
+export async function mutex<T>(name: string, task: () => Promise<T>) {
   const lock = await redlock.acquire([name], 2000);
   try {
     return task();
