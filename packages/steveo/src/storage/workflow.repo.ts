@@ -1,4 +1,4 @@
-import { WorkflowState } from "../types/workflow-state";
+import { WorkflowState } from "../runtime/workflow-state";
 
 export interface WorkflowStateRepository {
 

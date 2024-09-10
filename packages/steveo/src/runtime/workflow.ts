@@ -1,10 +1,10 @@
 import { v4 } from 'uuid';
-import { Step } from "../types/workflow-step";
+import { Step } from "./workflow-step";
 import assert from 'node:assert';
 import { IProducer, IRegistry, Logger, TaskOptions } from '../common';
 import nullLogger from 'null-logger';
-import { WorkflowState } from '../types/workflow-state';
-import { Storage, TransactionHandle } from '../types/storage';
+import { WorkflowState } from './workflow-state';
+import { Storage, TransactionHandle } from '../storage/storage';
 import { Steveo } from '../';
 
 export interface WorkflowPayload {

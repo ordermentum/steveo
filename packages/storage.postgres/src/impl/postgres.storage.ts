@@ -47,7 +47,9 @@ class PostgresStorage extends Storage {
   }
 }
 
-// Create Postgres storage factory method
+/**
+ * Creates a Postgres storage instance with the given config and logger
+ */
 export function postgresFactory(config: PostgresStorageConfig, logger: Logger): Storage {
   return new PostgresStorage(config, logger);
 }

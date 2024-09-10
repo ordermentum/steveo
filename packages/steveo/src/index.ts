@@ -29,12 +29,12 @@ import {
 } from './common';
 
 import { Workflow } from './runtime/workflow';
-import { Storage } from './types/storage';
+import { Storage } from './storage/storage';
 
 export { Logger } from './common';
-export { Storage, TransactionHandle } from './types/storage';
-export { WorkflowStateRepository } from './types/workflow.repo';
-export { WorkflowState } from './types/workflow-state';
+export { Storage, TransactionHandle } from './storage/storage';
+export { WorkflowStateRepository } from './storage/workflow.repo';
+export { WorkflowState } from './runtime/workflow-state';
 export { WorkflowPayload } from './runtime/workflow';
 export {
   KafkaConfiguration,
