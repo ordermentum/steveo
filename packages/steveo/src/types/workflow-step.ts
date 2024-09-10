@@ -25,6 +25,14 @@ export interface Step<StepState, StepResult> {
   rollback?: (state: StepState) => void | Promise<void>;
 }
 
+/**
+ * StepUnknown is a requirement for the internal workflow engine
+ * implementation as it tracks an array of steps, and as TS does
+ * not have runtime type information (RTTI) the generic types
+ * are lost.
+ * So the above generic Step declaration is purely to aid the
+ * fluent interface for development.
+ */
 export type StepUnknown = Step<unknown, unknown>;
 
 

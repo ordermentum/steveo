@@ -1,11 +1,11 @@
 import { v4 } from 'uuid';
-import { Step } from "./types/workflow-step";
+import { Step } from "../types/workflow-step";
 import assert from 'node:assert';
-import { IProducer, IRegistry, Logger, TaskOptions } from './common';
+import { IProducer, IRegistry, Logger, TaskOptions } from '../common';
 import nullLogger from 'null-logger';
-import { Steveo, WorkflowState } from '.';
-import { WorkflowStateRepository } from './types/workflow.repo';
-import { Database, Transaction } from './types/connection';
+import { WorkflowState } from '../types/workflow-state';
+import { Storage, Transaction } from '../types/storage';
+import { Steveo } from '../';
 
 export interface WorkflowPayload {
   workflowId?: string;
@@ -22,10 +22,10 @@ export class Workflow {
    */
   steps: Step<unknown, unknown>[] = [];
 
-  // TODO: Change over to concrete implementations when done
-  stateRepo = new WorkflowStateRepository();
-
-  db = new Database();
+  /**
+   *
+   */
+  storage: Storage;
 
   constructor(
     steveo: Steveo,
@@ -37,6 +37,7 @@ export class Workflow {
   ) {
     assert(_name, `flowId must be specified`);
 
+    this.storage = steveo.storage;
     this.logger = steveo?.logger ?? nullLogger;
   }
 
@@ -70,7 +71,7 @@ export class Workflow {
    *
    */
   async execute<T extends WorkflowPayload>(payload: T) {
-    const transaction = await this.db.transaction();
+    const transaction = await this.storage.transaction();
 
     try {
       const workflowId = payload.workflowId ?? `${this._name}-${v4()}`;
@@ -96,7 +97,7 @@ export class Workflow {
    * @param payload
    */
   async publish<T>(payload: T | T[], context?: { key: string }) {
-    const transaction = await this.db.transaction();
+    const transaction = await this.storage.transaction();
     const params = Array.isArray(payload) ? payload : [payload];
 
     try {
@@ -164,7 +165,7 @@ export class Workflow {
       flowState.results[flowState.current] = result;
       flowState.current++;
 
-      this.stateRepo.saveState(flowState.flowId, flowState);
+      this.storage.workflow.saveState(flowState.flowId, flowState);
 
       transaction.commit();
     }
@@ -203,7 +204,7 @@ export class Workflow {
    * @returns
    */
   private async loadState(flowId: string): Promise<WorkflowState> {
-    const state = await this.stateRepo.loadState(flowId);
+    const state = await this.storage.workflow.loadState(flowId);
 
     if (!flowId) {
       throw new Error(`workflowId was empty for ${this.name} run`);

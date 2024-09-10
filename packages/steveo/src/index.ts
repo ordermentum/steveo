@@ -2,8 +2,8 @@
 /* eslint-disable global-require */
 import NULL_LOGGER from 'null-logger';
 /* eslint-disable no-underscore-dangle */
-import Task from './task';
-import Registry from './registry';
+import Task from './runtime/task';
+import Registry from './runtime/registry';
 import getRunner from './lib/runner';
 import getProducer from './lib/producer';
 import getConfig from './config';
@@ -28,10 +28,13 @@ import {
   TaskOptions,
 } from './common';
 
-import { Workflow } from './workflow';
+import { Workflow } from './runtime/workflow';
+import { Storage } from './types/storage';
 
+export { Storage, StorageFactory } from './types/storage';
+export { WorkflowStateRepository } from './types/workflow.repo';
 export { WorkflowState } from './types/workflow-state';
-export { WorkflowPayload } from './workflow';
+export { WorkflowPayload } from './runtime/workflow';
 export {
   KafkaConfiguration,
   RedisConfiguration,
@@ -51,6 +54,8 @@ export class Steveo implements ISteveo {
   _producer?: IProducer;
 
   _runner?: IRunner;
+
+  storage: Storage;
 
   events: IEvent;
 
@@ -74,8 +79,10 @@ export class Steveo implements ISteveo {
       | RedisConfiguration
       | SQSConfiguration
       | DummyConfiguration,
+    storage: Storage,
     logger: Logger = NULL_LOGGER // eslint-disable-line default-param-last
   ) {
+    this.storage = storage;
     this.logger = logger;
     this.registry = new Registry();
     this.config = getConfig(configuration);
@@ -239,5 +246,6 @@ export default (
     | RedisConfiguration
     | SQSConfiguration
     | DummyConfiguration,
+  storage: Storage,
   logger: Logger
-) => new Steveo(config, logger);
+) => new Steveo(config, storage, logger);

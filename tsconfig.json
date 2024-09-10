@@ -17,7 +17,6 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "lib",
     "resolveJsonModule": true,
     "strict": true,
     "target": "ES2022"

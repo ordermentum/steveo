@@ -3,6 +3,7 @@
   "version": "6.7.0",
   "description": "Postgres persistence implementation for Steveo",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "author": "engineering@ordermentum.com",
   "private": false,
   "license": "Apache-2.0",
@@ -57,7 +58,9 @@
     "rsmq": "^0.12.4",
     "uuid": "^9.0.0"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "steveo-steveo": "*"
+  },
   "devDependencies": {
     "@emotion/eslint-plugin": "11.11",
     "@istanbuljs/nyc-config-typescript": "1.0.2",

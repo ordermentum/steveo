@@ -7,7 +7,7 @@ import {
   ProducerGlobalConfig,
   ProducerTopicConfig,
 } from 'node-rdkafka';
-import { Workflow } from './workflow';
+import { Workflow } from './runtime/workflow';
 
 /**
  * FIXME: for callbacks that don't take an argument, need to specify

@@ -1,6 +1,6 @@
 import events from 'events';
 
-import { IRegistry, IEvent, TaskList, RegistryElem } from './common';
+import { IRegistry, IEvent, TaskList, RegistryElem } from '../common';
 
 class Registry implements IRegistry {
   registeredTasks: TaskList;

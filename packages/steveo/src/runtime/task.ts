@@ -8,7 +8,7 @@ import {
   TaskOptions,
   IProducer,
   IRegistry,
-} from './common';
+} from '../common';
 
 class Task<T = any, R = any> implements ITask<T, R> {
   config:
