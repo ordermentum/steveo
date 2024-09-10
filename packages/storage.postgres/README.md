@@ -9,8 +9,8 @@ It uses Prisma to manage database access and schema migrations.
 
 For local development the database URLs will use the following:
 
-- `postgresql://ordermentum@localhost:5432/stevo_development` Used in development application execution
-- `postgresql://ordermentum@localhost:5432/stevo_testing` Used in unit test execution
+- `postgresql://ordermentum@localhost:5432/steveo_development` Used in development application execution
+- `postgresql://ordermentum@localhost:5432/steveo_testing` Used in unit test execution
 
 Create a new migration once changes have been made to the `prisma/schema.prisma` file:
 
