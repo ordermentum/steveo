@@ -16,9 +16,9 @@ export class Database {
     })
   }
 
-  transaction(): Promise<Transaction> {
+  transaction(_fn: () => void): Promise<void> {
 
-    return Promise.resolve(new Transaction());
+    return Promise.resolve();
   }
 }
 

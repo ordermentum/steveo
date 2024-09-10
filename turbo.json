@@ -4,11 +4,15 @@
   "pipeline": {
     "build": {
       "dependsOn": [
-        "^build"
+        "^build",
+        "^generate"
       ],
       "outputs": [
         ".next/**"
       ]
+    },
+    "generate": {
+      "outputs": []
     },
     "test": {
       "dependsOn": [
@@ -20,9 +24,7 @@
       "outputs": []
     },
     "lint": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": [],
       "outputs": []
     },
     "dev": {

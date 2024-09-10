@@ -7,3 +7,16 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model WorkflowState {
+  id                Int         @id @default(autoincrement())
+  flowId            String      @unique
+  started           DateTime    @db.Timestamptz(6)
+  current           Int
+  initial           Json
+  results           Json?
+  failedStep        Int?
+  failedErrMsg      String?     @db.VarChar(255)
+  failedErrStack    String?     @db.VarChar(2000)
+}
+

@@ -16,6 +16,7 @@
     "autotest": "yarn run mocha --watch",
     "prepublish": "yarn run build",
     "build": "yarn run tsc",
+    "generate": "npx prisma generate",
     "typecheck": "yarn run tsc --noEmit",
     "steveo": "node ./lib/cli-task.js"
   },
@@ -41,6 +42,7 @@
     ]
   },
   "dependencies": {
+    "@prisma/client": "5.19.1",
     "@types/bluebird": "^3.5.38",
     "aws-sdk": "^2.1043.0",
     "bluebird": "^3.7.2",
