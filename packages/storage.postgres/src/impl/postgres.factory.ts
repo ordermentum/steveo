@@ -1,4 +1,4 @@
-import { Storage, StorageFactory, Logger, TransactionHandle } from 'steveo-steveo';
+import { Storage, Logger, TransactionHandle, WorkflowStateRepository } from 'steveo-steveo';
 import { WorkflowStateRepositoryPostgres } from '../repo/workflow.repo';
 import { PostgresStorageConfig } from './postgres.config';
 import { PrismaClient } from '@prisma/client';
@@ -8,52 +8,47 @@ type PostgresTx = { txClient: PrismaClient } & TransactionHandle;
 /**
  *
  */
-function connect(config: PostgresStorageConfig, logger: Logger): Storage {
+class PostgresStorage extends Storage {
 
-  const prisma = new PrismaClient({
-    datasourceUrl: config.datasourceUrl,
-  })
+  workflow: WorkflowStateRepository;
 
-  return {
-    name: 'steveo-postgres',
+  prisma: PrismaClient;
 
-    /**
-     * Executes the given function under the umbrella of a Postgres transaction.
-     * @param fn
-     */
-    async transaction(fn: (tx: TransactionHandle) => Promise<void>): Promise<void> {
+  constructor(
+    private config: PostgresStorageConfig,
+    private logger: Logger
+  ) {
+    super('steveo-postgres');
 
-      logger.trace({ msg: `Postgres storage transaction begin` });
+    this.prisma = new PrismaClient({
+      datasourceUrl: this.config.datasourceUrl,
+    });
 
-      //
-      await prisma.$transaction(async (txClient) => {
+    this.workflow = new WorkflowStateRepositoryPostgres();
+   }
 
-        const tx = { txClient, type: 'steveo-postgres-tx' } as PostgresTx;
+  /**
+   * Executes the given function under the umbrella of a Postgres transaction.
+   * @param fn
+   */
+  async transaction(fn: (tx: TransactionHandle) => Promise<void>): Promise<void> {
 
-        await fn(tx);
+    this.logger.trace({ msg: `Postgres storage transaction begin` });
 
-        logger.trace({ msg: `Postgres storage transaction complete` });
-      });
-    },
+    //
+    await this.prisma.$transaction(async (txClient) => {
 
-    workflow: new WorkflowStateRepositoryPostgres(),
+      const tx = { txClient, type: 'steveo-postgres-tx' } as PostgresTx;
+
+      await fn(tx);
+
+      this.logger.trace({ msg: `Postgres storage transaction complete` });
+    });
   }
-}
-
-/**
- *
- */
-function migrate(): void {
-
-  // TODO: Run Prisma migrations here....
 }
 
 // Create Postgres storage factory method
-export function postgresFactory(config: PostgresStorageConfig, logger: Logger): StorageFactory {
-
-  return {
-    connect: () => connect(config, logger),
-    migrate
-  }
+export function postgresFactory(config: PostgresStorageConfig, logger: Logger): Storage {
+  return new PostgresStorage(config, logger);
 }
 

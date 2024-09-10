@@ -31,8 +31,7 @@ const postgresConfig: PostgresStorageConfig = {
   datasourceUrl: env.DATASOURCE_URL
 }
 
-const factory = postgresFactory(postgresConfig, logger);
-const storage = factory.connect();
+const storage = postgresFactory(postgresConfig, logger);
 
 // Create steveo instance with messaging config and storage instance
 export const steveo = Steveo(sqsConfig, storage, logger);
