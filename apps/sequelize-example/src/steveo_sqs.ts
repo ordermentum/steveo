@@ -1,7 +1,7 @@
 import Steveo from 'steveo';
 import https from 'https';
 import config from 'config';
-import { Configuration } from 'steveo/lib/common';
+import { SQSConfiguration } from 'steveo-steveo';
 import path from 'path';
 import logger from './logger';
 
@@ -20,7 +20,7 @@ const sqsEndpoint = config.has('sqsEndpoint')
   ? config.get<string>('sqsEndpoint')
   : undefined;
 
-const steveoConfig: Configuration = {
+const steveoConfig: SQSConfiguration = {
   region: awsRegion,
   apiVersion: '2012-11-05',
   receiveMessageWaitTimeSeconds: '20',
@@ -46,10 +46,11 @@ const steveoConfig: Configuration = {
           }),
         }
       : undefined,
-  childProcesses: {
-    instancePath: __filename,
-    args: nodeEnv === 'production' ? [] : ['-r', 'ts-node/register'],
-  },
+  // Paul - Commented due to compilation error it caused
+  // childProcesses: {
+  //   instancePath: __filename,
+  //   args: nodeEnv === 'production' ? [] : ['-r', 'ts-node/register'],
+  // },
   tasksPath: path.resolve(__dirname, '../tasks'),
   upperCaseNames: true,
 };

@@ -42,20 +42,3 @@ export abstract class Storage {
   abstract workflow: WorkflowStateRepository;
 }
 
-/**
- * Factory specification all Steveo storage modules must support
- */
-export type StorageFactory = {
-
-  /**
-   *
-   */
-  connect(): Storage;
-
-  /**
-   *
-   */
-  migrate(): void;
-}
-
-
