@@ -10,13 +10,13 @@ datasource db {
 
 model WorkflowState {
   id                Int         @id @default(autoincrement())
-  flowId            String      @unique
+  flowId            String      @map("flow_id") @unique
   started           DateTime    @db.Timestamptz(6)
   current           Int
   initial           Json
   results           Json?
-  failedStep        Int?
-  failedErrMsg      String?     @db.VarChar(255)
-  failedErrStack    String?     @db.VarChar(2000)
+  failedStep        Int?        @map("failed_step")
+  failedErrMsg      String?     @map("failed_err_msg") @db.VarChar(255)
+  failedErrStack    String?     @map("failed_err_stack") @db.VarChar(2000)
 }
 

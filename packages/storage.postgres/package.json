@@ -17,6 +17,7 @@
     "prepublish": "yarn run build",
     "build": "yarn run tsc",
     "generate": "npx prisma generate",
+    "migrate": "npx prisma migrate dev --name ",
     "typecheck": "yarn run tsc --noEmit",
     "steveo": "node ./lib/cli-task.js"
   },
