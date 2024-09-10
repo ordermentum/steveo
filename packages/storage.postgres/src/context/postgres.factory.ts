@@ -1,6 +1,7 @@
-import { Storage, StorageFactory } from 'steveo-steveo';
+import { Storage, StorageFactory, Logger } from 'steveo-steveo';
 import { Transaction } from './db-context';
-import { WorkflowStateRepositoryPostgres } from './workflow.repo';
+import { WorkflowStateRepositoryPostgres } from '../repo/workflow.repo';
+import { PostgresStorageConfig } from './postgres.config';
 
 class PostgresTransaction implements Transaction {
   commit(): Promise<void> {
@@ -15,7 +16,10 @@ class PostgresTransaction implements Transaction {
 /**
  *
  */
-function connect(): Storage {
+function connect(_config: PostgresStorageConfig, _logger: Logger): Storage {
+
+
+
   return {
     name: 'steveo-postgres',
 
@@ -34,5 +38,11 @@ function migrate(): void {
 }
 
 // Create Postgres storage factory method
-export const postgresFactory = (): StorageFactory => ({ connect, migrate });
+export function postgresFactory(config: PostgresStorageConfig, logger: Logger): StorageFactory {
+
+  return {
+    connect: () => connect(config, logger),
+    migrate
+  }
+}
 
