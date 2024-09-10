@@ -36,6 +36,7 @@ export class Workflow {
     private _options?: TaskOptions,
   ) {
     assert(_name, `flowId must be specified`);
+    assert(steveo.storage, `storage must be provided to steveo in order to use workflows`);
 
     this.storage = steveo.storage;
     this.logger = steveo?.logger ?? nullLogger;

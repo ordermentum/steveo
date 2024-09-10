@@ -30,6 +30,7 @@ import {
 
 import { Workflow } from './runtime/workflow';
 import { Storage } from './storage/storage';
+import assert from 'node:assert';
 
 export { Logger } from './common';
 export { Storage, TransactionHandle } from './storage/storage';
@@ -56,7 +57,11 @@ export class Steveo implements ISteveo {
 
   _runner?: IRunner;
 
-  storage: Storage;
+  /**
+   * General purpose storage engine originally introduced to
+   * maintain workflow execution state.
+   */
+  private _storage?: Storage;
 
   events: IEvent;
 
@@ -80,10 +85,10 @@ export class Steveo implements ISteveo {
       | RedisConfiguration
       | SQSConfiguration
       | DummyConfiguration,
-    storage: Storage,
-    logger: Logger = NULL_LOGGER // eslint-disable-line default-param-last
+    logger: Logger = NULL_LOGGER,
+    storage?: Storage,
   ) {
-    this.storage = storage;
+    this._storage = storage;
     this.logger = logger;
     this.registry = new Registry();
     this.config = getConfig(configuration);
@@ -186,6 +191,12 @@ export class Steveo implements ISteveo {
     return this._producer;
   }
 
+  get storage() {
+    assert(this.storage);
+    
+    return this._storage;
+  }
+
   async pause() {
     return this.manager.pause();
   }
@@ -247,6 +258,6 @@ export default (
     | RedisConfiguration
     | SQSConfiguration
     | DummyConfiguration,
-  storage: Storage,
-  logger: Logger
-) => new Steveo(config, storage, logger);
+  logger: Logger = NULL_LOGGER,
+  storage?: Storage,
+) => new Steveo(config, logger, storage);

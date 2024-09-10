@@ -34,6 +34,6 @@ const postgresConfig: PostgresStorageConfig = {
 const storage = postgresFactory(postgresConfig, logger);
 
 // Create steveo instance with messaging config and storage instance
-export const steveo = Steveo(sqsConfig, storage, logger);
+export const steveo = Steveo(sqsConfig, logger, storage);
 
 
