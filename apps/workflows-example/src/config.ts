@@ -5,6 +5,7 @@ import bunyan from 'bunyan';
 
 export const logger = bunyan.createLogger({ name: 'workflow-test' });
 
+// Parse and validate the environment to the defined schema
 const env = load({
   AWS_REGION: String,
   AWS_ACCESS_KEY: String,
@@ -25,6 +26,7 @@ const sqsConfig: SQSConfiguration = {
   waitTimeSeconds: 20,
 };
 
+// Instantiate the concrete implementation of the postgres storage
 const postgresConfig: PostgresStorageConfig = {
   datasourceUrl: env.DATASOURCE_URL
 }
@@ -32,6 +34,7 @@ const postgresConfig: PostgresStorageConfig = {
 const factory = postgresFactory(postgresConfig, logger);
 const storage = factory.connect();
 
+// Create steveo instance with messaging config and storage instance
 export const steveo = Steveo(sqsConfig, storage, logger);
 
 

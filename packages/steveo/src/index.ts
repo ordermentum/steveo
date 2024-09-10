@@ -32,7 +32,7 @@ import { Workflow } from './runtime/workflow';
 import { Storage } from './types/storage';
 
 export { Logger } from './common';
-export { Storage, StorageFactory } from './types/storage';
+export { Storage, StorageFactory, TransactionHandle } from './types/storage';
 export { WorkflowStateRepository } from './types/workflow.repo';
 export { WorkflowState } from './types/workflow-state';
 export { WorkflowPayload } from './runtime/workflow';

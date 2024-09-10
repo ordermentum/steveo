@@ -1,4 +1,3 @@
 
-export { postgresFactory } from './context/postgres.factory';
-
-export { PostgresStorageConfig } from './context/postgres.config';
+export { postgresFactory } from './impl/postgres.factory';
+export { PostgresStorageConfig } from './impl/postgres.config';

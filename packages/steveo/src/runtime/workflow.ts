@@ -4,7 +4,7 @@ import assert from 'node:assert';
 import { IProducer, IRegistry, Logger, TaskOptions } from '../common';
 import nullLogger from 'null-logger';
 import { WorkflowState } from '../types/workflow-state';
-import { Storage, Transaction } from '../types/storage';
+import { Storage, TransactionHandle } from '../types/storage';
 import { Steveo } from '../';
 
 export interface WorkflowPayload {
@@ -71,9 +71,8 @@ export class Workflow {
    *
    */
   async execute<T extends WorkflowPayload>(payload: T) {
-    const transaction = await this.storage.transaction();
 
-    try {
+    await this.storage.transaction(async (transaction) => {
       const workflowId = payload.workflowId ?? `${this._name}-${v4()}`;
 
       if (!payload.workflowId) {
@@ -82,14 +81,7 @@ export class Workflow {
       }
 
       await this.executeForward(workflowId, payload, transaction);
-
-      transaction.commit();
-    }
-    catch (err) {
-      transaction.rollback();
-
-      throw err;
-    }
+    });
   }
 
   /**
@@ -97,36 +89,35 @@ export class Workflow {
    * @param payload
    */
   async publish<T>(payload: T | T[], context?: { key: string }) {
-    const transaction = await this.storage.transaction();
-    const params = Array.isArray(payload) ? payload : [payload];
 
-    try {
-      // sqs calls this method twice
-      await this._producer.initialize(this.topic);
+    await this.storage.transaction(async () => {
+      const params = Array.isArray(payload) ? payload : [payload];
 
-      await Promise.all(
-        params.map((data: T) => {
-          this._registry.emit('task_send', this.topic, data);
-          return this._producer.send(this.topic, data, context?.key, context);
-        })
-      );
+      try {
+        // sqs calls this method twice
+        await this._producer.initialize(this.topic);
 
-      transaction.commit();
+        await Promise.all(
+          params.map((data: T) => {
+            this._registry.emit('task_send', this.topic, data);
+            return this._producer.send(this.topic, data, context?.key, context);
+          })
+        );
 
-      this._registry.emit('task_success', this.topic, payload);
-    }
-    catch (err) {
-      transaction.rollback();
+        this._registry.emit('task_success', this.topic, payload);
+      }
+      catch (err) {
+        this._registry.emit('task_failure', this.topic, err);
+        throw err;
+      }
+    });
 
-      this._registry.emit('task_failure', this.topic, err);
-      throw err;
-    }
   }
 
   /**
    *
    */
-  private async executeForward(workflowId: string, payload: unknown, transaction: Transaction): Promise<void> {
+  private async executeForward(workflowId: string, payload: unknown, transaction: TransactionHandle): Promise<void> {
 
     if (!this.steps?.length) {
       throw new Error(`Steps must be defined before a flow is executed ${this._name}`);
@@ -166,8 +157,6 @@ export class Workflow {
       flowState.current++;
 
       this.storage.workflow.saveState(flowState.flowId, flowState);
-
-      transaction.commit();
     }
     catch (err) {
       const isError = err instanceof Error;
@@ -189,7 +178,7 @@ export class Workflow {
   /**
    *
    */
-  private async rollbackContinue(flowState: WorkflowState, _transaction: Transaction): Promise<void> {
+  private async rollbackContinue(flowState: WorkflowState, _transaction: TransactionHandle): Promise<void> {
 
     // TODO: Execute rollback function
 

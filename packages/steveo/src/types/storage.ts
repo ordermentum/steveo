@@ -1,20 +1,9 @@
 import { WorkflowStateRepository } from "./workflow.repo";
 
-/**
- *
- */
-export interface Transaction {
+export type TransactionHandle = {
 
-  /**
-   *
-   */
-  commit(): Promise<void>;
-
-  /**
-   *
-   */
-  rollback(): Promise<void>;
-}
+  get type(): string;
+};
 
 /**
  *
@@ -29,7 +18,7 @@ export interface Storage {
   /**
    *
    */
-  transaction(): Promise<Transaction>;
+  transaction(fn: (tx: TransactionHandle) => Promise<void>): Promise<void>;
 
   /**
    * Factory to provide an instance of the concrete workflow state repository
