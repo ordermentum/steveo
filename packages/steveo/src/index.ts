@@ -33,8 +33,8 @@ import { Storage } from './storage/storage';
 import assert from 'node:assert';
 
 export { Logger } from './common';
-export { Storage, TransactionHandle } from './storage/storage';
-export { WorkflowStateRepository } from './storage/workflow.repo';
+export { Storage } from './storage/storage';
+export { WorkflowStateRepository } from './storage/workflow-repo';
 export { WorkflowState } from './runtime/workflow-state';
 export { WorkflowPayload } from './runtime/workflow';
 export {
@@ -193,7 +193,7 @@ export class Steveo implements ISteveo {
 
   get storage() {
     assert(this.storage);
-    
+
     return this._storage;
   }
 

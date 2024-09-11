@@ -1,18 +1,4 @@
-import { WorkflowStateRepository } from "./workflow.repo";
-
-/**
- * This is a base transaction handle type used to create a common
- * abstract type for transaction handling. When implementing a
- * storage provider module the module will extend this type to
- * add it's driver specific information for managing a transaction.
- */
-export type TransactionHandle = {
-
-  /**
-   * Debugging information from the concrete provider only, no runtime usage
-   */
-  get type(): string;
-};
+import { WorkflowStateRepository } from "./workflow-repo";
 
 /**
  * The abstract notion of storage that provides us with the bare
@@ -34,7 +20,7 @@ export abstract class Storage {
    * Storage providers will implement this with their specific transaction
    * implementation handling
    */
-  abstract transaction(fn: (tx: TransactionHandle) => Promise<void>): Promise<void>;
+  abstract transaction(fn: () => Promise<void>): Promise<void>;
 
   /**
    * Factory to provide an instance of the concrete workflow state repository

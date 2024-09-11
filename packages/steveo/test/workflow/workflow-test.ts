@@ -1,18 +1,20 @@
 import { expect } from 'chai';
-import { Steveo } from '../../src/index';
+import { DummyConfiguration, Steveo, Storage, WorkflowStateRepository } from '../../src/index';
 import sinon from 'sinon';
+import { NullLogger } from 'null-logger';
 
 // Workflow integration tests
 describe('Workflow tests', () => {
+  const dummy: DummyConfiguration = { engine: 'dummy' };
+  const storage = sinon.createStubInstance(Storage);
+  const steveo = new Steveo(dummy, new NullLogger(), storage);
+
+  beforeEach(() => {
+    sinon.reset();
+  })
 
   test('should execute flow of two steps', async (done) => {
-    //
-    const steveo = new Steveo({
-      // TODO: SQS to localstack for tests
-    });
-
     const finalMock = sinon.spy();
-
     const flow = steveo
       .flow('test-workflow')
       .next({ trigger: 'test-workflow.step1-task', execute: (payload: { customerId: string }) => {
@@ -29,7 +31,7 @@ describe('Workflow tests', () => {
     await flow.publish({ order: 123 });
 
     await steveo.runner().process();
-    
+
     setTimeout(() => {
       expect(finalMock.callCount).eq(1);
       done();
@@ -48,24 +50,5 @@ describe('Workflow tests', () => {
 
   });
 
-  test('', async () => {
-
-  });
-
-  test('', async () => {
-
-  });
-
-  test('', async () => {
-
-  });
-
-  test('', async () => {
-
-  });
-
-  test('', async () => {
-
-  });
 });
 
