@@ -84,7 +84,7 @@ export const computeNextRuns = (
 // interval should be iCal String.
 // This function should be in sync with packages/scheduler-sequelize/src/helpers.ts
 export const computeNextRun = (
-  interval: string,
+  interval: string | null,
   {
     /**
      * @description Timezone to compute the next run
@@ -133,7 +133,7 @@ export const resetJob = async (
   events: TypedEventEmitter<Events>
 ) => {
   const nextRunAt = computeNextRun(job.repeatInterval, {
-    timezone: job.timezone,
+    timezone: job.timezone ?? 'UTC',
   });
   events.emit('reset', job, nextRunAt);
   return client.job.update({
@@ -210,7 +210,7 @@ const updateFailure = async (
   ) {
     const backoff = retryDelay(job.failures, backOffMs);
     const nextRunAt = moment()
-      .tz(job.timezone)
+      .tz(job.timezone ?? 'UTC')
       .add(backoff, 'milliseconds')
       .toISOString();
     await client.job.update({
@@ -267,7 +267,7 @@ const updateFinishTask = async (
     });
   }
   const nextRunAt = computeNextRun(job.repeatInterval, {
-    timezone: job.timezone,
+    timezone: job.timezone ?? 'UTC',
   });
   await client.job.update({
     where: namespace
