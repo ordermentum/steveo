@@ -1,5 +1,3 @@
-// TODO: Write Prisma persistence
-
 /**
  * Tracks the state of a workflow execution.
  */

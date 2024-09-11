@@ -6,13 +6,13 @@ import { WorkflowStateRepository } from './workflow-repo';
  * details will be unique to the storage providers.
  */
 export abstract class Storage {
-  constructor(private _name: string) {}
+  constructor(private $name: string) {}
 
   /**
    * Debug information only
    */
   get name() {
-    return this._name;
+    return this.$name;
   }
 
   /**

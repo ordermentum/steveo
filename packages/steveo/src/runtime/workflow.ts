@@ -1,6 +1,5 @@
 import { v4 } from 'uuid';
 import assert from 'node:assert';
-import nullLogger from 'null-logger';
 import { Step, StepUnknown } from './workflow-step';
 import { IProducer, IRegistry, Logger, TaskOptions } from '../common';
 import { WorkflowState } from './workflow-state';
@@ -38,33 +37,33 @@ export class Workflow {
 
   constructor(
     steveo: Steveo,
-    private _name: string,
-    private _topic: string,
-    private _registry: IRegistry,
-    private _producer: IProducer,
-    private _options?: TaskOptions
+    private $name: string,
+    private $topic: string,
+    private $registry: IRegistry,
+    private $producer: IProducer,
+    private $options?: TaskOptions
   ) {
-    assert(_name, `flowId must be specified`);
+    assert($name, `flowId must be specified`);
     assert(
       steveo.storage,
       `storage must be provided to steveo in order to use workflows`
     );
 
     this.storage = steveo.storage;
-    this.logger = steveo.logger ?? nullLogger;
+    this.logger = steveo.logger;
   }
 
   // Support the existing interface ITask by duck typing members
   get name() {
-    return this._name;
+    return this.$name;
   }
 
   get topic() {
-    return this._topic;
+    return this.$topic;
   }
 
   get options() {
-    return this._options;
+    return this.$options;
   }
 
   /**
@@ -86,18 +85,18 @@ export class Workflow {
 
       try {
         // sqs calls this method twice
-        await this._producer.initialize(this.topic);
+        await this.$producer.initialize(this.topic);
 
         await Promise.all(
           params.map((data: T) => {
-            this._registry.emit('task_send', this.topic, data);
-            return this._producer.send(this.topic, data, context?.key, context);
+            this.$registry.emit('task_send', this.topic, data);
+            return this.$producer.send(this.topic, data, context?.key, context);
           })
         );
 
-        this._registry.emit('task_success', this.topic, payload);
+        this.$registry.emit('task_success', this.topic, payload);
       } catch (err) {
-        this._registry.emit('task_failure', this.topic, err);
+        this.$registry.emit('task_failure', this.topic, err);
         throw err;
       }
     });
@@ -121,12 +120,12 @@ export class Workflow {
   async execute<T extends WorkflowPayload>(payload: T) {
     if (!this.steps.length) {
       throw new Error(
-        `Steps must be defined before a flow is executed ${this._name}`
+        `Steps must be defined before a flow is executed ${this.$name}`
       );
     }
 
     await this.storage.transaction(async () => {
-      const workflowId = payload.workflowId ?? `${this._name}-${v4()}`;
+      const workflowId = payload.workflowId ?? `${this.$name}-${v4()}`;
 
       if (!payload.workflowId) {
         await this.storage.workflow.createNewState(workflowId);
@@ -286,7 +285,7 @@ export class Workflow {
 
     if (!state) {
       throw new Error(
-        `State was not found for workflowId ${flowId} in workflow ${this._name}`
+        `State was not found for workflowId ${flowId} in workflow ${this.$name}`
       );
     }
 

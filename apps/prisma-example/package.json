@@ -38,6 +38,9 @@
     "schema": "prisma/schema.prisma"
   },
   "license": "Apache-2.0",
+  "peerDependencies": {
+    "steveo-steveo": "*"
+  },
   "dependencies": {
     "@ordermentum/lunartick": "^0.0.19",
     "@steveojs/scheduler-prisma": "*",

@@ -86,7 +86,7 @@ export class Steveo implements ISteveo {
       | SQSConfiguration
       | DummyConfiguration,
     logger: Logger = NULL_LOGGER,
-    storage?: Storage
+    storage: Storage | undefined = undefined
   ) {
     this._storage = storage;
     this.logger = logger;
@@ -229,6 +229,7 @@ export class Steveo implements ISteveo {
     await this.loadTasks();
     const runner = this.runner();
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!runner) {
       throw new Error('No runner found');
     }
@@ -262,6 +263,6 @@ export default (
     | RedisConfiguration
     | SQSConfiguration
     | DummyConfiguration,
-  logger: Logger = NULL_LOGGER,
+  logger: Logger,
   storage?: Storage
 ) => new Steveo(config, logger, storage);
