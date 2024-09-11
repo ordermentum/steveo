@@ -3,12 +3,10 @@ CREATE TABLE "WorkflowState" (
     "id" SERIAL NOT NULL,
     "flow_id" TEXT NOT NULL,
     "started" TIMESTAMPTZ(6) NOT NULL,
-    "current" INTEGER NOT NULL,
+    "current" TEXT NOT NULL,
     "initial" JSONB NOT NULL,
     "results" JSONB,
-    "failed_step" INTEGER,
-    "failed_err_msg" VARCHAR(255),
-    "failed_err_stack" VARCHAR(2000),
+    "errors" JSONB,
 
     CONSTRAINT "WorkflowState_pkey" PRIMARY KEY ("id")
 );

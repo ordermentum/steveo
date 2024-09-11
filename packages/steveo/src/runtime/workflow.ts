@@ -73,15 +73,30 @@ export class Workflow {
    */
   async execute<T extends WorkflowPayload>(payload: T) {
 
+    if (!this.steps?.length) {
+      throw new Error(`Steps must be defined before a flow is executed ${this._name}`);
+    }
+
     await this.storage.transaction(async (transaction) => {
       const workflowId = payload.workflowId ?? `${this._name}-${v4()}`;
 
       if (!payload.workflowId) {
-        // TODO: Save new workflow state in DB
-        // await this.db.
+        await this.storage.workflow.createNewState(workflowId);
       }
 
-      await this.executeForward(workflowId, payload, transaction);
+      const state = await this.loadState(workflowId);
+
+      if (!state.current) {
+        throw new Error(`Workflow ${workflowId} step was undefined`);
+      }
+
+      // If this step has failed then we pass control over to the rollback executor.
+      if (state.errors?.length) {
+        await this.rollbackContinue(workflowId, state, transaction);
+      }
+      else {
+        await this.executeForward(workflowId, payload, state);
+      }
     });
   }
 
@@ -118,74 +133,51 @@ export class Workflow {
   /**
    *
    */
-  private async executeForward(workflowId: string, payload: unknown, transaction: TransactionHandle): Promise<void> {
-
-    if (!this.steps?.length) {
-      throw new Error(`Steps must be defined before a flow is executed ${this._name}`);
-    }
-
-    const flowState = await this.loadState(workflowId);
+  private async executeForward(workflowId: string, payload: unknown, state: WorkflowState): Promise<void> {
 
     try {
-
-      if (flowState.current < 0) {
-        throw new Error(`Workflow ${workflowId} step ${flowState.current} cannot be less than zero`);
-      }
-
-      if (flowState.current > flowState.results.length) {
-        throw new Error(`Workflow ${workflowId} step ${flowState.current} exceeds available steps ${flowState.results.length}`)
-      }
-
-      // If this state has failed then we pass control over to the
-      // rollback executor.
-      if (flowState.failedStep) {
-        return this.rollbackContinue(flowState, transaction);
-      }
-
       // TODO: Add `source` to the workflow state to check the current steveo instance service name it is running in  and prevent accidental network boundary crossing
 
       // TODO: Protect out of order excution or step re-execution
 
-      const step = this.steps[flowState.current];
+      const step = this.steps[state.current];
 
       // TODO: Further step validation (What? what were you thinking Paul? 🤦)
 
       const result = await step.execute(payload);
 
-      // TODO: Update state
+      await this.storage.workflow.recordStepResult(workflowId, state.current, result);
 
-      flowState.results[flowState.current] = result;
-      flowState.current++;
+      state.results[state.current] = result;
 
-      this.storage.workflow.saveState(flowState.flowId, flowState);
+      // TODO: Move execution pointer to next execution step
+      const newStepId = '<TODO>';
+
+      await this.storage.workflow.updateCurrentStep(state.flowId, newStepId);
     }
     catch (err) {
-      const isError = err instanceof Error;
+      await this.storage.workflow.recordError(workflowId, state.current, String(err));
 
-      flowState.failedStep = flowState.current;
-      flowState.failedErrMsg = isError ? err.message : `Unknown error: ${err?.toString()}`;
-      flowState.failedErrStack = isError ? err.stack : undefined;
-
-      // TODO: Update database
-
-      // TODO: Start rollback execution
-
-      // TODO: Catch errors in rollback execution
-
-      throw err;
+      // TODO: Begin rollback
     }
   }
 
   /**
    *
    */
-  private async rollbackContinue(flowState: WorkflowState, _transaction: TransactionHandle): Promise<void> {
+  private async rollbackContinue(workflowId: string, state: WorkflowState, _transaction: TransactionHandle): Promise<void> {
 
-    // TODO: Execute rollback function
+    try {
+      // TODO: Execute rollback function
 
-    flowState.current--;
+      // TODO: Move execution pointer to previous step in rollback
 
-    // TODO: Update flow state properly
+      // TODO: Update flow state properly
+    }
+    catch (err) {
+      await this.storage.workflow.recordError(workflowId, state.current, String(err));
+
+    }
   }
 
   /**

@@ -19,10 +19,9 @@ export interface WorkflowState {
 
   /**
    * The current step being executed in this flow.
-   * Will increment under "happy path" flow where we are advancing through
-   * the steps, or decrementing if the flow has failed and rolling back.
+   * This will be the human readable step identifier.
    */
-  current: number;
+  current: string;
 
   /**
    * The initial value that started the flow execution.
@@ -35,20 +34,22 @@ export interface WorkflowState {
    * The next step in the chain will be executed with the result
    * of the previous step as its argument.
    */
-  results: unknown[];
+  results: Record<string, unknown>;
 
   /**
-   * Diagnostic and auditing tracking of the step a flow execution failed
+   * Diagnostic and auditing tracking of errors that occurred
    */
-  failedStep?: number;
+  errors?: {
+    /**
+     * Identifier of where the error occurred, which may be in the flow of step
+     * executions or while rolling back. The identifier is purposely ambiguous
+     * to allow for maximum flexbility in error capturing
+     */
+    identifier: string;
 
-  /**
-   * Diagnostic and auditing tracking of the failed error message
-   */
-  failedErrMsg?: string;
-
-  /**
-   * Diagnostic and auditing tracking of the failed error callstack
-   */
-  failedErrStack?: string;
+    /**
+     * General representation of a string serialised node Error object.
+     */
+    error: string;
+  }[];
 }

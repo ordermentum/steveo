@@ -7,21 +7,37 @@ export class WorkflowStateRepositoryPostgres implements WorkflowStateRepository 
 
   /**
    *
-   * @param flowId
-   * @returns
    */
-  loadState(_flowId: string): Promise<WorkflowState> {
-    return Promise.resolve({} as WorkflowState);
+  loadState(_workflowId: string): Promise<WorkflowState | undefined> {
+    throw new Error('Method not implemented.');
   }
 
   /**
    *
-   * @param flowId
-   * @param state
-   * @returns
    */
-  saveState(_flowId: string, _state: unknown): Promise<WorkflowState> {
-    return Promise.resolve({} as WorkflowState);
+  updateCurrentStep(_workflowId: string, _stepName: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   *
+   */
+  createNewState(_workflowId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   *
+   */
+  recordError(_workflowId: string, _identifier: string, _error: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   *
+   */
+  recordStepResult(_workflowId: string, _stepId: string, _result: unknown): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }
 
