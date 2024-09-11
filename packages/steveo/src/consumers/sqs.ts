@@ -28,8 +28,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.config = steveo?.config as SQSConfiguration;
-    this.logger = steveo?.logger ?? nullLogger;
+    this.config = steveo.config as SQSConfiguration;
+    this.logger = steveo.logger ?? nullLogger;
     this.sqsUrls = {};
     this.sqs = getSqsInstance(steveo.config);
     this.pool = steveo.pool;
@@ -63,7 +63,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
             const task = this.registry.getTask(topic);
             const waitToCommit =
-              (task?.options?.waitToCommit || this.config?.waitToCommit) ??
+              (task?.options?.waitToCommit || this.config.waitToCommit) ??
               false;
 
             if (!waitToCommit) {
@@ -83,7 +83,7 @@ class SqsRunner extends BaseRunner implements IRunner {
             await task.subscribe(data, runnerContext);
 
             this.logger.debug('Completed subscribe', c.topic, c.payload);
-            
+
             const completedContext = getContext(c.payload);
 
             if (waitToCommit) {
@@ -246,7 +246,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     return this.sqs
       .getQueueUrl({ QueueName: topic })
       .promise()
-      .then(data => data && data?.QueueUrl)
+      .then(data => data && data.QueueUrl)
       .catch(e => {
         this.logger.error(e);
         return null;
@@ -322,7 +322,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     return {
       deadLetterTargetArn: dlQueueArn,
-      maxReceiveCount: (task?.options.maxReceiveCount ?? 5).toString(),
+      maxReceiveCount: (task.options.maxReceiveCount ?? 5).toString(),
     };
   }
 

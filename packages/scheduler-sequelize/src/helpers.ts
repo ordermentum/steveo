@@ -219,7 +219,7 @@ export const timestampHelperFactory =
     task: TaskCallback<T, R>
   ) =>
   async (args: T, context: JobContext): Promise<any> => {
-    const jobId = args?.context?.job?.id ?? context?.job?.id;
+    const jobId = args.context?.job?.id ?? context.job?.id;
 
     if (!jobId) {
       try {
@@ -228,7 +228,7 @@ export const timestampHelperFactory =
         return null;
       }
     }
-    const jobInstance = await job?.findByPk(jobId);
+    const jobInstance = await job.findByPk(jobId);
 
     if (!jobInstance) {
       try {

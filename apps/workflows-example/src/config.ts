@@ -1,6 +1,9 @@
 import { load } from 'ts-dotenv';
-import Steveo, { SQSConfiguration }  from 'steveo-steveo';
-import { postgresFactory, PostgresStorageConfig } from '@steveojs/store.postgres';
+import Steveo, { SQSConfiguration } from 'steveo-steveo';
+import {
+  postgresFactory,
+  PostgresStorageConfig,
+} from '@steveojs/store.postgres';
 import bunyan from 'bunyan';
 
 export const logger = bunyan.createLogger({ name: 'workflow-test' });
@@ -10,7 +13,7 @@ const env = load({
   AWS_REGION: String,
   AWS_ACCESS_KEY: String,
   AWS_SECRET_ACCESS_KEY: String,
-  DATASOURCE_URL: String
+  DATASOURCE_URL: String,
 });
 
 const sqsConfig: SQSConfiguration = {
@@ -28,12 +31,10 @@ const sqsConfig: SQSConfiguration = {
 
 // Instantiate the concrete implementation of the postgres storage
 const postgresConfig: PostgresStorageConfig = {
-  datasourceUrl: env.DATASOURCE_URL
-}
+  datasourceUrl: env.DATASOURCE_URL,
+};
 
 const storage = postgresFactory(postgresConfig, logger);
 
 // Create steveo instance with messaging config and storage instance
 export const steveo = Steveo(sqsConfig, logger, storage);
-
-

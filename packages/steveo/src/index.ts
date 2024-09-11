@@ -2,6 +2,7 @@
 /* eslint-disable global-require */
 import NULL_LOGGER from 'null-logger';
 /* eslint-disable no-underscore-dangle */
+import assert from 'node:assert';
 import Task from './runtime/task';
 import Registry from './runtime/registry';
 import getRunner from './lib/runner';
@@ -30,7 +31,6 @@ import {
 
 import { Workflow } from './runtime/workflow';
 import { Storage } from './storage/storage';
-import assert from 'node:assert';
 
 export { Logger } from './common';
 export { Storage } from './storage/storage';
@@ -86,7 +86,7 @@ export class Steveo implements ISteveo {
       | SQSConfiguration
       | DummyConfiguration,
     logger: Logger = NULL_LOGGER,
-    storage?: Storage,
+    storage?: Storage
   ) {
     this._storage = storage;
     this.logger = logger;
@@ -107,15 +107,19 @@ export class Steveo implements ISteveo {
    * @param topic
    * @returns
    */
-  flow(
-    name: string,
-    options: TaskOptions = {}
-  ) {
+  flow(name: string, options: TaskOptions = {}) {
     const topic =
       options.queueName ??
       (this.config.queuePrefix ? `${this.config.queuePrefix}_${name}` : name);
 
-    const flow = new Workflow(this, name, topic, this.registry, this.producer, options);
+    const flow = new Workflow(
+      this,
+      name,
+      topic,
+      this.registry,
+      this.producer,
+      options
+    );
 
     this.registry.addNewTask(flow);
 
@@ -229,7 +233,7 @@ export class Steveo implements ISteveo {
       throw new Error('No runner found');
     }
 
-    const topics = customTopics?.length
+    const topics = customTopics.length
       ? customTopics
       : this.registry.getTopics();
 
@@ -259,5 +263,5 @@ export default (
     | SQSConfiguration
     | DummyConfiguration,
   logger: Logger = NULL_LOGGER,
-  storage?: Storage,
+  storage?: Storage
 ) => new Steveo(config, logger, storage);

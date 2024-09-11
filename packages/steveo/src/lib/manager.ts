@@ -31,8 +31,8 @@ export class Manager {
   async stop() {
     this.logger.debug(`signal runner and producer to terminate`);
     await Promise.all([
-      this.steveo?.runner()?.stop(),
-      this.steveo?.producer?.stop(),
+      this.steveo.runner().stop(),
+      this.steveo.producer.stop(),
     ]);
 
     await this.shutdown();
@@ -46,7 +46,7 @@ export class Manager {
     }
 
     let count = 0;
-    const tries = this?.steveo.config?.terminationWaitCount || 180;
+    const tries = this.steveo.config.terminationWaitCount || 180;
     while (!this.isTerminated) {
       if (count === tries) {
         this.forceTerminate();
@@ -57,7 +57,7 @@ export class Manager {
       count += 1;
     }
 
-    this.steveo.registry?.emit('terminate', true);
+    this.steveo.registry.emit('terminate', true);
   }
 
   forceTerminate() {

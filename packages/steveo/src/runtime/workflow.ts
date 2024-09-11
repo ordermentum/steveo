@@ -1,11 +1,11 @@
 import { v4 } from 'uuid';
-import { Step, StepUnknown } from "./workflow-step";
 import assert from 'node:assert';
-import { IProducer, IRegistry, Logger, TaskOptions } from '../common';
 import nullLogger from 'null-logger';
+import { Step, StepUnknown } from './workflow-step';
+import { IProducer, IRegistry, Logger, TaskOptions } from '../common';
 import { WorkflowState } from './workflow-state';
 import { Storage } from '../storage/storage';
-import { Steveo } from '../';
+import { Steveo } from '..';
 
 export interface WorkflowPayload {
   workflowId?: string;
@@ -22,7 +22,6 @@ interface ExecuteContext {
 }
 
 export class Workflow {
-
   logger: Logger;
 
   /**
@@ -43,19 +42,30 @@ export class Workflow {
     private _topic: string,
     private _registry: IRegistry,
     private _producer: IProducer,
-    private _options?: TaskOptions,
+    private _options?: TaskOptions
   ) {
     assert(_name, `flowId must be specified`);
-    assert(steveo.storage, `storage must be provided to steveo in order to use workflows`);
+    assert(
+      steveo.storage,
+      `storage must be provided to steveo in order to use workflows`
+    );
 
     this.storage = steveo.storage;
-    this.logger = steveo?.logger ?? nullLogger;
+    this.logger = steveo.logger ?? nullLogger;
   }
 
   // Support the existing interface ITask by duck typing members
-  get name() { return this._name; }
-  get topic() { return this._topic; }
-  get options() { return this._options; }
+  get name() {
+    return this._name;
+  }
+
+  get topic() {
+    return this._topic;
+  }
+
+  get options() {
+    return this._options;
+  }
 
   /**
    *
@@ -71,7 +81,6 @@ export class Workflow {
    * @param payload
    */
   async publish<T>(payload: T | T[], context?: { key: string }) {
-
     await this.storage.transaction(async () => {
       const params = Array.isArray(payload) ? payload : [payload];
 
@@ -87,13 +96,11 @@ export class Workflow {
         );
 
         this._registry.emit('task_success', this.topic, payload);
-      }
-      catch (err) {
+      } catch (err) {
         this._registry.emit('task_failure', this.topic, err);
         throw err;
       }
     });
-
   }
 
   /**
@@ -112,9 +119,10 @@ export class Workflow {
    *
    */
   async execute<T extends WorkflowPayload>(payload: T) {
-
-    if (!this.steps?.length) {
-      throw new Error(`Steps must be defined before a flow is executed ${this._name}`);
+    if (!this.steps.length) {
+      throw new Error(
+        `Steps must be defined before a flow is executed ${this._name}`
+      );
     }
 
     await this.storage.transaction(async () => {
@@ -158,7 +166,11 @@ export class Workflow {
 
       const result = await step.execute(payload);
 
-      await this.storage.workflow.recordStepResult(workflowId, state.current, result);
+      await this.storage.workflow.recordStepResult(
+        workflowId,
+        state.current,
+        result
+      );
 
       state.results[state.current] = result;
 
@@ -166,9 +178,12 @@ export class Workflow {
       const newStepId = '<TODO>';
 
       await this.storage.workflow.updateCurrentStep(state.flowId, newStepId);
-    }
-    catch (err) {
-      await this.storage.workflow.recordError(workflowId, state.current, String(err));
+    } catch (err) {
+      await this.storage.workflow.recordError(
+        workflowId,
+        state.current,
+        String(err)
+      );
 
       // TODO: Begin rollback
     }
@@ -184,18 +199,24 @@ export class Workflow {
 
     let current: StepUnknown | undefined = step;
 
-    this.logger.info({ msg: `Execute rollback`, workflowId, step: step.trigger, payload });
+    this.logger.info({
+      msg: `Execute rollback`,
+      workflowId,
+      step: step.trigger,
+      payload,
+    });
 
     while (current) {
       try {
         // TODO: Execute rollback function
-
         // TODO: Move execution pointer to previous step in rollback
-
         // TODO: Update flow state properly
-      }
-      catch (err) {
-        await this.storage.workflow.recordError(workflowId, state.current, String(err));
+      } catch (err) {
+        await this.storage.workflow.recordError(
+          workflowId,
+          state.current,
+          String(err)
+        );
       }
 
       current = this.getPreviousStep(current.trigger);
@@ -264,11 +285,11 @@ export class Workflow {
     }
 
     if (!state) {
-      throw new Error(`State was not found for workflowId ${flowId} in workflow ${this._name}`);
+      throw new Error(
+        `State was not found for workflowId ${flowId} in workflow ${this._name}`
+      );
     }
 
     return state;
   }
 }
-
-

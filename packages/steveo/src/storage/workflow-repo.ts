@@ -1,11 +1,10 @@
-import { WorkflowState } from "../runtime/workflow-state";
+import { WorkflowState } from '../runtime/workflow-state';
 
 /**
  * Repository contract for workflow state persistence.
  * See `storage.postgres` for an implementation example.
  */
 export interface WorkflowStateRepository {
-
   /**
    * Given a workflow ID, load the current state from storage
    */
@@ -27,14 +26,19 @@ export interface WorkflowStateRepository {
    * This may record any number of errors and as such is flexible around
    * the identifier that is provided.
    */
-  recordError(workflowId: string, identifier: string, error: string): Promise<void>;
+  recordError(
+    workflowId: string,
+    identifier: string,
+    error: string
+  ): Promise<void>;
 
   /**
    * Record a workflow step execution result. Only one result
    * may be stored per step.
    */
-  recordStepResult(workflowId: string, stepId: string, result: unknown): Promise<void>;
+  recordStepResult(
+    workflowId: string,
+    stepId: string,
+    result: unknown
+  ): Promise<void>;
 }
-
-
-

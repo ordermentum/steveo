@@ -21,8 +21,8 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.config = steveo?.config as RedisConfiguration;
-    this.logger = steveo?.logger ?? nullLogger;
+    this.config = steveo.config as RedisConfiguration;
+    this.logger = steveo.logger ?? nullLogger;
     this.redis = redisConf.redis(this.config);
     this.pool = steveo.pool;
   }
@@ -166,7 +166,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async shutdown() {
-    this.redis?.quit(() => {});
+    this.redis.quit(() => {});
   }
 }
 

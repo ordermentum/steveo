@@ -33,9 +33,9 @@ class KafkaRunner
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.config = steveo?.config as KafkaConfiguration;
-    this.pool = steveo?.pool;
-    this.logger = steveo?.logger ?? nullLogger;
+    this.config = steveo.config as KafkaConfiguration;
+    this.pool = steveo.pool;
+    this.logger = steveo.logger ?? nullLogger;
     this.consumerReady = false;
     this.consumer = new Kafka.KafkaConsumer(
       {

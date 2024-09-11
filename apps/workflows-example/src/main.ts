@@ -5,26 +5,24 @@ import { placeOrderStep } from './steps/place-order.step';
 import { Customer } from './types/customer';
 
 (async () => {
-
   // We are going to create a fictitious workflow that follows
   // the creation of an order through to payment being taken
   const flow = steveo
     .flow('order-e2e-flow')
     .next({
       trigger: 'placer-order-step',
-      execute: placeOrderStep
+      execute: placeOrderStep,
     })
     .next({
       trigger: 'create-invoice-step',
-      execute: createInvoiceStep
+      execute: createInvoiceStep,
     });
-
 
   const customer: Customer & WorkflowPayload = {
     workflowId: undefined,
     customerId: 'cust-123',
     firstName: 'mr',
-    lastName: 'tester'
+    lastName: 'tester',
   };
 
   // Manual trigger for testing
@@ -32,5 +30,4 @@ import { Customer } from './types/customer';
     logger.debug('Exception', ex);
     process.exit();
   });
-
 })();

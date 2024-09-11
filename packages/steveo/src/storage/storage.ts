@@ -1,4 +1,4 @@
-import { WorkflowStateRepository } from "./workflow-repo";
+import { WorkflowStateRepository } from './workflow-repo';
 
 /**
  * The abstract notion of storage that provides us with the bare
@@ -6,15 +6,14 @@ import { WorkflowStateRepository } from "./workflow-repo";
  * details will be unique to the storage providers.
  */
 export abstract class Storage {
-
-  constructor(
-    private _name: string
-  ) {}
+  constructor(private _name: string) {}
 
   /**
    * Debug information only
    */
-  get name() { return this._name; }
+  get name() {
+    return this._name;
+  }
 
   /**
    * Storage providers will implement this with their specific transaction
@@ -27,4 +26,3 @@ export abstract class Storage {
    */
   abstract workflow: WorkflowStateRepository;
 }
-

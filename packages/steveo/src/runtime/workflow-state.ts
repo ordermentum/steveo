@@ -1,11 +1,9 @@
-
 // TODO: Write Prisma persistence
 
 /**
  * Tracks the state of a workflow execution.
  */
 export interface WorkflowState {
-
   /**
    * The unique key of the workflow execution instance.
    */

@@ -1,9 +1,7 @@
 import { Order } from '../types/order';
 import { Invoice } from '../types/invoice';
 
-
 export function createInvoiceStep(order: Order): Invoice {
-
   // ...
   // Do fancy invoice creation steps
   // ...
@@ -11,9 +9,6 @@ export function createInvoiceStep(order: Order): Invoice {
   return {
     invoiceDate: new Date(),
     customerId: order.customerId,
-    reference: `INV-823923`
+    reference: `INV-823923`,
   };
 }
-
-
-

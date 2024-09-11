@@ -1,16 +1,14 @@
 import Redis from 'ioredis';
 
-const REDIS_URL = process.env.REDIS_URL;
+const { REDIS_URL } = process.env;
 
 const redisOptions = {
-  retryStrategy: (times: number) => {
+  retryStrategy: (times: number) =>
     // logger.error('attempting to connect/reconnect to redis');
-    return Math.min(times * 100, 3000);
-  },
-  reconnectOnError: (_err: unknown) => {
+    Math.min(times * 100, 3000),
+  reconnectOnError: (_err: unknown) =>
     // logger.error('connection error', err);
-    return true;
-  },
+    true,
 } as Record<string, any>;
 
 if (process.env.REDIS_USE_TLS === 'true') {
