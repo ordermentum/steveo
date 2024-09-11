@@ -96,4 +96,49 @@ describe('Workflow state postgres repo', () => {
     expect((state?.results.step1 as Result).value).to.eq(111);
     expect((state?.results.step2 as Result).value).to.eq(999);
   });
+
+  it('should record flow completion', async () => {
+    const workflowId = v4();
+
+    await repo.createNewState(workflowId);
+    await repo.recordCompletion(workflowId);
+
+    const state = await repo.loadState(workflowId);
+
+    expect(state?.current).to.be.null;
+    expect(state?.completed).not.to.be.null;
+  });
+
+  it('should record rollback step', async () => {
+    const workflowId = v4();
+
+    await repo.createNewState(workflowId);
+
+    await repo.recordStepResult(workflowId, 'step1', { value: 111 });
+    await repo.recordStepResult(workflowId, 'step2', { value: 999 });
+
+    await repo.startState({
+      workflowId,
+      current: 'step1',
+      initial: { test: 123 },
+    });
+
+    await repo.recordStepResult(workflowId, 'step2', { xyz: 'test' });
+
+    const startState = await repo.loadState(workflowId);
+
+    expect(startState?.current).to.eq('step2');
+
+    // Rollback to the previous step
+    await repo.recordRollbackStep(workflowId, 'step1');
+
+    const finalState = await repo.loadState(workflowId);
+
+    expect(finalState?.current).to.eq('step1');
+
+    const state = await repo.loadState(workflowId);
+
+    expect(state?.current).to.eq('step1');
+    expect(state?.completed).to.be.null;
+  });
 });

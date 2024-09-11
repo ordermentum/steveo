@@ -14,6 +14,11 @@ export interface WorkflowState {
   started: Date;
 
   /**
+   * The time the flow completed
+   */
+  completed?: Date;
+
+  /**
    * The current step being executed in this flow.
    * This will be the human readable step identifier.
    */

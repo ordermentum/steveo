@@ -121,7 +121,7 @@ export class WorkflowStateRepositoryPostgres
    */
   async recordStepResult(
     workflowId: string,
-    stepId: string,
+    nextStep: string,
     result: unknown
   ): Promise<void> {
     const existing = await this.prisma.workflowState.findUnique({
@@ -137,14 +137,46 @@ export class WorkflowStateRepositoryPostgres
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (existing?.results as Record<string, unknown>) ?? {};
 
-    results[stepId] = result;
+    results[nextStep] = result;
 
     await this.prisma.workflowState.update({
       where: {
         workflowId,
       },
       data: {
+        current: nextStep,
         results: results as InputJsonValue,
+      },
+    });
+  }
+
+  /**
+   *
+   */
+  async recordCompletion(workflowId: string): Promise<void> {
+    await this.prisma.workflowState.update({
+      where: {
+        workflowId,
+      },
+      data: {
+        completed: new Date(),
+      },
+    });
+  }
+
+  /**
+   *
+   */
+  async recordRollbackStep(
+    workflowId: string,
+    nextStep: string
+  ): Promise<void> {
+    await this.prisma.workflowState.update({
+      where: {
+        workflowId,
+      },
+      data: {
+        current: nextStep,
       },
     });
   }

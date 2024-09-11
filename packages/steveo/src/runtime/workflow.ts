@@ -128,7 +128,7 @@ export class Workflow {
       const workflowId = payload.workflowId ?? `${this.$name}-${v4()}`;
 
       if (!payload.workflowId) {
-        await this.storage.workflow.createNewState(workflowId);
+        await this.storage.workflow.workflowInit(workflowId);
       }
 
       const state = await this.loadState(workflowId);
@@ -158,14 +158,11 @@ export class Workflow {
 
     try {
       // TODO: Add `source` to the workflow state to check the current steveo instance service name it is running in  and prevent accidental network boundary crossing
-
       // TODO: Protect out of order excution or step re-execution
-
-      // TODO: Further step validation (What? what were you thinking Paul? 🤦)
 
       const result = await step.execute(payload);
 
-      await this.storage.workflow.recordStepResult(
+      await this.storage.workflow.stepExecuteResult(
         workflowId,
         state.current,
         result
@@ -173,21 +170,26 @@ export class Workflow {
 
       state.results[state.current] = result;
 
-      // TODO: Move execution pointer to next execution step
-      const newStepId = '<TODO>';
+      // Move execution pointer to next execution step and
+      // mark the flow completed if there isn't one.
+      const next = this.getNextStep(context.step.trigger);
+      if (!next) {
+        await this.storage.workflow.workflowCompleted(workflowId);
+        return;
+      }
 
-      await this.storage.workflow.updateCurrentStep(
+      await this.storage.workflow.stepPointerUpdate(
         state.workflowId,
-        newStepId
+        next.trigger
       );
     } catch (err) {
-      await this.storage.workflow.recordError(
+      await this.storage.workflow.stepExecuteError(
         workflowId,
         state.current,
         String(err)
       );
 
-      // TODO: Begin rollback
+      await this.executeRollback(context);
     }
   }
 
@@ -210,11 +212,21 @@ export class Workflow {
 
     while (current) {
       try {
-        // TODO: Execute rollback function
-        // TODO: Move execution pointer to previous step in rollback
-        // TODO: Update flow state properly
+        await step.rollback?.(state);
+
+        const previous = this.getPreviousStep(step.trigger);
+
+        if (previous) {
+          await this.storage.workflow.rollbackStepExecute(
+            workflowId,
+            previous.trigger
+          );
+        } else {
+          // There are no more steps, the rollback has completed and so has the workflow
+          await this.storage.workflow.workflowCompleted(workflowId);
+        }
       } catch (err) {
-        await this.storage.workflow.recordError(
+        await this.storage.workflow.stepExecuteError(
           workflowId,
           state.current,
           String(err)
@@ -244,24 +256,24 @@ export class Workflow {
     return this.steps.at(index - 1);
   }
 
-  // /**
-  //  *
-  //  * @param name
-  //  * @returns
-  //  */
-  // private getNextStep(name: string): StepUnknown | undefined {
-  //   const index = this.getStepIndex(name);
+  /**
+   *
+   * @param name
+   * @returns
+   */
+  private getNextStep(name: string): StepUnknown | undefined {
+    const index = this.getStepIndex(name);
 
-  //   if (index === undefined) {
-  //     throw new Error(`Step ${name} was not found in workflow ${this.name}`);
-  //   }
+    if (index === undefined) {
+      throw new Error(`Step ${name} was not found in workflow ${this.name}`);
+    }
 
-  //   if (index >= this.steps.length) {
-  //     return undefined;
-  //   }
+    if (index >= this.steps.length) {
+      return undefined;
+    }
 
-  //   return this.steps.at(index - 1);
-  // }
+    return this.steps.at(index - 1);
+  }
 
   /**
    *
@@ -280,7 +292,7 @@ export class Workflow {
    * @returns
    */
   private async loadState(flowId: string): Promise<WorkflowState> {
-    const state = await this.storage.workflow.loadState(flowId);
+    const state = await this.storage.workflow.workflowLoad(flowId);
 
     if (!flowId) {
       throw new Error(`workflowId was empty for ${this.name} run`);

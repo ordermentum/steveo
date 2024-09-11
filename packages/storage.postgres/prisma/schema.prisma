@@ -11,6 +11,7 @@ datasource db {
 model WorkflowState {
   workflowId        String      @id
   started           DateTime    @db.Timestamptz(6)
+  completed         DateTime?   @db.Timestamptz(6)
   current           String?
   initial           Json?
   results           Json?
