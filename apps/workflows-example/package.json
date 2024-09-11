@@ -24,11 +24,9 @@
     "url": "https://github.com/ordermentum/steveo.git"
   },
   "license": "Apache-2.0",
-  "peerDependencies": {
-    "steveo-steveo": "*",
-    "@steveojs/store.postgres": "*"
-  },
   "dependencies": {
+    "steveo": "*",
+    "@steveojs/store.postgres": "*",
     "aws-sdk": "^2.77.0",
     "bluebird": "^3.5.0",
     "bunyan": "^1.8.15",

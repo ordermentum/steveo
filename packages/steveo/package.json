@@ -1,5 +1,5 @@
 {
-  "name": "steveo-steveo",
+  "name": "steveo",
   "version": "6.7.0",
   "description": "A Task Pub/Sub Background processing library",
   "main": "lib/index.js",

@@ -1,4 +1,4 @@
-import { Storage, Logger, WorkflowStateRepository } from 'steveo-steveo';
+import { Storage, Logger, WorkflowStateRepository } from 'steveo';
 import { PrismaClient } from '@prisma/client';
 import { WorkflowStateRepositoryPostgres } from '../repo/workflow.repo';
 import { PostgresStorageConfig } from './postgres.config';

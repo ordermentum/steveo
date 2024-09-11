@@ -1,4 +1,4 @@
-import { WorkflowPayload } from 'steveo-steveo';
+import { WorkflowPayload } from 'steveo';
 import { logger, steveo } from './config';
 import { createInvoiceStep } from './steps/order-fulfilment.step';
 import { placeOrderStep } from './steps/place-order.step';

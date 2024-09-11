@@ -1,7 +1,6 @@
-import Steveo from 'steveo';
+import Steveo, { SQSConfiguration } from 'steveo';
 import https from 'https';
 import config from 'config';
-import { SQSConfiguration } from 'steveo-steveo';
 import path from 'path';
 import logger from './logger';
 

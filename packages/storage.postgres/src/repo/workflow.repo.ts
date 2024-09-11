@@ -1,4 +1,4 @@
-import { WorkflowState, WorkflowStateRepository } from 'steveo-steveo';
+import { WorkflowState, WorkflowStateRepository } from 'steveo';
 
 /**
  *

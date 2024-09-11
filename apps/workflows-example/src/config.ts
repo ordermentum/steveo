@@ -1,5 +1,5 @@
 import { load } from 'ts-dotenv';
-import Steveo, { SQSConfiguration } from 'steveo-steveo';
+import Steveo, { SQSConfiguration } from 'steveo';
 import {
   postgresFactory,
   PostgresStorageConfig,
