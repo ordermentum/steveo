@@ -5,7 +5,7 @@ export interface WorkflowState {
   /**
    * The unique key of the workflow execution instance.
    */
-  flowId: string;
+  workflowId: string;
 
   /**
    * The time the flow execution began.
@@ -46,6 +46,6 @@ export interface WorkflowState {
     /**
      * General representation of a string serialised node Error object.
      */
-    error: string;
+    error: unknown;
   }[];
 }

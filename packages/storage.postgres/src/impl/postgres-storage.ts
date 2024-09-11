@@ -1,7 +1,7 @@
 import { Storage, Logger, WorkflowStateRepository } from 'steveo';
 import { PrismaClient } from '@prisma/client';
-import { WorkflowStateRepositoryPostgres } from '../repo/workflow.repo';
-import { PostgresStorageConfig } from './postgres.config';
+import { WorkflowStateRepositoryPostgres } from '../repo/workflow-postgres-repo';
+import { PostgresStorageConfig } from './postgres-config';
 
 /**
  *
@@ -18,7 +18,7 @@ class PostgresStorage extends Storage {
       datasourceUrl: this.config.datasourceUrl,
     });
 
-    this.workflow = new WorkflowStateRepositoryPostgres();
+    this.workflow = new WorkflowStateRepositoryPostgres(this.prisma);
   }
 
   /**

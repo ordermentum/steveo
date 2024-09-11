@@ -22,6 +22,15 @@ export interface WorkflowStateRepository {
   createNewState(workflowId: string): Promise<void>;
 
   /**
+   *
+   */
+  startState(start: {
+    workflowId: string;
+    current: string;
+    initial: unknown;
+  }): Promise<void>;
+
+  /**
    * Record an error against the current workflow.
    * This may record any number of errors and as such is flexible around
    * the identifier that is provided.
@@ -29,7 +38,7 @@ export interface WorkflowStateRepository {
   recordError(
     workflowId: string,
     identifier: string,
-    error: string
+    error: unknown
   ): Promise<void>;
 
   /**

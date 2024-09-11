@@ -9,11 +9,10 @@ datasource db {
 }
 
 model WorkflowState {
-  id                Int         @id @default(autoincrement())
-  flowId            String      @map("flow_id") @unique
+  workflowId        String      @id
   started           DateTime    @db.Timestamptz(6)
-  current           String
-  initial           Json
+  current           String?
+  initial           Json?
   results           Json?
   errors            Json?
 }

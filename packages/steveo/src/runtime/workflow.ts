@@ -176,7 +176,10 @@ export class Workflow {
       // TODO: Move execution pointer to next execution step
       const newStepId = '<TODO>';
 
-      await this.storage.workflow.updateCurrentStep(state.flowId, newStepId);
+      await this.storage.workflow.updateCurrentStep(
+        state.workflowId,
+        newStepId
+      );
     } catch (err) {
       await this.storage.workflow.recordError(
         workflowId,
