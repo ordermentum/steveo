@@ -3,7 +3,7 @@ import Steveo, { SQSConfiguration } from 'steveo';
 import {
   postgresFactory,
   PostgresStorageConfig,
-} from '@steveojs/store.postgres';
+} from '@steveojs/store-postgres';
 import bunyan from 'bunyan';
 
 export const logger = bunyan.createLogger({ name: 'workflow-test' });
