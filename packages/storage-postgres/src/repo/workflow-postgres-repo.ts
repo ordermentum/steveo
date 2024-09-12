@@ -13,9 +13,25 @@ export class WorkflowStateRepositoryPostgres
   constructor(private prisma: PrismaClient) {}
 
   /**
+   * Create a brand new workflow state given the identifier.
+   * The ID must be unique.
+   */
+  async workflowInit(workflowId: string): Promise<void> {
+    const result = await this.prisma.workflowState.create({
+      data: {
+        workflowId,
+        started: new Date(),
+        current: undefined,
+      },
+    });
+
+    assert(result);
+  }
+
+  /**
    *
    */
-  async loadState(workflowId: string): Promise<WorkflowState | undefined> {
+  async workflowLoad(workflowId: string): Promise<WorkflowState | undefined> {
     const result = await this.prisma.workflowState.findUnique({
       where: {
         workflowId,
@@ -31,41 +47,9 @@ export class WorkflowStateRepositoryPostgres
 
   /**
    *
-   */
-  async updateCurrentStep(workflowId: string, stepName: string): Promise<void> {
-    const result = await this.prisma.workflowState.update({
-      where: {
-        workflowId,
-      },
-      data: {
-        current: stepName,
-      },
-    });
-
-    assert(result);
-  }
-
-  /**
-   * Create a brand new workflow state given the identifier.
-   * The ID must be unique.
-   */
-  async createNewState(workflowId: string): Promise<void> {
-    const result = await this.prisma.workflowState.create({
-      data: {
-        workflowId,
-        started: new Date(),
-        current: undefined,
-      },
-    });
-
-    assert(result);
-  }
-
-  /**
-   *
    * @param start
    */
-  async startState(start: {
+  async workflowStarted(start: {
     workflowId: string;
     current: string;
     initial: unknown;
@@ -86,7 +70,37 @@ export class WorkflowStateRepositoryPostgres
   /**
    *
    */
-  async recordError(
+  async workflowCompleted(workflowId: string): Promise<void> {
+    await this.prisma.workflowState.update({
+      where: {
+        workflowId,
+      },
+      data: {
+        completed: new Date(),
+      },
+    });
+  }
+
+  /**
+   *
+   */
+  async stepPointerUpdate(workflowId: string, stepName: string): Promise<void> {
+    const result = await this.prisma.workflowState.update({
+      where: {
+        workflowId,
+      },
+      data: {
+        current: stepName,
+      },
+    });
+
+    assert(result);
+  }
+
+  /**
+   *
+   */
+  async stepExecuteError(
     workflowId: string,
     identifier: string,
     error: unknown
@@ -119,7 +133,7 @@ export class WorkflowStateRepositoryPostgres
   /**
    *
    */
-  async recordStepResult(
+  async stepExecuteResult(
     workflowId: string,
     nextStep: string,
     result: unknown
@@ -153,21 +167,7 @@ export class WorkflowStateRepositoryPostgres
   /**
    *
    */
-  async recordCompletion(workflowId: string): Promise<void> {
-    await this.prisma.workflowState.update({
-      where: {
-        workflowId,
-      },
-      data: {
-        completed: new Date(),
-      },
-    });
-  }
-
-  /**
-   *
-   */
-  async recordRollbackStep(
+  async rollbackStepExecute(
     workflowId: string,
     nextStep: string
   ): Promise<void> {

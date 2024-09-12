@@ -8,6 +8,7 @@ import {
   ProducerTopicConfig,
 } from 'node-rdkafka';
 import { Workflow } from './runtime/workflow';
+import { TaskOptions } from './types/task-options';
 
 /**
  * FIXME: for callbacks that don't take an argument, need to specify
@@ -117,12 +118,6 @@ export interface Configuration {
   middleware?: Middleware[];
 }
 
-export type Attribute = {
-  name: string;
-  dataType: string;
-  value: string;
-};
-
 export type Pool<T> = GenericPool<T>;
 
 export interface IEvent {
@@ -130,25 +125,18 @@ export interface IEvent {
   on(eventName: string, ...any): any;
 }
 
+export type RegistryElem = ITask | Workflow | StepRuntime;
+
 export type TaskList = {
-  [key: string]: ITask | Workflow;
+  [key: string]: RegistryElem;
 };
 
-export type TaskOptions = {
-  attributes?: Attribute[];
-  queueName?: string;
-  waitToCommit?: boolean;
-
-  fifo?: boolean;
-  deadLetterQueue?: boolean;
-  maxReceiveCount?: number;
-
-  // num_partitions and replication_factor are used for kafka
-  replication_factor?: number;
-  num_partitions?: number;
-};
-
-export type RegistryElem = ITask | Workflow;
+export interface StepRuntime<T = any, R = any> {
+  subscribe: Callback<T, R>;
+  name: string;
+  topic: string;
+  options?: TaskOptions;
+}
 
 export interface IRegistry {
   registeredTasks: TaskList;
@@ -156,7 +144,7 @@ export interface IRegistry {
   items: Map<string, string>;
   heartbeat: number;
 
-  addNewTask(task: RegistryElem, topic?: string): void;
+  addNewTask(task: RegistryElem): void;
   removeTask(task: RegistryElem): void;
   getTopics(): string[];
   getTaskTopics(): string[];

@@ -1,14 +1,13 @@
 import { v4 } from 'uuid';
+import bind from 'lodash.bind';
 import assert from 'node:assert';
 import { Step, StepUnknown } from './workflow-step';
-import { IProducer, IRegistry, Logger, TaskOptions } from '../common';
+import { IProducer, IRegistry, Logger } from '../common';
 import { WorkflowState } from './workflow-state';
 import { Storage } from '../storage/storage';
 import { Steveo } from '..';
-
-export interface WorkflowPayload {
-  workflowId?: string;
-}
+import { WorkflowPayload } from '../types/workflow';
+import { TaskOptions } from '../types/task-options';
 
 interface ExecuteContext {
   workflowId: string;
@@ -51,6 +50,9 @@ export class Workflow {
 
     this.storage = steveo.storage;
     this.logger = steveo.logger;
+
+    // Register the workflow, this will make sure we can start a workflow execution
+    this.$registry.addNewTask(this);
   }
 
   // Support the existing interface ITask by duck typing members
@@ -71,6 +73,16 @@ export class Workflow {
    */
   next<State, Result>(step: Step<State, Result>): Workflow {
     this.steps.push(step as Step<unknown, unknown>);
+
+    const subscribe = bind(this.publish, this);
+    const taskName = `${this.name}.${step.name}`;
+
+    this.$registry.addNewTask({
+      subscribe,
+      name: taskName,
+      topic: step.topic ?? taskName,
+      options: this.options,
+    });
 
     return this;
   }
@@ -107,17 +119,8 @@ export class Workflow {
    * On a Task this will execute the configured handler, but for a workflow
    * it will load the current state and execute the step, or continue
    * executing the rollback chain if there was an unrecoverable error.
-   *
-   * (Yes the name is confusing, I'm following precedent 😁)
    */
   async subscribe<T extends WorkflowPayload>(payload: T) {
-    return this.execute(payload);
-  }
-
-  /**
-   *
-   */
-  async execute<T extends WorkflowPayload>(payload: T) {
     if (!this.steps.length) {
       throw new Error(
         `Steps must be defined before a flow is executed ${this.$name}`
@@ -172,7 +175,7 @@ export class Workflow {
 
       // Move execution pointer to next execution step and
       // mark the flow completed if there isn't one.
-      const next = this.getNextStep(context.step.trigger);
+      const next = this.getNextStep(context.step.name);
       if (!next) {
         await this.storage.workflow.workflowCompleted(workflowId);
         return;
@@ -180,7 +183,7 @@ export class Workflow {
 
       await this.storage.workflow.stepPointerUpdate(
         state.workflowId,
-        next.trigger
+        next.name
       );
     } catch (err) {
       await this.storage.workflow.stepExecuteError(
@@ -206,7 +209,7 @@ export class Workflow {
     this.logger.info({
       msg: `Execute rollback`,
       workflowId,
-      step: step.trigger,
+      step: step.name,
       payload,
     });
 
@@ -214,12 +217,12 @@ export class Workflow {
       try {
         await step.rollback?.(state);
 
-        const previous = this.getPreviousStep(step.trigger);
+        const previous = this.getPreviousStep(step.name);
 
         if (previous) {
           await this.storage.workflow.rollbackStepExecute(
             workflowId,
-            previous.trigger
+            previous.name
           );
         } else {
           // There are no more steps, the rollback has completed and so has the workflow
@@ -233,7 +236,7 @@ export class Workflow {
         );
       }
 
-      current = this.getPreviousStep(current.trigger);
+      current = this.getPreviousStep(current.name);
     }
   }
 
@@ -281,7 +284,7 @@ export class Workflow {
    * @returns
    */
   private getStepIndex(name: string): number | undefined {
-    const index = this.steps.findIndex(s => s.trigger === name);
+    const index = this.steps.findIndex(s => s.name === name);
 
     return index < 0 ? undefined : index;
   }

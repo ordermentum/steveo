@@ -10,11 +10,11 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
-  Attribute,
 } from '../common';
 
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
+import { Attribute } from '../types/task-options';
 
 class SqsProducer extends BaseProducer implements IProducer {
   config: SQSConfiguration;
@@ -191,6 +191,14 @@ class SqsProducer extends BaseProducer implements IProducer {
     };
   }
 
+  /**
+   *
+   * @param msg
+   * @param topic
+   * @param key Message grouping key
+   * @param context
+   * @returns
+   */
   getPayload(
     msg: any,
     topic: string,

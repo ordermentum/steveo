@@ -18,16 +18,16 @@ describe('Workflow tests', () => {
     const flow = steveo
       .flow('test-workflow')
       .next({
-        trigger: 'test-workflow.step1-task',
-        execute: (payload: { customerId: string }) =>
+        name: 'step1-task',
+        execute: (customer: { customerId: string }) =>
           // Demonstrating result augmentation
           ({
             final: 'xyz',
-            ...payload,
+            ...customer,
           }),
       })
       .next({
-        trigger: 'test-workflow.step2-task',
+        name: 'step2-task',
         execute: () => {
           finalMock();
         },

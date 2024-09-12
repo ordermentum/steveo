@@ -5,8 +5,12 @@ import { IRegistry, IEvent, TaskList, RegistryElem } from '../common';
 class Registry implements IRegistry {
   registeredTasks: TaskList;
 
+  // TODO: Move up a level to the Steveo class
   events: IEvent;
 
+  /**
+   * Maps "tasks" to message queue provider topic (queue) names
+   */
   items: Map<string, string>;
 
   heartbeat: number;
@@ -53,7 +57,7 @@ class Registry implements IRegistry {
     this.items.set(name, topic ?? name);
   }
 
-  getTask(topic: string) {
+  getTask(topic: string): RegistryElem | null {
     return this.registeredTasks[topic] ? this.registeredTasks[topic] : null;
   }
 }

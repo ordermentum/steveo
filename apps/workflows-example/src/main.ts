@@ -1,5 +1,4 @@
-import { WorkflowPayload } from 'steveo';
-import { logger, steveo } from './config';
+import { steveo } from './config';
 import { createInvoiceStep } from './steps/order-fulfilment.step';
 import { placeOrderStep } from './steps/place-order.step';
 import { Customer } from './types/customer';
@@ -10,24 +9,27 @@ import { Customer } from './types/customer';
   const flow = steveo
     .flow('order-e2e-flow')
     .next({
-      trigger: 'placer-order-step',
+      stepName: 'placer-order-step',
       execute: placeOrderStep,
     })
     .next({
-      trigger: 'create-invoice-step',
+      stepName: 'create-invoice-step',
       execute: createInvoiceStep,
     });
 
-  const customer: Customer & WorkflowPayload = {
-    workflowId: undefined,
+  const customer: Customer = {
     customerId: 'cust-123',
     firstName: 'mr',
     lastName: 'tester',
   };
 
   // Manual trigger for testing
-  flow.execute(customer).catch(ex => {
-    logger.debug('Exception', ex);
-    process.exit();
-  });
+  // flow.execute(customer).catch(ex => {
+  //   logger.debug('Exception', ex);
+  //   process.exit();
+  // });
+
+  await steveo.publish(flow.name, customer);
+
+  await steveo.runner().process();
 })();

@@ -10,7 +10,12 @@ export interface Step<StepState, StepResult> {
    * be intercepted and executed as a part of the
    * workflow execution engine.
    */
-  trigger: string;
+  name: string;
+
+  /**
+   *
+   */
+  topic?: string;
 
   /**
    * Execute the step's implementation

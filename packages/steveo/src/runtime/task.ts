@@ -5,10 +5,10 @@ import {
   SQSConfiguration,
   DummyConfiguration,
   Callback,
-  TaskOptions,
   IProducer,
   IRegistry,
 } from '../common';
+import { TaskOptions } from '../types/task-options';
 
 class Task<T = any, R = any> implements ITask<T, R> {
   config:

@@ -26,17 +26,17 @@ import {
   SQSConfiguration,
   DummyConfiguration,
   Middleware,
-  TaskOptions,
 } from './common';
 
-import { Workflow } from './runtime/workflow';
 import { Storage } from './storage/storage';
+import { TaskOptions } from './types/task-options';
+import { Workflow } from './runtime/workflow';
 
 export { Logger } from './common';
 export { Storage } from './storage/storage';
 export { WorkflowStateRepository } from './storage/workflow-repo';
 export { WorkflowState } from './runtime/workflow-state';
-export { WorkflowPayload } from './runtime/workflow';
+export { WorkflowPayload } from './types/workflow';
 export {
   KafkaConfiguration,
   RedisConfiguration,
@@ -112,7 +112,7 @@ export class Steveo implements ISteveo {
       options.queueName ??
       (this.config.queuePrefix ? `${this.config.queuePrefix}_${name}` : name);
 
-    const flow = new Workflow(
+    return new Workflow(
       this,
       name,
       topic,
@@ -120,15 +120,11 @@ export class Steveo implements ISteveo {
       this.producer,
       options
     );
-
-    this.registry.addNewTask(flow);
-
-    return flow;
   }
 
   /**
    * Declare a task consumer.
-   * Given the steveo instance configuration, this will monitor the queue for the
+   * Given the steveo instance configuration, this will monitor the topic (queue) for the
    * message `name` and call back the given function.
    * @param name
    * @param callback
@@ -158,12 +154,19 @@ export class Steveo implements ISteveo {
     return task;
   }
 
+  /**
+   * Publish the given payload to the given topic
+   * @param key
+   */
   async publish<T = any>(name: string, payload: T, key?: string) {
     const topic = this.registry.getTopic(name);
     return this.producer.send<T>(topic, payload, key);
   }
 
-  getTopicName(name: string) {
+  /**
+   * Formats a topic name to the queue naming convention
+   */
+  private getTopicName(name: string) {
     const withOrWithoutPrefix = this.config.queuePrefix
       ? `${this.config.queuePrefix}_${name}`
       : name;
@@ -173,6 +176,11 @@ export class Steveo implements ISteveo {
     return uppercased;
   }
 
+  /**
+   * Registers a new topic (queue) with the configured message queue provider.
+   * @param name
+   * @param topic (Optional) Topic/queue name; if not provided the name will be used
+   */
   async registerTopic(name: string, topic?: string) {
     let topicName = topic;
     if (!topicName) {
