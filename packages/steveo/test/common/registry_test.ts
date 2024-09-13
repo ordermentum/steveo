@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import Registry from '../../src/registry';
+import Registry from '../../src/runtime/registry';
 
 describe('Registry', () => {
   let registry: Registry;
@@ -82,7 +82,7 @@ describe('Registry', () => {
     expect(registry.getTask('hello')?.name).to.equal('hello');
     expect(registry.items.size).to.equal(1);
     expect(registry.items.has('hello')).to.equal(true);
-    expect(registry.getTask('hello')?.options.attributes).to.deep.equal([
+    expect(registry.getTask('hello')?.options?.attributes).to.deep.equal([
       { name: 'An Attribute', dataType: 'string', value: 'aaaaa' },
     ]);
   });

@@ -33,7 +33,7 @@ import { TaskOptions } from './types/task-options';
 import { Workflow } from './runtime/workflow';
 
 export { Logger } from './common';
-export { Storage } from './storage/storage';
+export { Storage, Repositories } from './storage/storage';
 export { WorkflowStateRepository } from './storage/workflow-repo';
 export { WorkflowState } from './runtime/workflow-state';
 export { WorkflowPayload } from './types/workflow';

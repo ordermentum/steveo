@@ -9,11 +9,11 @@ import { Customer } from './types/customer';
   const flow = steveo
     .flow('order-e2e-flow')
     .next({
-      stepName: 'placer-order-step',
+      name: 'placer-order-step',
       execute: placeOrderStep,
     })
     .next({
-      stepName: 'create-invoice-step',
+      name: 'create-invoice-step',
       execute: createInvoiceStep,
     });
 

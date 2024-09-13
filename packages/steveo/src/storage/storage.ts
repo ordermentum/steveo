@@ -1,5 +1,9 @@
 import { WorkflowStateRepository } from './workflow-repo';
 
+export interface Repositories {
+  workflow: WorkflowStateRepository;
+}
+
 /**
  * The abstract notion of storage that provides us with the bare
  * minimum needed from a persistence perspective. The implementation
@@ -19,10 +23,7 @@ export abstract class Storage {
    * Storage providers will implement this with their specific transaction
    * implementation handling
    */
-  abstract transaction(fn: () => Promise<void>): Promise<void>;
-
-  /**
-   * Factory to provide an instance of the concrete workflow state repository
-   */
-  abstract workflow: WorkflowStateRepository;
+  abstract transaction(
+    fn: (repos: Repositories) => Promise<void>
+  ): Promise<void>;
 }

@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import Runner from '../../src/consumers/base';
-import Registry from '../../src/registry';
+import Registry from '../../src/runtime/registry';
 import { Steveo } from '../../src';
 
 describe('Base', () => {

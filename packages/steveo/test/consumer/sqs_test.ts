@@ -6,7 +6,7 @@ import { v4 } from 'uuid';
 import { randomUUID } from 'crypto';
 import Runner from '../../src/consumers/sqs';
 import { build } from '../../src/lib/pool';
-import Registry from '../../src/registry';
+import Registry from '../../src/runtime/registry';
 import { Steveo } from '../../src';
 
 describe('runner/sqs', () => {

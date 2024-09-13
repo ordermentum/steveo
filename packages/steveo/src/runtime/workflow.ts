@@ -4,7 +4,7 @@ import assert from 'node:assert';
 import { Step, StepUnknown } from './workflow-step';
 import { IProducer, IRegistry, Logger } from '../common';
 import { WorkflowState } from './workflow-state';
-import { Storage } from '../storage/storage';
+import { Repositories, Storage } from '../storage/storage';
 import { Steveo } from '..';
 import { WorkflowPayload } from '../types/workflow';
 import { TaskOptions } from '../types/task-options';
@@ -17,6 +17,8 @@ interface ExecuteContext {
   step: StepUnknown;
 
   state: WorkflowState;
+
+  repos: Repositories;
 }
 
 export class Workflow {
@@ -127,21 +129,27 @@ export class Workflow {
       );
     }
 
-    await this.storage.transaction(async () => {
+    await this.storage.transaction(async repos => {
       const workflowId = payload.workflowId ?? `${this.$name}-${v4()}`;
 
       if (!payload.workflowId) {
-        await this.storage.workflow.workflowInit(workflowId);
+        await repos.workflow.workflowInit(workflowId);
       }
 
-      const state = await this.loadState(workflowId);
+      const state = await this.loadState(workflowId, repos);
 
       if (!state.current) {
         throw new Error(`Workflow ${workflowId} step was undefined`);
       }
 
       const step = this.steps[state.current];
-      const context: ExecuteContext = { workflowId, payload, state, step };
+      const context: ExecuteContext = {
+        workflowId,
+        payload,
+        state,
+        step,
+        repos,
+      };
 
       // If this step has failed then we pass control over to the rollback executor.
       if (state.errors?.length) {
@@ -165,7 +173,7 @@ export class Workflow {
 
       const result = await step.execute(payload);
 
-      await this.storage.workflow.stepExecuteResult(
+      await context.repos.workflow.stepExecuteResult(
         workflowId,
         state.current,
         result
@@ -177,16 +185,16 @@ export class Workflow {
       // mark the flow completed if there isn't one.
       const next = this.getNextStep(context.step.name);
       if (!next) {
-        await this.storage.workflow.workflowCompleted(workflowId);
+        await context.repos.workflow.workflowCompleted(workflowId);
         return;
       }
 
-      await this.storage.workflow.stepPointerUpdate(
+      await context.repos.workflow.stepPointerUpdate(
         state.workflowId,
         next.name
       );
     } catch (err) {
-      await this.storage.workflow.stepExecuteError(
+      await context.repos.workflow.stepExecuteError(
         workflowId,
         state.current,
         String(err)
@@ -220,16 +228,16 @@ export class Workflow {
         const previous = this.getPreviousStep(step.name);
 
         if (previous) {
-          await this.storage.workflow.rollbackStepExecute(
+          await context.repos.workflow.rollbackStepExecute(
             workflowId,
             previous.name
           );
         } else {
           // There are no more steps, the rollback has completed and so has the workflow
-          await this.storage.workflow.workflowCompleted(workflowId);
+          await context.repos.workflow.workflowCompleted(workflowId);
         }
       } catch (err) {
-        await this.storage.workflow.stepExecuteError(
+        await context.repos.workflow.stepExecuteError(
           workflowId,
           state.current,
           String(err)
@@ -294,8 +302,11 @@ export class Workflow {
    * @param flowId
    * @returns
    */
-  private async loadState(flowId: string): Promise<WorkflowState> {
-    const state = await this.storage.workflow.workflowLoad(flowId);
+  private async loadState(
+    flowId: string,
+    repos: Repositories
+  ): Promise<WorkflowState> {
+    const state = await repos.workflow.workflowLoad(flowId);
 
     if (!flowId) {
       throw new Error(`workflowId was empty for ${this.name} run`);

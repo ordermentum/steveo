@@ -1,4 +1,4 @@
-import { Storage, Logger, WorkflowStateRepository } from 'steveo';
+import { Storage, Logger, Repositories } from 'steveo';
 import { PrismaClient } from '@prisma/client';
 import { WorkflowStateRepositoryPostgres } from '../repo/workflow-postgres-repo';
 import { PostgresStorageConfig } from './postgres-config';
@@ -7,8 +7,6 @@ import { PostgresStorageConfig } from './postgres-config';
  *
  */
 class PostgresStorage extends Storage {
-  workflow: WorkflowStateRepository;
-
   prisma: PrismaClient;
 
   constructor(private config: PostgresStorageConfig, private logger: Logger) {
@@ -18,19 +16,23 @@ class PostgresStorage extends Storage {
       datasourceUrl: this.config.datasourceUrl,
     });
 
-    this.workflow = new WorkflowStateRepositoryPostgres(this.prisma);
+    // this.workflow = new WorkflowStateRepositoryPostgres(this.prisma);
   }
 
   /**
    * Executes the given function under the umbrella of a Postgres transaction.
    * @param fn
    */
-  async transaction(fn: () => Promise<void>): Promise<void> {
+  async transaction(fn: (repos: Repositories) => Promise<void>): Promise<void> {
     this.logger.trace({ msg: `Postgres storage transaction begin` });
 
     //
-    await this.prisma.$transaction(async () => {
-      await fn();
+    await this.prisma.$transaction(async client => {
+      const repos: Repositories = {
+        workflow: new WorkflowStateRepositoryPostgres(client),
+      };
+
+      await fn(repos);
 
       this.logger.trace({ msg: `Postgres storage transaction complete` });
     });

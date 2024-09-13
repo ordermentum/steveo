@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producers/kafka';
-import Registry from '../../src/registry';
+import Registry from '../../src/runtime/registry';
 import {createMessageMetadata} from "../../src/lib/context";
 
 describe('Kafka Producer', () => {

@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { randomUUID } from 'crypto';
 import Runner from '../../src/consumers/kafka';
 import { build } from '../../src/lib/pool';
-import Registry from '../../src/registry';
+import Registry from '../../src/runtime/registry';
 import { getContext } from '../../src/lib/context';
 
 describe('runner/kafka', () => {

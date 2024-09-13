@@ -1,10 +1,11 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producers/sqs';
-import Registry from '../../src/registry';
-import Task from '../../src/task';
-import { ITask, TaskOptions } from '../../src/common';
+import Registry from '../../src/runtime/registry';
+import Task from '../../src/runtime/task';
+import { ITask } from '../../src/common';
 import { createMessageMetadata } from '../../src/lib/context';
+import { TaskOptions } from '../../src/types/task-options';
 
 describe('SQS Producer', () => {
   let sandbox: sinon.SinonSandbox;

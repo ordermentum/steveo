@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import * as runtime from '@prisma/client/runtime/library.js';
 import assert from 'node:assert';
 import _ from 'lodash';
 import { WorkflowState, WorkflowStateRepository } from 'steveo';
@@ -10,7 +11,7 @@ import { InputJsonValue } from '@prisma/client/runtime/library';
 export class WorkflowStateRepositoryPostgres
   implements WorkflowStateRepository
 {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) {}
 
   /**
    * Create a brand new workflow state given the identifier.
