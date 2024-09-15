@@ -12,9 +12,9 @@ describe('Workflow state postgres repo', () => {
   it('should create new state and load it', async () => {
     const workflowId = v4();
 
-    await repo.createNewState(workflowId);
+    await repo.workflowInit(workflowId, 'test-service');
 
-    const state = await repo.loadState(workflowId);
+    const state = await repo.workflowLoad(workflowId);
 
     expect(state?.workflowId).to.eq(workflowId);
     expect(state?.current).to.be.null;
@@ -24,9 +24,9 @@ describe('Workflow state postgres repo', () => {
   it('should record the start of a workflow execution', async () => {
     const workflowId = v4();
 
-    await repo.createNewState(workflowId);
+    await repo.workflowInit(workflowId, 'test-service');
 
-    await repo.startState({
+    await repo.workflowStarted({
       workflowId,
       current: 'step-1',
       initial: {
@@ -35,7 +35,7 @@ describe('Workflow state postgres repo', () => {
       },
     });
 
-    const state = await repo.loadState(workflowId);
+    const state = await repo.workflowLoad(workflowId);
 
     expect(state?.current).to.eq('step-1');
     expect(state?.errors).to.be.null;
@@ -49,19 +49,19 @@ describe('Workflow state postgres repo', () => {
   it('should update the current step', async () => {
     const workflowId = v4();
 
-    await repo.createNewState(workflowId);
+    await repo.workflowInit(workflowId, 'test-service');
 
-    await repo.startState({
+    await repo.workflowStarted({
       workflowId,
       current: 'step-1',
       initial: undefined,
     });
 
-    await repo.loadState(workflowId);
+    await repo.workflowLoad(workflowId);
 
-    await repo.updateCurrentStep(workflowId, 'step-2');
+    await repo.stepPointerUpdate(workflowId, 'step-2');
 
-    const state = await repo.loadState(workflowId);
+    const state = await repo.workflowLoad(workflowId);
 
     expect(state?.current).to.eq('step-2');
   });
@@ -69,12 +69,12 @@ describe('Workflow state postgres repo', () => {
   it('should record multiple errors against a state', async () => {
     const workflowId = v4();
 
-    await repo.createNewState(workflowId);
+    await repo.workflowInit(workflowId, 'test-service');
 
-    await repo.recordError(workflowId, 'error-key-1', 'error 1 content');
-    await repo.recordError(workflowId, 'error-key-2', 'error 2 content');
+    await repo.stepExecuteError(workflowId, 'error-key-1', 'error 1 content');
+    await repo.stepExecuteError(workflowId, 'error-key-2', 'error 2 content');
 
-    const state = await repo.loadState(workflowId);
+    const state = await repo.workflowLoad(workflowId);
 
     expect(state?.errors?.length).to.eq(2);
     expect(state?.errors?.[0].identifier).to.eq('error-key-1');
@@ -87,11 +87,11 @@ describe('Workflow state postgres repo', () => {
     const workflowId = v4();
     type Result = { value: number };
 
-    await repo.createNewState(workflowId);
-    await repo.recordStepResult(workflowId, 'step1', { value: 111 });
-    await repo.recordStepResult(workflowId, 'step2', { value: 999 });
+    await repo.workflowInit(workflowId, 'test-service');
+    await repo.stepExecuteResult(workflowId, 'step1', { value: 111 });
+    await repo.stepExecuteResult(workflowId, 'step2', { value: 999 });
 
-    const state = await repo.loadState(workflowId);
+    const state = await repo.workflowLoad(workflowId);
 
     expect((state?.results.step1 as Result).value).to.eq(111);
     expect((state?.results.step2 as Result).value).to.eq(999);
@@ -100,10 +100,10 @@ describe('Workflow state postgres repo', () => {
   it('should record flow completion', async () => {
     const workflowId = v4();
 
-    await repo.createNewState(workflowId);
-    await repo.recordCompletion(workflowId);
+    await repo.workflowInit(workflowId, 'test-service');
+    await repo.workflowCompleted(workflowId);
 
-    const state = await repo.loadState(workflowId);
+    const state = await repo.workflowLoad(workflowId);
 
     expect(state?.current).to.be.null;
     expect(state?.completed).not.to.be.null;
@@ -112,31 +112,31 @@ describe('Workflow state postgres repo', () => {
   it('should record rollback step', async () => {
     const workflowId = v4();
 
-    await repo.createNewState(workflowId);
+    await repo.workflowInit(workflowId, 'test-service');
 
-    await repo.recordStepResult(workflowId, 'step1', { value: 111 });
-    await repo.recordStepResult(workflowId, 'step2', { value: 999 });
+    await repo.stepExecuteResult(workflowId, 'step1', { value: 111 });
+    await repo.stepExecuteResult(workflowId, 'step2', { value: 999 });
 
-    await repo.startState({
+    await repo.workflowStarted({
       workflowId,
       current: 'step1',
       initial: { test: 123 },
     });
 
-    await repo.recordStepResult(workflowId, 'step2', { xyz: 'test' });
+    await repo.stepExecuteResult(workflowId, 'step2', { xyz: 'test' });
 
-    const startState = await repo.loadState(workflowId);
+    const startState = await repo.workflowLoad(workflowId);
 
     expect(startState?.current).to.eq('step2');
 
     // Rollback to the previous step
-    await repo.recordRollbackStep(workflowId, 'step1');
+    await repo.rollbackStepExecute(workflowId, 'step1');
 
-    const finalState = await repo.loadState(workflowId);
+    const finalState = await repo.workflowLoad(workflowId);
 
     expect(finalState?.current).to.eq('step1');
 
-    const state = await repo.loadState(workflowId);
+    const state = await repo.workflowLoad(workflowId);
 
     expect(state?.current).to.eq('step1');
     expect(state?.completed).to.be.null;

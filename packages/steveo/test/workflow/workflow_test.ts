@@ -1,33 +1,78 @@
 import sinon from 'sinon';
-import { NullLogger } from 'null-logger';
-import { DummyConfiguration, Steveo } from '../../src/index';
-import { DummyStorage } from './fixture/dummy_storage';
+import { fromStub, stubInterface } from '@salesforce/ts-sinon';
+import { expect } from 'chai';
+import { Workflow } from '../../src/runtime/workflow';
+import { Repositories, Storage } from '../../src/storage/storage';
+import { IProducer, IRegistry } from '../../src/common';
+import { StepUnknown } from '../../src/runtime/workflow-step';
+import { WorkflowStateRepository } from '../../src/storage/workflow-repo';
 
 // Workflow integration tests
 describe('Workflow tests', () => {
-  const dummy: DummyConfiguration = { engine: 'dummy' };
-  const storage = sinon.createStubInstance(DummyStorage);
-  const steveo = new Steveo(dummy, new NullLogger(), storage);
+  const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
     sinon.reset();
   });
 
-  test('should execute flow of two steps', async () => {
-    const mock1 = sinon.spy();
-    const mock2 = sinon.spy();
-    steveo
-      .flow('test-workflow')
-      .next({ name: 'step1-task', execute: mock1 })
-      .next({ name: 'step2-task', execute: mock2 });
+  it('should execute a simple one step flow', async () => {
+    // ARRANGE
+    const workflowRepo = stubInterface<WorkflowStateRepository>(sandbox);
+    const repos: Repositories = {
+      workflow: fromStub(workflowRepo),
+    };
+    const storage = stubInterface<Storage>(sandbox, {
+      transaction: (
+        fn: (repos: Repositories) => Promise<void>
+      ): Promise<void> => fn(fromStub(repos)),
+    });
+    const registry = stubInterface<IRegistry>(sandbox);
+    const producer = stubInterface<IProducer>(sandbox);
+    const workflow = new Workflow({
+      name: 'test-workflow',
+      topic: 'test-topic',
+      storage: fromStub(storage),
+      registry: fromStub(registry),
+      producer: fromStub(producer),
+      options: {
+        serviceId: 'test-service',
+      },
+    });
 
-    // await flow.publish({ order: 123 });
+    sinon.fake(storage.transaction);
 
-    // await steveo.runner().process();
+    const fake = sinon.fake();
+    const step: StepUnknown = {
+      name: 'step-1',
+      execute: fake,
+    };
 
-    // setTimeout(() => {
-    //   expect(mock1.callCount).eq(1);
-    //   done();
-    // }, 100);
+    workflow.next(step);
+
+    // ACT
+    workflow.subscribe({});
+
+    // ASSERT
+    expect(workflowRepo.workflowInit.callCount).to.eq(1);
+    // expect(fake.callCount).to.eq(1);
+
+    // ASSERT: Initialise workflow execution
+    // ASSERT: Workflow ran to completion
+  });
+
+  it('should execute two step flow', async () => {
+    //
+  });
+
+  it('should execute rollback sequence on irretrievable step error', async () => {
+    //
+  });
+
+  it('should detect out of order step execution', async () => {
+    //
+  });
+
+  it('should detect step re-execution', async () => {
+    //
   });
 });

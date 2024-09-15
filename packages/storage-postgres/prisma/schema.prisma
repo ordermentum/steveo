@@ -10,6 +10,7 @@ datasource db {
 
 model WorkflowState {
   workflowId        String      @id
+  serviceId         String
   started           DateTime    @db.Timestamptz(6)
   completed         DateTime?   @db.Timestamptz(6)
   current           String?

@@ -1,13 +1,13 @@
 import { v4 } from 'uuid';
 import bind from 'lodash.bind';
 import assert from 'node:assert';
+import nullLogger from 'null-logger';
+import take from 'lodash.take';
 import { Step, StepUnknown } from './workflow-step';
 import { IProducer, IRegistry, Logger } from '../common';
 import { WorkflowState } from './workflow-state';
 import { Repositories, Storage } from '../storage/storage';
-import { Steveo } from '..';
-import { WorkflowPayload } from '../types/workflow';
-import { TaskOptions } from '../types/task-options';
+import { WorkflowOptions, WorkflowPayload } from '../types/workflow';
 
 interface ExecuteContext {
   workflowId: string;
@@ -22,7 +22,19 @@ interface ExecuteContext {
 }
 
 export class Workflow {
-  logger: Logger;
+  $name: string;
+
+  $topic: string;
+
+  $storage: Storage;
+
+  $logger: Logger;
+
+  $registry: IRegistry;
+
+  $producer: IProducer;
+
+  $options: WorkflowOptions;
 
   /**
    * The execution step definitions.
@@ -31,27 +43,24 @@ export class Workflow {
    */
   steps: Step<unknown, unknown>[] = [];
 
-  /**
-   *
-   */
-  storage: Storage;
+  constructor(props: {
+    name: string;
+    topic: string;
+    storage: Storage;
+    logger?: Logger;
+    registry: IRegistry;
+    producer: IProducer;
+    options: WorkflowOptions;
+  }) {
+    this.$name = props.name;
+    this.$topic = props.topic;
+    this.$storage = props.storage;
+    this.$logger = props.logger ?? nullLogger;
+    this.$registry = props.registry;
+    this.$producer = props.producer;
+    this.$options = props.options;
 
-  constructor(
-    steveo: Steveo,
-    private $name: string,
-    private $topic: string,
-    private $registry: IRegistry,
-    private $producer: IProducer,
-    private $options?: TaskOptions
-  ) {
-    assert($name, `flowId must be specified`);
-    assert(
-      steveo.storage,
-      `storage must be provided to steveo in order to use workflows`
-    );
-
-    this.storage = steveo.storage;
-    this.logger = steveo.logger;
+    assert(this.$name, `name must be specified`);
 
     // Register the workflow, this will make sure we can start a workflow execution
     this.$registry.addNewTask(this);
@@ -76,7 +85,7 @@ export class Workflow {
   next<State, Result>(step: Step<State, Result>): Workflow {
     this.steps.push(step as Step<unknown, unknown>);
 
-    const subscribe = bind(this.publish, this);
+    const subscribe = bind(this.subscribe, this);
     const taskName = `${this.name}.${step.name}`;
 
     this.$registry.addNewTask({
@@ -94,7 +103,7 @@ export class Workflow {
    * @param payload
    */
   async publish<T>(payload: T | T[], context?: { key: string }) {
-    await this.storage.transaction(async () => {
+    await this.$storage.transaction(async () => {
       const params = Array.isArray(payload) ? payload : [payload];
 
       try {
@@ -129,11 +138,11 @@ export class Workflow {
       );
     }
 
-    await this.storage.transaction(async repos => {
+    await this.$storage.transaction(async repos => {
       const workflowId = payload.workflowId ?? `${this.$name}-${v4()}`;
 
       if (!payload.workflowId) {
-        await repos.workflow.workflowInit(workflowId);
+        await repos.workflow.workflowInit(workflowId, this.options.serviceId);
       }
 
       const state = await this.loadState(workflowId, repos);
@@ -168,8 +177,23 @@ export class Workflow {
     const { step, payload, workflowId, state } = context;
 
     try {
-      // TODO: Add `source` to the workflow state to check the current steveo instance service name it is running in  and prevent accidental network boundary crossing
-      // TODO: Protect out of order excution or step re-execution
+      // Check the current steveo instance to prevent accidental network boundary crossing
+      if (state.serviceId !== this.options.serviceId) {
+        throw new Error(
+          `Workflow ID ${workflowId} attempted to execute across network boundary. Running service ${this.options.serviceId} while expected ${state.serviceId}`
+        );
+      }
+
+      // Protect against out of order step excution and step re-execution
+      const stepIndex = this.steps.findIndex(s => s.name === step.name);
+      const executed = stepIndex > 0 ? take(this.steps, stepIndex - 1) : [];
+
+      const expectedOrder = executed.every(s => !!state.results[s.name]);
+      if (!expectedOrder) {
+        throw new Error(
+          `Out of order step ${step.name} execution detected on workflow ${workflowId}`
+        );
+      }
 
       const result = await step.execute(payload);
 
@@ -181,8 +205,8 @@ export class Workflow {
 
       state.results[state.current] = result;
 
-      // Move execution pointer to next execution step and
-      // mark the flow completed if there isn't one.
+      // Move execution pointer to next execution step and save, or
+      // mark the flow completed if there are no more steps
       const next = this.getNextStep(context.step.name);
       if (!next) {
         await context.repos.workflow.workflowCompleted(workflowId);
@@ -193,7 +217,17 @@ export class Workflow {
         state.workflowId,
         next.name
       );
+
+      // Now the state has been successfully updated, publish the
+      // next message in the flow
+      await this.publish(result);
     } catch (err) {
+      this.$logger.error({
+        msg: `Error executing next step in workflow ${workflowId}`,
+        err,
+        context,
+      });
+
       await context.repos.workflow.stepExecuteError(
         workflowId,
         state.current,
@@ -214,7 +248,7 @@ export class Workflow {
 
     let current: StepUnknown | undefined = step;
 
-    this.logger.info({
+    this.$logger.info({
       msg: `Execute rollback`,
       workflowId,
       step: step.name,
@@ -226,7 +260,6 @@ export class Workflow {
         await step.rollback?.(state);
 
         const previous = this.getPreviousStep(step.name);
-
         if (previous) {
           await context.repos.workflow.rollbackStepExecute(
             workflowId,
@@ -237,6 +270,13 @@ export class Workflow {
           await context.repos.workflow.workflowCompleted(workflowId);
         }
       } catch (err) {
+        this.$logger.error({
+          msg: `Error executing rollback step ${current.name} in workflow ${workflowId}`,
+          err,
+          context,
+          state,
+        });
+
         await context.repos.workflow.stepExecuteError(
           workflowId,
           state.current,

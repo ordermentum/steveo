@@ -15,8 +15,6 @@ class PostgresStorage extends Storage {
     this.prisma = new PrismaClient({
       datasourceUrl: this.config.datasourceUrl,
     });
-
-    // this.workflow = new WorkflowStateRepositoryPostgres(this.prisma);
   }
 
   /**

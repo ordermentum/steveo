@@ -8,6 +8,13 @@ export interface WorkflowState {
   workflowId: string;
 
   /**
+   * Source service the workflow is executing on e.g. Ordermentum or Payments.
+   * Workflows cannot execute across machine boundaries (such a change would)
+   * require a centralised repository for workflow state
+   */
+  serviceId: string;
+
+  /**
    * The time the flow execution began.
    * Diagnostics and auditing.
    */
