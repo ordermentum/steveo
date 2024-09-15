@@ -12,7 +12,7 @@ describe('Workflow state postgres repo', () => {
   it('should create new state and load it', async () => {
     const workflowId = v4();
 
-    await repo.workflowInit(workflowId, 'test-service');
+    await repo.workflowInit(workflowId, 'test-service', 'step1');
 
     const state = await repo.workflowLoad(workflowId);
 
@@ -24,7 +24,7 @@ describe('Workflow state postgres repo', () => {
   it('should record the start of a workflow execution', async () => {
     const workflowId = v4();
 
-    await repo.workflowInit(workflowId, 'test-service');
+    await repo.workflowInit(workflowId, 'test-service', 'step1');
 
     await repo.workflowStarted({
       workflowId,
@@ -49,7 +49,7 @@ describe('Workflow state postgres repo', () => {
   it('should update the current step', async () => {
     const workflowId = v4();
 
-    await repo.workflowInit(workflowId, 'test-service');
+    await repo.workflowInit(workflowId, 'test-service', 'step1');
 
     await repo.workflowStarted({
       workflowId,
@@ -69,7 +69,7 @@ describe('Workflow state postgres repo', () => {
   it('should record multiple errors against a state', async () => {
     const workflowId = v4();
 
-    await repo.workflowInit(workflowId, 'test-service');
+    await repo.workflowInit(workflowId, 'test-service', 'step1');
 
     await repo.stepExecuteError(workflowId, 'error-key-1', 'error 1 content');
     await repo.stepExecuteError(workflowId, 'error-key-2', 'error 2 content');
@@ -87,7 +87,7 @@ describe('Workflow state postgres repo', () => {
     const workflowId = v4();
     type Result = { value: number };
 
-    await repo.workflowInit(workflowId, 'test-service');
+    await repo.workflowInit(workflowId, 'test-service', 'step1');
     await repo.stepExecuteResult(workflowId, 'step1', { value: 111 });
     await repo.stepExecuteResult(workflowId, 'step2', { value: 999 });
 
@@ -100,7 +100,7 @@ describe('Workflow state postgres repo', () => {
   it('should record flow completion', async () => {
     const workflowId = v4();
 
-    await repo.workflowInit(workflowId, 'test-service');
+    await repo.workflowInit(workflowId, 'test-service', 'step1');
     await repo.workflowCompleted(workflowId);
 
     const state = await repo.workflowLoad(workflowId);
@@ -112,7 +112,7 @@ describe('Workflow state postgres repo', () => {
   it('should record rollback step', async () => {
     const workflowId = v4();
 
-    await repo.workflowInit(workflowId, 'test-service');
+    await repo.workflowInit(workflowId, 'test-service', 'step1');
 
     await repo.stepExecuteResult(workflowId, 'step1', { value: 111 });
     await repo.stepExecuteResult(workflowId, 'step2', { value: 999 });

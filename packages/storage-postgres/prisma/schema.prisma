@@ -13,7 +13,7 @@ model WorkflowState {
   serviceId         String
   started           DateTime    @db.Timestamptz(6)
   completed         DateTime?   @db.Timestamptz(6)
-  current           String?
+  current           String
   initial           Json?
   results           Json?
   errors            Json?

@@ -142,7 +142,13 @@ export class Workflow {
       const workflowId = payload.workflowId ?? `${this.$name}-${v4()}`;
 
       if (!payload.workflowId) {
-        await repos.workflow.workflowInit(workflowId, this.options.serviceId);
+        const firstStep = this.steps[0];
+
+        await repos.workflow.workflowInit(
+          workflowId,
+          this.options.serviceId,
+          firstStep.name
+        );
       }
 
       const state = await this.loadState(workflowId, repos);
@@ -151,7 +157,13 @@ export class Workflow {
         throw new Error(`Workflow ${workflowId} step was undefined`);
       }
 
-      const step = this.steps[state.current];
+      const step = this.steps.find(s => s.name === state.current);
+      if (!step) {
+        throw new Error(
+          `Worflow ${workflowId} could not find step ${state.current}`
+        );
+      }
+
       const context: ExecuteContext = {
         workflowId,
         payload,
@@ -319,11 +331,13 @@ export class Workflow {
       throw new Error(`Step ${name} was not found in workflow ${this.name}`);
     }
 
-    if (index >= this.steps.length) {
+    const nextIndex = index + 1;
+
+    if (nextIndex >= this.steps.length) {
       return undefined;
     }
 
-    return this.steps.at(index - 1);
+    return this.steps.at(nextIndex);
   }
 
   /**
@@ -346,11 +360,11 @@ export class Workflow {
     flowId: string,
     repos: Repositories
   ): Promise<WorkflowState> {
-    const state = await repos.workflow.workflowLoad(flowId);
-
     if (!flowId) {
       throw new Error(`workflowId was empty for ${this.name} run`);
     }
+
+    const state = await repos.workflow.workflowLoad(flowId);
 
     if (!state) {
       throw new Error(
