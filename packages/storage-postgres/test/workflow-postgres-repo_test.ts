@@ -9,25 +9,32 @@ describe('Workflow state postgres repo', () => {
   });
   const repo = new WorkflowStateRepositoryPostgres(prisma);
 
+  async function initialise() {
+    const params = {
+      workflowId: v4(),
+      serviceId: 'test-service',
+      current: 'step1',
+      initial: {},
+    };
+
+    await repo.workflowInit(params);
+
+    return params;
+  }
+
   it('should create new state and load it', async () => {
-    const workflowId = v4();
+    const init = await initialise();
+    const state = await repo.workflowLoad(init.workflowId);
 
-    await repo.workflowInit(workflowId, 'test-service', 'step1');
-
-    const state = await repo.workflowLoad(workflowId);
-
-    expect(state?.workflowId).to.eq(workflowId);
-    expect(state?.current).to.be.null;
-    expect(state?.initial).to.be.null;
+    expect(state?.workflowId).to.eq(init.workflowId);
+    expect(state?.current).not.to.be.null;
+    expect(state?.initial).not.to.be.null;
   });
 
   it('should record the start of a workflow execution', async () => {
-    const workflowId = v4();
-
-    await repo.workflowInit(workflowId, 'test-service', 'step1');
-
+    const init = await initialise();
     await repo.workflowStarted({
-      workflowId,
+      workflowId: init.workflowId,
       current: 'step-1',
       initial: {
         test: 'abc',
@@ -35,7 +42,7 @@ describe('Workflow state postgres repo', () => {
       },
     });
 
-    const state = await repo.workflowLoad(workflowId);
+    const state = await repo.workflowLoad(init.workflowId);
 
     expect(state?.current).to.eq('step-1');
     expect(state?.errors).to.be.null;
@@ -47,34 +54,39 @@ describe('Workflow state postgres repo', () => {
   });
 
   it('should update the current step', async () => {
-    const workflowId = v4();
-
-    await repo.workflowInit(workflowId, 'test-service', 'step1');
+    const init = await initialise();
 
     await repo.workflowStarted({
-      workflowId,
+      workflowId: init.workflowId,
       current: 'step-1',
       initial: undefined,
     });
 
-    await repo.workflowLoad(workflowId);
+    await repo.workflowLoad(init.workflowId);
 
-    await repo.stepPointerUpdate(workflowId, 'step-2');
+    await repo.stepPointerUpdate(init.workflowId, 'step-2');
 
-    const state = await repo.workflowLoad(workflowId);
+    const state = await repo.workflowLoad(init.workflowId);
 
     expect(state?.current).to.eq('step-2');
   });
 
   it('should record multiple errors against a state', async () => {
-    const workflowId = v4();
+    const init = await initialise();
 
-    await repo.workflowInit(workflowId, 'test-service', 'step1');
+    await repo.stepExecuteError(
+      init.workflowId,
+      'error-key-1',
+      'error 1 content'
+    );
 
-    await repo.stepExecuteError(workflowId, 'error-key-1', 'error 1 content');
-    await repo.stepExecuteError(workflowId, 'error-key-2', 'error 2 content');
+    await repo.stepExecuteError(
+      init.workflowId,
+      'error-key-2',
+      'error 2 content'
+    );
 
-    const state = await repo.workflowLoad(workflowId);
+    const state = await repo.workflowLoad(init.workflowId);
 
     expect(state?.errors?.length).to.eq(2);
     expect(state?.errors?.[0].identifier).to.eq('error-key-1');
@@ -84,59 +96,55 @@ describe('Workflow state postgres repo', () => {
   });
 
   it('should record a step result', async () => {
-    const workflowId = v4();
+    const init = await initialise();
     type Result = { value: number };
 
-    await repo.workflowInit(workflowId, 'test-service', 'step1');
-    await repo.stepExecuteResult(workflowId, 'step1', { value: 111 });
-    await repo.stepExecuteResult(workflowId, 'step2', { value: 999 });
+    await repo.stepExecuteResult(init.workflowId, 'step1', { value: 111 });
+    await repo.stepExecuteResult(init.workflowId, 'step2', { value: 999 });
 
-    const state = await repo.workflowLoad(workflowId);
+    const state = await repo.workflowLoad(init.workflowId);
 
     expect((state?.results.step1 as Result).value).to.eq(111);
     expect((state?.results.step2 as Result).value).to.eq(999);
   });
 
   it('should record flow completion', async () => {
-    const workflowId = v4();
+    const init = await initialise();
 
-    await repo.workflowInit(workflowId, 'test-service', 'step1');
-    await repo.workflowCompleted(workflowId);
+    await repo.workflowCompleted(init.workflowId);
 
-    const state = await repo.workflowLoad(workflowId);
+    const state = await repo.workflowLoad(init.workflowId);
 
-    expect(state?.current).to.be.null;
+    expect(state?.current).not.to.be.null;
     expect(state?.completed).not.to.be.null;
   });
 
   it('should record rollback step', async () => {
-    const workflowId = v4();
+    const init = await initialise();
 
-    await repo.workflowInit(workflowId, 'test-service', 'step1');
-
-    await repo.stepExecuteResult(workflowId, 'step1', { value: 111 });
-    await repo.stepExecuteResult(workflowId, 'step2', { value: 999 });
+    await repo.stepExecuteResult(init.workflowId, 'step1', { value: 111 });
+    await repo.stepExecuteResult(init.workflowId, 'step2', { value: 999 });
 
     await repo.workflowStarted({
-      workflowId,
+      workflowId: init.workflowId,
       current: 'step1',
       initial: { test: 123 },
     });
 
-    await repo.stepExecuteResult(workflowId, 'step2', { xyz: 'test' });
+    await repo.stepExecuteResult(init.workflowId, 'step2', { xyz: 'test' });
 
-    const startState = await repo.workflowLoad(workflowId);
+    const startState = await repo.workflowLoad(init.workflowId);
 
     expect(startState?.current).to.eq('step2');
 
     // Rollback to the previous step
-    await repo.rollbackStepExecute(workflowId, 'step1');
+    await repo.rollbackStepExecute(init.workflowId, 'step1');
 
-    const finalState = await repo.workflowLoad(workflowId);
+    const finalState = await repo.workflowLoad(init.workflowId);
 
     expect(finalState?.current).to.eq('step1');
 
-    const state = await repo.workflowLoad(workflowId);
+    const state = await repo.workflowLoad(init.workflowId);
 
     expect(state?.current).to.eq('step1');
     expect(state?.completed).to.be.null;

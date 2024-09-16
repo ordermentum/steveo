@@ -144,11 +144,12 @@ export class Workflow {
       if (!payload.workflowId) {
         const firstStep = this.steps[0];
 
-        await repos.workflow.workflowInit(
+        await repos.workflow.workflowInit({
           workflowId,
-          this.options.serviceId,
-          firstStep.name
-        );
+          serviceId: this.options.serviceId,
+          current: firstStep.name,
+          initial: payload,
+        });
       }
 
       const state = await this.loadState(workflowId, repos);

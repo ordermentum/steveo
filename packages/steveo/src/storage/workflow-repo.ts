@@ -9,11 +9,12 @@ export interface WorkflowStateRepository {
    * Create a brand new workflow state given the identifier.
    * The ID must be unique.
    */
-  workflowInit(
-    workflowId: string,
-    serviceId: string,
-    current: string
-  ): Promise<void>;
+  workflowInit(props: {
+    workflowId: string;
+    serviceId: string;
+    current: string;
+    initial: unknown;
+  }): Promise<void>;
 
   /**
    * Given a workflow ID, load the current state from storage
