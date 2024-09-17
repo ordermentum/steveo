@@ -19,10 +19,13 @@
     "lib"
   ],
   "peerDependencies": {
-    "newrelic": "^9.8.0"
+    "newrelic": "^9.8.0",
+    "steveo": "*"
   },
-  "dependencies": {
-    "steveo": "^6.3.0"
+  "peerDependenciesMeta": {
+    "steveo": {
+      "optional": false
+    }
   },
   "devDependencies": {
     "@types/newrelic": "^9.4.0",

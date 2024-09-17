@@ -26,6 +26,10 @@ import {
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
 
+declare global {
+  interface ReadableStream {}
+}
+
 class SqsProducer extends BaseProducer implements IProducer {
   config: SQSConfiguration;
 

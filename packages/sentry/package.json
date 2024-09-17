@@ -18,9 +18,16 @@
   "files": [
     "lib"
   ],
+  "peerDependencies": {
+    "steveo": "*"
+  },
+  "peerDependenciesMeta": {
+    "steveo": {
+      "optional": false
+    }
+  },
   "dependencies": {
-    "@sentry/node": "^7.56.0",
-    "steveo": "^6.3.0"
+    "@sentry/node": "^7.56.0"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.2",

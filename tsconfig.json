@@ -7,7 +7,7 @@
     "declaration": true,
     "esModuleInterop": true,
     "lib": [
-      "ES2022"
+      "ES2022",
     ],
     "module": "commonjs",
     "moduleResolution": "node",
