@@ -19,13 +19,7 @@
     "lib"
   ],
   "peerDependencies": {
-    "newrelic": "^9.8.0",
-    "steveo": "*"
-  },
-  "peerDependenciesMeta": {
-    "steveo": {
-      "optional": false
-    }
+    "newrelic": "^9.8.0"
   },
   "devDependencies": {
     "@types/newrelic": "^9.4.0",
@@ -54,6 +48,7 @@
     "prettier": "2.8.8",
     "sinon": "15.2.0",
     "source-map-support": "0.5.21",
+    "steveo": "*",
     "ts-node": "10.9.2",
     "typescript": "5.1.3"
   }

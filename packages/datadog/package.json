@@ -18,14 +18,6 @@
   "files": [
     "lib"
   ],
-  "peerDependencies": {
-    "steveo": "*"
-  },
-  "peerDependenciesMeta": {
-    "steveo": {
-      "optional": false
-    }
-  },
   "devDependencies": {
     "@ordermentum/eslint-config-ordermentum": "^2.3.3",
     "@types/chai": "^4.3.11",

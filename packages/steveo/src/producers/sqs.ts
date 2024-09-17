@@ -1,5 +1,5 @@
 import nullLogger from 'null-logger';
-// import { SQS } from 'aws-sdk';
+
 import {
   CreateQueueCommandInput,
   CreateQueueCommandOutput,
@@ -25,10 +25,6 @@ import {
 
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
-
-declare global {
-  interface ReadableStream {}
-}
 
 class SqsProducer extends BaseProducer implements IProducer {
   config: SQSConfiguration;
