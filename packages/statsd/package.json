@@ -19,8 +19,7 @@
     "lib"
   ],
   "dependencies": {
-    "hot-shots": "^10.0.0",
-    "steveo": "*"
+    "hot-shots": "^10.0.0"
   },
   "devDependencies": {
     "@types/newrelic": "^9.4.0",
@@ -48,6 +47,7 @@
     "prettier": "2.8.8",
     "sinon": "15.2.0",
     "source-map-support": "0.5.21",
+    "steveo": "*",
     "ts-node": "10.9.2",
     "typescript": "5.1.3"
   }
