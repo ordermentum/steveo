@@ -1,4 +1,4 @@
-import { HTTPOptions } from 'aws-sdk';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
 import { Pool as GenericPool, Options } from 'generic-pool';
 import {
   ConsumerGlobalConfig,
@@ -8,6 +8,11 @@ import {
   ProducerTopicConfig,
 } from 'node-rdkafka';
 
+// https://github.com/aws/aws-sdk-js-v3/issues/3063
+// 🤌🏾🤌🏾🤌🏾
+declare global {
+  interface ReadableStream {}
+}
 /**
  * FIXME: for callbacks that don't take an argument, need to specify
  * T = void to make the parameter optional
@@ -82,7 +87,7 @@ export interface SQSConfiguration extends Configuration {
   visibilityTimeout: number;
   waitTimeSeconds: number;
   endpoint?: string;
-  httpOptions?: HTTPOptions;
+  httpOptions?: NodeHttpHandler;
   consumerPollInterval?: number;
   waitToCommit?: boolean;
 }

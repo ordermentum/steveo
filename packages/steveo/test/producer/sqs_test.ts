@@ -10,21 +10,7 @@ describe('SQS Producer', () => {
   let sandbox: sinon.SinonSandbox;
   let producer: Producer;
   let registry: Registry;
-  let createQueueStub: sinon.SinonStub;
-  let getQueueUrlStub: sinon.SinonStub;
   let sendMessageStub: sinon.SinonStub;
-
-  // AWS SDK v2 has a pattern of `res = foo().promise()` to get a result as a
-  // promise
-  const awsPromiseResolves = returnValue => ({
-    promise: async () => returnValue,
-  });
-
-  const awsPromiseRejects = errorMessage => ({
-    promise: async () => {
-      throw new Error(errorMessage);
-    },
-  });
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
@@ -36,44 +22,6 @@ describe('SQS Producer', () => {
       },
       registry
     );
-    createQueueStub = sandbox
-      .stub(producer.producer, 'createQueue')
-      // @ts-ignore
-      .callsFake(({ QueueName }) => {
-        if (QueueName === 'topic-with-existing-queue') {
-          return awsPromiseRejects('Queue exists');
-        }
-        return awsPromiseResolves({
-          QueueUrl:
-            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
-        });
-      });
-
-    getQueueUrlStub = sandbox
-      .stub(producer.producer, 'getQueueUrl')
-      // @ts-ignore
-      .callsFake(({ QueueName }) => {
-        if (QueueName === 'topic-without-queue') {
-          return awsPromiseRejects('Queue does not exist');
-        }
-        return awsPromiseResolves({
-          QueueUrl:
-            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
-        });
-      });
-
-    sendMessageStub = sandbox
-      .stub(producer.producer, 'sendMessage')
-      // @ts-ignore
-      .callsFake(({ MessageBody }: { MessageBody: string }) => {
-        if (MessageBody.includes('bad-message')) {
-          return awsPromiseRejects('Bad message');
-        }
-        return awsPromiseResolves({
-          MD5OfMessageBody: '00000000000000000000000000000000',
-          MessageId: '00000000-1111-2222-3333-444444444444',
-        });
-      });
   });
 
   afterEach(() => {
@@ -91,11 +39,31 @@ describe('SQS Producer', () => {
     });
 
     it(`when a queue does not exist, a queue should be created`, async () => {
+      const createQueueStub = sandbox
+        .stub(producer.producer, 'createQueue').resolves({
+          QueueUrl:
+            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+        });
+
+      const getQueueUrlStub = sandbox
+        .stub(producer.producer, 'getQueueUrl');
+      getQueueUrlStub.rejects(new Error('Queue does not exist'));
+
       await producer.initialize('topic-without-queue');
       expect(createQueueStub.calledOnce, 'createQueue is called').to.be.true;
     });
 
     it('when a queue exists, it should read and use the existing queue URL', async () => {
+      const createQueueStub = sandbox
+        .stub(producer.producer, 'createQueue');
+
+      const getQueueUrlStub = sandbox
+        .stub(producer.producer, 'getQueueUrl')
+        .resolves({
+          QueueUrl:
+            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
+        });
+
       await producer.initialize('topic-with-queue');
       expect(getQueueUrlStub.calledOnce, 'getQueueUrl is called').to.be.true;
       expect(createQueueStub.notCalled, 'createQueue is not called').to.be.true;
@@ -131,41 +99,35 @@ describe('SQS Producer', () => {
       );
 
       const createQueueStub = sandbox
-        .stub(newProducer.producer, 'createQueue')
+        .stub(newProducer.producer, 'createQueue');
+
+      createQueueStub
         .onCall(0)
-        // Creating DLQ
-        .returns(
-          // @ts-expect-error
-          awsPromiseResolves({
+        .resolves({
             QueueUrl:
               'https://sqs.ap-southeast-2.amazonaws.com/123456123456/dlq-topic_DLQ',
-          })
-        )
+          });
+
+      createQueueStub
         .onCall(1)
-        .returns(
-          // @ts-expect-error
-          awsPromiseResolves({
-            QueueUrl:
-              'https://sqs.ap-southeast-2.amazonaws.com/123456123456/dlq-topic',
-          })
-        );
+        .resolves({
+          QueueUrl:
+            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/dlq-topic',
+        });
+
 
       const testArn = 'arn:aws:sqs:ap-southeast-2:000000000000:dlq-topic_DLQ';
       const getQueueAttributeStub = sandbox
         .stub(newProducer.producer, 'getQueueAttributes')
-        .returns(
-          // @ts-expect-error
-          awsPromiseResolves({
+        .resolves({
             Attributes: {
               QueueArn: testArn,
             },
-          })
-        );
+          });
 
       const getQueueStub = sandbox
         .stub(newProducer.producer, 'getQueueUrl')
-        // @ts-expect-error
-        .returns(awsPromiseRejects('unable to find existing'));
+        .rejects(new Error('unable to find existing'));
 
       await newProducer.initialize('dlq-topic');
 
@@ -200,6 +162,13 @@ describe('SQS Producer', () => {
     });
 
     it(`when the topic's SQS URL is not known, initialize() should be called`, async () => {
+      const sendMessageStub = sandbox
+        .stub(producer.producer, 'sendMessage')
+        .resolves({
+          MD5OfMessageBody: '00000000000000000000000000000000',
+          MessageId: '00000000-1111-2222-3333-444444444444',
+        });
+
       registry.addTopic('topic-without-queue');
       await producer.send('topic-without-queue', { foo: 'bar' });
 
@@ -208,6 +177,13 @@ describe('SQS Producer', () => {
     });
 
     it(`when the topic's SQS URL is know, initialize() should not be called`, async () => {
+        const sendMessageStub = sandbox
+        .stub(producer.producer, 'sendMessage')
+        .resolves({
+          MD5OfMessageBody: '00000000000000000000000000000000',
+          MessageId: '00000000-1111-2222-3333-444444444444',
+        });
+
       registry.addTopic('topic-with-queue');
       producer.sqsUrls['topic-with-queue'] =
         'https://sqs.ap-southeast-2.amazonaws.com/123456123456/registered-topic-with-queue';
@@ -235,6 +211,9 @@ describe('SQS Producer', () => {
         { attributes }
       );
       registry.addNewTask(task);
+
+      sendMessageStub = sandbox
+        .stub(producer.producer, 'sendMessage');
 
       await producer.send('test-topic', { a: 'payload' });
 
@@ -284,6 +263,9 @@ describe('SQS Producer', () => {
         MessageGroupId: undefined,
       };
 
+      const sendMessageStub = sandbox
+        .stub(producer.producer, 'sendMessage');
+
       await producer.send('test-topic', messagePayload, messageGroupId, messageContext);
       sinon.assert.calledWith(sendMessageStub, expectedPayload);
     });
@@ -316,6 +298,8 @@ describe('SQS Producer', () => {
         MessageGroupId: messageGroupId,
       };
 
+      const sendMessageStub = sandbox
+        .stub(producer.producer, 'sendMessage');
       await producer.send('test-topic', messagePayload, messageGroupId, messageContext);
       sinon.assert.calledWith(sendMessageStub, expectedPayload);
     });
@@ -346,6 +330,10 @@ describe('SQS Producer', () => {
 
     it('should throw an error if sendMessage() throws an error', async () => {
       initializeStub.resolves();
+
+      const sendMessageStub = sandbox
+        .stub(producer.producer, 'sendMessage');
+      sendMessageStub.rejects(new Error('Bad message'));
 
       const task = new Task(
         { engine: 'sqs' },

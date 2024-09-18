@@ -19,18 +19,15 @@
     "lib"
   ],
   "peerDependencies": {
-    "newrelic": "^9.8.0"
-  },
-  "dependencies": {
-    "steveo": "^6.3.0"
+    "newrelic": "^9.8.0",
+    "steveo": "*"
   },
   "devDependencies": {
-    "@types/newrelic": "^9.4.0",
-    "newrelic": "^9.8.0",
     "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@ordermentum/eslint-config-ordermentum": "2.4.0",
     "@types/chai": "4.3.16",
     "@types/mocha": "10.0.1",
+    "@types/newrelic": "^9.4.0",
     "@types/node": "20.14.9",
     "@types/sinon": "10.0.20",
     "@types/uuid": "8.3.4",
@@ -47,10 +44,12 @@
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-unicorn": "45.0.2",
     "mocha": "10.2.0",
+    "newrelic": "^9.8.0",
     "nyc": "15.1.0",
     "prettier": "2.8.8",
     "sinon": "15.2.0",
     "source-map-support": "0.5.21",
+    "steveo": "*",
     "ts-node": "10.9.2",
     "typescript": "5.1.3"
   }
