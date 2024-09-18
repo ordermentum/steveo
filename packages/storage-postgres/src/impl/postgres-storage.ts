@@ -25,6 +25,10 @@ class PostgresStorage extends Storage {
     this.logger.trace({ msg: `Postgres storage transaction begin` });
 
     //
+    const opts = {
+      timeout: 20000,
+    };
+
     await this.prisma.$transaction(async client => {
       const repos: Repositories = {
         workflow: new WorkflowStateRepositoryPostgres(client),
@@ -33,7 +37,7 @@ class PostgresStorage extends Storage {
       await fn(repos);
 
       this.logger.trace({ msg: `Postgres storage transaction complete` });
-    });
+    }, opts);
   }
 }
 

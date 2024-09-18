@@ -45,11 +45,6 @@ const steveoConfig: SQSConfiguration = {
           }),
         }
       : undefined,
-  // Paul - Commented due to compilation error it caused
-  // childProcesses: {
-  //   instancePath: __filename,
-  //   args: nodeEnv === 'production' ? [] : ['-r', 'ts-node/register'],
-  // },
   tasksPath: path.resolve(__dirname, '../tasks'),
   upperCaseNames: true,
 };

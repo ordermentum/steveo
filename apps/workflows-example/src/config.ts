@@ -11,8 +11,18 @@ export const logger = bunyan.createLogger({ name: 'workflow-test' });
 // Parse and validate the environment to the defined schema
 const env = load({
   AWS_REGION: String,
-  AWS_ACCESS_KEY: String,
-  AWS_SECRET_ACCESS_KEY: String,
+  AWS_ENDPOINT: {
+    type: String,
+    optional: true,
+  },
+  AWS_ACCESS_KEY: {
+    type: String,
+    optional: true,
+  },
+  AWS_SECRET_ACCESS_KEY: {
+    type: String,
+    optional: true,
+  },
   DATASOURCE_URL: String,
 });
 
@@ -22,6 +32,7 @@ const sqsConfig: SQSConfiguration = {
   receiveMessageWaitTimeSeconds: '20',
   messageRetentionPeriod: '604800',
   engine: 'sqs',
+  endpoint: env.AWS_ENDPOINT,
   accessKeyId: env.AWS_ACCESS_KEY,
   secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
   maxNumberOfMessages: 1,

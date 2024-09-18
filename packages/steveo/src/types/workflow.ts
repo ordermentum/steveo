@@ -13,11 +13,6 @@ export interface WorkflowPayload {
  */
 export interface WorkflowOptions extends TaskOptions {
   /**
-   * Optional workflow topic name
-   */
-  topic?: string;
-
-  /**
    *
    */
   serviceId: string;

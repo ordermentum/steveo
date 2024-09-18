@@ -1,9 +1,11 @@
+import { TaskOptions } from '../types/task-options';
+
 /**
  * Type definition for a single workflow step that defines
  * what the engine is to execute to complete the task, or
  * (optionally), what to execute if the step fails irretrievably.
  */
-export interface Step<StepState, StepResult> {
+export interface Step<StepState, StepResult> extends TaskOptions {
   /**
    * The steveo workflow step name that will kick off this
    * step. As the step is part of a workflow, this will
@@ -13,7 +15,7 @@ export interface Step<StepState, StepResult> {
   name: string;
 
   /**
-   *
+   * Override topic name
    */
   topic?: string;
 

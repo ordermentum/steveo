@@ -32,6 +32,7 @@ import { Storage } from './storage/storage';
 import { TaskOptions } from './types/task-options';
 import { Workflow } from './runtime/workflow';
 import { WorkflowOptions } from './types/workflow';
+import { formatTopicName } from './lib/formatters';
 
 export { Logger } from './common';
 export { Storage, Repositories } from './storage/storage';
@@ -109,7 +110,7 @@ export class Steveo implements ISteveo {
    * @returns
    */
   flow(name: string, options: WorkflowOptions = { serviceId: 'DEFAULT' }) {
-    const topic = this.formatTopicName(name, options);
+    const topic = formatTopicName(name, options);
 
     return new Workflow({
       name,
@@ -136,7 +137,7 @@ export class Steveo implements ISteveo {
     callback: Callback<T, R, C>,
     options: TaskOptions = {}
   ): ITask<T> {
-    const topic = this.formatTopicName(name, options);
+    const topic = formatTopicName(name, options);
     const task = new Task<T, R>(
       this.config,
       this.registry,
@@ -259,17 +260,6 @@ export class Steveo implements ISteveo {
     }
 
     return this._runner;
-  }
-
-  /**
-   * Standardised factory to produce a formatted topic name
-   */
-  private formatTopicName(name: string, options: { queueName?: string }) {
-    const topic =
-      options.queueName ??
-      (this.config.queuePrefix ? `${this.config.queuePrefix}_${name}` : name);
-
-    return this.config.upperCaseNames ? topic.toUpperCase() : topic;
   }
 }
 

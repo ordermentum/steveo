@@ -42,7 +42,7 @@ export interface WorkflowState {
    * The next step in the chain will be executed with the result
    * of the previous step as its argument.
    */
-  results: Record<string, unknown>;
+  results?: Record<string, unknown>;
 
   /**
    * Diagnostic and auditing tracking of errors that occurred
