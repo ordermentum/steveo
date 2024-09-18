@@ -32,5 +32,8 @@
   },
   "dependencies": {
     "dd-trace": "^5.2.0"
+  },
+  "peerDependencies": {
+    "steveo": "*"
   }
 }
