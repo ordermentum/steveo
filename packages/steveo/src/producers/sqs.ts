@@ -19,12 +19,11 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
-  Attribute,
-  ITask,
 } from '../common';
 
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
+import { Attribute } from '../types/task-options';
 
 class SqsProducer extends BaseProducer implements IProducer {
   config: SQSConfiguration;
@@ -59,7 +58,7 @@ class SqsProducer extends BaseProducer implements IProducer {
 
     let queueName = topic;
 
-    const task: ITask<any, any> | null = this.registry.getTask(topic);
+    const task = this.registry.getTask(topic);
     const fifo: boolean = !!task?.options?.fifo;
 
     const fifoAttributes: {
@@ -129,7 +128,7 @@ class SqsProducer extends BaseProducer implements IProducer {
   ): Promise<Record<string, string> | null> {
     const task = this.registry.getTask(queueName);
 
-    if (!task?.options.deadLetterQueue) {
+    if (!task?.options?.deadLetterQueue) {
       return null;
     }
 
@@ -210,10 +209,10 @@ class SqsProducer extends BaseProducer implements IProducer {
       ...context,
     };
 
-    const task: ITask | null = this.registry.getTask(topic);
+    const task = this.registry.getTask(topic);
     let attributes: Attribute[] = [] as Attribute[];
     if (task) {
-      attributes = (task.options.attributes ?? []) as Attribute[];
+      attributes = (task.options?.attributes ?? []) as Attribute[];
     }
 
     const messageAttributes = {
@@ -230,7 +229,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       };
     }
 
-    const fifo = !!task?.options.fifo;
+    const fifo = !!task?.options?.fifo;
 
     const sqsTopic = fifo ? `${topic}.fifo` : topic;
 

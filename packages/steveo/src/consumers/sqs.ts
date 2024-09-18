@@ -18,7 +18,7 @@ import { safeParseInt } from '../lib/utils';
 import { getContext } from '../lib/context';
 import { getSqsInstance } from '../config/sqs';
 
-import { IRunner, Pool, Logger, SQSConfiguration, ITask } from '../common';
+import { IRunner, Pool, Logger, SQSConfiguration } from '../common';
 import { Steveo } from '..';
 import { Resource } from '../lib/pool';
 
@@ -251,7 +251,7 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   private getTopic(topic: string): string {
-    const task: ITask<any, any> | null = this.registry.getTask(topic);
+    const task = this.registry.getTask(topic);
     const fifo: boolean = !!task?.options?.fifo;
     return fifo ? `${topic}.fifo` : topic;
   }
@@ -345,7 +345,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       MessageRetentionPeriod: this.config.messageRetentionPeriod,
     };
 
-    const task: ITask<any, any> | null = this.registry.getTask(topic);
+    const task = this.registry.getTask(topic);
     const isFifoTask: boolean = task?.options?.fifo ?? false;
     if (isFifoTask) {
       queueName = `${queueName}.fifo`;

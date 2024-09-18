@@ -1,6 +1,6 @@
 import genericPool, { Options } from 'generic-pool';
 import { v4 } from 'uuid';
-import Registry from '../registry';
+import Registry from '../runtime/registry';
 
 export type Resource = {
   id: string;

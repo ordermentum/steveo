@@ -1,12 +1,16 @@
 import events from 'events';
 
-import { IRegistry, IEvent, ITask, TaskList } from './common';
+import { IRegistry, IEvent, TaskList, RegistryElem } from '../common';
 
 class Registry implements IRegistry {
   registeredTasks: TaskList;
 
+  // TODO: Move up a level to the Steveo class
   events: IEvent;
 
+  /**
+   * Maps "tasks" to message queue provider topic (queue) names
+   */
   items: Map<string, string>;
 
   heartbeat: number;
@@ -23,13 +27,13 @@ class Registry implements IRegistry {
     this.events.emit(name, ...args);
   }
 
-  addNewTask(task: ITask) {
+  addNewTask(task: RegistryElem) {
     this.emit('task_added', task);
     this.items.set(task.name, task.topic);
     this.registeredTasks[task.topic] = task;
   }
 
-  removeTask(task: ITask) {
+  removeTask(task: RegistryElem) {
     this.emit('task_removed', task);
     delete this.registeredTasks[task.topic];
     this.items.delete(task.name);
@@ -53,7 +57,7 @@ class Registry implements IRegistry {
     this.items.set(name, topic ?? name);
   }
 
-  getTask(topic: string): ITask | null {
+  getTask(topic: string): RegistryElem | null {
     return this.registeredTasks[topic] ? this.registeredTasks[topic] : null;
   }
 }

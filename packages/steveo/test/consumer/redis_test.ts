@@ -3,7 +3,7 @@ import sinon from 'sinon';
 
 import { build } from '../../src/lib/pool';
 import Runner from '../../src/consumers/redis';
-import Registry from '../../src/registry';
+import Registry from '../../src/runtime/registry';
 import redisConf from '../../src/config/redis';
 
 describe('runner/redis', () => {

@@ -1,10 +1,11 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producers/sqs';
-import Registry from '../../src/registry';
-import Task from '../../src/task';
-import { ITask, TaskOptions } from '../../src/common';
+import Registry from '../../src/runtime/registry';
+import Task from '../../src/runtime/task';
+import { ITask } from '../../src/common';
 import { createMessageMetadata } from '../../src/lib/context';
+import { TaskOptions } from '../../src/types/task-options';
 
 describe('SQS Producer', () => {
   let sandbox: sinon.SinonSandbox;
@@ -40,13 +41,13 @@ describe('SQS Producer', () => {
 
     it(`when a queue does not exist, a queue should be created`, async () => {
       const createQueueStub = sandbox
-        .stub(producer.producer, 'createQueue').resolves({
+        .stub(producer.producer, 'createQueue')
+        .resolves({
           QueueUrl:
             'https://sqs.ap-southeast-2.amazonaws.com/123456123456/test-topic',
         });
 
-      const getQueueUrlStub = sandbox
-        .stub(producer.producer, 'getQueueUrl');
+      const getQueueUrlStub = sandbox.stub(producer.producer, 'getQueueUrl');
       getQueueUrlStub.rejects(new Error('Queue does not exist'));
 
       await producer.initialize('topic-without-queue');
@@ -54,8 +55,7 @@ describe('SQS Producer', () => {
     });
 
     it('when a queue exists, it should read and use the existing queue URL', async () => {
-      const createQueueStub = sandbox
-        .stub(producer.producer, 'createQueue');
+      const createQueueStub = sandbox.stub(producer.producer, 'createQueue');
 
       const getQueueUrlStub = sandbox
         .stub(producer.producer, 'getQueueUrl')
@@ -98,32 +98,26 @@ describe('SQS Producer', () => {
         anotherRegistry
       );
 
-      const createQueueStub = sandbox
-        .stub(newProducer.producer, 'createQueue');
+      const createQueueStub = sandbox.stub(newProducer.producer, 'createQueue');
 
-      createQueueStub
-        .onCall(0)
-        .resolves({
-            QueueUrl:
-              'https://sqs.ap-southeast-2.amazonaws.com/123456123456/dlq-topic_DLQ',
-          });
+      createQueueStub.onCall(0).resolves({
+        QueueUrl:
+          'https://sqs.ap-southeast-2.amazonaws.com/123456123456/dlq-topic_DLQ',
+      });
 
-      createQueueStub
-        .onCall(1)
-        .resolves({
-          QueueUrl:
-            'https://sqs.ap-southeast-2.amazonaws.com/123456123456/dlq-topic',
-        });
-
+      createQueueStub.onCall(1).resolves({
+        QueueUrl:
+          'https://sqs.ap-southeast-2.amazonaws.com/123456123456/dlq-topic',
+      });
 
       const testArn = 'arn:aws:sqs:ap-southeast-2:000000000000:dlq-topic_DLQ';
       const getQueueAttributeStub = sandbox
         .stub(newProducer.producer, 'getQueueAttributes')
         .resolves({
-            Attributes: {
-              QueueArn: testArn,
-            },
-          });
+          Attributes: {
+            QueueArn: testArn,
+          },
+        });
 
       const getQueueStub = sandbox
         .stub(newProducer.producer, 'getQueueUrl')
@@ -177,7 +171,7 @@ describe('SQS Producer', () => {
     });
 
     it(`when the topic's SQS URL is know, initialize() should not be called`, async () => {
-        const sendMessageStub = sandbox
+      const sendMessageStub = sandbox
         .stub(producer.producer, 'sendMessage')
         .resolves({
           MD5OfMessageBody: '00000000000000000000000000000000',
@@ -212,8 +206,7 @@ describe('SQS Producer', () => {
       );
       registry.addNewTask(task);
 
-      sendMessageStub = sandbox
-        .stub(producer.producer, 'sendMessage');
+      sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
 
       await producer.send('test-topic', { a: 'payload' });
 
@@ -239,7 +232,7 @@ describe('SQS Producer', () => {
     it('should merge the context object into payload metadata if context given', async () => {
       const taskOptions: TaskOptions = {};
       const task: ITask = new Task(
-        {engine: 'sqs'},
+        { engine: 'sqs' },
         registry,
         producer,
         'test-task-with-attributes',
@@ -255,25 +248,31 @@ describe('SQS Producer', () => {
       const expectedMessageBody = {
         ...messagePayload,
         _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
-      }
+      };
       const expectedPayload = {
-        MessageAttributes: {Timestamp: {DataType: 'Number', StringValue: clock.now.toString()}},
+        MessageAttributes: {
+          Timestamp: { DataType: 'Number', StringValue: clock.now.toString() },
+        },
         MessageBody: JSON.stringify(expectedMessageBody),
         QueueUrl: undefined,
         MessageGroupId: undefined,
       };
 
-      const sendMessageStub = sandbox
-        .stub(producer.producer, 'sendMessage');
+      const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
 
-      await producer.send('test-topic', messagePayload, messageGroupId, messageContext);
+      await producer.send(
+        'test-topic',
+        messagePayload,
+        messageGroupId,
+        messageContext
+      );
       sinon.assert.calledWith(sendMessageStub, expectedPayload);
     });
 
     it('should use key as MessageGroupId if task is configured as fifo and key is present', async () => {
       const taskOptions: TaskOptions = { fifo: true };
       const task: ITask = new Task(
-        {engine: 'sqs'},
+        { engine: 'sqs' },
         registry,
         producer,
         'test-task-with-attributes',
@@ -285,22 +284,28 @@ describe('SQS Producer', () => {
 
       const messagePayload: any = { a: 'payload' };
       const messageContext: any = { any: 'context' };
-      const messageGroupId: string = 'any-key'
+      const messageGroupId: string = 'any-key';
       const expectedMessageBody = {
         ...messagePayload,
         _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
-      }
+      };
 
       const expectedPayload = {
-        MessageAttributes: {Timestamp: {DataType: 'Number', StringValue: clock.now.toString()}},
+        MessageAttributes: {
+          Timestamp: { DataType: 'Number', StringValue: clock.now.toString() },
+        },
         MessageBody: JSON.stringify(expectedMessageBody),
         QueueUrl: undefined,
         MessageGroupId: messageGroupId,
       };
 
-      const sendMessageStub = sandbox
-        .stub(producer.producer, 'sendMessage');
-      await producer.send('test-topic', messagePayload, messageGroupId, messageContext);
+      const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
+      await producer.send(
+        'test-topic',
+        messagePayload,
+        messageGroupId,
+        messageContext
+      );
       sinon.assert.calledWith(sendMessageStub, expectedPayload);
     });
 
@@ -331,8 +336,7 @@ describe('SQS Producer', () => {
     it('should throw an error if sendMessage() throws an error', async () => {
       initializeStub.resolves();
 
-      const sendMessageStub = sandbox
-        .stub(producer.producer, 'sendMessage');
+      const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
       sendMessageStub.rejects(new Error('Bad message'));
 
       const task = new Task(
