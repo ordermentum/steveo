@@ -18,12 +18,10 @@ import { Customer } from './types/customer';
       topic: 'extremely-verbose-topic-name-for-testing-purposes',
       name: 'placer-order-step',
       execute: placeOrderStep,
-      options: {
-        queueName: 'hello-queue',
-        waitToCommit: false,
-        fifo: false,
-        deadLetterQueue: true,
-      },
+      queueName: 'hello-queue',
+      waitToCommit: false,
+      fifo: false,
+      deadLetterQueue: true,
     })
     .next({
       name: 'create-invoice-step',

@@ -22,24 +22,20 @@ interface ExecuteContext {
   repos: Repositories;
 }
 
+interface WorkflowProps {
+  name: string;
+  topic: string;
+  storage: Storage;
+  logger?: Logger;
+  registry: IRegistry;
+  producer: IProducer;
+  options: WorkflowOptions;
+}
+
 /**
  *
  */
 export class Workflow {
-  $name: string;
-
-  $topic: string;
-
-  $storage: Storage;
-
-  $logger: Logger;
-
-  $registry: IRegistry;
-
-  $producer: IProducer;
-
-  $options: WorkflowOptions;
-
   /**
    * The execution step definitions.
    * Uses an object type as the generic types of the steps
@@ -47,40 +43,40 @@ export class Workflow {
    */
   steps: StepUnknown[] = [];
 
-  constructor(props: {
-    name: string;
-    topic: string;
-    storage: Storage;
-    logger?: Logger;
-    registry: IRegistry;
-    producer: IProducer;
-    options: WorkflowOptions;
-  }) {
-    this.$name = props.name;
-    this.$topic = props.topic;
-    this.$storage = props.storage;
-    this.$logger = props.logger ?? nullLogger;
-    this.$registry = props.registry;
-    this.$producer = props.producer;
-    this.$options = props.options;
-
-    assert(this.$name, `name must be specified`);
+  constructor(private props: WorkflowProps) {
+    assert(this.name, `name must be specified`);
 
     // Register the workflow, this will make sure we can start a workflow execution
-    this.$registry.addNewTask(this);
+    this.registry.addNewTask(this);
   }
 
   // Support the existing interface ITask by duck typing members
   get name() {
-    return this.$name;
+    return this.props.name;
   }
 
   get topic() {
-    return this.$topic;
+    return this.props.topic;
   }
 
   get options() {
-    return this.$options;
+    return this.props.options;
+  }
+
+  protected get logger() {
+    return this.props.logger ?? nullLogger;
+  }
+
+  protected get registry() {
+    return this.props.registry;
+  }
+
+  protected get producer() {
+    return this.props.producer;
+  }
+
+  protected get storage() {
+    return this.props.storage;
   }
 
   /**
@@ -92,7 +88,7 @@ export class Workflow {
     const subscribe = bind(this.subscribe, this);
     const taskName = this.formatStepMessage(step.name);
 
-    this.$registry.addNewTask({
+    this.registry.addNewTask({
       subscribe,
       name: taskName,
       topic: step.topic ?? taskName,
@@ -156,25 +152,25 @@ export class Workflow {
     const params = Array.isArray(payload) ? payload : [payload];
 
     try {
-      this.$logger.info(
-        `Workflow ${this.$name} publish next step in sequence ${message}`
+      this.logger.info(
+        `Workflow ${this.name} publish next step in sequence ${message}`
       );
 
       // sqs calls this method twice
-      await this.$producer.initialize(message);
+      await this.producer.initialize(message);
 
       await Promise.all(
         params.map((data: T) => {
-          this.$registry.emit('workflow_send', message, data);
-          return this.$producer.send(message, data, context?.key, context);
+          this.registry.emit('workflow_send', message, data);
+          return this.producer.send(message, data, context?.key, context);
         })
       );
 
-      this.$registry.emit('workflow_success', message, payload);
+      this.registry.emit('workflow_success', message, payload);
     } catch (err) {
-      this.$logger.error(`Error executing workflow ${this.name} - ${message}`);
+      this.logger.error(`Error executing workflow ${this.name} - ${message}`);
 
-      this.$registry.emit('workflow_failure', message, err);
+      this.registry.emit('workflow_failure', message, err);
       throw err;
     }
   }
@@ -188,18 +184,18 @@ export class Workflow {
   async subscribe<T extends WorkflowPayload>(payload: T) {
     if (!this.steps.length) {
       throw new Error(
-        `Steps must be defined before a flow is executed ${this.$name}`
+        `Steps must be defined before a flow is executed ${this.name}`
       );
     }
 
-    await this.$storage.transaction(async repos => {
-      const workflowId = payload.workflowId ?? `${this.$name}-${v4()}`;
+    await this.storage.transaction(async repos => {
+      const workflowId = payload.workflowId ?? `${this.name}-${v4()}`;
 
       // Initialise new workflow execution?
       if (!payload.workflowId) {
         const firstStep = this.steps[0];
 
-        this.$logger.debug(`No workflow in payload, initialising new workflow`);
+        this.logger.debug(`No workflow in payload, initialising new workflow`);
 
         await repos.workflow.workflowInit({
           workflowId,
@@ -222,7 +218,7 @@ export class Workflow {
         );
       }
 
-      this.$logger.debug(
+      this.logger.debug(
         `Load state for workflow ${workflowId}, step ${step.name}`
       );
 
@@ -269,7 +265,7 @@ export class Workflow {
         );
       }
 
-      this.$logger.debug(`Executing workflow ${workflowId}, step ${step.name}`);
+      this.logger.debug(`Executing workflow ${workflowId}, step ${step.name}`);
 
       const result = (await step.execute(payload)) as object;
 
@@ -296,7 +292,7 @@ export class Workflow {
         context
       );
     } catch (err) {
-      this.$logger.error(`Error executing next step in workflow ${workflowId}`);
+      this.logger.error(`Error executing next step in workflow ${workflowId}`);
 
       await context.repos.workflow.stepExecuteError(
         workflowId,
@@ -318,7 +314,7 @@ export class Workflow {
 
     let current: StepUnknown | undefined = step;
 
-    this.$logger.info(
+    this.logger.info(
       `Execute rollback for workflow ${workflowId}, step ${step.name}`
     );
 
@@ -337,7 +333,7 @@ export class Workflow {
           await context.repos.workflow.workflowCompleted(workflowId);
         }
       } catch (err) {
-        this.$logger.error(
+        this.logger.error(
           `Error executing rollback step ${current.name} in workflow ${workflowId}`
         );
 
@@ -407,7 +403,7 @@ export class Workflow {
    *
    */
   private formatStepMessage(name: string): string {
-    return formatTopicName(`${this.name}__${name}`, this.$options);
+    return formatTopicName(`${this.name}__${name}`, this.options);
   }
 
   /**
@@ -427,7 +423,7 @@ export class Workflow {
 
     if (!state) {
       throw new Error(
-        `State was not found for workflowId ${flowId} in workflow ${this.$name}`
+        `State was not found for workflowId ${flowId} in workflow ${this.name}`
       );
     }
 
