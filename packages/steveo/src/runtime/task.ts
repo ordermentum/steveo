@@ -5,10 +5,10 @@ import {
   SQSConfiguration,
   DummyConfiguration,
   Callback,
-  TaskOptions,
   IProducer,
   IRegistry,
-} from './common';
+} from '../common';
+import { TaskOptions } from '../types/task-options';
 
 class Task<T = any, R = any> implements ITask<T, R> {
   config:
@@ -62,7 +62,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
       // sqs calls this method twice
       await this.producer.initialize(this.topic);
       await Promise.all(
-        params.map(data => {
+        params.map((data: T) => {
           this.registry.emit('task_send', this.topic, data);
           return this.producer.send(this.topic, data, context?.key, context);
         })

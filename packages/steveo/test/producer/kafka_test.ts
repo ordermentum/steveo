@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producers/kafka';
-import Registry from '../../src/registry';
-import {createMessageMetadata} from "../../src/lib/context";
+import Registry from '../../src/runtime/registry';
+import { createMessageMetadata } from '../../src/lib/context';
 
 describe('Kafka Producer', () => {
   let sandbox: sinon.SinonSandbox;
@@ -11,7 +11,7 @@ describe('Kafka Producer', () => {
     sandbox = sinon.createSandbox();
     clock = sinon.useFakeTimers({
       now: 0,
-      shouldAdvanceTime: true
+      shouldAdvanceTime: true,
     });
   });
 
@@ -35,7 +35,9 @@ describe('Kafka Producer', () => {
     const initStub = sandbox.stub(p.producer, 'connect').resolves();
     try {
       await p.initialize();
-    } catch (err) {}
+    } catch (err) {
+      // Test catch body
+    }
     expect(initStub.callCount).to.equal(1);
   });
 
@@ -58,26 +60,25 @@ describe('Kafka Producer', () => {
 
   it('should merge the context object into payload metadata if context given', async () => {
     const registry = new Registry();
-    registry.addTopic("test-topic");
+    registry.addTopic('test-topic');
     const p = new Producer(
       {
-        engine: "kafka",
-        bootstrapServers: "kafka:9200",
-        securityProtocol: "plaintext",
-        tasksPath: "",
+        engine: 'kafka',
+        bootstrapServers: 'kafka:9200',
+        securityProtocol: 'plaintext',
+        tasksPath: '',
       },
       registry
     );
     const messageContext = { any: 'context' };
-    const messagePayload: any = { a: "payload" };
+    const messagePayload: any = { a: 'payload' };
     const expectedMessage = JSON.stringify({
       ...messagePayload,
       _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
     });
 
-    const sendStub = sandbox.stub(p.producer, "produce").callsArgWith(5);
-    await p.send("test-topic", messagePayload, null, messageContext);
-
+    const sendStub = sandbox.stub(p.producer, 'produce').callsArgWith(5);
+    await p.send('test-topic', messagePayload, null, messageContext);
 
     const inputMessageBuffer: Buffer = sendStub.args[0][2];
     expect(inputMessageBuffer.toString()).to.be.equal(expectedMessage);

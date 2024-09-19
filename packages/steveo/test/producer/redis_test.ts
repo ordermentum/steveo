@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producers/redis';
-import Registry from '../../src/registry';
+import Registry from '../../src/runtime/registry';
 import redisConf from '../../src/config/redis';
 
 describe('Redis Producer', () => {

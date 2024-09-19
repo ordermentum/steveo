@@ -6,7 +6,7 @@ import { v4 } from 'uuid';
 import { randomUUID } from 'crypto';
 import Runner from '../../src/consumers/sqs';
 import { build } from '../../src/lib/pool';
-import Registry from '../../src/registry';
+import Registry from '../../src/runtime/registry';
 import { Steveo } from '../../src';
 
 describe('runner/sqs', () => {
@@ -19,7 +19,7 @@ describe('runner/sqs', () => {
     sandbox = sinon.createSandbox();
     clock = sinon.useFakeTimers({
       now: 0,
-      shouldAdvanceTime: true
+      shouldAdvanceTime: true,
     });
     registry = new Registry();
 
@@ -181,7 +181,7 @@ describe('runner/sqs', () => {
       .returns({ promise: async () => {} });
 
     const inputContext = { contextKey: 'contextValue' };
-    const messageBody = { data: 'Hello', _meta: inputContext }
+    const messageBody = { data: 'Hello', _meta: inputContext };
     await anotherRunner.receive(
       [
         {
@@ -194,14 +194,10 @@ describe('runner/sqs', () => {
 
     const expectedContext = {
       duration: 0,
-      ...inputContext
+      ...inputContext,
     };
 
-    sinon.assert.calledWith(
-      subscribeStub,
-      { data: 'Hello' },
-      expectedContext
-    );
+    sinon.assert.calledWith(subscribeStub, { data: 'Hello' }, expectedContext);
   });
 
   it('should delete message if waitToCommit is true after processing', async () => {
@@ -303,11 +299,11 @@ describe('runner/sqs', () => {
 
     const randomId = randomUUID();
     sandbox.stub(anotherRunner.sqs, 'getQueueUrl').resolves({
-        QueueUrl: `https://ap-southeast2.aws.com/${randomId}/a-topic.fifo`,
-      });
+      QueueUrl: `https://ap-southeast2.aws.com/${randomId}/a-topic.fifo`,
+    });
 
     const url: string = await anotherRunner.getQueueUrl('a-topic');
-  
+
     await anotherRunner.receive(
       [
         { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'Hello' }) },
@@ -347,7 +343,8 @@ describe('runner/sqs', () => {
 
     const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
-      .stub(anotherRunner.sqs, 'getQueueUrl').resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
+      .stub(anotherRunner.sqs, 'getQueueUrl')
+      .resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
 
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
@@ -381,7 +378,8 @@ describe('runner/sqs', () => {
 
     const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
-      .stub(anotherRunner.sqs, 'getQueueUrl').rejects(new Error());
+      .stub(anotherRunner.sqs, 'getQueueUrl')
+      .rejects(new Error());
 
     expect(anotherRunner.sqsUrls).to.deep.equal({});
     await anotherRunner.getQueueUrl('test');
@@ -447,10 +445,12 @@ describe('runner/sqs', () => {
       const anotherRunner = new Runner(steveo);
 
       const getQueueUrlAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'getQueueUrl').resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
+        .stub(anotherRunner.sqs, 'getQueueUrl')
+        .resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
 
       const receiveMessageAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'receiveMessage').resolves([]);
+        .stub(anotherRunner.sqs, 'receiveMessage')
+        .resolves([]);
 
       anotherRunner.state = 'paused';
       await anotherRunner.process();
@@ -485,10 +485,12 @@ describe('runner/sqs', () => {
       const anotherRunner = new Runner(steveo);
 
       const getQueueUrlAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'getQueueUrl').resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
+        .stub(anotherRunner.sqs, 'getQueueUrl')
+        .resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
 
       const receiveMessageAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'receiveMessage').resolves([]);
+        .stub(anotherRunner.sqs, 'receiveMessage')
+        .resolves([]);
 
       await anotherRunner.process();
       expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
@@ -529,12 +531,14 @@ describe('runner/sqs', () => {
         .stub(anotherRunner.sqs, 'getQueueUrl')
         // if are logic is correct, and that it appends .fifo to the plain `test` topic
         //  this would be the argument passed on the getQueueUrl to SQS
-        .withArgs({ QueueName: 'test.fifo' }).resolves({
-            QueueUrl: `https://ap-southeast2.aws.com/${randomId}/test.fifo`,
-          });
+        .withArgs({ QueueName: 'test.fifo' })
+        .resolves({
+          QueueUrl: `https://ap-southeast2.aws.com/${randomId}/test.fifo`,
+        });
 
       const receiveMessageAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'receiveMessage').resolves([]);
+        .stub(anotherRunner.sqs, 'receiveMessage')
+        .resolves([]);
 
       await anotherRunner.process();
       expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);

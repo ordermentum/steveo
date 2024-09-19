@@ -2,8 +2,9 @@
 /* eslint-disable global-require */
 import NULL_LOGGER from 'null-logger';
 /* eslint-disable no-underscore-dangle */
-import Task from './task';
-import Registry from './registry';
+import assert from 'node:assert';
+import Task from './runtime/task';
+import Registry from './runtime/registry';
 import getRunner from './lib/runner';
 import getProducer from './lib/producer';
 import getConfig from './config';
@@ -25,8 +26,18 @@ import {
   SQSConfiguration,
   DummyConfiguration,
   Middleware,
-  TaskOptions,
 } from './common';
+import { Storage } from './storage/storage';
+import { TaskOptions } from './types/task-options';
+import { Workflow } from './runtime/workflow';
+import { WorkflowOptions } from './types/workflow';
+import { formatTopicName } from './lib/formatters';
+
+export { Logger } from './common';
+export { Storage, Repositories } from './storage/storage';
+export { WorkflowStateRepository } from './storage/workflow-repo';
+export { WorkflowState } from './runtime/workflow-state';
+export { WorkflowPayload } from './types/workflow';
 
 export {
   KafkaConfiguration,
@@ -47,6 +58,12 @@ export class Steveo implements ISteveo {
   _producer?: IProducer;
 
   _runner?: IRunner;
+
+  /**
+   * General purpose storage engine originally introduced to
+   * maintain workflow execution state.
+   */
+  _storage?: Storage;
 
   events: IEvent;
 
@@ -70,8 +87,10 @@ export class Steveo implements ISteveo {
       | RedisConfiguration
       | SQSConfiguration
       | DummyConfiguration,
-    logger: Logger = NULL_LOGGER // eslint-disable-line default-param-last
+    logger: Logger = NULL_LOGGER,
+    storage: Storage | undefined = undefined
   ) {
+    this._storage = storage;
     this.logger = logger;
     this.registry = new Registry();
     this.config = getConfig(configuration);
@@ -84,15 +103,41 @@ export class Steveo implements ISteveo {
     this.middleware = configuration.middleware ?? [];
   }
 
+  /**
+   * Start the [fluent](https://en.wikipedia.org/wiki/Fluent_interface) declaration
+   * and registration of a new workflow.
+   * @param topic
+   * @returns
+   */
+  flow(name: string, options: WorkflowOptions = { serviceId: 'DEFAULT' }) {
+    const topic = formatTopicName(name, options);
+
+    return new Workflow({
+      name,
+      topic,
+      storage: this.storage,
+      logger: this.logger,
+      registry: this.registry,
+      producer: this.producer,
+      options,
+    });
+  }
+
+  /**
+   * Declare a task consumer.
+   * Given the steveo instance configuration, this will monitor the topic (queue) for the
+   * message `name` and call back the given function.
+   * @param name
+   * @param callback
+   * @param options
+   * @returns
+   */
   task<T = any, R = any, C = any>(
     name: string,
     callback: Callback<T, R, C>,
     options: TaskOptions = {}
   ): ITask<T> {
-    const topic =
-      options.queueName ??
-      (this.config.queuePrefix ? `${this.config.queuePrefix}_${name}` : name);
-
+    const topic = formatTopicName(name, options);
     const task = new Task<T, R>(
       this.config,
       this.registry,
@@ -107,11 +152,18 @@ export class Steveo implements ISteveo {
     return task;
   }
 
+  /**
+   * Publish the given payload to the given topic
+   * @param key
+   */
   async publish<T = any>(name: string, payload: T, key?: string) {
     const topic = this.registry.getTopic(name);
     return this.producer.send<T>(topic, payload, key);
   }
 
+  /**
+   * Formats a topic name to the queue naming convention
+   */
   getTopicName(name: string) {
     const withOrWithoutPrefix = this.config.queuePrefix
       ? `${this.config.queuePrefix}_${name}`
@@ -122,6 +174,11 @@ export class Steveo implements ISteveo {
     return uppercased;
   }
 
+  /**
+   * Registers a new topic (queue) with the configured message queue provider.
+   * @param name
+   * @param topic (Optional) Topic/queue name; if not provided the name will be used
+   */
   async registerTopic(name: string, topic?: string) {
     let topicName = topic;
     if (!topicName) {
@@ -130,6 +187,12 @@ export class Steveo implements ISteveo {
 
     this.registry.addTopic(name, topicName);
     await this.producer.initialize(topicName);
+  }
+
+  get storage() {
+    assert(this._storage);
+
+    return this._storage;
   }
 
   get producer() {
@@ -205,5 +268,6 @@ export default (
     | RedisConfiguration
     | SQSConfiguration
     | DummyConfiguration,
-  logger: Logger
-) => new Steveo(config, logger);
+  logger: Logger,
+  storage?: Storage
+) => new Steveo(config, logger, storage);

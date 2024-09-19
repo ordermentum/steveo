@@ -7,6 +7,8 @@ import {
   ProducerGlobalConfig,
   ProducerTopicConfig,
 } from 'node-rdkafka';
+import { Workflow } from './runtime/workflow';
+import { TaskOptions } from './types/task-options';
 
 // https://github.com/aws/aws-sdk-js-v3/issues/3063
 // 🤌🏾🤌🏾🤌🏾
@@ -121,37 +123,24 @@ export interface Configuration {
   middleware?: Middleware[];
 }
 
-export type Attribute = {
-  name: string;
-  dataType: string;
-  value: string;
-};
-
 export type Pool<T> = GenericPool<T>;
-
-export type Registry = {};
 
 export interface IEvent {
   emit(eventName: string, ...any): any;
   on(eventName: string, ...any): any;
 }
 
+export interface StepRuntime<T = any, R = any> {
+  subscribe: Callback<T, R>;
+  name: string;
+  topic: string;
+  options?: TaskOptions;
+}
+
+export type RegistryElem = ITask | Workflow | StepRuntime;
+
 export type TaskList = {
-  [key: string]: ITask;
-};
-
-export type TaskOptions = {
-  attributes?: Attribute[];
-  queueName?: string;
-  waitToCommit?: boolean;
-
-  fifo?: boolean;
-  deadLetterQueue?: boolean;
-  maxReceiveCount?: number;
-
-  // num_partitions and replication_factor are used for kafka
-  replication_factor?: number;
-  num_partitions?: number;
+  [key: string]: RegistryElem;
 };
 
 export interface IRegistry {
@@ -160,14 +149,14 @@ export interface IRegistry {
   items: Map<string, string>;
   heartbeat: number;
 
-  addNewTask(task: ITask, topic?: string): void;
-  removeTask(task: ITask): void;
+  addNewTask(task: RegistryElem, topic?: string): void;
+  removeTask(task: RegistryElem): void;
   getTopics(): string[];
   getTaskTopics(): string[];
   getTopic(name: string): string;
   emit(name: string, ...args: any): void;
   addTopic(name: string, topic?: string): void;
-  getTask(topic: string): ITask | null;
+  getTask(topic: string): RegistryElem | null;
 }
 
 export interface ITask<T = any, R = any> {
