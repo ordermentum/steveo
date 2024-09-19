@@ -1,5 +1,17 @@
 # @steveojs/scheduler-sequelize
 
+## 7.4.0
+
+### Minor Changes
+
+- f1392ba: Upgrade AWS SDK major version to 3.\*
+
+  Even though, there was no breaking change in Steveo the AWS SDK upgrade some core features that may cause unexpected
+  behavior in Steveo. So for, unit tests and manual tests haven't identified any inconsistency but that does not mean it
+  cannot still happen.
+
+  There were no changes in how Steveo should be used.
+
 ## 7.3.0
 
 ### Minor Changes
