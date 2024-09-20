@@ -4,6 +4,7 @@ declare module 'null-logger' {
     info(format: any, ...params: any[]): void;
     debug(format: any, ...params: any[]): void;
     error(format: any, ...params: any[]): void;
+    child(options: any): Logger;
   };
   let logger: Logger;
   export = logger;
