@@ -74,9 +74,17 @@ describe('Workflow state postgres repo', () => {
   it('should record multiple errors against a state', async () => {
     const init = await initialise();
 
-    await repo.stepExecuteError(init.workflowId, 'error-key-1', 'error 1 content');
+    await repo.stepExecuteError(
+      init.workflowId,
+      'error-key-1',
+      'error 1 content'
+    );
 
-    await repo.stepExecuteError(init.workflowId, 'error-key-2', 'error 2 content');
+    await repo.stepExecuteError(
+      init.workflowId,
+      'error-key-2',
+      'error 2 content'
+    );
 
     const state = await repo.workflowLoad(init.workflowId);
 

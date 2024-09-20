@@ -8,7 +8,9 @@ import { PrismaClient } from '@prisma/client';
 /**
  *
  */
-export class WorkflowStateRepositoryPostgres implements WorkflowStateRepository {
+export class WorkflowStateRepositoryPostgres
+  implements WorkflowStateRepository
+{
   constructor(private prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) {}
 
   /**
@@ -17,7 +19,12 @@ export class WorkflowStateRepositoryPostgres implements WorkflowStateRepository 
    * @param workflowId Unique ID to be used for the new workflow execution
    * @param serviceId The identifier for the service the workflow is running on. This does not identify the execution pod, only the service name common across pods
    */
-  async workflowInit(props: { workflowId: string; serviceId: string; current: string; initial: unknown }): Promise<void> {
+  async workflowInit(props: {
+    workflowId: string;
+    serviceId: string;
+    current: string;
+    initial: unknown;
+  }): Promise<void> {
     const result = await this.prisma.workflowState.create({
       data: {
         workflowId: props.workflowId,
@@ -52,7 +59,11 @@ export class WorkflowStateRepositoryPostgres implements WorkflowStateRepository 
    *
    * @param start
    */
-  async workflowStarted(start: { workflowId: string; current: string; initial: unknown }): Promise<void> {
+  async workflowStarted(start: {
+    workflowId: string;
+    current: string;
+    initial: unknown;
+  }): Promise<void> {
     const result = await this.prisma.workflowState.update({
       where: {
         workflowId: start.workflowId,
@@ -99,7 +110,11 @@ export class WorkflowStateRepositoryPostgres implements WorkflowStateRepository 
   /**
    *
    */
-  async stepExecuteError(workflowId: string, identifier: string, error: unknown): Promise<void> {
+  async stepExecuteError(
+    workflowId: string,
+    identifier: string,
+    error: unknown
+  ): Promise<void> {
     const existing = await this.prisma.workflowState.findUnique({
       where: {
         workflowId,
@@ -128,7 +143,11 @@ export class WorkflowStateRepositoryPostgres implements WorkflowStateRepository 
   /**
    *
    */
-  async stepExecuteResult(workflowId: string, nextStep: string, result: unknown): Promise<void> {
+  async stepExecuteResult(
+    workflowId: string,
+    nextStep: string,
+    result: unknown
+  ): Promise<void> {
     const existing = await this.prisma.workflowState.findUnique({
       where: {
         workflowId,
@@ -158,7 +177,10 @@ export class WorkflowStateRepositoryPostgres implements WorkflowStateRepository 
   /**
    *
    */
-  async rollbackStepExecute(workflowId: string, nextStep: string): Promise<void> {
+  async rollbackStepExecute(
+    workflowId: string,
+    nextStep: string
+  ): Promise<void> {
     await this.prisma.workflowState.update({
       where: {
         workflowId,
