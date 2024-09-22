@@ -1,5 +1,5 @@
 import { Storage, Logger, Repositories } from 'steveo';
-import { PrismaClient } from '.prisma/storage_client';
+import { PrismaClient } from 'prisma/prisma-client';
 import { WorkflowStateRepositoryPostgres } from '../repo/workflow-postgres-repo';
 import { PostgresStorageConfig } from './postgres-config';
 

@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import _ from 'lodash';
 import { WorkflowState, WorkflowStateRepository } from 'steveo';
 import { InputJsonValue } from '@prisma/client/runtime/library';
-import { PrismaClient } from '.prisma/storage_client';
+import { PrismaClient } from 'prisma/prisma-client';
 
 /**
  *
