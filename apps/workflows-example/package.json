@@ -27,7 +27,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "steveo": "*",
-    "steveo-store-postgres": "*",
+    "@steveojs/store-postgres": "*",
     "aws-sdk": "^2.77.0",
     "bluebird": "^3.5.0",
     "bunyan": "^1.8.15",

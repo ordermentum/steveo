@@ -1,5 +1,5 @@
 {
-  "name": "steveo-store-postgres",
+  "name": "@steveojs/store-postgres",
   "version": "6.7.0",
   "description": "Postgres persistence implementation for Steveo",
   "main": "lib/index.js",
