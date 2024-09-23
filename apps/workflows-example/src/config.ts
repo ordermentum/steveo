@@ -20,7 +20,7 @@ const env = load({
     type: String,
     optional: true,
   },
-  DATASOURCE_URL: String,
+  DATABASE_URL: String,
 });
 
 const sqsConfig: SQSConfiguration = {
@@ -39,7 +39,7 @@ const sqsConfig: SQSConfiguration = {
 
 // Instantiate the concrete implementation of the postgres storage
 const postgresConfig: PostgresStorageConfig = {
-  datasourceUrl: env.DATASOURCE_URL,
+  datasourceUrl: env.DATABASE_URL,
 };
 
 const storage = postgresFactory(postgresConfig, logger);

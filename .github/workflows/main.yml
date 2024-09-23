@@ -73,6 +73,8 @@ jobs:
           pushd packages/storage-postgres
           npx prisma migrate dev
           popd
+        env:
+          DATABASE_URL: postgresql://steveo@localhost:5432/steveo_testing
       - name: Yarn install
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
         env:
@@ -83,4 +85,4 @@ jobs:
         env:
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
-          DATASOURCE_URL: postgresql://steveo@localhost:5432/steveo_testing
+          DATABASE_URL: postgresql://steveo@localhost:5432/steveo_testing

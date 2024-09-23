@@ -5,7 +5,7 @@ import { WorkflowStateRepositoryPostgres } from '../src/repo/workflow-postgres-r
 
 describe('Workflow state postgres repo', () => {
   const prisma = new PrismaClient({
-    datasourceUrl: process.env.DATASOURCE_URL,
+    datasourceUrl: process.env.DATABASE_URL,
   });
   const repo = new WorkflowStateRepositoryPostgres(prisma);
 
