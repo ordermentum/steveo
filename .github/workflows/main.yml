@@ -40,8 +40,6 @@ jobs:
           - 6379:6379
       postgres:
         image: postgres
-        env:
-          POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -77,4 +75,4 @@ jobs:
         env:
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
-          DATASOURCE_URL: postgresql://ordermentum@localhost:5432/steveo_testing?schema=public
+          DATASOURCE_URL: postgresql://localhost:5432/steveo_testing?schema=public
