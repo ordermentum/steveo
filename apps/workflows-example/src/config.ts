@@ -1,6 +1,6 @@
 import { load } from 'ts-dotenv';
 import Steveo, { SQSConfiguration } from 'steveo';
-import { postgresFactory, PostgresStorageConfig } from 'steveo-store-postgres';
+import { postgresFactory, PostgresStorageConfig } from '@steveojs/store-postgres';
 import bunyan from 'bunyan';
 
 export const logger = bunyan.createLogger({ name: 'workflow-test' });
