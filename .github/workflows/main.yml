@@ -78,4 +78,4 @@ jobs:
         env:
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
-          DATASOURCE_URL: postgresql://ordermentum@localhost:5432/steveo_testing
+          DATASOURCE_URL: postgresql://steveo@localhost:5432/steveo_testing
