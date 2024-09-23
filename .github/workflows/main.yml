@@ -38,6 +38,17 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     strategy:
       matrix:
         node-version: [18.x, 20.x]
@@ -48,7 +59,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: "Setup Localstack"
-
         run: |
           pip install localstack awscli-local[ver1]
           docker pull localstack/localstack
@@ -56,6 +66,8 @@ jobs:
           localstack start -d
           localstack wait -t 30
           echo "Startup complete"
+      - name: Initialise postgres
+        run: ./bin/initialise.sh
       - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
@@ -65,3 +77,4 @@ jobs:
         env:
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
+          DATASOURCE_URL: postgresql://ordermentum@localhost:5432/steveo_testing?schema=public
