@@ -67,21 +67,24 @@ jobs:
           localstack start -d
           localstack wait -t 30
           echo "Startup complete"
-      - name: Yarn install
+      - name: Configure NPM
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-      - name: Initialise postgres
+      -name: Yarn install
+        run: yarn install
+      - name: DEBUG Prisma client
         run: |
-          ./bin/initialise.sh
-          pushd packages/storage-postgres
-          npx prisma migrate dev
           ls -la node_modules
           ls -la packages/storage-postgres/node_modules
+      - name: Initialise postgres instance
+        run: ./bin/initialise.sh
+      - name: Migrate (publish) db schema
+          pushd packages/storage-postgres
+          npx prisma migrate dev
           popd
         env:
           DATABASE_URL: postgresql://steveo@localhost:5432/steveo_testing
-      - run: yarn
       - name: "Run tests"
         run: yarn test
         env:
