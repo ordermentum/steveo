@@ -40,6 +40,9 @@ jobs:
           - 6379:6379
       postgres:
         image: postgres
+        env:
+          POSTGRES_DB: "steveo_testing"
+          POSTGRES_HOST_AUTH_METHOD: "trust"
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
