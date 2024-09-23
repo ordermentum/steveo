@@ -76,6 +76,8 @@ jobs:
           ./bin/initialise.sh
           pushd packages/storage-postgres
           npx prisma migrate dev
+          ls -la node_modules
+          ls -la packages/storage-postgres/node_modules
           popd
         env:
           DATABASE_URL: postgresql://steveo@localhost:5432/steveo_testing
