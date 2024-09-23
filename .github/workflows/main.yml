@@ -80,6 +80,7 @@ jobs:
       - name: Initialise postgres instance
         run: ./bin/initialise.sh
       - name: Migrate (publish) db schema
+        run: |
           pushd packages/storage-postgres
           npx prisma migrate dev
           popd
