@@ -93,7 +93,7 @@ const jobModelFactory: modelFactory<JobInstance> = (
   Job.addScope('blocked', () => ({
     where: {
       queued: true,
-      deletedAt: undefined,
+      deletedAt: null,
       acceptedAt: {
         [Op.or]: {
           [Op.lte]: { [Op.col]: 'last_run_at' },

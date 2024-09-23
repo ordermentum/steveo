@@ -45,7 +45,6 @@ jsconfig.json
 
 example/docker-compose-ordermentum.yml
 
-apps/*/lib/
 packages/*/lib/
 
 .turbo
