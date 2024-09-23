@@ -73,16 +73,12 @@ jobs:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       - name: Yarn install
         run: yarn install
-      - name: DEBUG Prisma client
-        run: |
-          ls -la node_modules
-          ls -la packages/storage-postgres/node_modules
       - name: Initialise postgres instance
         run: ./bin/initialise.sh
       - name: Migrate (publish) db schema
         run: |
           pushd packages/storage-postgres
-          npx prisma migrate dev
+          npx prisma migrate deploy
           popd
         env:
           DATABASE_URL: postgresql://steveo@localhost:5432/steveo_testing
