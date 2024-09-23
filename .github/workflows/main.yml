@@ -68,8 +68,9 @@ jobs:
           localstack wait -t 30
           echo "Startup complete"
       - name: Initialise postgres
-        run: ./bin/initialise.sh
-      - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
+        run: ./bin/initialise.sh && npx prisma migrate dev
+      - name: Yarn install
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       - run: yarn
