@@ -39,7 +39,8 @@ const sqsConfig: SQSConfiguration = {
 
 // Instantiate the concrete implementation of the postgres storage
 const postgresConfig: PostgresStorageConfig = {
-  datasourceUrl: env.DATABASE_URL,
+  databaseUrl: env.DATABASE_URL,
+  transactionTimeout: 5000
 };
 
 const storage = postgresFactory(postgresConfig, logger);

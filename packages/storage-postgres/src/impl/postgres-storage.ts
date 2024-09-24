@@ -13,7 +13,7 @@ class PostgresStorage extends Storage {
     super('steveo-postgres');
 
     this.prisma = new PrismaClient({
-      datasourceUrl: this.config.datasourceUrl,
+      datasourceUrl: this.config.databaseUrl,
     });
   }
 
