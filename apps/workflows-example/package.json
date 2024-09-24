@@ -26,7 +26,6 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "steveo": "*",
     "@steveojs/store-postgres": "*",
     "aws-sdk": "^2.77.0",
     "bluebird": "^3.5.0",
@@ -41,9 +40,9 @@
     "node-rdkafka": "^2.11.0",
     "null-logger": "^2.0.0",
     "rsmq": "^0.12.3",
+    "steveo": "*",
     "ts-dotenv": "^0.9.1",
     "uuid": "^3.1.0"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
