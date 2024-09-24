@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { v4 } from 'uuid';
+import { v7 } from 'uuid';
 import { expect } from 'chai';
 import { WorkflowStateRepositoryPostgres } from '../src/repo/workflow-postgres-repo';
 
@@ -11,7 +11,7 @@ describe('Workflow state postgres repo', () => {
 
   async function initialise() {
     const params = {
-      workflowId: v4(),
+      workflowId: v7(),
       serviceId: 'test-service',
       current: 'step1',
       initial: {},
