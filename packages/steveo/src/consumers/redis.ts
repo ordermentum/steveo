@@ -5,7 +5,8 @@ import Bluebird from 'bluebird';
 import BaseRunner from './base';
 import { getContext } from '../lib/context';
 import redisConf from '../config/redis';
-import { IRunner, Pool, Logger, RedisConfiguration } from '../common';
+import { IRunner, Pool, RedisConfiguration } from '../common';
+import { Logger } from '../lib/logger';
 import { Steveo } from '..';
 
 class RedisRunner extends BaseRunner implements IRunner {

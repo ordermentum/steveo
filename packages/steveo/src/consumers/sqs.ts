@@ -18,7 +18,8 @@ import { safeParseInt } from '../lib/utils';
 import { getContext } from '../lib/context';
 import { getSqsInstance } from '../config/sqs';
 
-import { IRunner, Pool, Logger, SQSConfiguration } from '../common';
+import { IRunner, Pool, SQSConfiguration } from '../common';
+import { Logger } from '../lib/logger';
 import { Steveo } from '..';
 import { Resource } from '../lib/pool';
 
@@ -54,10 +55,18 @@ class SqsRunner extends BaseRunner implements IRunner {
     return bluebird.map(
       messages,
       async message => {
-        this.logger.info(message, `Message received for task: ${topic}`);
+        this.logger.info({
+          message: `Message received for task`,
+          topic,
+          sqsMessage: message,
+        });
         const params = JSON.parse(message.Body as string);
         await this.wrap({ topic, payload: params }, async c => {
-          this.logger.info(message, `Message received for task: ${c.topic}`);
+          this.logger.info({
+            message: `Message received for task`,
+            topic: c.topic,
+            sqsMessage: message,
+          });
           let resource: Resource | null = null;
           const { _meta: _, ...data } = c.payload;
           const runnerContext = getContext(c.payload);
@@ -85,10 +94,11 @@ class SqsRunner extends BaseRunner implements IRunner {
               return;
             }
 
-            this.logger.info(
-              { context: runnerContext, params },
-              `Start Subscribe to ${task.name}`
-            );
+            this.logger.info({
+              message: `Start Subscribe to ${task.name}`,
+              context: runnerContext,
+              params,
+            });
 
             await task.subscribe(data, runnerContext);
             this.logger.debug('Completed subscribe', c.topic, c.payload);

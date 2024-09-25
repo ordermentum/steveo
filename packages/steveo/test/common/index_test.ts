@@ -1,9 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from 'chai';
-import NULL_LOGGER from 'null-logger';
 import sinon from 'sinon';
 import create from '../../src';
 import DummyProducer from '../../src/producers/dummy';
+import { consoleLogger } from '../../src/lib/logger';
 
 describe('Index', () => {
   let sandbox: sinon.SinonSandbox;
@@ -18,9 +18,9 @@ describe('Index', () => {
 
   it('handles registering tasks', async () => {
     // @ts-ignore
-    const steveo = create({ engine: 'dummy' }, NULL_LOGGER, {});
+    const steveo = create({ engine: 'dummy' }, consoleLogger, {});
     // @ts-ignore
-    const dummy = new DummyProducer({}, steveo.registry, NULL_LOGGER);
+    const dummy = new DummyProducer({}, steveo.registry, consoleLogger);
     const initializeStub = sandbox.stub(dummy, 'initialize').resolves();
     steveo._producer = dummy;
     await steveo.registerTopic('TEST_TOPIC', 'TEST_TOPIC');
@@ -29,17 +29,17 @@ describe('Index', () => {
   });
   it('handles registering topics', async () => {
     // @ts-ignore
-    const steveo = create({ engine: 'dummy' }, NULL_LOGGER, {});
+    const steveo = create({ engine: 'dummy' }, consoleLogger, {});
     const registryStub = sandbox.stub(steveo.registry, 'addNewTask').resolves();
     steveo.task('TEST_TOPIC', () => {});
     expect(registryStub.calledOnce).to.equal(true);
   });
   it('handles publishing topics', async () => {
     // @ts-ignore
-    const steveo = create({ engine: 'dummy' }, NULL_LOGGER, {});
+    const steveo = create({ engine: 'dummy' }, consoleLogger, {});
     steveo.registry.addTopic('TEST_TOPIC');
     // @ts-ignore
-    const dummy = new DummyProducer({}, steveo.registry, NULL_LOGGER);
+    const dummy = new DummyProducer({}, steveo.registry, consoleLogger);
     const sendStub = sandbox.stub(dummy, 'send').resolves();
     steveo._producer = dummy;
     await steveo.publish('TEST_TOPIC', {});
@@ -48,10 +48,10 @@ describe('Index', () => {
 
   it('handles publishing to named topics', async () => {
     // @ts-ignore
-    const steveo = create({ engine: 'dummy' }, NULL_LOGGER, {});
+    const steveo = create({ engine: 'dummy' }, consoleLogger, {});
     steveo.registry.addTopic('TEST_TOPIC', 'PRODUCTION_TEST_TOPIC');
     // @ts-ignore
-    const dummy = new DummyProducer({}, steveo.registry, NULL_LOGGER);
+    const dummy = new DummyProducer({}, steveo.registry, consoleLogger);
     const sendStub = sandbox.stub(dummy, 'send').resolves();
     steveo._producer = dummy;
     await steveo.publish('TEST_TOPIC', { hello: 'world' });
@@ -69,7 +69,7 @@ describe('Index', () => {
           engine: 'dummy',
           tasksPath: __filename,
         },
-        NULL_LOGGER
+        consoleLogger
       );
 
       const pause = sandbox.stub().resolves();

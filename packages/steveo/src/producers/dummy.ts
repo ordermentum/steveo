@@ -1,7 +1,5 @@
-import nullLogger from 'null-logger';
-
-import { Logger, IProducer, IRegistry, DummyConfiguration } from '../common';
-
+import { IProducer, IRegistry, DummyConfiguration } from '../common';
+import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
 
@@ -17,7 +15,7 @@ class DummyProducer extends BaseProducer implements IProducer {
   constructor(
     config: DummyConfiguration,
     registry: IRegistry,
-    logger: Logger = nullLogger
+    logger: Logger = consoleLogger
   ) {
     super(config.middleware ?? []);
     this.config = config;
