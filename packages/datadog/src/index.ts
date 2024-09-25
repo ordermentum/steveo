@@ -4,6 +4,8 @@ import { Middleware } from 'steveo';
 import { MiddlewareContext } from 'steveo/lib/common';
 
 export class DataDogMiddleware implements Middleware {
+  public readonly DATADOG_CONTEXT_FORMAT: string = 'text_map';
+
   public publish(context, next) {
     return tracer.trace(
       'steveo.publish',
@@ -15,11 +17,11 @@ export class DataDogMiddleware implements Middleware {
       },
       (span: tracer.Span | undefined) => {
         if (span) {
-          const datadogContextData: Record<string, any> = {};
-          tracer.inject(span, 'text_map', datadogContextData);
-          const meta = this.getMetaFromContext(context);
-          meta.datadog = datadogContextData;
-          context.payload._meta = meta;
+          const messageMetadata = this.getMetaFromContext(context);
+          const datadogContextData: Record<string, any> =
+            this.getDatadogContextData(span);
+          messageMetadata.datadog = datadogContextData;
+          context.payload._meta = messageMetadata;
         }
         next(context);
       }
@@ -34,10 +36,11 @@ export class DataDogMiddleware implements Middleware {
       },
     };
 
-    const meta: Record<string, any> = this.getMetaFromContext(context);
-    const datadogContext = meta.datadog ?? {};
+    const messageMetadata: Record<string, any> =
+      this.getMetaFromContext(context);
+    const datadogContext: Record<string, any> = messageMetadata.datadog ?? {};
     const spanContext: tracer.SpanContext | null = tracer.extract(
-      'text_map',
+      this.DATADOG_CONTEXT_FORMAT,
       datadogContext
     );
     if (spanContext) {
@@ -49,6 +52,12 @@ export class DataDogMiddleware implements Middleware {
 
   private getMetaFromContext(context: MiddlewareContext): Record<string, any> {
     return context.payload._meta ?? {};
+  }
+
+  private getDatadogContextData(datadogSpan: tracer.Span): Record<string, any> {
+    const contextData: Record<string, any> = {};
+    tracer.inject(datadogSpan, this.DATADOG_CONTEXT_FORMAT, contextData);
+    return contextData;
   }
 }
 
