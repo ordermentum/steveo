@@ -1,0 +1,49 @@
+{
+  "name": "@ordermentum/example-workflows-app",
+  "version": "1.0.0",
+  "description": "test steveo",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/*"
+  ],
+  "scripts": {
+    "lint": "yarn eslint 'src/**/*.{ts,js}'",
+    "build:coverage": "nyc check-coverage --statements 74 --branches 60 --functions 66 --lines 72",
+    "test": "NODE_ENV=test nyc npm run spec",
+    "report": "./node_modules/.bin/nyc report --reporter=html",
+    "spec": "mocha -R spec -r ts-node/register/transpile-only test/*.*",
+    "spec:runner": "mocha -R spec -r ts-node/register/transpile-only",
+    "build": "yarn tsc --build",
+    "start": "yarn build && node lib/main.js | ./node_modules/.bin/bunyan",
+    "clean": "rm -rf lib",
+    "reporter": "nyc --reporter=html yarn run test",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ordermentum/steveo.git"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "steveo": "*",
+    "@steveojs/store-postgres": "*",
+    "aws-sdk": "^2.77.0",
+    "bluebird": "^3.5.0",
+    "bunyan": "^1.8.15",
+    "generic-pool": "^3.7.2",
+    "lazy-object": "^1.0.1",
+    "lodash.difference": "^4.5.0",
+    "lodash.intersection": "^4.4.0",
+    "lodash.merge": "^4.6.2",
+    "lodash.shuffle": "^4.2.0",
+    "moment": "2.30.1",
+    "node-rdkafka": "^2.11.0",
+    "null-logger": "^2.0.0",
+    "rsmq": "^0.12.3",
+    "ts-dotenv": "^0.9.1",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+  }
+}

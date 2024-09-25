@@ -21,6 +21,8 @@ The primary purpose of Steveo is to handle asynchronous task processing. It allo
 
 Steveo also bundles a task scheduling framework for Postgresql as an optional addon.
 
+Multiple tasks can be strung together to form workflows that will reliably handle errors and retry patterns.
+
 ## Installation
 
 This is a Node.js module available through the npm registry.
@@ -89,7 +91,7 @@ yarn run test
 
 On a highlevel, it works as below, Steveo has 3 main components
 
-You publish a message to a queue for a defined task.
+You publish a message to a queue for a defined task or workflow.
 
 Error Handling: Steveo provides mechanisms to handle errors during task processing. It emits events for task failures and connection failures, allowing you to implement appropriate error handling strategies.
 
@@ -100,11 +102,17 @@ Holds the information about the type of task. It has below methods,
 - publish - send a message onto a queue
 - subscribe - process a message
 
+### Workflow
+
+Allows a sequence of steps to be defined and executed.
+
+The output of each step will be fed into the arguments of the proceeding step.
+
 ### Registry
 
-Task Registry: Steveo maintains a registry that keeps track of tasks and their associated event handlers. When a new task is created, it is added to the registry for dispatch handling.
+Task Registry: Steveo maintains a registry that keeps track of tasks + workflows and their associated handlers. When a new task is created, it is added to the registry for dispatch handling.
 
-Responsible for keeping the inventory of tasks & event manager. Whenever a new task is created, an entry will be added in the registry
+Responsible for keeping the inventory of tasks + workflows & event manager. Whenever a new task or workflow is created, an entry will be added in the registry
 
 ### Consumer
 
@@ -117,7 +125,7 @@ Responsible for consuming messages,
 ```
               +-----------+     +-----------+     +-----------+
               |           |     |           |     |           |
-PUBLISH ----->|   TASK    |     | REGISTRY  |     |   CONSUMER |-----> RECEIVE
+PUBLISH ----->|   TASK    |     | REGISTRY  |     | CONSUMER  |-----> RECEIVE
               |           |     |           |     |           |
               |           |     |           |     |           |
               +-----------+     +-----------+     +-----------+

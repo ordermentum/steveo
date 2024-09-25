@@ -1,0 +1,20 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model WorkflowState {
+  workflowId      String      @id @default(uuid()) @db.Uuid
+  serviceId       String
+  started         DateTime    @db.Timestamptz(6)
+  completed       DateTime?   @db.Timestamptz(6)
+  current         String
+  initial         Json?
+  results         Json?
+  errors          Json?
+}

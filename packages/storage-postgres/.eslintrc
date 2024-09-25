@@ -1,0 +1,6 @@
+{
+  "extends": [
+    "@ordermentum/ordermentum/mocha",
+    "@ordermentum/ordermentum/jest"
+  ]
+}
