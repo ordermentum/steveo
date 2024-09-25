@@ -26,7 +26,7 @@ class PostgresStorage extends Storage {
 
     //
     const opts = {
-      timeout: 20000,
+      timeout: this.config.transactionTimeout,
     };
 
     await this.prisma.$transaction(async client => {
