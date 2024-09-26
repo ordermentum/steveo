@@ -1,5 +1,21 @@
 # steveo
 
+## 7.0.0
+
+### Major Changes
+
+- f1392ba: Upgrade AWS SDK major version to 3.\*
+
+  Even though, there was no breaking change in Steveo the AWS SDK upgrade some core features that may cause unexpected
+  behavior in Steveo. So for, unit tests and manual tests haven't identified any inconsistency but that does not mean it
+  cannot still happen.
+
+  There were no changes in how Steveo should be used.
+
+### Minor Changes
+
+- d4b0840: Added workflow pipeline definitions and execution engine
+
 ## 6.7.0
 
 ### Minor Changes
