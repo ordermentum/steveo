@@ -127,7 +127,7 @@ export class Workflow {
     // mark the flow completed if there are no more steps
     const next = this.getNextStep(current);
     if (!next) {
-      await context.repos.workflow.workflowCompleted(workflowId);
+      await context.repos.workflow.updateWorkflowCompleted(workflowId);
       return;
     }
 
@@ -138,7 +138,7 @@ export class Workflow {
       next: next.name,
     });
 
-    await context.repos.workflow.stepPointerUpdate(workflowId, next.name);
+    await context.repos.workflow.updateCurrentStep(workflowId, next.name);
 
     const message = this.formatStepMessage(next.name);
 
@@ -308,7 +308,7 @@ export class Workflow {
 
       const result = (await step.execute(payload)) as object;
 
-      await context.repos.workflow.stepExecuteResult(
+      await context.repos.workflow.storeStepResult(
         workflowId,
         state.current,
         result
@@ -333,7 +333,7 @@ export class Workflow {
     } catch (err) {
       this.logger.error(`Error executing next step in workflow ${workflowId}`);
 
-      await context.repos.workflow.stepExecuteError(
+      await context.repos.workflow.storeExecuteError(
         workflowId,
         state.current,
         String(err)
@@ -371,7 +371,7 @@ export class Workflow {
           );
         } else {
           // There are no more steps, the rollback has completed and so has the workflow
-          await context.repos.workflow.workflowCompleted(workflowId);
+          await context.repos.workflow.updateWorkflowCompleted(workflowId);
         }
       } catch (err) {
         this.logger.error({
@@ -380,14 +380,13 @@ export class Workflow {
           workflowId,
         });
 
-        await context.repos.workflow.stepExecuteError(
+        await context.repos.workflow.storeExecuteError(
           workflowId,
           state.current,
           String(err)
         );
 
-        // NOTE - Intentionally not re-throwing as the execution flow has now
-        //        been handed over to the rollback executor
+        throw err;
       }
 
       current = this.getPreviousStep(current.name);
@@ -477,7 +476,7 @@ export class Workflow {
       });
     }
 
-    const state = await repos.workflow.workflowLoad(flowId);
+    const state = await repos.workflow.loadWorkflow(flowId);
 
     if (!state) {
       throw new AppError(this.logger, {
