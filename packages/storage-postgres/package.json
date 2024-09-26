@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/storage-postgres",
-  "version": "6.7.0",
+  "version": "6.7.1",
   "description": "Postgres persistence implementation for Steveo",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
