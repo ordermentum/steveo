@@ -22,7 +22,8 @@
     "esModuleInterop": true
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ],
   "exclude": [
     "lib",
