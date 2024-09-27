@@ -29,7 +29,7 @@ import { Customer } from './types/customer';
       rollback: rollbackInvoiceStep,
     });
 
-  await flow.publish({});
+  await flow.publish({ workflowId: undefined });
 
   const customer: Customer = {
     customerId: 'cust-123',
