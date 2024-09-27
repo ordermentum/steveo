@@ -1,4 +1,4 @@
-import { v7 } from 'uuid';
+import { v4 } from 'uuid';
 import assert from 'node:assert';
 import { bind, take } from '../lib/not-lodash';
 import { Step, StepUnknown } from './workflow-step';
@@ -221,7 +221,7 @@ export class Workflow {
       }
 
       return await this.storage.transaction<string>(async repos => {
-        const workflowId = payload.workflowId ?? v7();
+        const workflowId = payload.workflowId ?? `${this.name}-${v4()}`;
         const logger = this.logger.child({
           workflowId,
           workflowName: this.name,
