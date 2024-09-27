@@ -304,7 +304,11 @@ export class Workflow {
         });
       }
 
-      this.logger.debug(`Executing workflow ${workflowId}, step ${step.name}`);
+      this.logger.debug({
+        message: `Executing workflow step function`,
+        workflowId,
+        stepName: step.name,
+      });
 
       const result = (await step.execute(payload)) as object;
 
@@ -331,7 +335,10 @@ export class Workflow {
         context
       );
     } catch (err) {
-      this.logger.error(`Error executing next step in workflow ${workflowId}`);
+      this.logger.error({
+        message: `Error executing next step in workflow`,
+        workflowId,
+      });
 
       await context.repos.workflow.storeExecuteError(
         workflowId,

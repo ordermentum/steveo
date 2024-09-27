@@ -10,10 +10,11 @@ export class MemoryStateRepository implements WorkflowStateRepository {
 
   public completed = false;
 
+  public overrideServiceId: string | undefined;
+
   public calls = {
     init: 0,
     load: 0,
-    started: 0,
     completed: 0,
     pointerUpdate: 0,
     rollbacks: 0,
@@ -21,21 +22,33 @@ export class MemoryStateRepository implements WorkflowStateRepository {
     storeResult: 0,
   };
 
+  reset() {
+    this.state = undefined;
+    this.completed = false;
+    this.calls = {
+      init: 0,
+      load: 0,
+      completed: 0,
+      pointerUpdate: 0,
+      rollbacks: 0,
+      errors: 0,
+      storeResult: 0,
+    };
+  }
+
   workflowInit(props: {
     workflowId: string;
     serviceId: string;
     current: string;
     initial: unknown;
   }): Promise<void> {
+    this.calls.init += 1;
     this.state = {
-      workflowId: props.workflowId,
-      serviceId: props.serviceId,
+      ...props,
+      serviceId: this.overrideServiceId ?? 'test-service',
       started: new Date(),
-      current: props.current,
-      initial: props.initial,
       results: {},
     };
-    this.calls.init += 1;
 
     return Promise.resolve();
   }
@@ -46,24 +59,6 @@ export class MemoryStateRepository implements WorkflowStateRepository {
     return Promise.resolve(
       this.state?.workflowId === workflowId ? this.state : undefined
     );
-  }
-
-  updateWorkflowStarted(start: {
-    workflowId: string;
-    current: string;
-    initial: unknown;
-  }): Promise<void> {
-    this.calls.started += 1;
-
-    if (!this.state) {
-      this.state = { ...start, serviceId: 'test-service', started: new Date() };
-    } else {
-      this.state.workflowId = start.workflowId;
-      this.state.current = start.current;
-      this.state.initial = start.initial;
-    }
-
-    return Promise.resolve();
   }
 
   updateWorkflowCompleted(workflowId: string): Promise<void> {
