@@ -48,6 +48,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@smithy/node-http-handler": "^3.1.4",
     "@types/bunyan": "1.8.8",
     "@types/chai": "4.3.16",
     "@types/config": "0.0.41",
