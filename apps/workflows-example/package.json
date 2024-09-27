@@ -15,7 +15,7 @@
     "spec": "mocha -R spec -r ts-node/register/transpile-only test/*.*",
     "spec:runner": "mocha -R spec -r ts-node/register/transpile-only",
     "build": "yarn tsc --build",
-    "start": "yarn build && node lib/main.js | ./node_modules/.bin/bunyan",
+    "dev": "yarn build && node lib/main.js | ./node_modules/.bin/bunyan",
     "clean": "rm -rf lib",
     "reporter": "nyc --reporter=html yarn run test",
     "typecheck": "tsc --noEmit"

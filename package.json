@@ -37,6 +37,7 @@
         "release": "yarn build && changeset version && changeset publish"
     },
     "workspaces": [
+        "apps/*",
         "packages/*"
     ],
     "packageManager": "yarn@1.22.22",
