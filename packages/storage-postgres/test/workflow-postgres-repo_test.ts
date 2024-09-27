@@ -1,7 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import { v7 } from 'uuid';
 import { expect } from 'chai';
-import { WorkflowStateRepositoryPostgres } from '../src/repo/workflow-postgres-repo';
+import {
+  WorkflowInitProps,
+  WorkflowStateRepositoryPostgres,
+} from '../src/repo/workflow-postgres-repo';
 
 describe('Workflow state postgres repo', () => {
   const prisma = new PrismaClient({
@@ -10,7 +13,7 @@ describe('Workflow state postgres repo', () => {
   const repo = new WorkflowStateRepositoryPostgres(prisma);
 
   async function initialise() {
-    const params = {
+    const params: WorkflowInitProps = {
       workflowId: v7(),
       serviceId: 'test-service',
       current: 'step1',
@@ -33,13 +36,6 @@ describe('Workflow state postgres repo', () => {
 
   it('should update the current step', async () => {
     const init = await initialise();
-
-    await repo.workflowInit({
-      serviceId: 'test-service',
-      workflowId: init.workflowId,
-      current: 'step-1',
-      initial: undefined,
-    });
 
     await repo.loadWorkflow(init.workflowId);
 
@@ -103,14 +99,6 @@ describe('Workflow state postgres repo', () => {
 
     await repo.storeStepResult(init.workflowId, 'step1', { value: 111 });
     await repo.storeStepResult(init.workflowId, 'step2', { value: 999 });
-
-    await repo.workflowInit({
-      serviceId: 'test-service',
-      workflowId: init.workflowId,
-      current: 'step1',
-      initial: { test: 123 },
-    });
-
     await repo.storeStepResult(init.workflowId, 'step2', { xyz: 'test' });
 
     const startState = await repo.loadWorkflow(init.workflowId);

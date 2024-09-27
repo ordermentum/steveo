@@ -5,6 +5,13 @@ import { WorkflowState, WorkflowStateRepository } from 'steveo';
 import { InputJsonValue } from '@prisma/client/runtime/library';
 import { PrismaClient } from '@prisma/client';
 
+export interface WorkflowInitProps {
+  workflowId: string;
+  serviceId: string;
+  current: string;
+  initial: unknown;
+}
+
 /**
  *
  */
@@ -19,12 +26,7 @@ export class WorkflowStateRepositoryPostgres
    * @param workflowId Unique ID to be used for the new workflow execution
    * @param serviceId The identifier for the service the workflow is running on. This does not identify the execution pod, only the service name common across pods
    */
-  async workflowInit(props: {
-    workflowId: string;
-    serviceId: string;
-    current: string;
-    initial: unknown;
-  }): Promise<void> {
+  async workflowInit(props: WorkflowInitProps): Promise<void> {
     const result = await this.prisma.workflowState.create({
       data: {
         workflowId: props.workflowId,
