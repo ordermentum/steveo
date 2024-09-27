@@ -1,7 +1,6 @@
-import nullLogger from 'null-logger';
 import { HighLevelProducer } from 'node-rdkafka';
-
-import { KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
+import { KafkaConfiguration, IProducer, IRegistry } from '../common';
+import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
 
@@ -20,7 +19,7 @@ class KafkaProducer
   constructor(
     config: KafkaConfiguration,
     registry: IRegistry,
-    logger: Logger = nullLogger
+    logger: Logger = consoleLogger
   ) {
     super(config.middleware ?? []);
     this.config = config;

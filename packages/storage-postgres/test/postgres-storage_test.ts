@@ -1,7 +1,7 @@
 import { NullLogger } from 'null-logger';
-import { postgresFactory } from '../src/impl/postgres-storage';
 import assert from 'node:assert';
 import { expect } from 'chai';
+import { postgresFactory } from '../src/impl/postgres-storage';
 import { PostgresStorageConfig } from '../src/impl/postgres-config';
 
 describe('Postgres storage factory', () => {
@@ -9,7 +9,7 @@ describe('Postgres storage factory', () => {
 
   const config: PostgresStorageConfig = {
     databaseUrl: process.env.DATABASE_URL,
-    transactionTimeout: 500
+    transactionTimeout: 500,
   };
 
   it('should create storage instance', () => {
@@ -27,7 +27,7 @@ describe('Postgres storage factory', () => {
       expect(repos).not.to.be.undefined;
 
       return Promise.resolve();
-    })
+    });
 
     expect(storage).not.to.be.undefined;
   });
