@@ -37,6 +37,7 @@ export { Storage, Repositories } from './storage/storage';
 export { WorkflowStateRepository } from './storage/workflow-repo';
 export { WorkflowState } from './runtime/workflow-state';
 export { WorkflowPayload } from './types/workflow';
+export { consoleLogger } from './lib/logger';
 
 export {
   KafkaConfiguration,

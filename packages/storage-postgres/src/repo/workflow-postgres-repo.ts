@@ -41,7 +41,7 @@ export class WorkflowStateRepositoryPostgres
   /**
    *
    */
-  async workflowLoad(workflowId: string): Promise<WorkflowState | undefined> {
+  async loadWorkflow(workflowId: string): Promise<WorkflowState | undefined> {
     const result = await this.prisma.workflowState.findUnique({
       where: {
         workflowId,
@@ -57,30 +57,8 @@ export class WorkflowStateRepositoryPostgres
 
   /**
    *
-   * @param start
    */
-  async workflowStarted(start: {
-    workflowId: string;
-    current: string;
-    initial: unknown;
-  }): Promise<void> {
-    const result = await this.prisma.workflowState.update({
-      where: {
-        workflowId: start.workflowId,
-      },
-      data: {
-        current: start.current,
-        initial: start.initial as InputJsonValue,
-      },
-    });
-
-    assert(result);
-  }
-
-  /**
-   *
-   */
-  async workflowCompleted(workflowId: string): Promise<void> {
+  async updateWorkflowCompleted(workflowId: string): Promise<void> {
     await this.prisma.workflowState.update({
       where: {
         workflowId,
@@ -94,7 +72,7 @@ export class WorkflowStateRepositoryPostgres
   /**
    *
    */
-  async stepPointerUpdate(workflowId: string, stepName: string): Promise<void> {
+  async updateCurrentStep(workflowId: string, stepName: string): Promise<void> {
     const result = await this.prisma.workflowState.update({
       where: {
         workflowId,
@@ -110,7 +88,7 @@ export class WorkflowStateRepositoryPostgres
   /**
    *
    */
-  async stepExecuteError(
+  async storeExecuteError(
     workflowId: string,
     identifier: string,
     error: unknown
@@ -143,7 +121,7 @@ export class WorkflowStateRepositoryPostgres
   /**
    *
    */
-  async stepExecuteResult(
+  async storeStepResult(
     workflowId: string,
     nextStep: string,
     result: unknown

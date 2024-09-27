@@ -22,15 +22,6 @@ export interface WorkflowStateRepository {
   loadWorkflow(workflowId: string): Promise<WorkflowState | undefined>;
 
   /**
-   * Mark that the given workflow has started execution
-   */
-  updateWorkflowStarted(start: {
-    workflowId: string;
-    current: string;
-    initial: unknown;
-  }): Promise<void>;
-
-  /**
    * Mark the given workflow completed
    */
   updateWorkflowCompleted(workflowId: string): Promise<void>;
