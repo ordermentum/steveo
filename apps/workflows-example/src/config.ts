@@ -1,6 +1,9 @@
 import { load } from 'ts-dotenv';
 import Steveo, { SQSConfiguration } from 'steveo';
-import { postgresFactory, PostgresStorageConfig } from '@steveojs/storage-postgres';
+import {
+  postgresFactory,
+  PostgresStorageConfig,
+} from '@steveojs/storage-postgres';
 import bunyan from 'bunyan';
 
 export const logger = bunyan.createLogger({ name: 'workflow-test' });
@@ -40,7 +43,7 @@ const sqsConfig: SQSConfiguration = {
 // Instantiate the concrete implementation of the postgres storage
 const postgresConfig: PostgresStorageConfig = {
   databaseUrl: env.DATABASE_URL,
-  transactionTimeout: 5000
+  transactionTimeout: 5000,
 };
 
 const storage = postgresFactory(postgresConfig, logger);
