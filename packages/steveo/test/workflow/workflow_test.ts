@@ -19,7 +19,7 @@ describe('Workflow tests', () => {
     workflow.next(step1.step);
 
     // ACT
-    await workflow.subscribe({});
+    await workflow.subscribe({ workflowId: undefined });
 
     // ASSERT
     expect(step1.fake.callCount).to.eq(1);
@@ -38,7 +38,7 @@ describe('Workflow tests', () => {
 
     // ACT
     await workflow
-      .subscribe({})
+      .subscribe({ workflowId: undefined })
       .then(workflowId => workflow.subscribe({ workflowId }));
 
     // ASSERT
@@ -59,7 +59,7 @@ describe('Workflow tests', () => {
     workflow.next(step2.step);
 
     // ACT
-    const workflowId = await workflow.subscribe({});
+    const workflowId = await workflow.subscribe({ workflowId: undefined });
 
     await workflow.subscribe({ workflowId });
 
@@ -81,7 +81,7 @@ describe('Workflow tests', () => {
     repository.overrideServiceId = 'mismatched-service-name';
 
     // ACT
-    await workflow.subscribe({});
+    await workflow.subscribe({ workflowId: undefined });
 
     // ASSERT
     expect(step1.fake.callCount).to.eq(0);
@@ -91,9 +91,5 @@ describe('Workflow tests', () => {
     expect(repository.calls.rollbacks).to.eq(0);
     expect(repository.calls.errors).to.eq(1);
     expect(repository.completed).to.eq(true);
-  });
-
-  it('should detect step re-execution', async () => {
-    // TODO: Implement with example app
   });
 });
