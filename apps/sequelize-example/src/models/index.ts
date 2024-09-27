@@ -21,11 +21,11 @@ const db = {
   Job,
 };
 
-Object.values(db).forEach(model => {
+for (const model of Object.values(db)) {
   if ('associate' in model && model.associate) {
     model.associate(db);
   }
-});
+}
 
 export default {
   sequelize,

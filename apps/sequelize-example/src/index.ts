@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { JobScheduler } from '@ordermentum/steveo';
+import { JobScheduler } from 'steveo';
 import config from 'config';
 import registerSteveoTask from './tasks/taskThatRunsWithSteveoAndUsesTaskHelper';
 import { exampleTask2 } from './tasks/taskThatOnlyUsesSteveo';
