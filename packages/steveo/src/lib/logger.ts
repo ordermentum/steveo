@@ -4,15 +4,15 @@ export type LogEntry =
   | string
   | {
       message: string;
-      [key: string]: Object | undefined;
+      [key: string]: unknown | undefined;
     };
 
 export interface Logger {
   child(options: unknown): Logger;
-  trace(format: LogEntry, ...params: any[]): void;
-  info(format: LogEntry, ...params: any[]): void;
-  debug(format: LogEntry, ...params: any[]): void;
-  error(format: LogEntry, ...params: any[]): void;
+  trace(format: LogEntry, ...params: unknown[]): void;
+  info(format: LogEntry, ...params: unknown[]): void;
+  debug(format: LogEntry, ...params: unknown[]): void;
+  error(format: LogEntry, ...params: unknown[]): void;
 }
 
 function factory<T>(baseEntry?: T): Logger {

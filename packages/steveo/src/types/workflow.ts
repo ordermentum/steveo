@@ -5,7 +5,7 @@ import { TaskOptions } from './task-options';
  * related message (either workflow or workflow step).
  */
 export interface WorkflowPayload {
-  workflowId?: string;
+  workflowId: string | undefined;
 }
 
 /**
