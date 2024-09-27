@@ -1,8 +1,8 @@
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable global-require */
-import NULL_LOGGER from 'null-logger';
-/* eslint-disable no-underscore-dangle */
 import assert from 'node:assert';
+import { consoleLogger, Logger } from './lib/logger';
+/* eslint-disable no-underscore-dangle */
 import Task from './runtime/task';
 import Registry from './runtime/registry';
 import getRunner from './lib/runner';
@@ -16,7 +16,6 @@ import {
   ITask,
   Callback,
   Pool,
-  Logger,
   ISteveo,
   IRegistry,
   IProducer,
@@ -33,7 +32,7 @@ import { Workflow } from './runtime/workflow';
 import { WorkflowOptions } from './types/workflow';
 import { formatTopicName, QueueFormatOptions } from './lib/formatters';
 
-export { Logger } from './common';
+export { Logger } from './lib/logger';
 export { Storage, Repositories } from './storage/storage';
 export { WorkflowStateRepository } from './storage/workflow-repo';
 export { WorkflowState } from './runtime/workflow-state';
@@ -87,7 +86,7 @@ export class Steveo implements ISteveo {
       | RedisConfiguration
       | SQSConfiguration
       | DummyConfiguration,
-    logger: Logger = NULL_LOGGER,
+    logger: Logger = consoleLogger,
     storage: Storage | undefined = undefined
   ) {
     this._storage = storage;

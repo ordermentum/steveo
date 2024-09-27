@@ -9,7 +9,7 @@
   "repository": "git@github.com:ordermentum/steveo.git",
   "scripts": {
     "test": "NODE_ENV=test nyc yarn spec",
-    "spec": "tsc && yarn mocha",
+    "spec": "tsc && yarn mocha --require ts-node/register --bail=false 'test/**/*_test.ts'",
     "lint": "yarn eslint 'src/**/*.{ts,js}'",
     "lint:test": "yarn eslint 'test/**/*.{ts,js}'",
     "autotest": "yarn run mocha --watch",

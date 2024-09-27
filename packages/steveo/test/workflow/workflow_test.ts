@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import { fromStub, stubInterface } from '@salesforce/ts-sinon';
 import { expect } from 'chai';
+import { consoleLogger } from '../../src/lib/logger';
 import { Workflow } from '../../src/runtime/workflow';
 import { Repositories, Storage } from '../../src/storage/storage';
 import { IProducer, IRegistry } from '../../src/common';
@@ -30,6 +31,7 @@ describe('Workflow tests', () => {
     options: {
       serviceId: 'test-service',
     },
+    logger: consoleLogger,
   });
 
   sinon.fake(storage.transaction);
@@ -68,36 +70,50 @@ describe('Workflow tests', () => {
 
   // eslint-disable-next-line mocha/no-exclusive-tests
   it('should execute two step flow', async () => {
-    // TODO: Implement with example app
-    // // ARRANGE
-    // const step1Fake = sinon.fake.returns({ value: 'step1-result' });
-    // const step1: StepUnknown = {
-    //   name: 'step-1',
-    //   execute: step1Fake,
-    // } as StepUnknown;
-    // workflow.next(step1);
-    // const step2Fake = sinon.fake.returns({ value: 'step2-result' });
-    // const step2: StepUnknown = {
-    //   name: 'step-2',
-    //   execute: step2Fake,
-    // } as StepUnknown;
-    // workflow.next(step2);
-    // workflowRepo.workflowLoad.withArgs([]).returns([
-    //   {
-    //     workflowId: 'workflow-123',
-    //     serviceId: 'test-service',
-    //     started: new Date(),
-    //     current: 'step-1',
-    //     initial: undefined,
-    //     results: {},
-    //   } as WorkflowState,
-    // ]);
-    // // ACT
-    // await workflow.subscribe({});
-    // // ASSERT
-    // expect(workflowRepo.workflowInit.callCount).to.eq(1);
-    // expect(step1Fake.callCount).to.eq(1);
-    // expect(workflowRepo.workflowCompleted.callCount).to.eq(1);
+    // ARRANGE
+    const step1Fake = sinon.fake.returns({ value: 'step1-result' });
+    const step1: StepUnknown = {
+      name: 'step-1',
+      execute: step1Fake,
+    } as StepUnknown;
+
+    workflow.next(step1);
+
+    const step2Fake = sinon.fake.returns({ value: 'step2-result' });
+    const step2: StepUnknown = {
+      name: 'step-2',
+      execute: step2Fake,
+    } as StepUnknown;
+
+    workflow.next(step2);
+
+    workflowRepo.workflowLoad.onFirstCall().returns({
+      workflowId: 'workflow-123',
+      serviceId: 'test-service',
+      started: new Date(),
+      current: 'step-1',
+      initial: undefined,
+      results: {},
+    } as WorkflowState);
+
+    workflowRepo.workflowLoad.onSecondCall().returns({
+      workflowId: 'workflow-123',
+      serviceId: 'test-service',
+      started: new Date(),
+      current: 'step-2',
+      initial: undefined,
+      results: {},
+    } as WorkflowState);
+
+    // ACT
+    const workflowId = await workflow.subscribe({});
+
+    await workflow.subscribe({ workflowId });
+
+    // ASSERT
+    expect(workflowRepo.workflowInit.callCount).to.eq(1);
+    expect(step1Fake.callCount).to.eq(1);
+    expect(workflowRepo.workflowCompleted.callCount).to.eq(1);
   });
 
   it('should execute rollback sequence on irretrievable step error', async () => {

@@ -1,5 +1,3 @@
-import nullLogger from 'null-logger';
-
 import {
   CreateQueueCommandInput,
   CreateQueueCommandOutput,
@@ -12,15 +10,8 @@ import {
 } from '@aws-sdk/client-sqs';
 import util from 'util';
 import { getSqsInstance } from '../config/sqs';
-
-import {
-  Logger,
-  IProducer,
-  IRegistry,
-  sqsUrls,
-  SQSConfiguration,
-} from '../common';
-
+import { IProducer, IRegistry, sqsUrls, SQSConfiguration } from '../common';
+import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
 import { Attribute } from '../types/task-options';
@@ -39,7 +30,7 @@ class SqsProducer extends BaseProducer implements IProducer {
   constructor(
     config: SQSConfiguration,
     registry: IRegistry,
-    logger: Logger = nullLogger
+    logger: Logger = consoleLogger
   ) {
     super(config.middleware ?? []);
     this.config = config;
