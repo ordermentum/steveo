@@ -23,6 +23,7 @@
     "target": "ES2022"
   },
   "include": [
+    "apps/**/*",
     "packages/**/*"
   ],
   "exclude": [
