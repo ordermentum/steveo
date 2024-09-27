@@ -44,7 +44,7 @@ export class Workflow {
   steps: StepUnknown[] = [];
 
   constructor(private props: WorkflowProps) {
-    assert(this.name, `name must be specified`);
+    assert(this.name, `Name must be specified`);
 
     // Register the workflow, this will make sure we can start a workflow execution
     this.registry.addNewTask(this);
@@ -156,31 +156,48 @@ export class Workflow {
       key?: string;
     }
   ) {
-    const params = Array.isArray(payload) ? payload : [payload];
+    const payloadArray = Array.isArray(payload) ? payload : [payload];
     const logger = this.logger.child({
-      workflowMsg: message,
+      publish: message,
       workflow: this.name,
+      workflows: Array.isArray(payload)
+        ? payload.map(p => p.workflowId)
+        : [payload.workflowId],
     });
 
     try {
-      logger.info({ message: `Workflow publish next step in sequence` });
+      logger.info({
+        message: `Workflow publish internal start`,
+      });
 
-      // sqs calls this method twice
+      // TODO: Understand and document the significance of this comment (it was copypasta'd from the original task implementation)
+      // SQS calls this method twice
       await this.producer.initialize(message);
 
       await Promise.all(
-        params.map((data: T) => {
-          this.registry.emit('workflow_send', message, data);
-          return this.producer.send(message, data, context?.key, context);
+        payloadArray.map(data => {
+          try {
+            this.registry.emit('workflow_send', message, data);
+
+            return this.producer.send(message, data, context?.key, context);
+          } catch (err) {
+            logger.info({
+              message: 'Workflow publish workflow step',
+              workflowId: data.workflowId,
+            });
+            throw err;
+          }
         })
       );
 
       this.registry.emit('workflow_success', message, payload);
 
-      logger.debug({ message: `Workflow completed publish next step` });
+      logger.debug({
+        message: `Workflow completed publish internal`,
+      });
     } catch (err) {
       logger.error({
-        message: `Error executing workflow`,
+        message: `Workflow execution error`,
       });
 
       this.registry.emit('workflow_failure', message, err);
@@ -214,7 +231,9 @@ export class Workflow {
         if (!payload.workflowId) {
           const firstStep = this.steps[0];
 
-          logger.debug(`No workflow in payload, initialising new workflow`);
+          logger.debug({
+            message: `No workflow in payload, initialising new workflow`,
+          });
 
           await repos.workflow.workflowInit({
             workflowId,
@@ -236,7 +255,7 @@ export class Workflow {
         const step = this.steps.find(s => s.name === state.current);
         if (!step) {
           throw new AppError(this.logger, {
-            message: `Worflow could not find step`,
+            message: `Worflow could not find current step`,
             workflowId,
             current: state.current,
           });
@@ -268,7 +287,7 @@ export class Workflow {
       this.logger.error({
         message: 'Subscribe processor error',
         workflowId: payload.workflowId,
-        err: err as object,
+        err,
       });
       throw err;
     }
