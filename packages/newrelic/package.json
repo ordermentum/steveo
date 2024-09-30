@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/newrelic",
-  "version": "7.0.0",
+  "version": "7.0.1-steveo-sqs.0",
   "main": "lib/index.js",
   "repository": "git@github.com:ordermentum/steveo.git",
   "license": "Apache-2.0",
@@ -20,7 +20,7 @@
   ],
   "peerDependencies": {
     "newrelic": "^9.8.0",
-    "steveo": "*"
+    "steveo": "7.0.1-steveo-sqs.0"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.2",
@@ -49,7 +49,7 @@
     "prettier": "2.8.8",
     "sinon": "15.2.0",
     "source-map-support": "0.5.21",
-    "steveo": "*",
+    "steveo": "7.0.1-steveo-sqs.0",
     "ts-node": "10.9.2",
     "typescript": "5.1.3"
   }

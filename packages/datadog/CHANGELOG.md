@@ -1,5 +1,12 @@
 # @steveojs/datadog
 
+## 7.1.2-steveo-sqs.0
+
+### Patch Changes
+
+- Updated dependencies [789c70f]
+  - steveo@7.0.1-steveo-sqs.0
+
 ## 7.1.1
 
 ### Patch Changes

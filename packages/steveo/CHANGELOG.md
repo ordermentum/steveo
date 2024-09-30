@@ -1,5 +1,11 @@
 # steveo
 
+## 7.0.1-steveo-sqs.0
+
+### Patch Changes
+
+- 789c70f: Removing credentials from SQS credentials for testing purpose
+
 ## 7.0.0
 
 ### Major Changes

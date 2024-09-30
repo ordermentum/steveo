@@ -1,5 +1,12 @@
 # @steveojs/newrelic
 
+## 7.0.1-steveo-sqs.0
+
+### Patch Changes
+
+- Updated dependencies [789c70f]
+  - steveo@7.0.1-steveo-sqs.0
+
 ## 7.0.0
 
 ### Minor Changes

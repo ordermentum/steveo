@@ -62,7 +62,7 @@
     "uuid": "10.0.0"
   },
   "devDependencies": {
-    "steveo": "*",
+    "steveo": "7.0.1-steveo-sqs.0",
     "@emotion/eslint-plugin": "11.11",
     "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@ordermentum/eslint-config-ordermentum": "2.4.0",
