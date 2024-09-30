@@ -107,7 +107,10 @@ class SqsProducer extends BaseProducer implements IProducer {
       };
     }
 
-    this.logger.debug(`Creating queue`, util.inspect(params));
+    this.logger.debug(
+      `${this.config.engine.toUpperCase()}: Creating queue`,
+      util.inspect(params)
+    );
 
     const res: CreateQueueCommandOutput = await this.producer
       .createQueue(params)
@@ -154,19 +157,21 @@ class SqsProducer extends BaseProducer implements IProducer {
       };
 
       this.logger.debug(
-        `Creating DLQ for orginal queue ${queueName}`,
+        `${this.config.engine.toUpperCase()}: Creating DLQ for orginal queue ${queueName}`,
         util.inspect(params)
       );
 
       const res: CreateQueueCommandOutput = await this.producer
         .createQueue(params)
         .catch(err => {
-          throw new Error(`Failed to call SQS createQueue: ${err}`);
+          throw new Error(
+            `${this.config.engine.toUpperCase()}: Failed to call SQS createQueue: ${err}`
+          );
         });
 
       if (!res.QueueUrl) {
         throw new Error(
-          'SQS createQueue response does not contain a queue name'
+          `${this.config.engine.toUpperCase()}: createQueue response does not contain a queue name`
         );
       }
 
@@ -183,13 +188,17 @@ class SqsProducer extends BaseProducer implements IProducer {
       await this.producer
         .getQueueAttributes(getQueueAttributesParams)
         .catch(err => {
-          throw new Error(`Failed to call SQS getQueueAttributes: ${err}`);
+          throw new Error(
+            `${this.config.engine.toUpperCase()}: Failed to call SQS getQueueAttributes: ${err}`
+          );
         });
 
     const dlQueueArn: string | undefined =
       attributesResult.Attributes?.QueueArn;
     if (!dlQueueArn) {
-      throw new Error('Failed to retrieve the DLQ ARN');
+      throw new Error(
+        `${this.config.engine.toUpperCase()}: Failed to retrieve the DLQ ARN`
+      );
     }
 
     return {
