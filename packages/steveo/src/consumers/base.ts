@@ -79,7 +79,9 @@ class BaseRunner {
   async reconnect() {}
 
   async stop() {
-    this.logger.debug(`stopping consumer ${this.name}`);
+    this.logger.debug(
+      `${this.config.engine.toUpperCase()}: stopping consumer ${this.name}`
+    );
     this.manager.state = 'terminating';
   }
 
@@ -87,7 +89,9 @@ class BaseRunner {
     if (!this.registry) return false;
 
     const topics = this.registry.getTopics();
-    this.logger.debug(`creating queues: ${topics}`);
+    this.logger.debug(
+      `${this.config.engine.toUpperCase()}: creating queues: ${topics}`
+    );
 
     if (!topics || topics.length === 0) {
       this.logger.debug('no topics found');
@@ -98,7 +102,9 @@ class BaseRunner {
       topics,
       (topic: string) =>
         this.createQueue(topic).catch(er => {
-          this.logger.error(`error creating queue for topic: ${er.toString()}`);
+          this.logger.error(
+            `${this.config.engine.toUpperCase()}: error creating queue for topic: ${er.toString()}`
+          );
         }),
       { concurrency: 10 }
     );
