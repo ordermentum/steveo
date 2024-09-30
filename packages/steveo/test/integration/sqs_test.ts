@@ -55,8 +55,10 @@ describe('SQS Integration Test', () => {
       messageRetentionPeriod: '604800',
       engine: 'sqs' as const,
       queuePrefix: `steveo`,
-      accessKeyId: 'test',
-      secretAccessKey: 'key',
+      credentials: {
+        accessKeyId: 'test',
+        secretAccessKey: 'key',
+      },
       shuffleQueue: false,
       endpoint: 'http://127.0.0.1:4566',
       maxNumberOfMessages: 1,
