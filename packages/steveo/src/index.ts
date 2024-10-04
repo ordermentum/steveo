@@ -31,7 +31,7 @@ import { Storage } from './storage/storage';
 import { TaskOptions } from './types/task-options';
 import { Workflow } from './runtime/workflow';
 import { WorkflowOptions } from './types/workflow';
-import { formatTopicName } from './lib/formatters';
+import { formatTopicName, QueueFormatOptions } from './lib/formatters';
 
 export { Logger } from './common';
 export { Storage, Repositories } from './storage/storage';
@@ -110,7 +110,12 @@ export class Steveo implements ISteveo {
    * @returns
    */
   flow(name: string, options: WorkflowOptions = { serviceId: 'DEFAULT' }) {
-    const topic = formatTopicName(name, options);
+    const queueFormatOptions: QueueFormatOptions = {
+      queueName: options.queueName,
+      upperCaseNames: this.config.upperCaseNames,
+      queuePrefix: this.config.queuePrefix,
+    };
+    const topic = formatTopicName(name, queueFormatOptions);
 
     return new Workflow({
       name,
@@ -137,15 +142,24 @@ export class Steveo implements ISteveo {
     callback: Callback<T, R, C>,
     options: TaskOptions = {}
   ): ITask<T> {
-    const topic = formatTopicName(name, options);
+    const queueFormatOptions: QueueFormatOptions = {
+      queueName: options.queueName,
+      upperCaseNames: this.config.upperCaseNames,
+      queuePrefix: this.config.queuePrefix,
+    };
+    const topic = formatTopicName(name, queueFormatOptions);
     const task = new Task<T, R>(
       this.config,
       this.registry,
       this.producer,
       name,
-      this.config.upperCaseNames ? topic.toUpperCase() : topic,
+      topic,
       callback,
       options
+    );
+    this.logger.info(
+      { task: task.name, topic: task.topic, taskOptions: options },
+      `Registering ${task.name} Task to Steveo.`
     );
     this.registry.addNewTask(task);
 
@@ -239,7 +253,7 @@ export class Steveo implements ISteveo {
       throw new Error('No runner found');
     }
 
-    const topics = customTopics?.length
+    const topics = customTopics.length
       ? customTopics
       : this.registry.getTopics();
 
