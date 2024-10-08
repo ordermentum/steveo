@@ -1,5 +1,5 @@
 /**
- *
+ * Options that define how queue/topic name will be formatted.
  */
 export interface QueueFormatOptions {
   queueName?: string;
@@ -10,10 +10,15 @@ export interface QueueFormatOptions {
 /**
  * Standardised factory to produce a formatted topic name
  */
-export function formatTopicName(name: string, options: QueueFormatOptions) {
-  const topic =
-    options.queueName ??
-    (options.queuePrefix ? `${options.queuePrefix}__${name}` : name);
+export function formatTopicName(
+  name: string,
+  options: QueueFormatOptions
+): string {
+  let topicName = options.queueName ?? name;
+  if (options.queuePrefix) {
+    topicName = `${options.queuePrefix}_${topicName}`;
+  }
 
-  return options.upperCaseNames ? topic.toUpperCase() : topic;
+  const isUpperCase: boolean = options.upperCaseNames ?? false;
+  return isUpperCase ? topicName.toUpperCase() : topicName;
 }
