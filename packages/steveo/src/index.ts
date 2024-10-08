@@ -157,10 +157,11 @@ export class Steveo implements ISteveo {
       callback,
       options
     );
-    this.logger.info(
-      { task: task.name, topic: task.topic, taskOptions: options },
-      `Registering ${task.name} Task to Steveo.`
-    );
+    this.logger.info(`Registering ${task.name} Task to Steveo.`, {
+      task: task.name,
+      topic: task.topic,
+      taskOptions: options,
+    });
     this.registry.addNewTask(task);
 
     return task;
