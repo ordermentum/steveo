@@ -1,5 +1,13 @@
 # steveo
 
+## 7.0.2
+
+### Patch Changes
+
+- 4e0e627: Fix bug in `Steveo::task` factory that was registering topics with a wrong name
+  as a result of a bug in the `formatTopicName`. This was causing SQS queue not
+  being created correctly and failures in the healthcheck.
+
 ## 7.0.0
 
 ### Major Changes
