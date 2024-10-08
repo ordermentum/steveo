@@ -132,8 +132,10 @@ export const resetJob = async (
   job: Job,
   events: TypedEventEmitter<Events>
 ) => {
-  const nextRunAt = computeNextRun(job.repeatInterval, {
-    timezone: job.timezone,
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const nextRunAt = computeNextRun(job.repeatInterval ?? '10m', {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    timezone: job.timezone ?? undefined,
   });
   events.emit('reset', job, nextRunAt);
   return client.job.update({
@@ -206,11 +208,13 @@ const updateFailure = async (
 
   if (
     job.failures < maxRestartsOnFailure &&
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (!jobsSafeToRestart || jobsSafeToRestart.includes(job.name))
   ) {
     const backoff = retryDelay(job.failures, backOffMs);
     const nextRunAt = moment()
-      .tz(job.timezone)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      .tz(job.timezone ?? 'AEST')
       .add(backoff, 'milliseconds')
       .toISOString();
     await client.job.update({
@@ -266,8 +270,10 @@ const updateFinishTask = async (
         : { id },
     });
   }
-  const nextRunAt = computeNextRun(job.repeatInterval, {
-    timezone: job.timezone,
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const nextRunAt = computeNextRun(job.repeatInterval ?? '10m', {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    timezone: job.timezone ?? undefined,
   });
   await client.job.update({
     where: namespace
