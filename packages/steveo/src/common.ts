@@ -83,8 +83,10 @@ export interface SQSConfiguration extends Configuration {
   apiVersion: string;
   messageRetentionPeriod: string;
   receiveMessageWaitTimeSeconds: string;
-  accessKeyId?: string;
-  secretAccessKey?: string;
+  credentials?: {
+    accessKeyId: string;
+    secretAccessKey: string;
+  };
   maxNumberOfMessages: number;
   visibilityTimeout: number;
   waitTimeSeconds: number;

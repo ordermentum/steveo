@@ -42,23 +42,32 @@ class KafkaProducer
     }
     return new Promise<HighLevelProducer>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        this.logger.error('Connection timed out');
+        this.logger.error(
+          `${this.config.engine.toUpperCase()}: Connection timed out`
+        );
         reject();
       }, (this.config as KafkaConfiguration).connectionTimeout!);
       this.producer.connect({}, err => {
         if (err) {
           clearTimeout(timeoutId);
-          this.logger.error('Error initializing producer', err);
+          this.logger.error(
+            `${this.config.engine.toUpperCase()}: Error initializing producer`,
+            err
+          );
           reject(err);
         }
       });
       this.producer.on('ready', () => {
         clearTimeout(timeoutId);
-        this.logger.debug('producer ready');
+        this.logger.debug(
+          `${this.config.engine.toUpperCase()}: producer ready`
+        );
         resolve(this.producer);
       });
       this.producer.on('disconnected', () => {
-        this.logger.debug('Producer disconnected');
+        this.logger.debug(
+          `${this.config.engine.toUpperCase()}: Producer disconnected`
+        );
       });
     });
   }
@@ -87,7 +96,7 @@ class KafkaProducer
       this.producer.produce(topic, null, data, key, Date.now(), err => {
         if (err) {
           this.logger.error(
-            'Error while sending payload:',
+            `${this.config.engine.toUpperCase()} Error while sending payload:`,
             JSON.stringify(data, null, 2),
             'topic :',
             topic,
@@ -122,7 +131,11 @@ class KafkaProducer
         this.registry.emit('producer_success', topic, c.payload);
       });
     } catch (ex) {
-      this.logger.error('Error while sending Redis payload', topic, ex);
+      this.logger.error(
+        `${this.config.engine.toUpperCase()}: Error while sending payload`,
+        topic,
+        ex
+      );
       this.registry.emit('producer_failure', topic, ex, payload);
       throw ex;
     }
@@ -132,7 +145,10 @@ class KafkaProducer
     if (this.producer.isConnected()) {
       this.producer.disconnect(err => {
         if (err) {
-          this.logger.error('Error while disconnecting producer', err);
+          this.logger.error(
+            `${this.config.engine.toUpperCase()}: Error while disconnecting producer`,
+            err
+          );
         }
       });
     }
