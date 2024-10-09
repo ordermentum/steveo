@@ -1,7 +1,13 @@
 import nullLogger from 'null-logger';
 import { HighLevelProducer } from 'node-rdkafka';
 
-import { KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
+import {
+  KafkaConfiguration,
+  Logger,
+  IProducer,
+  IRegistry,
+  MiddlewareContext,
+} from '../common';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
 
@@ -96,6 +102,10 @@ class KafkaProducer
       this.producer.produce(topic, null, data, key, Date.now(), err => {
         if (err) {
           this.logger.error(
+            {
+              topic,
+              engine: this.config.engine.toUpperCase(),
+            },
             `${this.config.engine.toUpperCase()} Error while sending payload:`,
             JSON.stringify(data, null, 2),
             'topic :',
@@ -120,7 +130,14 @@ class KafkaProducer
     context: { [key: string]: string } = {}
   ) {
     try {
-      await this.wrap({ topic, payload }, async c => {
+      const middlewarePayload: MiddlewareContext = {
+        topic,
+        payload,
+      };
+      if (typeof payload === 'string') {
+        middlewarePayload.payload = JSON.parse(payload);
+      }
+      await this.wrap(middlewarePayload, async c => {
         const data = this.getPayload(
           c.payload,
           topic,
@@ -132,6 +149,7 @@ class KafkaProducer
       });
     } catch (ex) {
       this.logger.error(
+        { topic, engine: this.config.engine.toUpperCase() },
         `${this.config.engine.toUpperCase()}: Error while sending payload`,
         topic,
         ex
