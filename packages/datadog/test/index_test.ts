@@ -22,6 +22,18 @@ describe('DataDogMiddleware', () => {
   });
 
   describe('publish', () => {
+    it('should ignore traces when MiddlewareContext.payload is a string', async () => {
+      const context: MiddlewareContext = {
+        topic: 'test-topic',
+        payload: 'payload is a string',
+      };
+
+      const middleware: DataDogMiddleware = new DataDogMiddleware();
+      middleware.publish(context, (internalContext: MiddlewareContext) => {
+        expect(context).to.be.deep.equal(internalContext);
+      })
+    });
+
     it('should call tracer.trace and inject datadogContextData into context.payload._meta if span exists', () => {
       const middleware: DataDogMiddleware = new DataDogMiddleware();
       const injectStub = sinon.stub(tracer, 'inject');

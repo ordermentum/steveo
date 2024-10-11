@@ -7,20 +7,15 @@ export class DataDogMiddleware implements Middleware {
   public readonly DATADOG_CONTEXT_FORMAT: string = 'text_map';
 
   public publish(context, next) {
+    const traceOptions = this.createBaseTraceOptionsFromContext(context);
     return tracer.trace(
       'steveo.publish',
-      {
-        resource: context.topic,
-        tags: {
-          ...context.payload,
-        },
-      },
+      traceOptions,
       (span: tracer.Span | undefined) => {
-        if (span) {
+        const shouldConnectDatadogTrace = typeof context.payload !== 'string';
+        if (span && shouldConnectDatadogTrace) {
           const messageMetadata = this.getMetaFromContext(context);
-          const datadogContextData: Record<string, any> =
-            this.getDatadogContextData(span);
-          messageMetadata.datadog = datadogContextData;
+          messageMetadata.datadog = this.getDatadogContextData(context);
           context.payload._meta = messageMetadata;
         }
         next(context);
@@ -29,12 +24,8 @@ export class DataDogMiddleware implements Middleware {
   }
 
   public async consume(context, next) {
-    const tracerOptions: tracer.TraceOptions & SpanOptions = {
-      resource: context.topic,
-      tags: {
-        ...context.payload,
-      },
-    };
+    const tracerOptions: tracer.TraceOptions & SpanOptions =
+      this.createBaseTraceOptionsFromContext(context);
 
     const messageMetadata: Record<string, any> =
       this.getMetaFromContext(context);
@@ -58,6 +49,18 @@ export class DataDogMiddleware implements Middleware {
     const contextData: Record<string, any> = {};
     tracer.inject(datadogSpan, this.DATADOG_CONTEXT_FORMAT, contextData);
     return contextData;
+  }
+
+  private createBaseTraceOptionsFromContext(
+    context: MiddlewareContext
+  ): tracer.TraceOptions & SpanOptions {
+    const shouldAddTags: boolean = typeof context.payload !== 'string';
+    const tags = shouldAddTags ? { ...context.payload } : {};
+
+    return {
+      resource: context.topic,
+      tags,
+    };
   }
 }
 
