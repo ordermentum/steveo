@@ -11,5 +11,6 @@ sending the `Message.value` attribute, which is a string causing the following e
 
 `Cannot create property '_meta' on string '*' `
 
-The fix consists of making sure both Kafka producers and Kafka consumers sends
-the message payload as a dictionary to any registered middleware.
+The fix consists of changing DatadogMiddleware::publish to not add the datadog
+context attribute to the message whenever `MiddlewareContext.payload` is of type
+string.
