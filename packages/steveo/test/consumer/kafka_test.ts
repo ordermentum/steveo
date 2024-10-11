@@ -81,7 +81,6 @@ describe('runner/kafka', () => {
         engine: 'kafka',
         securityProtocol: 'plaintext',
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -125,7 +124,6 @@ describe('runner/kafka', () => {
         engine: 'kafka',
         securityProtocol: 'plaintext',
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -180,7 +178,6 @@ describe('runner/kafka', () => {
         securityProtocol: 'plaintext',
         waitToCommit: true,
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -263,7 +260,6 @@ describe('runner/kafka', () => {
         securityProtocol: 'plaintext',
         waitToCommit: true,
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -316,7 +312,6 @@ describe('runner/kafka', () => {
         securityProtocol: 'plaintext',
         waitToCommit: true,
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -390,7 +385,6 @@ describe('runner/kafka', () => {
           },
         ]
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),

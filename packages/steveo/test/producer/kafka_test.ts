@@ -182,34 +182,4 @@ describe('Kafka Producer', () => {
     expect(disconnectStub.callCount).to.equal(0);
   });
 
-  it('should unpack message before calling middleware wrapper in message is a string', async () => {
-    const registry = new Registry();
-
-    const payload: Record<string, string> = {
-      my: 'payload'
-    };
-    const p = new Producer(
-      {
-        engine: 'kafka',
-        bootstrapServers: 'kafka:9200',
-        securityProtocol: 'plaintext',
-        tasksPath: '',
-        middleware: [
-          {
-            publish: (context: any, _) => {
-              expect(payload).to.deep.equal(context.payload);
-            },
-            consume: () => {}
-        }]
-      },
-      registry
-    );
-
-    registry.addTopic('test-topic');
-    const sendStub = sandbox.stub(p.producer, 'produce');
-    sendStub.callsArgWith(5);
-
-    p.send('test-topic', JSON.stringify(payload));
-  });
-
 });

@@ -1,13 +1,7 @@
 import nullLogger from 'null-logger';
 import { HighLevelProducer } from 'node-rdkafka';
 
-import {
-  KafkaConfiguration,
-  Logger,
-  IProducer,
-  IRegistry,
-  MiddlewareContext,
-} from '../common';
+import { KafkaConfiguration, Logger, IProducer, IRegistry } from '../common';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
 
@@ -84,13 +78,15 @@ class KafkaProducer
     _key?: string | unknown,
     context?: { [key: string]: string }
   ) => {
+    if (typeof payload === 'string') {
+      return Buffer.from(payload, 'utf-8');
+    }
+
     const messageMetadata = {
       ...createMessageMetadata(payload),
       ...context,
     };
-    if (typeof payload === 'string') {
-      return Buffer.from(payload, 'utf-8');
-    }
+
     return Buffer.from(
       JSON.stringify({ ...payload, _meta: messageMetadata }),
       'utf-8'
@@ -130,14 +126,7 @@ class KafkaProducer
     context: { [key: string]: string } = {}
   ) {
     try {
-      const middlewarePayload: MiddlewareContext = {
-        topic,
-        payload,
-      };
-      if (typeof payload === 'string') {
-        middlewarePayload.payload = JSON.parse(payload);
-      }
-      await this.wrap(middlewarePayload, async c => {
+      await this.wrap({ topic, payload }, async c => {
         const data = this.getPayload(
           c.payload,
           topic,
