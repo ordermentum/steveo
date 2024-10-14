@@ -31,7 +31,7 @@
         "typescript": "5.1.3"
     },
     "scripts": {
-        "build": "yarn run turbo run build --filter=steveo --filter=@steveojs/scheduler-prisma --filter=@steveojs/scheduler-sequelize &&  yarn run turbo run build --filter=!steveo --parallel",
+        "build": "yarn run turbo run build --filter=steveo --filter=@steveojs/scheduler-prisma --filter=@steveojs/scheduler-sequelize --filter=@steveojs/storage-postgres &&  yarn run turbo run build --filter=!steveo --parallel",
         "lint": "yarn run turbo run lint --parallel",
         "test": "yarn run turbo run test",
         "release": "yarn build && changeset version && changeset publish"
