@@ -61,6 +61,7 @@ class SqsRunner extends BaseRunner implements IRunner {
           let resource: Resource | null = null;
           const { _meta: _, ...data } = c.payload;
           const runnerContext = getContext(c.payload);
+
           try {
             resource = await this.pool.acquire();
 
@@ -73,7 +74,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
             const task = this.registry.getTask(topic);
             const waitToCommit =
-              (task?.options?.waitToCommit || this.config?.waitToCommit) ??
+              (task?.options?.waitToCommit || this.config.waitToCommit) ??
               false;
 
             if (!waitToCommit) {
@@ -85,12 +86,19 @@ class SqsRunner extends BaseRunner implements IRunner {
               return;
             }
 
+            const logger = this.logger.child({
+              context: runnerContext,
+              params,
+              task: task.name,
+              topic,
+            });
+
             this.logger.info(
               { context: runnerContext, params },
               `Start Subscribe to ${task.name}`
             );
 
-            await task.subscribe(data, runnerContext);
+            await task.subscribe(data, { ...runnerContext, logger });
             this.logger.debug('Completed subscribe', c.topic, c.payload);
             const completedContext = getContext(c.payload);
 
@@ -332,7 +340,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     return {
       deadLetterTargetArn: dlQueueArn,
-      maxReceiveCount: (task?.options.maxReceiveCount ?? 5).toString(),
+      maxReceiveCount: (task.options.maxReceiveCount ?? 5).toString(),
     };
   }
 

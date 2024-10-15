@@ -15,13 +15,19 @@ import { TaskOptions } from './types/task-options';
 declare global {
   interface ReadableStream {}
 }
+
+export type Context = {
+  logger: Logger;
+  [key: string]: any;
+};
+
 /**
  * FIXME: for callbacks that don't take an argument, need to specify
  * T = void to make the parameter optional
  */
-export type Callback<T = any, R = Promise<any>, C = any> = (
+export type Callback<T = any, R = Promise<any>, C = Context> = (
   payload: T,
-  context?: C
+  context: C
 ) => R;
 
 export type getPayload = (
@@ -40,6 +46,8 @@ export interface Logger {
   info(format: any, ...params: any[]): void;
   debug(format: any, ...params: any[]): void;
   error(format: any, ...params: any[]): void;
+  warn(format: any, ...params: any[]): void;
+  child(options: any): Logger;
 }
 
 export type Engine = 'kafka' | 'sqs' | 'redis';
