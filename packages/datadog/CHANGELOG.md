@@ -1,5 +1,16 @@
 # @steveojs/datadog
 
+## 7.1.2
+
+### Patch Changes
+
+- ae7afe2: Change DatadogMiddleware::publish to verify whether `MiddlewareContext.payload`
+  is a string, and if so, do not attempt to add the datadog trace_id to the message
+  context.
+- Updated dependencies [ae7afe2]
+- Updated dependencies [fb35c2c]
+  - steveo@7.0.3
+
 ## 7.1.1
 
 ### Patch Changes
