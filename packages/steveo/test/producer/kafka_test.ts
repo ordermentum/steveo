@@ -181,4 +181,5 @@ describe('Kafka Producer', () => {
     await p.stop();
     expect(disconnectStub.callCount).to.equal(0);
   });
+
 });

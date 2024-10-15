@@ -78,13 +78,15 @@ class KafkaProducer
     _key?: string | unknown,
     context?: { [key: string]: string }
   ) => {
+    if (typeof payload === 'string') {
+      return Buffer.from(payload, 'utf-8');
+    }
+
     const messageMetadata = {
       ...createMessageMetadata(payload),
       ...context,
     };
-    if (typeof payload === 'string') {
-      return Buffer.from(payload, 'utf-8');
-    }
+
     return Buffer.from(
       JSON.stringify({ ...payload, _meta: messageMetadata }),
       'utf-8'
@@ -96,6 +98,10 @@ class KafkaProducer
       this.producer.produce(topic, null, data, key, Date.now(), err => {
         if (err) {
           this.logger.error(
+            {
+              topic,
+              engine: this.config.engine.toUpperCase(),
+            },
             `${this.config.engine.toUpperCase()} Error while sending payload:`,
             JSON.stringify(data, null, 2),
             'topic :',
@@ -132,6 +138,7 @@ class KafkaProducer
       });
     } catch (ex) {
       this.logger.error(
+        { topic, engine: this.config.engine.toUpperCase() },
         `${this.config.engine.toUpperCase()}: Error while sending payload`,
         topic,
         ex

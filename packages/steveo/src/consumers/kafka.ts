@@ -33,9 +33,9 @@ class KafkaRunner
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.config = steveo?.config as KafkaConfiguration;
-    this.pool = steveo?.pool;
-    this.logger = steveo?.logger ?? nullLogger;
+    this.config = steveo.config as KafkaConfiguration;
+    this.pool = steveo.pool;
+    this.logger = steveo.logger ?? nullLogger;
     this.consumerReady = false;
     this.consumer = new Kafka.KafkaConsumer(
       {
@@ -71,23 +71,15 @@ class KafkaRunner
     let resource: Resource | null = null;
 
     try {
-      await this.wrap({ topic, payload: message }, async c => {
+      const payload = this.parseMessagePayload(message);
+      await this.wrap({ topic, payload }, async c => {
         this.logger.debug(`waiting for pool ${c.topic}`);
         resource = await this.pool.acquire();
         this.logger.debug(`acquired pool`);
 
-        const valueString = c.payload.value?.toString() ?? '';
-        let value = valueString;
-
-        try {
-          value = JSON.parse(valueString);
-        } catch (e) {
-          throw new JsonParsingError();
-        }
-
         const parsed = {
           ...message,
-          value,
+          value: c.payload,
           key: message.key?.toString(),
         };
 
@@ -110,8 +102,8 @@ class KafkaRunner
         }
 
         this.logger.debug('Start subscribe', c.topic, message);
-        const runnerContext = getContext(value);
-        const { _meta: _ = {}, ...data } = parsed.value;
+        const runnerContext = getContext(c.payload);
+        const { _meta: _ = {}, ...data } = c.payload;
 
         /**
          * We still need the `value` property on the callback payload
@@ -146,6 +138,15 @@ class KafkaRunner
     if (resource) {
       this.logger.debug(`releasing pool`);
       await this.pool.release(resource);
+    }
+  }
+
+  private parseMessagePayload(message: Message): Record<string, any> {
+    const messageValue: string = (message.value ?? '').toString();
+    try {
+      return JSON.parse(messageValue);
+    } catch (e) {
+      throw new JsonParsingError();
     }
   }
 

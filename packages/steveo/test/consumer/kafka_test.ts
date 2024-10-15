@@ -81,7 +81,6 @@ describe('runner/kafka', () => {
         engine: 'kafka',
         securityProtocol: 'plaintext',
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -125,7 +124,6 @@ describe('runner/kafka', () => {
         engine: 'kafka',
         securityProtocol: 'plaintext',
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -180,7 +178,6 @@ describe('runner/kafka', () => {
         securityProtocol: 'plaintext',
         waitToCommit: true,
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -263,7 +260,6 @@ describe('runner/kafka', () => {
         securityProtocol: 'plaintext',
         waitToCommit: true,
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -316,7 +312,6 @@ describe('runner/kafka', () => {
         securityProtocol: 'plaintext',
         waitToCommit: true,
       },
-      // @ts-ignore
       registry: anotherRegistry,
       // @ts-ignore
       pool: build(anotherRegistry),
@@ -357,5 +352,60 @@ describe('runner/kafka', () => {
     });
     const expectedContext = getContext(messagePayload);
     expect(context, 'expected context').to.deep.equals(expectedContext);
+  });
+
+  it('should unpack message value before forward payload to middleware', async () => {
+    const subscribeStub = sinon.stub();
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+    const messagePayload: Record<string, string> = {
+      my: 'payload'
+    };
+    let receivedContext: Record<string, string> = {};
+    const steveo = {
+      config: {
+        bootstrapServers: 'kafka:9200',
+        engine: 'kafka',
+        securityProtocol: 'plaintext',
+        waitToCommit: true,
+        middleware: [
+          {
+            publish: () => {},
+            consume: (context) => {
+              receivedContext = context.payload;
+            },
+          },
+        ]
+      },
+      registry: anotherRegistry,
+      // @ts-ignore
+      pool: build(anotherRegistry),
+      manager: {
+        state: 'running',
+      },
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner(steveo);
+
+    sandbox.stub(anotherRunner.consumer, 'commitMessage');
+
+    await anotherRunner.consumeCallback(null, [
+      {
+        value: JSON.stringify(messagePayload),
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1,
+      },
+    ]);
+    expect(messagePayload).to.be.deep.equal(receivedContext);
   });
 });
