@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/datadog",
-  "version": "7.1.1",
+  "version": "7.1.2",
   "main": "lib/index.js",
   "repository": "git@github.com:ordermentum/steveo.git",
   "license": "Apache-2.0",

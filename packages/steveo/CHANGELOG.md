@@ -1,5 +1,30 @@
 # steveo
 
+## 7.0.3
+
+### Patch Changes
+
+- ae7afe2: There is an issue (more like an easter egg) preventing Kafka message from being
+  produced when DatadogMiddleware is activated.
+
+  The issue happens basically because DatadogMiddleware expects payload to be a
+  dictionary so it can inject the Datadog traces in the message. However, Kafka is
+  sending the `Message.value` attribute, which is a string causing the following error.
+
+  `Cannot create property '_meta' on string '*' `
+
+  The fix consists of changing DatadogMiddleware::publish to not add the datadog
+  context attribute to the message whenever `MiddlewareContext.payload` is of type
+  string.
+
+- fb35c2c: Fix configuration bug after AWS SQS upgrade.
+  The issue occurred due to inconsistencies in local and non-local environments,
+  because locally the AWS credentials env variables are required an env vars while
+  in non-local we use the instance role, therefore the credentials are not required.
+
+  The fix consists of a new attribute credentials in the config, set during local
+  development only, which wrapper the AWS credentials.
+
 ## 7.0.2
 
 ### Patch Changes
