@@ -19,33 +19,24 @@ export interface WorkflowStateRepository {
   /**
    * Given a workflow ID, load the current state from storage
    */
-  workflowLoad(workflowId: string): Promise<WorkflowState | undefined>;
-
-  /**
-   * Mark that the given workflow has started execution
-   */
-  workflowStarted(start: {
-    workflowId: string;
-    current: string;
-    initial: unknown;
-  }): Promise<void>;
+  loadWorkflow(workflowId: string): Promise<WorkflowState | undefined>;
 
   /**
    * Mark the given workflow completed
    */
-  workflowCompleted(workflowId: string): Promise<void>;
+  updateWorkflowCompleted(workflowId: string): Promise<void>;
 
   /**
    * Update the given workflow ID current step name
    */
-  stepPointerUpdate(workflowId: string, stepName: string): Promise<void>;
+  updateCurrentStep(workflowId: string, stepName: string): Promise<void>;
 
   /**
    * Record an error against the current workflow.
    * This may record any number of errors and as such is flexible around
    * the identifier that is provided.
    */
-  stepExecuteError(
+  storeExecuteError(
     workflowId: string,
     identifier: string,
     error: unknown
@@ -55,7 +46,7 @@ export interface WorkflowStateRepository {
    * Record a workflow step execution result. Only one result
    * may be stored per step.
    */
-  stepExecuteResult(
+  storeStepResult(
     workflowId: string,
     stepId: string,
     result: unknown

@@ -4,7 +4,8 @@ import nullLogger from 'null-logger';
 import { randomBytes } from 'crypto';
 import Bluebird from 'bluebird';
 import { Steveo } from '..';
-import { Configuration, Logger, Middleware, RunnerState } from '../common';
+import { Configuration, Middleware, RunnerState } from '../common';
+import { Logger } from '../lib/logger';
 import { Manager } from '../lib/manager';
 import { composeConsume } from '../middleware';
 

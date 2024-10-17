@@ -19,10 +19,12 @@
     "noUnusedParameters": true,
     "outDir": "lib",
     "resolveJsonModule": true,
+    "sourceMap": true,
     "strict": true,
     "target": "ES2022"
   },
   "include": [
+    "apps/**/*",
     "packages/**/*"
   ],
   "exclude": [

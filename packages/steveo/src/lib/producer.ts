@@ -5,10 +5,10 @@ import {
   DummyConfiguration,
   IRegistry,
   KafkaConfiguration,
-  Logger,
   RedisConfiguration,
   SQSConfiguration,
 } from '../common';
+import { Logger } from './logger';
 import DummyProducer from '../producers/dummy';
 
 const getProducer = (

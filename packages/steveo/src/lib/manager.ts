@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Steveo } from '..';
-import { Logger, RunnerState } from '../common';
+import { RunnerState } from '../common';
+import { Logger } from './logger';
 import { sleep } from './utils';
 
 export class Manager {

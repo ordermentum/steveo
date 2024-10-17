@@ -42,7 +42,7 @@
     ]
   },
   "dependencies": {
-    "@prisma/client": "5.19.1",
+    "@prisma/client": "5.7.1",
     "@types/bluebird": "^3.5.38",
     "aws-sdk": "^2.1043.0",
     "bluebird": "^3.7.2",
@@ -55,7 +55,7 @@
     "moment": "2.30.1",
     "node-rdkafka": "2.18.0",
     "null-logger": "^2.0.0",
-    "prisma": "^5.19.1",
+    "prisma": "5.7.1",
     "radash": "^12.1.0",
     "redlock": "^5.0.0-beta.2",
     "rsmq": "^0.12.4",

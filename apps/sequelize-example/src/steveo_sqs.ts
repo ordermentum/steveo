@@ -1,7 +1,8 @@
 import Steveo from 'steveo';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
 import https from 'https';
 import config from 'config';
-import { Configuration } from 'steveo/lib/common';
+import { SQSConfiguration } from 'steveo/lib/common';
 import path from 'path';
 import logger from './logger';
 
@@ -20,7 +21,7 @@ const sqsEndpoint = config.has('sqsEndpoint')
   ? config.get<string>('sqsEndpoint')
   : undefined;
 
-const steveoConfig: Configuration = {
+const steveoConfig: SQSConfiguration = {
   region: awsRegion,
   apiVersion: '2012-11-05',
   receiveMessageWaitTimeSeconds: '20',
@@ -40,16 +41,12 @@ const steveoConfig: Configuration = {
   consumerPollInterval: steveoPollInterval,
   httpOptions:
     nodeEnv === 'development'
-      ? {
-          agent: new https.Agent({
+      ? (NodeHttpHandler.create({
+          httpAgent: new https.Agent({
             rejectUnauthorized: false,
           }),
-        }
+        }) as NodeHttpHandler)
       : undefined,
-  childProcesses: {
-    instancePath: __filename,
-    args: nodeEnv === 'production' ? [] : ['-r', 'ts-node/register'],
-  },
   tasksPath: path.resolve(__dirname, '../tasks'),
   upperCaseNames: true,
 };
