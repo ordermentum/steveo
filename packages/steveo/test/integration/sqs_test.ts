@@ -40,14 +40,23 @@ describe('SQS Integration Test', () => {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+    process.env.AWS_ACCESS_KEY_ID = 'some';
+    process.env.AWS_SECRET_ACCESS_KEY = 'key';
+    process.env.AWS_SESSION_TOKEN = 'some';
+    process.env.AWS_ENDPOINT_URL = 'http://127.0.0.1:4566';
   });
 
   afterEach(() => {
+    delete process.env.AWS_ACCESS_KEY_ID;
+    delete process.env.AWS_SECRET_ACCESS_KEY;
+    delete process.env.AWS_SESSION_TOKEN;
+    delete process.env.AWS_ENDPOINT_URL;
     sandbox.restore();
   });
 
   it('processes messages concurrently (pool) (sqs)', async () => {
     const middleware = new PayloadMiddleware();
+
     const configuration = {
       region: 'us-east-1',
       apiVersion: '2012-11-05',
@@ -55,12 +64,7 @@ describe('SQS Integration Test', () => {
       messageRetentionPeriod: '604800',
       engine: 'sqs' as const,
       queuePrefix: `steveo`,
-      credentials: {
-        accessKeyId: 'test',
-        secretAccessKey: 'key',
-      },
       shuffleQueue: false,
-      endpoint: 'http://127.0.0.1:4566',
       maxNumberOfMessages: 1,
       workerConfig: {
         max: 2,
@@ -107,4 +111,5 @@ describe('SQS Integration Test', () => {
 
     expect(steveo.manager.state).to.equal('terminated');
   });
+
 });
