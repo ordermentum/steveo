@@ -20,10 +20,6 @@ describe('SQS Producer', () => {
       // @ts-ignore
       {
         engine: 'sqs',
-        credentials: {
-          accessKeyId: 'test',
-          secretAccessKey: 'key'
-        }
       },
       registry
     );

@@ -5,15 +5,8 @@ export const getSqsInstance = (config: Configuration): SQS => {
   const sqsConfig: SQSConfiguration = config as SQSConfiguration;
   const conf: SQSClientConfig = {
     region: sqsConfig.region,
+    endpoint: sqsConfig.endpoint,
   };
-
-  if (sqsConfig.endpoint !== undefined) {
-    conf.endpoint = sqsConfig.endpoint;
-  }
-
-  if (sqsConfig.credentials !== undefined) {
-    conf.credentials = sqsConfig.credentials;
-  }
 
   return new SQS(conf);
 };
