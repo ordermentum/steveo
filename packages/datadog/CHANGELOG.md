@@ -1,5 +1,11 @@
 # @steveojs/datadog
 
+## 7.1.3
+
+### Patch Changes
+
+- 95e727f: Fix DatadogMiddleware::getDatadogContextData receiving incorrect argument
+
 ## 7.1.2
 
 ### Patch Changes
