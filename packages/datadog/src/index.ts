@@ -15,7 +15,7 @@ export class DataDogMiddleware implements Middleware {
         const shouldConnectDatadogTrace = typeof context.payload !== 'string';
         if (span && shouldConnectDatadogTrace) {
           const messageMetadata = this.getMetaFromContext(context);
-          messageMetadata.datadog = this.getDatadogContextData(context);
+          messageMetadata.datadog = this.getDatadogContextData(span);
           context.payload._meta = messageMetadata;
         }
         next(context);
