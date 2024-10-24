@@ -13,12 +13,12 @@
     "prisma/*"
   ],
   "scripts": {
-    "lint": "yarn eslint 'src/**/*.{ts,js}'",
+    "lint": "yarn eslint --fix 'src/**/*.{ts,js}'",
     "build:coverage": "nyc check-coverage --statements 74 --branches 60 --functions 66 --lines 72",
     "test": "NODE_ENV=test nyc npm run spec",
     "report": "./node_modules/.bin/nyc report --reporter=html",
-    "spec": "mocha -R spec -r ts-node/register/transpile-only test/*.*",
-    "spec:runner": "mocha -R spec -r ts-node/register/transpile-only",
+    "spec": "mocha",
+    "spec:runner": "mocha",
     "build": "yarn clean && yarn tsc",
     "prepublish": "yarn run build && yarn spec",
     "clean": "rm -rf lib",
