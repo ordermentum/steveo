@@ -8,6 +8,7 @@
   "scripts": {
     "build": "yarn run tsc",
     "lint": "yarn eslint 'src/**/*.{ts,js}'",
+    "test": "tsc && yarn mocha",
     "prepublish": "yarn run build",
     "typecheck": "yarn run tsc --noEmit"
   },

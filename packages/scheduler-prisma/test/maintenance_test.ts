@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import { Op } from 'sequelize';
 import { createLogger } from 'bunyan';
 import moment from 'moment-timezone';
 import { SinonStub, createSandbox, SinonSandbox } from 'sinon';

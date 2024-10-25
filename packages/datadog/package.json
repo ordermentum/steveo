@@ -8,7 +8,7 @@
   "scripts": {
     "build": "yarn run tsc",
     "test": "NODE_ENV=test nyc yarn spec",
-    "spec": "tsc && yarn mocha --bail=false 'test/**/*_test.ts'",
+    "spec": "tsc && yarn mocha",
     "lint": "yarn eslint 'src/**/*.{ts,js}'",
     "lint:test": "yarn eslint 'test/**/*.{ts,js}'",
     "autotest": "yarn run mocha --watch",
