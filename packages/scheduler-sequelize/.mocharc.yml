@@ -1,0 +1,15 @@
+bail: false
+colors: true
+exit: true
+extension:
+  - 'ts'
+  - 'js'
+max-http-header-size: 16384
+recursive: true
+reporter: spec
+require:
+  - "ts-node/register"
+  - "ts-node/register/transpile-only"
+  - "source-map-support/register"
+retries: 1
+timeout: 160000
