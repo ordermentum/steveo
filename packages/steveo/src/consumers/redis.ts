@@ -115,7 +115,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
     this.currentTimeout = setTimeout(
       this.process.bind(this, topics),
-      this.config.consumerPollInterval ?? 1000
+      this.config.consumerPollInterval ?? 1000,
     );
   }
 
@@ -127,7 +127,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     }
 
     this.logger.debug(
-      `starting poll for messages ${topics ? topics.join(',') : 'all'}`
+      `starting poll for messages ${topics ? topics.join(',') : 'all'}`,
     );
 
     const subscriptions = this.getActiveSubsciptions(topics);
@@ -137,7 +137,7 @@ class RedisRunner extends BaseRunner implements IRunner {
       async topic => {
         await this.dequeue(topic);
       },
-      { concurrency: this.config.workerConfig?.max ?? 1 }
+      { concurrency: this.config.workerConfig?.max ?? 1 },
     );
 
     this.poll(topics);

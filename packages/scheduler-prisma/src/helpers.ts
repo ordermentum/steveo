@@ -308,17 +308,17 @@ export const timestampHelperFactory =
     task: TaskCallback<T, R>
   ) =>
   async (args: T, context: JobContext): Promise<any> => {
-    const jobId = args?.context?.job?.id ?? context?.job?.id;
+    const jobId = args.context?.job?.id ?? context.job?.id;
 
     if (!jobId) {
       try {
-        return task(args, context);
+        return await task(args, context);
       } catch (e) {
         return null;
       }
     }
 
-    const jobInstance = await client?.job?.findUnique({
+    const jobInstance = await client.job.findUnique({
       where: jobScheduler.namespace
         ? // @ts-expect-error namespace is an optional feature
           { id_namespace: { id: jobId, namespace: jobScheduler.namespace } }
@@ -327,7 +327,7 @@ export const timestampHelperFactory =
 
     if (!jobInstance) {
       try {
-        return task(args, context);
+        return await task(args, context);
       } catch (e) {
         return null;
       }

@@ -183,13 +183,13 @@ class KafkaRunner
           topic: '',
           timeout: 1000,
         },
-        (err, meta) => {
+        (err: Error, meta) => {
           this.logger.debug(`metadata response meta=${meta} err=${err}`);
           if (err) {
             return reject(err);
           }
           return resolve(meta);
-        }
+        },
       );
     });
   };
@@ -302,13 +302,12 @@ class KafkaRunner
           num_partitions: partitions,
           replication_factor: replication,
         },
-        // eslint-disable-next-line consistent-return
         err => {
           if (err) {
             return reject(err);
           }
-          resolve(true);
-        }
+          return resolve(true);
+        },
       );
     });
   }
