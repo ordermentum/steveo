@@ -5,7 +5,7 @@ import os from 'os';
 
 export const createMessageMetadata = <T = any>(message: T) => {
   // @ts-expect-error
-  const _meta = message?._meta ?? {};
+  const _meta = message._meta ?? {};
 
   const sha1 = crypto.createHash('sha1'); // can we change this to SHA256?
   const signature = sha1

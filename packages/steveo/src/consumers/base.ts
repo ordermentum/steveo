@@ -31,9 +31,9 @@ class BaseRunner {
   constructor(steveo: Steveo, name?: string) {
     this.errorCount = 0;
     this.steveo = steveo;
-    this.config = steveo?.config || {};
-    this.middleware = steveo?.config?.middleware || [];
-    this.logger = steveo?.logger ?? nullLogger;
+    this.config = steveo.config || {};
+    this.middleware = steveo.config.middleware || [];
+    this.logger = steveo.logger ?? nullLogger;
     this.manager = this.steveo.manager;
     this.name =
       name ||

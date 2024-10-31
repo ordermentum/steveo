@@ -21,8 +21,8 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.config = steveo?.config as RedisConfiguration;
-    this.logger = steveo?.logger ?? nullLogger;
+    this.config = steveo.config as RedisConfiguration;
+    this.logger = steveo.logger ?? nullLogger;
     this.redis = redisConf.redis(this.config);
     this.pool = steveo.pool;
   }
@@ -43,7 +43,7 @@ class RedisRunner extends BaseRunner implements IRunner {
               params,
               runnerContext
             );
-            this.logger.debug('Deleting message', c.topic, params);
+            this.logger.debug({ topic: c.topic, params }, 'Deleting message');
             await this.deleteMessage(topic, m.id);
 
             const task = this.registry.getTask(topic);
@@ -51,7 +51,7 @@ class RedisRunner extends BaseRunner implements IRunner {
               this.logger.error(`Unknown Task ${topic}`);
               return;
             }
-            this.logger.debug('Start subscribe', topic, params);
+            this.logger.debug({ topic, params }, 'Start subscribe');
             const { context = null, ...value } = params;
             await task.subscribe(value, context);
             const completedContext = getContext(params);
@@ -61,13 +61,16 @@ class RedisRunner extends BaseRunner implements IRunner {
               params,
               completedContext
             );
-          } catch (ex) {
-            this.logger.error('Error while executing consumer callback ', {
-              params,
-              topic,
-              error: ex,
-            });
-            this.registry.emit('runner_failure', topic, ex, params);
+          } catch (error) {
+            this.logger.error(
+              {
+                params,
+                topic,
+                error,
+              },
+              'Error while executing consumer callback'
+            );
+            this.registry.emit('runner_failure', topic, error, params);
           }
           if (resource) await this.pool.release(resource);
         });
@@ -166,7 +169,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async shutdown() {
-    this.redis?.quit(() => {});
+    this.redis.quit(() => {});
   }
 }
 

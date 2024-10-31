@@ -73,7 +73,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
             const task = this.registry.getTask(topic);
             const waitToCommit =
-              (task?.options?.waitToCommit || this.config?.waitToCommit) ??
+              (task?.options?.waitToCommit || this.config.waitToCommit) ??
               false;
 
             if (!waitToCommit) {
@@ -104,13 +104,16 @@ class SqsRunner extends BaseRunner implements IRunner {
               params,
               completedContext
             );
-          } catch (ex) {
-            this.logger.error('Error while executing consumer callback ', {
-              params,
-              topic,
-              error: ex,
-            });
-            this.registry.emit('runner_failure', topic, ex, params);
+          } catch (error) {
+            this.logger.error(
+              {
+                params,
+                topic,
+                error,
+              },
+              'Error while executing consumer callback'
+            );
+            this.registry.emit('runner_failure', topic, error, params);
           }
           if (resource) await this.pool.release(resource);
         });
@@ -332,7 +335,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     return {
       deadLetterTargetArn: dlQueueArn,
-      maxReceiveCount: (task?.options.maxReceiveCount ?? 5).toString(),
+      maxReceiveCount: (task.options.maxReceiveCount ?? 5).toString(),
     };
   }
 
