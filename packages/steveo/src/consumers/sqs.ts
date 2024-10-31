@@ -68,12 +68,12 @@ class SqsRunner extends BaseRunner implements IRunner {
               'runner_receive',
               c.topic,
               c.payload,
-              runnerContext,
+              runnerContext
             );
 
             const task = this.registry.getTask(topic);
             const waitToCommit =
-              (task?.options?.waitToCommit || this.config?.waitToCommit) ??
+              (task?.options?.waitToCommit || this.config.waitToCommit) ??
               false;
 
             if (!waitToCommit) {
@@ -87,7 +87,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
             this.logger.info(
               { context: runnerContext, params },
-              `Start Subscribe to ${task.name}`,
+              `Start Subscribe to ${task.name}`
             );
 
             await task.subscribe(data, runnerContext);
@@ -102,7 +102,7 @@ class SqsRunner extends BaseRunner implements IRunner {
               'runner_complete',
               topic,
               params,
-              completedContext,
+              completedContext
             );
           } catch (error) {
             this.logger.error(
@@ -111,20 +111,20 @@ class SqsRunner extends BaseRunner implements IRunner {
                 topic,
                 error,
               },
-              'Error while executing consumer callback',
+              'Error while executing consumer callback'
             );
             this.registry.emit('runner_failure', topic, error, params);
           }
           if (resource) await this.pool.release(resource);
         });
       },
-      { concurrency: this.concurrency },
+      { concurrency: this.concurrency }
     );
   }
 
   private async deleteMessage(
     topic: string,
-    message: Message,
+    message: Message
   ): Promise<boolean> {
     if (!message.ReceiptHandle) {
       return false;
@@ -138,8 +138,9 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     try {
       this.logger.debug('Deleting Message from Queue URL', deleteParams);
-      const data: DeleteMessageCommandOutput =
-        await this.sqs.deleteMessage(deleteParams);
+      const data: DeleteMessageCommandOutput = await this.sqs.deleteMessage(
+        deleteParams
+      );
       this.logger.debug('returned data', data);
       return true;
     } catch (ex) {
@@ -149,7 +150,7 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   private async dequeue(
-    params: ReceiveMessageCommandInput,
+    params: ReceiveMessageCommandInput
   ): Promise<Message[] | undefined> {
     const data: ReceiveMessageCommandOutput | undefined = await this.sqs
       .receiveMessage(params)
@@ -172,7 +173,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
     this.currentTimeout = setTimeout(
       this.process.bind(this, topics),
-      this.config.consumerPollInterval ?? 1000,
+      this.config.consumerPollInterval ?? 1000
     );
   }
 
@@ -187,7 +188,7 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.logger.debug(
       `Polling for messages (name: ${this.name}) (state: ${
         this.manager.state
-      }) (${topics ? topics.join(',') : 'all'})`,
+      }) (${topics ? topics.join(',') : 'all'})`
     );
 
     await bluebird.map(
@@ -221,7 +222,7 @@ class SqsRunner extends BaseRunner implements IRunner {
           this.logger.error(`Queue URL ${topic} not found`);
         }
       },
-      { concurrency: this.concurrency },
+      { concurrency: this.concurrency }
     );
 
     this.poll(topics);
@@ -269,7 +270,7 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   private async getDeadLetterQueuePolicy(
-    queueName: string,
+    queueName: string
   ): Promise<Record<string, string> | null> {
     const task = this.registry.getTask(queueName);
 
@@ -307,7 +308,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
       if (!res.QueueUrl) {
         throw new Error(
-          'SQS createQueue response does not contain a queue name',
+          'SQS createQueue response does not contain a queue name'
         );
       }
 
@@ -334,7 +335,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     return {
       deadLetterTargetArn: dlQueueArn,
-      maxReceiveCount: (task?.options.maxReceiveCount ?? 5).toString(),
+      maxReceiveCount: (task.options.maxReceiveCount ?? 5).toString(),
     };
   }
 

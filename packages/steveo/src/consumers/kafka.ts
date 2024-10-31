@@ -130,7 +130,7 @@ class KafkaRunner
           topic,
           error,
         },
-        'Error while executing consumer callback',
+        'Error while executing consumer callback'
       );
       this.registry.emit('runner_failure', topic, error, message);
       if (error instanceof JsonParsingError) {
@@ -192,7 +192,7 @@ class KafkaRunner
             return reject(err);
           }
           return resolve(meta);
-        },
+        }
       );
     });
   };
@@ -310,7 +310,7 @@ class KafkaRunner
             return reject(err);
           }
           return resolve(true);
-        },
+        }
       );
     });
   }

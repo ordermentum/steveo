@@ -21,8 +21,8 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   constructor(steveo: Steveo) {
     super(steveo);
-    this.config = steveo?.config as RedisConfiguration;
-    this.logger = steveo?.logger ?? nullLogger;
+    this.config = steveo.config as RedisConfiguration;
+    this.logger = steveo.logger ?? nullLogger;
     this.redis = redisConf.redis(this.config);
     this.pool = steveo.pool;
   }
@@ -41,7 +41,7 @@ class RedisRunner extends BaseRunner implements IRunner {
               'runner_receive',
               c.topic,
               params,
-              runnerContext,
+              runnerContext
             );
             this.logger.debug({ topic: c.topic, params }, 'Deleting message');
             await this.deleteMessage(topic, m.id);
@@ -59,7 +59,7 @@ class RedisRunner extends BaseRunner implements IRunner {
               'runner_complete',
               topic,
               params,
-              completedContext,
+              completedContext
             );
           } catch (error) {
             this.logger.error(
@@ -68,13 +68,13 @@ class RedisRunner extends BaseRunner implements IRunner {
                 topic,
                 error,
               },
-              'Error while executing consumer callback',
+              'Error while executing consumer callback'
             );
             this.registry.emit('runner_failure', topic, error, params);
           }
           if (resource) await this.pool.release(resource);
         });
-      }),
+      })
     );
   }
 
@@ -118,7 +118,7 @@ class RedisRunner extends BaseRunner implements IRunner {
 
     this.currentTimeout = setTimeout(
       this.process.bind(this, topics),
-      this.config.consumerPollInterval ?? 1000,
+      this.config.consumerPollInterval ?? 1000
     );
   }
 
@@ -130,7 +130,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     }
 
     this.logger.debug(
-      `starting poll for messages ${topics ? topics.join(',') : 'all'}`,
+      `starting poll for messages ${topics ? topics.join(',') : 'all'}`
     );
 
     const subscriptions = this.getActiveSubsciptions(topics);
@@ -140,7 +140,7 @@ class RedisRunner extends BaseRunner implements IRunner {
       async topic => {
         await this.dequeue(topic);
       },
-      { concurrency: this.config.workerConfig?.max ?? 1 },
+      { concurrency: this.config.workerConfig?.max ?? 1 }
     );
 
     this.poll(topics);
@@ -169,7 +169,7 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async shutdown() {
-    this.redis?.quit(() => {});
+    this.redis.quit(() => {});
   }
 }
 
