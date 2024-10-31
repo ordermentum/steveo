@@ -113,7 +113,7 @@ class KafkaRunner
         await task.subscribe({ ...data, value: data }, runnerContext);
 
         if (waitToCommit) {
-          this.logger.debug('committing message', message);
+          this.logger.debug({ message }, 'committing message');
           this.consumer.commitMessage(message);
         }
 
@@ -123,20 +123,23 @@ class KafkaRunner
           end: getDuration(),
         });
       });
-    } catch (ex) {
-      this.logger.error('Error while executing consumer callback ', {
-        message,
-        topic,
-        error: ex,
-      });
-      this.registry.emit('runner_failure', topic, ex, message);
-      if (ex instanceof JsonParsingError) {
+    } catch (error) {
+      this.logger.error(
+        {
+          message,
+          topic,
+          error,
+        },
+        'Error while executing consumer callback',
+      );
+      this.registry.emit('runner_failure', topic, error, message);
+      if (error instanceof JsonParsingError) {
         this.consumer.commitMessage(message);
       }
     }
 
     if (resource) {
-      this.logger.debug(`releasing pool`);
+      this.logger.debug('releasing pool');
       await this.pool.release(resource);
     }
   }

@@ -41,9 +41,9 @@ class RedisRunner extends BaseRunner implements IRunner {
               'runner_receive',
               c.topic,
               params,
-              runnerContext
+              runnerContext,
             );
-            this.logger.debug('Deleting message', c.topic, params);
+            this.logger.debug({ topic: c.topic, params }, 'Deleting message');
             await this.deleteMessage(topic, m.id);
 
             const task = this.registry.getTask(topic);
@@ -51,7 +51,7 @@ class RedisRunner extends BaseRunner implements IRunner {
               this.logger.error(`Unknown Task ${topic}`);
               return;
             }
-            this.logger.debug('Start subscribe', topic, params);
+            this.logger.debug({ topic, params }, 'Start subscribe');
             const { context = null, ...value } = params;
             await task.subscribe(value, context);
             const completedContext = getContext(params);
@@ -59,19 +59,22 @@ class RedisRunner extends BaseRunner implements IRunner {
               'runner_complete',
               topic,
               params,
-              completedContext
+              completedContext,
             );
-          } catch (ex) {
-            this.logger.error('Error while executing consumer callback ', {
-              params,
-              topic,
-              error: ex,
-            });
-            this.registry.emit('runner_failure', topic, ex, params);
+          } catch (error) {
+            this.logger.error(
+              {
+                params,
+                topic,
+                error,
+              },
+              'Error while executing consumer callback',
+            );
+            this.registry.emit('runner_failure', topic, error, params);
           }
           if (resource) await this.pool.release(resource);
         });
-      })
+      }),
     );
   }
 
