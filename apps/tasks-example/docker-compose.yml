@@ -2,7 +2,7 @@ version: "3"
 services:
   kafka:
     hostname: 'kafka'
-    image: 'bitnami/kafka:2.8.1'
+    image: 'bitnami/kafka:3.9.0'
     ports:
       - '9093:9093'
       - '29092:29092'
