@@ -57,7 +57,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         this.logger.info(message, `Message received for task: ${topic}`);
         const params = JSON.parse(message.Body as string);
         await this.wrap({ topic, payload: params }, async c => {
-          this.logger.info(message, `Message received for task: ${c.topic}`);
+          this.logger.debug(message, `Handling message for task: ${c.topic}`);
           let resource: Resource | null = null;
           const { _meta: _, ...data } = c.payload;
           const runnerContext = getContext(c.payload);
