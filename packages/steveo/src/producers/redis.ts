@@ -1,9 +1,7 @@
-import nullLogger from 'null-logger';
 import RedisSMQ from 'rsmq';
 import redisConf from '../config/redis';
-
-import { Logger, IProducer, IRegistry, RedisConfiguration } from '../common';
-
+import { IProducer, IRegistry, RedisConfiguration } from '../common';
+import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
 
@@ -19,7 +17,7 @@ class RedisProducer extends BaseProducer implements IProducer {
   constructor(
     config: RedisConfiguration,
     registry: IRegistry,
-    logger: Logger = nullLogger
+    logger: Logger = consoleLogger
   ) {
     super(config.middleware ?? []);
     this.config = config;

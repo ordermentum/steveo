@@ -23,7 +23,5 @@ export abstract class Storage {
    * Storage providers will implement this with their specific transaction
    * implementation handling
    */
-  abstract transaction(
-    fn: (repos: Repositories) => Promise<void>
-  ): Promise<void>;
+  abstract transaction<T>(fn: (repos: Repositories) => Promise<T>): Promise<T>;
 }

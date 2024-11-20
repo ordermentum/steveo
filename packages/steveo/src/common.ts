@@ -9,6 +9,7 @@ import {
 } from 'node-rdkafka';
 import { Workflow } from './runtime/workflow';
 import { TaskOptions } from './types/task-options';
+import { Logger } from './lib/logger';
 
 // https://github.com/aws/aws-sdk-js-v3/issues/3063
 // 🤌🏾🤌🏾🤌🏾
@@ -34,13 +35,6 @@ export type getPayload = (
 };
 
 export type RunnerState = 'running' | 'terminating' | 'terminated' | 'paused';
-
-export interface Logger {
-  trace(format: any, ...params: any[]): void;
-  info(format: any, ...params: any[]): void;
-  debug(format: any, ...params: any[]): void;
-  error(format: any, ...params: any[]): void;
-}
 
 export type Engine = 'kafka' | 'sqs' | 'redis';
 
