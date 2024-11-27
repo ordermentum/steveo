@@ -182,9 +182,16 @@ export class Workflow {
 
       await Promise.all(
         payloadArray.map(data => {
+          const result = this.producer.send(
+            message,
+            data,
+            context?.key,
+            context
+          );
+
           this.registry.emit('workflow_send', message, data);
 
-          return this.producer.send(message, data, context?.key, context);
+          return result;
         })
       );
 
