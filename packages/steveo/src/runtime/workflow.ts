@@ -8,7 +8,6 @@ import { Repositories, Storage } from '../storage/storage';
 import { WorkflowOptions, WorkflowPayload } from '../types/workflow';
 import { formatTopicName } from '../lib/formatters';
 import { consoleLogger, Logger } from '../lib/logger';
-import { AppError } from '../lib/app-error';
 
 /**
  * Contextual grouping object that defines the current execution
@@ -44,7 +43,7 @@ export class Workflow {
   steps: StepUnknown[] = [];
 
   constructor(private props: WorkflowProps) {
-    assert(this.name, `Name must be specified`);
+    assert(this.name, 'Name must be specified');
 
     // Register the workflow, this will make sure we can start a workflow execution
     this.registry.addNewTask(this);
@@ -137,7 +136,7 @@ export class Workflow {
   ) {
     // Move execution pointer to next execution step and save, or
     // mark the flow completed if there are no more steps
-    const next = this.getNextStep(current, log);
+    const next = this.getNextStep(current);
     if (!next) {
       await context.repos.workflow.updateWorkflowCompleted(workflowId);
       return;
@@ -174,7 +173,7 @@ export class Workflow {
     const payloadArray = Array.isArray(payload) ? payload : [payload];
 
     try {
-      log.info(`Workflow publish internal start`);
+      log.info('Workflow publish internal start');
 
       // TODO: Understand and document the significance of this comment (it was copypasta'd from the original task implementation)
       // SQS calls this method twice
@@ -197,9 +196,9 @@ export class Workflow {
 
       this.registry.emit('workflow_publish_success', message, payload);
 
-      log.debug(`Workflow completed publish internal`);
+      log.debug('Workflow completed publish internal');
     } catch (err) {
-      log.error(`Workflow execution error`);
+      log.error('Workflow execution error');
 
       this.registry.emit('workflow_publish_failure', message, err);
       throw err;
@@ -215,10 +214,7 @@ export class Workflow {
   async subscribe<T extends WorkflowPayload>(payload: T, log: Logger) {
     try {
       if (!this.steps.length) {
-        throw new AppError(
-          log,
-          `Steps must be defined before a flow is executed`
-        );
+        throw new Error('Steps must be defined before a flow is executed');
       }
 
       const workflowId = payload.workflowId ?? `${this.name}-${v4()}`;
@@ -263,7 +259,7 @@ export class Workflow {
     if (!payload.workflowId) {
       const firstStep = this.steps[0];
 
-      log.debug(`No workflow in payload, initialising new workflow`);
+      log.debug('No workflow in payload, initialising new workflow');
 
       await repos.workflow.workflowInit({
         workflowId,
@@ -273,20 +269,18 @@ export class Workflow {
       });
     }
 
-    const state = await this.loadState(workflowId, repos, log);
+    const state = await this.loadState(workflowId, repos);
 
     if (!state.current) {
-      throw new AppError(log, `Workflow state was not found`);
+      throw new Error('Workflow state was not found');
     }
 
     const step = this.steps.find(s => s.name === state.current);
     if (!step) {
-      throw new AppError(log, `Worflow could not find current step`, {
-        current: state.current,
-      });
+      throw new Error('Worflow could not find current step');
     }
 
-    log.debug({ stepName: step.name }, `Load state for workflow step`);
+    log.debug({ stepName: step.name }, 'Load state for workflow step');
 
     const context: ExecuteContext = {
       workflowId,
@@ -320,13 +314,8 @@ export class Workflow {
     try {
       // Check the current steveo instance to prevent accidental network boundary crossing
       if (state.serviceId !== this.options.serviceId) {
-        throw new AppError(
-          log,
-          `Workflow attempted to execute across network boundary`,
-          {
-            optionsServiceId: this.options.serviceId,
-            stateServiceId: state.serviceId,
-          }
+        throw new Error(
+          `Workflow attempted to execute across network boundary. Expected ${this.options.serviceId}, found ${state.serviceId}`
         );
       }
 
@@ -336,13 +325,10 @@ export class Workflow {
 
       const expectedOrder = executed.every(s => !!state.results?.[s.name]);
       if (!expectedOrder) {
-        throw new AppError(
-          log,
-          `Out of order step execution detected on workflow`
-        );
+        throw new Error('Out of order step execution detected on workflow');
       }
 
-      log.debug(`Executing workflow step function`);
+      log.debug('Executing workflow step function');
 
       const result = (await step.execute(payload)) as object;
 
@@ -370,7 +356,7 @@ export class Workflow {
         log
       );
     } catch (err) {
-      log.error(`Error executing next step in workflow`);
+      log.error('Error executing next step in workflow');
 
       this.registry.emit('workflow_step_failure', payload);
 
@@ -397,13 +383,13 @@ export class Workflow {
 
     let current: StepUnknown | undefined = step;
 
-    log.info(`Execute rollback for workflow step`);
+    log.info('Execute rollback for workflow step');
 
     while (current) {
       try {
         await step.rollback?.(state);
 
-        const previous = this.getPreviousStep(step.name, log);
+        const previous = this.getPreviousStep(step.name);
         if (previous) {
           await context.repos.workflow.rollbackStepExecute(
             workflowId,
@@ -414,7 +400,7 @@ export class Workflow {
           await context.repos.workflow.updateWorkflowCompleted(workflowId);
         }
       } catch (err) {
-        log.error(`Error executing rollback step in workflow`);
+        log.error('Error executing rollback step in workflow');
 
         await context.repos.workflow.storeExecuteError(
           workflowId,
@@ -425,7 +411,7 @@ export class Workflow {
         throw err;
       }
 
-      current = this.getPreviousStep(current.name, log);
+      current = this.getPreviousStep(current.name);
     }
   }
 
@@ -434,14 +420,11 @@ export class Workflow {
    * @param stepName
    * @returns
    */
-  private getPreviousStep(
-    stepName: string,
-    log: Logger
-  ): StepUnknown | undefined {
+  private getPreviousStep(stepName: string): StepUnknown | undefined {
     const index = this.getStepIndex(stepName);
 
     if (index === undefined) {
-      throw new AppError(log, `Step was not found in workflow`);
+      throw new Error('Step was not found in workflow');
     }
 
     if (index === 0) {
@@ -456,11 +439,11 @@ export class Workflow {
    * @param name
    * @returns
    */
-  private getNextStep(stepName: string, log: Logger): StepUnknown | undefined {
+  private getNextStep(stepName: string): StepUnknown | undefined {
     const index = this.getStepIndex(stepName);
 
     if (index === undefined) {
-      throw new AppError(log, `Step was not found in workflow`);
+      throw new Error('Step was not found in workflow');
     }
 
     const nextIndex = index + 1;
@@ -497,16 +480,15 @@ export class Workflow {
    */
   private async loadState(
     flowId: string,
-    repos: Repositories,
-    log: Logger
+    repos: Repositories
   ): Promise<WorkflowState> {
     if (!flowId) {
-      throw new AppError(log, `WorkflowId was empty for run`);
+      throw new Error('WorkflowId was empty for run');
     }
 
     const state = await repos.workflow.loadWorkflow(flowId);
     if (!state) {
-      throw new AppError(log, `State was not found for workflowId`);
+      throw new Error('State was not found for workflowId');
     }
 
     return state;
