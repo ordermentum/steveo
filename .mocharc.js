@@ -3,6 +3,7 @@ module.exports = {
   colors: true,
   exit: true,
   extension: ["ts", "js"],
+  'fail-zero': false,
   file: ['test/*_test.ts', 'test/**/*_test.ts'],
   maxHttpHeaderSize: 16384,
   recursive: true,
