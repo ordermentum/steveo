@@ -3,8 +3,6 @@ module.exports = {
   colors: true,
   exit: true,
   extension: ["ts", "js"],
-  'fail-zero': false,
-  file: ['test/*_test.ts', 'test/**/*_test.ts'],
   maxHttpHeaderSize: 16384,
   recursive: true,
   require: [
@@ -12,5 +10,6 @@ module.exports = {
     "source-map-support/register"
   ],
   retries: 0,
+  spec: 'test/**/*_test.ts',
   timeout: 160000,
 };
