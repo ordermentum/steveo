@@ -2,6 +2,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { fixtures } from './fixtures/state_fixtures';
 import { workflowFixture } from './fixtures/workflow_fixture';
+import { consoleLogger } from '../../src/lib/logger';
 
 // Workflow integration tests
 describe('Workflow tests', () => {
@@ -19,7 +20,7 @@ describe('Workflow tests', () => {
     workflow.next(step1.step);
 
     // ACT
-    await workflow.subscribe({ workflowId: undefined });
+    await workflow.subscribe({ workflowId: undefined }, consoleLogger);
 
     // ASSERT
     expect(step1.fake.callCount).to.eq(1);
@@ -38,8 +39,8 @@ describe('Workflow tests', () => {
 
     // ACT
     await workflow
-      .subscribe({ workflowId: undefined })
-      .then(workflowId => workflow.subscribe({ workflowId }));
+      .subscribe({ workflowId: undefined }, consoleLogger)
+      .then(workflowId => workflow.subscribe({ workflowId }, consoleLogger));
 
     // ASSERT
     expect(step1.fake.callCount).to.eq(1);
@@ -59,9 +60,12 @@ describe('Workflow tests', () => {
     workflow.next(step2.step);
 
     // ACT
-    const workflowId = await workflow.subscribe({ workflowId: undefined });
+    const workflowId = await workflow.subscribe(
+      { workflowId: undefined },
+      consoleLogger
+    );
 
-    await workflow.subscribe({ workflowId });
+    await workflow.subscribe({ workflowId }, consoleLogger);
 
     // ASSERT
     expect(step1.fake.callCount).to.eq(1);
@@ -81,7 +85,7 @@ describe('Workflow tests', () => {
     repository.overrideServiceId = 'mismatched-service-name';
 
     // ACT
-    await workflow.subscribe({ workflowId: undefined });
+    await workflow.subscribe({ workflowId: undefined }, consoleLogger);
 
     // ASSERT
     expect(step1.fake.callCount).to.eq(0);
