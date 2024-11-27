@@ -195,13 +195,13 @@ export class Workflow {
         })
       );
 
-      this.registry.emit('workflow_success', message, payload);
+      this.registry.emit('workflow_publish_success', message, payload);
 
       log.debug(`Workflow completed publish internal`);
     } catch (err) {
       log.error(`Workflow execution error`);
 
-      this.registry.emit('workflow_failure', message, err);
+      this.registry.emit('workflow_publish_failure', message, err);
       throw err;
     }
   }
@@ -223,7 +223,7 @@ export class Workflow {
 
       const workflowId = payload.workflowId ?? `${this.name}-${v4()}`;
 
-      return await this.storage.transaction<string>(async repos =>
+      const result = await this.storage.transaction<string>(async repos =>
         this.processPayload(
           workflowId,
           repos,
@@ -234,11 +234,17 @@ export class Workflow {
           })
         )
       );
+
+      this.registry.emit('workflow_step_success', payload);
+
+      return result;
     } catch (err) {
       log.error(
         { workflowId: payload.workflowId, err },
         'Subscribe processor error'
       );
+
+      this.registry.emit('workflow_step_failure', payload);
 
       throw err;
     }
@@ -365,6 +371,8 @@ export class Workflow {
       );
     } catch (err) {
       log.error(`Error executing next step in workflow`);
+
+      this.registry.emit('workflow_step_failure', payload);
 
       await context.repos.workflow.storeExecuteError(
         workflowId,
