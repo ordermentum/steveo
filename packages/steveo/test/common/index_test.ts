@@ -5,8 +5,8 @@ import create from '../../src';
 import DummyProducer from '../../src/producers/dummy';
 import { consoleLogger } from '../../src/lib/logger';
 import { Configuration, ITask } from '../../lib/common';
-import { TaskOptions } from '../../lib/types/task-options';
-import { Storage } from '../../lib/storage/storage';
+import { TaskOptions } from '../../src/types/task-options';
+import { Storage } from '../../src/types/storage';
 import config from '../../src/config';
 
 describe('Index', () => {
