@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { StepUnknown } from '../../../src/runtime/workflow-step';
+import { StepUnknown } from '../../../src/types/workflow-step';
 
 type FactoryStep = {
   step: StepUnknown;

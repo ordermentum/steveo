@@ -1,6 +1,6 @@
 import assert from 'node:assert';
-import { WorkflowState } from '../../../src/runtime/workflow-state';
-import { WorkflowStateRepository } from '../../../src/storage/workflow-repo';
+import { WorkflowState } from '../../../src/types/workflow-state';
+import { WorkflowStateRepository } from '../../../src/types/workflow-repo';
 
 /**
  *

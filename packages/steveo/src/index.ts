@@ -26,16 +26,16 @@ import {
   DummyConfiguration,
   Middleware,
 } from './common';
-import { Storage } from './storage/storage';
+import { Storage } from './types/storage';
 import { TaskOptions } from './types/task-options';
 import { Workflow } from './runtime/workflow';
 import { WorkflowOptions } from './types/workflow';
 import { formatTopicName, QueueFormatOptions } from './lib/formatters';
 
 export { Logger } from './lib/logger';
-export { Storage, Repositories } from './storage/storage';
-export { WorkflowStateRepository } from './storage/workflow-repo';
-export { WorkflowState } from './runtime/workflow-state';
+export { Storage, Repositories } from './types/storage';
+export { WorkflowStateRepository } from './types/workflow-repo';
+export { WorkflowState } from './types/workflow-state';
 export { WorkflowPayload } from './types/workflow';
 export { consoleLogger } from './lib/logger';
 

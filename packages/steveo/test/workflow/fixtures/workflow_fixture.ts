@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { fromStub, stubInterface } from '@salesforce/ts-sinon';
 import { Workflow } from '../../../src/runtime/workflow';
-import { Repositories, Storage } from '../../../src/storage/storage';
+import { Repositories, Storage } from '../../../src/types/storage';
 import { IProducer, IRegistry } from '../../../src/common';
 import { MemoryStateRepository } from './repo_fixture';
 import { consoleLogger } from '../../../src/lib/logger';

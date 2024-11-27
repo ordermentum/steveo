@@ -1,4 +1,4 @@
-import { WorkflowState } from '../runtime/workflow-state';
+import { WorkflowState } from './workflow-state';
 
 /**
  * Repository contract for workflow state persistence.

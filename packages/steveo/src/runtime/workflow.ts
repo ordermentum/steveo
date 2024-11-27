@@ -1,10 +1,10 @@
 import { v4 } from 'uuid';
 import assert from 'node:assert';
 import { bind, take } from '../lib/not-lodash';
-import { Step, StepUnknown } from './workflow-step';
+import { Step, StepUnknown } from '../types/workflow-step';
 import { IProducer, IRegistry } from '../common';
-import { WorkflowState } from './workflow-state';
-import { Repositories, Storage } from '../storage/storage';
+import { WorkflowState } from '../types/workflow-state';
+import { Repositories, Storage } from '../types/storage';
 import { WorkflowOptions, WorkflowPayload } from '../types/workflow';
 import { formatTopicName } from '../lib/formatters';
 import { consoleLogger, Logger } from '../lib/logger';
@@ -259,7 +259,7 @@ export class Workflow {
     if (!payload.workflowId) {
       const firstStep = this.steps[0];
 
-      log.debug('No workflow in payload, initialising new workflow');
+      log.debug('No workflow ID in payload, initialising new workflow');
 
       await repos.workflow.workflowInit({
         workflowId,
@@ -272,12 +272,12 @@ export class Workflow {
     const state = await this.loadState(workflowId, repos);
 
     if (!state.current) {
-      throw new Error('Workflow state was not found');
+      throw new Error(`Workflow state was not found: ${workflowId}`);
     }
 
     const step = this.steps.find(s => s.name === state.current);
     if (!step) {
-      throw new Error('Worflow could not find current step');
+      throw new Error(`Worflow could not find current step ${state.current}`);
     }
 
     log.debug({ stepName: step.name }, 'Load state for workflow step');
@@ -400,7 +400,10 @@ export class Workflow {
           await context.repos.workflow.updateWorkflowCompleted(workflowId);
         }
       } catch (err) {
-        log.error('Error executing rollback step in workflow');
+        log.error(
+          { err },
+          `Error executing rollback step in workflow ${workflowId}`
+        );
 
         await context.repos.workflow.storeExecuteError(
           workflowId,
@@ -424,7 +427,9 @@ export class Workflow {
     const index = this.getStepIndex(stepName);
 
     if (index === undefined) {
-      throw new Error('Step was not found in workflow');
+      throw new Error(
+        `Step ${stepName} was not found in workflow ${this.name}`
+      );
     }
 
     if (index === 0) {
@@ -443,7 +448,9 @@ export class Workflow {
     const index = this.getStepIndex(stepName);
 
     if (index === undefined) {
-      throw new Error('Step was not found in workflow');
+      throw new Error(
+        `Step ${stepName} was not found in workflow ${this.name}`
+      );
     }
 
     const nextIndex = index + 1;
@@ -488,7 +495,7 @@ export class Workflow {
 
     const state = await repos.workflow.loadWorkflow(flowId);
     if (!state) {
-      throw new Error('State was not found for workflowId');
+      throw new Error(`State was not found for workflowId ${flowId}`);
     }
 
     return state;
