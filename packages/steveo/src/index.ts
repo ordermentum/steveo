@@ -1,8 +1,8 @@
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable global-require */
+/* eslint-disable no-underscore-dangle */
 import assert from 'node:assert';
 import { consoleLogger, Logger } from './lib/logger';
-/* eslint-disable no-underscore-dangle */
 import Task from './runtime/task';
 import Registry from './runtime/registry';
 import getRunner from './lib/runner';
