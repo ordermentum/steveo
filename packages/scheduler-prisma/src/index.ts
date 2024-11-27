@@ -125,7 +125,7 @@ export interface JobSchedulerInterface {
   events?: TypedEmitter<Events>;
 
   /**
-     * @description the name of the job against the function to call 
+     * @description the name of the job against the function to call
      * @example
      *  {
             'abandoned-carts-task': taskRunner(abandonedCartsTask),
@@ -193,7 +193,7 @@ export interface JobSchedulerInterface {
     "deleted_at",,"YES","timestamp with time zone"
     "timezone","'UTC'::character varying","NO","character varying"
     "accepted_at",,"YES","timestamp with time zone"
-    "priority","1","NO","integer" 
+    "priority","1","NO","integer"
  */
 export class JobScheduler implements JobSchedulerInterface {
   logger: Logger;
@@ -376,13 +376,13 @@ export class JobScheduler implements JobSchedulerInterface {
     try {
       const jobs = await this.fetchAndEnqueueJobs();
       await this.publishMessages(jobs as JobSet[]);
-    } catch (ex) {
-      this.logger.error({
-        message: 'job_producer failed:- while fetching jobItems from database',
-        exception: ex,
-      });
+    } catch (e) {
+      this.logger.error(
+        { error: e },
+        'job_producer failed:- while fetching jobItems from database'
+      );
 
-      throw ex;
+      throw e;
     }
   };
 

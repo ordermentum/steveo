@@ -14,7 +14,10 @@ export interface Logger {
   error(format: LogEntry, ...params: unknown[]): void;
 }
 
-function factory<T>(baseEntry?: T): Logger {
+/**
+ * TODO: Paul - I'm working on a logger abstraction that will group context properties into one om JSON object. This will replace this approach in the near future.
+ */
+function loggerFactory<T>(baseEntry?: T): Logger {
   //
   function output(entry: LogEntry): void {
     const isString = typeof entry === 'string';
@@ -28,7 +31,7 @@ function factory<T>(baseEntry?: T): Logger {
 
   return {
     child<ChildOptions>(parentEntries: ChildOptions): Logger {
-      return factory({ ...baseEntry, ...parentEntries });
+      return loggerFactory({ ...baseEntry, ...parentEntries });
     },
     trace: output,
     info: output,
@@ -37,4 +40,4 @@ function factory<T>(baseEntry?: T): Logger {
   };
 }
 
-export const consoleLogger = factory();
+export const consoleLogger = loggerFactory();

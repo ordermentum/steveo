@@ -22,7 +22,7 @@ class PostgresStorage extends Storage {
    * @param fn
    */
   async transaction<T>(fn: (repos: Repositories) => Promise<T>): Promise<T> {
-    this.logger.trace({ message: `Postgres storage transaction begin` });
+    this.logger.trace(`Postgres storage transaction begin`);
 
     return this.prisma.$transaction(
       async client => {
@@ -32,7 +32,7 @@ class PostgresStorage extends Storage {
 
         const result = await fn(repos);
 
-        this.logger.trace({ message: `Postgres storage transaction complete` });
+        this.logger.trace(`Postgres storage transaction complete`);
 
         return result;
       },

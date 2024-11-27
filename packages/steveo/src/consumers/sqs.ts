@@ -70,7 +70,12 @@ class SqsRunner extends BaseRunner implements IRunner {
 
           this.logger.trace({ payload }, 'Message parsed payload');
 
-          await this.processMessage(message, context.topic, context.payload);
+          await this.processMessage(
+            message,
+            context.topic,
+            context.payload,
+            this.logger.child({ topic })
+          );
         });
       },
       { concurrency: this.concurrency }
@@ -83,7 +88,8 @@ class SqsRunner extends BaseRunner implements IRunner {
   private async processMessage<PayLoad extends { _meta: object }>(
     message: Message,
     topic: string,
-    payload: PayLoad
+    payload: PayLoad,
+    logger: Logger
   ): Promise<void> {
     const resource = await this.pool.acquire();
     const { _meta: _, ...data } = payload;
@@ -102,11 +108,11 @@ class SqsRunner extends BaseRunner implements IRunner {
       }
 
       if (!task) {
-        this.logger.error(`Unknown Task ${topic}`);
+        logger.error(`Unknown Task ${topic}`);
         return;
       }
 
-      this.logger.info(
+      logger.info(
         {
           taskName: task.name,
           context: runnerContext,
@@ -117,7 +123,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       // Process the message data with the concrete task runner
       await task.subscribe(data, runnerContext);
 
-      this.logger.debug({ topic }, 'Completed subscribe');
+      logger.debug('Completed subscribe');
 
       const completedContext = getContext(payload);
 
@@ -127,10 +133,9 @@ class SqsRunner extends BaseRunner implements IRunner {
 
       this.registry.emit('runner_complete', topic, payload, completedContext);
     } catch (error) {
-      this.logger.error(
+      logger.error(
         {
           payload,
-          topic,
           error,
         },
         'Error while executing consumer callback'
