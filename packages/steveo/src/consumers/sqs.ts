@@ -18,9 +18,9 @@ import { safeParseInt } from '../lib/utils';
 import { getContext } from '../lib/context';
 import { getSqsInstance } from '../config/sqs';
 
-import { IRunner, Pool, Logger, SQSConfiguration } from '../common';
+import { IRunner, Pool, SQSConfiguration } from '../common';
+import { Logger } from '../lib/logger';
 import { Steveo } from '..';
-import { Resource } from '../lib/pool';
 
 class SqsRunner extends BaseRunner implements IRunner {
   config: SQSConfiguration;
@@ -48,78 +48,105 @@ class SqsRunner extends BaseRunner implements IRunner {
     this.logger.info('SQS Runner started');
   }
 
+  /**
+   * Process the given array of received messages.
+   * Each message will be processed with regard to the middleware pipeline.
+   */
   async receive(messages: Array<Message>, topic: string): Promise<any> {
     this.registry.emit('runner_messages', topic, messages);
 
     return bluebird.map(
       messages,
       async message => {
-        this.logger.info(message, `Message received for task: ${topic}`);
-        const params = JSON.parse(message.Body as string);
-        await this.wrap({ topic, payload: params }, async c => {
-          this.logger.debug(message, `Handling message for task: ${c.topic}`);
-          let resource: Resource | null = null;
-          const { _meta: _, ...data } = c.payload;
-          const runnerContext = getContext(c.payload);
-          try {
-            resource = await this.pool.acquire();
+        const payload = JSON.parse(message.Body as string);
 
-            this.registry.emit(
-              'runner_receive',
-              c.topic,
-              c.payload,
-              runnerContext
-            );
+        this.logger.trace({ message }, 'Message content');
 
-            const task = this.registry.getTask(topic);
-            const waitToCommit =
-              (task?.options?.waitToCommit || this.config.waitToCommit) ??
-              false;
+        await this.wrap({ topic, payload }, async context => {
+          this.logger.info(
+            { topic: context.topic },
+            `Message received for task ${context.topic}`
+          );
 
-            if (!waitToCommit) {
-              await this.deleteMessage(c.topic, message);
-            }
+          this.logger.trace({ payload }, 'Message parsed payload');
 
-            if (!task) {
-              this.logger.error(`Unknown Task ${c.topic}`);
-              return;
-            }
-
-            this.logger.info(
-              { context: runnerContext, params },
-              `Start Subscribe to ${task.name}`
-            );
-
-            await task.subscribe(data, runnerContext);
-            this.logger.debug('Completed subscribe', c.topic, c.payload);
-            const completedContext = getContext(c.payload);
-
-            if (waitToCommit) {
-              await this.deleteMessage(c.topic, message);
-            }
-
-            this.registry.emit(
-              'runner_complete',
-              topic,
-              params,
-              completedContext
-            );
-          } catch (error) {
-            this.logger.error(
-              {
-                params,
-                topic,
-                error,
-              },
-              'Error while executing consumer callback'
-            );
-            this.registry.emit('runner_failure', topic, error, params);
-          }
-          if (resource) await this.pool.release(resource);
+          await this.processMessage(
+            message,
+            context.topic,
+            context.payload,
+            this.logger.child({ topic })
+          );
         });
       },
       { concurrency: this.concurrency }
     );
+  }
+
+  /**
+   * Process an individual message via the middleware pipeline
+   */
+  private async processMessage<PayLoad extends { _meta: object }>(
+    message: Message,
+    topic: string,
+    payload: PayLoad,
+    logger: Logger
+  ): Promise<void> {
+    const resource = await this.pool.acquire();
+    const { _meta: _, ...data } = payload;
+
+    try {
+      const runnerContext = getContext(payload);
+
+      this.registry.emit('runner_receive', topic, payload, runnerContext);
+
+      const task = this.registry.getTask(topic);
+      const waitToCommit =
+        (task?.options?.waitToCommit || this.config.waitToCommit) ?? false;
+
+      if (!waitToCommit) {
+        await this.deleteMessage(topic, message);
+      }
+
+      if (!task) {
+        logger.error(`Unknown Task ${topic}`);
+        return;
+      }
+
+      logger.info(
+        {
+          taskName: task.name,
+          context: runnerContext,
+        },
+        `Start Subscribe with task ${task.name}`
+      );
+
+      // Process the message data with the concrete task runner
+      await task.subscribe(data, runnerContext);
+
+      logger.debug('Completed subscribe');
+
+      const completedContext = getContext(payload);
+
+      if (waitToCommit) {
+        await this.deleteMessage(topic, message);
+      }
+
+      this.registry.emit('runner_complete', topic, payload, completedContext);
+    } catch (error) {
+      logger.error(
+        {
+          payload,
+          error,
+        },
+        'Error while executing consumer callback'
+      );
+
+      this.registry.emit('runner_failure', topic, error, payload);
+    } finally {
+      if (resource) {
+        await this.pool.release(resource);
+      }
+    }
   }
 
   private async deleteMessage(
@@ -141,10 +168,10 @@ class SqsRunner extends BaseRunner implements IRunner {
       const data: DeleteMessageCommandOutput = await this.sqs.deleteMessage(
         deleteParams
       );
-      this.logger.debug('returned data', data);
+      this.logger.debug({ data }, 'returned data');
       return true;
     } catch (ex) {
-      this.logger.error('sqs deletion error', ex, topic, message);
+      this.logger.error({ ex, topic, message }, 'sqs deletion error');
       throw ex;
     }
   }
@@ -155,7 +182,10 @@ class SqsRunner extends BaseRunner implements IRunner {
     const data: ReceiveMessageCommandOutput | undefined = await this.sqs
       .receiveMessage(params)
       .catch(e => {
-        this.logger.error('Error while receiving message from queue', e);
+        this.logger.error(
+          { error: e },
+          'Error while receiving message from queue'
+        );
         return undefined;
       });
 

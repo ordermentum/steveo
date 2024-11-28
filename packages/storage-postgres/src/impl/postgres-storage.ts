@@ -21,18 +21,20 @@ class PostgresStorage extends Storage {
    * Executes the given function under the umbrella of a Postgres transaction.
    * @param fn
    */
-  async transaction(fn: (repos: Repositories) => Promise<void>): Promise<void> {
-    this.logger.trace({ msg: `Postgres storage transaction begin` });
+  async transaction<T>(fn: (repos: Repositories) => Promise<T>): Promise<T> {
+    this.logger.trace(`Postgres storage transaction begin`);
 
-    await this.prisma.$transaction(
+    return this.prisma.$transaction(
       async client => {
         const repos: Repositories = {
           workflow: new WorkflowStateRepositoryPostgres(client),
         };
 
-        await fn(repos);
+        const result = await fn(repos);
 
-        this.logger.trace({ msg: `Postgres storage transaction complete` });
+        this.logger.trace(`Postgres storage transaction complete`);
+
+        return result;
       },
       {
         timeout: this.config.transactionTimeout,

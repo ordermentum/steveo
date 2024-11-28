@@ -1,4 +1,4 @@
-import { TaskOptions } from '../types/task-options';
+import { TaskOptions } from './task-options';
 
 /**
  * Type definition for a single workflow step that defines

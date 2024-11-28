@@ -10,5 +10,6 @@ module.exports = {
     "source-map-support/register"
   ],
   retries: 0,
+  spec: 'test/**/*_test.ts',
   timeout: 160000,
 };
