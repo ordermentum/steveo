@@ -220,7 +220,6 @@ export const timestampHelperFactory =
   ) =>
   async (args: T, context: JobContext): Promise<any> => {
     const jobId = args?.context?.job?.id ?? context?.job?.id;
-
     if (!jobId) {
       try {
         return task(args, context);
@@ -228,8 +227,8 @@ export const timestampHelperFactory =
         return null;
       }
     }
-    const jobInstance = await job?.findByPk(jobId);
 
+    const jobInstance = await job?.findByPk(jobId);
     if (!jobInstance) {
       try {
         return task(args, context);
