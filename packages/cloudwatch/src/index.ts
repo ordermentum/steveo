@@ -100,9 +100,6 @@ export const schedulerMetrics = (
     for (const [name, count] of Object.entries(data)) {
       try {
         const jobName = name.toUpperCase();
-        if (typeof count !== 'number' || !Number.isFinite(count)) {
-          throw new Error(`Recieved invalid argument for count: ${count}`);
-        }
         publishCountForService(jobName, service, 'pending', count);
       } catch (err) {
         scheduler.logger.error(
