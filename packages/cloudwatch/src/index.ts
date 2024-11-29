@@ -64,7 +64,7 @@ export const schedulerMetrics = (
       publishCountForService(jobName, service, 'completed', 1);
     } catch (err) {
       scheduler.logger.error(
-        `steveo-cloudwatch: Error while putting metrics: ${err}`
+        `Error while putting CloudWatch metrics for duration job: ${err}`
       );
       throw err;
     }
@@ -77,7 +77,7 @@ export const schedulerMetrics = (
         publishCountForService(jobName, service, 'stuck', 1);
       } catch (err) {
         scheduler.logger.error(
-          `steveo-cloudwatch: Error while putting metrics: ${err}`
+          `Error while putting CloudWatch metrics for lagged job: ${err}`
         );
         throw err;
       }
@@ -90,7 +90,7 @@ export const schedulerMetrics = (
       publishCountForService(jobName, service, 'restarted', 1);
     } catch (err) {
       scheduler.logger.error(
-        `steveo-cloudwatch: Error while putting metrics: ${err}`
+        `Error while putting CloudWatch metrics for restarted job: ${err}`
       );
       throw err;
     }
@@ -103,7 +103,7 @@ export const schedulerMetrics = (
         publishCountForService(jobName, service, 'pending', count);
       } catch (err) {
         scheduler.logger.error(
-          `steveo-cloudwatch: Error while putting metrics: ${err}`
+          `Error while putting CloudWatch metrics for pending job: ${err}`
         );
         throw err;
       }
