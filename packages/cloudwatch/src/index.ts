@@ -31,6 +31,7 @@ const publishCountForService = (
   count: number
 ): Promise<PutMetricDataCommandOutput> => {
   const command = new PutMetricDataCommand({
+    Namespace,
     MetricData: [
       {
         MetricName: metricName,
@@ -49,7 +50,6 @@ const publishCountForService = (
         Value: count,
       },
     ],
-    Namespace,
   });
   return client.send(command);
 };
