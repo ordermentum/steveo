@@ -120,7 +120,7 @@ describe('Workflow tests', () => {
   it('should delete workflow on completion if configured', async () => {
     // ARRANGE
     const { workflow, repository } = workflowFixture(sandbox, {
-      deleteOnComplete: false,
+      deleteOnComplete: true,
     });
     const step1 = fixtures.stepReturn('step-1', 'step1-result');
 
