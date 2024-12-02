@@ -138,7 +138,15 @@ export class Workflow {
     // mark the flow completed if there are no more steps
     const next = this.getNextStep(current);
     if (!next) {
-      await context.repos.workflow.updateWorkflowCompleted(workflowId);
+      // Clean up workflow on completion if configured to do so, otherwise
+      // just update to a completed state. Typically workflows are not deleted
+      // in development environments only.
+      if (this.options.deleteOnComplete) {
+        await context.repos.workflow.deleteWorkflow(workflowId);
+      } else {
+        await context.repos.workflow.updateWorkflowCompleted(workflowId);
+      }
+
       return;
     }
 

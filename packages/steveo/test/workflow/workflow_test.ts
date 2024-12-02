@@ -15,7 +15,9 @@ describe('Workflow tests', () => {
   it('should execute a simple one step flow', async () => {
     // ARRANGE
     const step1 = fixtures.stepReturn('step-1', 'step1-result');
-    const { workflow, repository } = workflowFixture(sandbox);
+    const { workflow, repository } = workflowFixture(sandbox, {
+      deleteOnComplete: false,
+    });
 
     workflow.next(step1.step);
 
@@ -30,7 +32,9 @@ describe('Workflow tests', () => {
 
   it('should execute two step flow', async () => {
     // ARRANGE
-    const { workflow, repository } = workflowFixture(sandbox);
+    const { workflow, repository } = workflowFixture(sandbox, {
+      deleteOnComplete: false,
+    });
     const step1 = fixtures.stepReturn('step-1', 'step1-result');
     const step2 = fixtures.stepReturn('step-2', 'step2-result');
 
@@ -95,5 +99,39 @@ describe('Workflow tests', () => {
     expect(repository.calls.rollbacks).to.eq(0);
     expect(repository.calls.errors).to.eq(1);
     expect(repository.completed).to.eq(true);
+  });
+
+  it('should update only on completion if configured', async () => {
+    // ARRANGE
+    const { workflow, repository } = workflowFixture(sandbox);
+    const step1 = fixtures.stepReturn('step-1', 'step1-result');
+
+    workflow.options.deleteOnComplete = false;
+    workflow.next(step1.step);
+
+    // ACT
+    await workflow.subscribe({ workflowId: undefined }, consoleLogger);
+
+    // ASSERT
+    expect(step1.fake.callCount).to.eq(1);
+    expect(repository.calls.completed).to.eq(1);
+  });
+
+  it('should delete workflow on completion if configured', async () => {
+    // ARRANGE
+    const { workflow, repository } = workflowFixture(sandbox, {
+      deleteOnComplete: false,
+    });
+    const step1 = fixtures.stepReturn('step-1', 'step1-result');
+
+    workflow.next(step1.step);
+
+    // ACT
+    await workflow.subscribe({ workflowId: undefined }, consoleLogger);
+
+    // ASSERT
+    expect(step1.fake.callCount).to.eq(1);
+    expect(repository.calls.completed).to.eq(0);
+    expect(repository.calls.delete).to.eq(1);
   });
 });

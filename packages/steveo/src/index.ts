@@ -109,7 +109,10 @@ export class Steveo implements ISteveo {
    * @param topic
    * @returns
    */
-  flow(name: string, options: WorkflowOptions = { serviceId: 'DEFAULT' }) {
+  flow(
+    name: string,
+    options: WorkflowOptions = { serviceId: 'DEFAULT', deleteOnComplete: true }
+  ) {
     const queueFormatOptions: QueueFormatOptions = {
       queueName: options.queueName,
       upperCaseNames: this.config.upperCaseNames,

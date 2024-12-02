@@ -16,6 +16,7 @@ export class MemoryStateRepository implements WorkflowStateRepository {
     init: 0,
     load: 0,
     completed: 0,
+    delete: 0,
     pointerUpdate: 0,
     rollbacks: 0,
     errors: 0,
@@ -29,6 +30,7 @@ export class MemoryStateRepository implements WorkflowStateRepository {
       init: 0,
       load: 0,
       completed: 0,
+      delete: 0,
       pointerUpdate: 0,
       rollbacks: 0,
       errors: 0,
@@ -67,6 +69,13 @@ export class MemoryStateRepository implements WorkflowStateRepository {
 
     this.calls.completed += 1;
     this.completed = true;
+
+    return Promise.resolve();
+  }
+
+  deleteWorkflow(_workflowId: string): Promise<void> {
+    this.state = undefined;
+    this.calls.delete += 1;
 
     return Promise.resolve();
   }

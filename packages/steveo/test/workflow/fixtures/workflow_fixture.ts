@@ -9,7 +9,12 @@ import { consoleLogger } from '../../../src/lib/logger';
 /**
  *
  */
-export function workflowFixture(sandbox: sinon.SinonSandbox) {
+export function workflowFixture(
+  sandbox: sinon.SinonSandbox,
+  options: { deleteOnComplete: boolean } = {
+    deleteOnComplete: true,
+  }
+) {
   const repository = new MemoryStateRepository();
   const repos: Repositories = {
     workflow: repository,
@@ -31,6 +36,7 @@ export function workflowFixture(sandbox: sinon.SinonSandbox) {
     producer: fromStub(producer),
     options: {
       serviceId: 'test-service',
+      deleteOnComplete: options.deleteOnComplete,
     },
     logger: consoleLogger,
   });
