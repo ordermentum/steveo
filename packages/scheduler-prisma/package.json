@@ -37,7 +37,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@prisma/client": "5.7.1",
+    "@prisma/client": "5.22.0",
     "bunyan": "^1.8.15",
     "cron-parser": "^3.5.0",
     "moment-timezone": "^0.5.33",
