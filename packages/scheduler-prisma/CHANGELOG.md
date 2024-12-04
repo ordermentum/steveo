@@ -1,5 +1,11 @@
 # @steveojs/scheduler-prisma
 
+## 7.5.0
+
+### Minor Changes
+
+- 51fccf9: Update logging to adhere to bunyan API
+
 ## 7.4.0
 
 ### Minor Changes
