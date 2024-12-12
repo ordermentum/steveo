@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "steveo": "*",
-    "@emotion/eslint-plugin": "11.11",
+    "@emotion/eslint-plugin": "11.12",
     "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@ordermentum/eslint-config-ordermentum": "2.4.0",
     "@types/chai": "4.3.16",

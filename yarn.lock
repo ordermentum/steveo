@@ -1016,10 +1016,12 @@
   resolved "https://registry.yarnpkg.com/@datadog/sketches-js/-/sketches-js-2.1.0.tgz#8c7e8028a5fc22ad102fa542b0a446c956830455"
   integrity sha512-smLocSfrt3s53H/XSVP3/1kP42oqvrkjUPtyaFd1F79ux24oE31BKt+q0c6lsa6hOYrFzsIwyc5GXAI5JmfOew==
 
-"@emotion/eslint-plugin@11.11":
-  version "11.11.0"
-  resolved "https://registry.yarnpkg.com/@emotion/eslint-plugin/-/eslint-plugin-11.11.0.tgz#9f19ecf64ba67c4472576c4c82f6bd4df646be61"
-  integrity sha512-jCOYqU/0Sqm+g+6D7QuIlG99q8YAF0T7BP98zQF/MPZKfbcm46z5mizXn0YlhZ9AYZfNtZ1DeODXdncYxZzR4Q==
+"@emotion/eslint-plugin@11.12":
+  version "11.12.0"
+  resolved "https://registry.yarnpkg.com/@emotion/eslint-plugin/-/eslint-plugin-11.12.0.tgz#7d7b0533ff066d7b95685373bd83502b2fc9b256"
+  integrity sha512-N0rtAVKk6w8RchWtexdG/GFbg48tdlO4cnq9Jg6H3ul3EDDgkYkPE0PKMb1/CJ7cDyYsiNPYVc3ZnWnd2/d0tA==
+  dependencies:
+    "@typescript-eslint/utils" "^5.25.0"
 
 "@eslint-community/eslint-utils@^4.1.2":
   version "4.1.2"
@@ -2287,7 +2289,7 @@
     semver "^7.3.7"
     tsutils "^3.21.0"
 
-"@typescript-eslint/utils@5.62.0":
+"@typescript-eslint/utils@5.62.0", "@typescript-eslint/utils@^5.25.0":
   version "5.62.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/utils/-/utils-5.62.0.tgz#141e809c71636e4a75daa39faed2fb5f4b10df86"
   integrity sha512-n8oxjeb5aIbPFEtmQxQYOLI0i9n5ySBEY/ZEHHZqKQSFnxio1rv6dthascc9dLuwrL0RC5mPCxB7vnAVGAYWAQ==
