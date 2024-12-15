@@ -58,7 +58,6 @@ export const getConfig = (config: Configuration) => {
     parameters.messageRetentionPeriod = sqsConfig.messageRetentionPeriod;
     parameters.receiveMessageWaitTimeSeconds =
       sqsConfig.receiveMessageWaitTimeSeconds;
-    parameters.credentials = sqsConfig.credentials;
     parameters.maxNumberOfMessages = sqsConfig.maxNumberOfMessages;
     parameters.visibilityTimeout = sqsConfig.visibilityTimeout;
     parameters.waitTimeSeconds = sqsConfig.waitTimeSeconds;
