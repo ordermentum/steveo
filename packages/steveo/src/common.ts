@@ -155,6 +155,26 @@ export interface IRegistry {
   getTask(topic: string): RegistryElem | null;
 }
 
+/**
+ * @description Message options for the producer
+ */
+export interface IMessageRoutingOptions {
+  /**
+   * @description Based on the engine, the key works differently:
+   * Kafka - Determines which partition this message lands in.
+   *         See https://www.confluent.io/learn/kafka-message-key/
+   * SQS (FIFO queues only) - Groups messages with the same key.
+   *         See https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html
+   */
+  key?: string;
+  /**
+   * @description Only works for SQS FIFO Queues
+   * If a message with a particular message deduplication ID is sent successfully, any messages sent with the same message deduplication ID are accepted successfully but aren't delivered during the 5-minute deduplication interval.
+   * SQS FIFO engine uses content based deduplication by default if no message deduplication ID is provided.
+   */
+  deDuplicationId?: string;
+}
+
 export interface ITask<T = any, R = any> {
   config: Configuration;
   registry: IRegistry;
@@ -163,7 +183,7 @@ export interface ITask<T = any, R = any> {
   topic: string;
   options: TaskOptions;
   producer: any;
-  publish(payload: T | T[], context?: { key: string }): Promise<void>;
+  publish(payload: T | T[], options?: IMessageRoutingOptions): Promise<void>;
 }
 
 export interface IRunner<T = any, M = any> {
@@ -216,14 +236,12 @@ export interface IProducer<P = any> {
   getPayload<T = any>(
     msg: T,
     topic: string,
-    key?: string,
-    context?: { [key: string]: string }
+    options?: IMessageRoutingOptions
   ): any;
   send<T = any>(
     topic: string,
     payload: T,
-    key?: string,
-    context?: { [key: string]: string }
+    options?: IMessageRoutingOptions
   ): Promise<void>;
   // FIXME: Replace T = any with Record<string, any> or an explicit list of
   // types we will handle as first-class citizens,

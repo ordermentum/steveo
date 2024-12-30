@@ -10,7 +10,13 @@ import {
 } from '@aws-sdk/client-sqs';
 import util from 'util';
 import { getSqsInstance } from '../config/sqs';
-import { IProducer, IRegistry, sqsUrls, SQSConfiguration } from '../common';
+import {
+  IProducer,
+  IRegistry,
+  sqsUrls,
+  SQSConfiguration,
+  IMessageRoutingOptions,
+} from '../common';
 import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
@@ -201,12 +207,11 @@ class SqsProducer extends BaseProducer implements IProducer {
   getPayload(
     msg: any,
     topic: string,
-    key?: string,
-    context: { [key: string]: string } = {}
+    options: IMessageRoutingOptions
   ): SendMessageCommandInput {
     const messageMetadata = {
       ...createMessageMetadata(msg),
-      ...context,
+      ...options,
     };
 
     const task = this.registry.getTask(topic);
@@ -237,15 +242,16 @@ class SqsProducer extends BaseProducer implements IProducer {
       MessageAttributes: messageAttributes,
       MessageBody: JSON.stringify({ ...msg, _meta: messageMetadata }),
       QueueUrl: this.sqsUrls[sqsTopic],
-      MessageGroupId: fifo && key ? key : undefined,
+      MessageGroupId: fifo && options.key ? options.key : undefined,
+      MessageDeduplicationId:
+        fifo && options.deDuplicationId ? options.deDuplicationId : undefined,
     } as SendMessageCommandInput;
   }
 
   async send<T = any>(
     topic: string,
     payload: T,
-    key?: string,
-    context?: { [key: string]: string }
+    options: IMessageRoutingOptions = {}
   ): Promise<void> {
     try {
       await this.wrap({ topic, payload }, async c => {
@@ -255,8 +261,7 @@ class SqsProducer extends BaseProducer implements IProducer {
         const data: SendMessageCommandInput = this.getPayload(
           c.payload,
           c.topic,
-          key,
-          context
+          options
         );
         await this.producer.sendMessage(data);
         this.registry.emit('producer_success', c.topic, data);

@@ -1,5 +1,10 @@
 import { HighLevelProducer } from 'node-rdkafka';
-import { KafkaConfiguration, IProducer, IRegistry } from '../common';
+import {
+  KafkaConfiguration,
+  IProducer,
+  IRegistry,
+  IMessageRoutingOptions,
+} from '../common';
 import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
@@ -74,8 +79,7 @@ class KafkaProducer
   getPayload = <T>(
     payload: T,
     _topic: string,
-    _key?: string | unknown,
-    context?: { [key: string]: string }
+    options: IMessageRoutingOptions
   ) => {
     if (typeof payload === 'string') {
       return Buffer.from(payload, 'utf-8');
@@ -83,7 +87,7 @@ class KafkaProducer
 
     const messageMetadata = {
       ...createMessageMetadata(payload),
-      ...context,
+      ...options,
     };
 
     return Buffer.from(
@@ -121,18 +125,12 @@ class KafkaProducer
   async send<T = any>(
     topic: string,
     payload: T,
-    key: string | null = null,
-    context: { [key: string]: string } = {}
+    options: IMessageRoutingOptions = {}
   ) {
     try {
       await this.wrap({ topic, payload }, async c => {
-        const data = this.getPayload(
-          c.payload,
-          topic,
-          key ?? undefined,
-          context
-        );
-        await this.publish(c.topic, data, key);
+        const data = this.getPayload(c.payload, topic, options);
+        await this.publish(c.topic, data, options.key);
         this.registry.emit('producer_success', topic, c.payload);
       });
     } catch (ex) {

@@ -25,6 +25,7 @@ import {
   SQSConfiguration,
   DummyConfiguration,
   Middleware,
+  IMessageRoutingOptions,
 } from './common';
 import { Storage } from './types/storage';
 import { TaskOptions } from './types/task-options';
@@ -173,9 +174,13 @@ export class Steveo implements ISteveo {
    * Publish the given payload to the given topic
    * @param key
    */
-  async publish<T = any>(name: string, payload: T, key?: string) {
+  async publish<T = any>(
+    name: string,
+    payload: T,
+    options?: IMessageRoutingOptions
+  ) {
     const topic = this.registry.getTopic(name);
-    return this.producer.send<T>(topic, payload, key);
+    return this.producer.send<T>(topic, payload, options);
   }
 
   /**
