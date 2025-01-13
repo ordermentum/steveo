@@ -6,6 +6,7 @@ import Task from '../../src/runtime/task';
 import { ITask } from '../../src/common';
 import { createMessageMetadata } from '../../src/lib/context';
 import { TaskOptions } from '../../src/types/task-options';
+import {IMessageRoutingOptions} from "../../lib/common";
 
 describe('SQS Producer', () => {
   let sandbox: sinon.SinonSandbox;
@@ -259,6 +260,7 @@ describe('SQS Producer', () => {
         MessageBody: JSON.stringify(expectedMessageBody),
         QueueUrl: undefined,
         MessageGroupId: undefined,
+        MessageDeduplicationId: undefined
       };
 
       const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
@@ -285,8 +287,7 @@ describe('SQS Producer', () => {
       registry.addNewTask(task);
 
       const messagePayload: any = { a: 'payload' };
-      const messageContext: any = { any: 'context' };
-      const messageGroupId: string = 'any-key';
+      const messageContext: any = { key: 'context' };
       const expectedMessageBody = {
         ...messagePayload,
         _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
@@ -298,7 +299,8 @@ describe('SQS Producer', () => {
         },
         MessageBody: JSON.stringify(expectedMessageBody),
         QueueUrl: undefined,
-        MessageGroupId: messageGroupId,
+        MessageGroupId: messageContext.key,
+        MessageDeduplicationId: undefined
       };
 
       const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
@@ -359,6 +361,47 @@ describe('SQS Producer', () => {
         expect(ex).not.equal(null, 'error is not null');
       }
       expect(didCatchError, 'didCatchError is true').to.equal(true);
+    });
+
+    it('should set FIFO queue options if passed to a FIFO queue task', async () => {
+      const taskOptions: TaskOptions = {
+        fifo: true
+      };
+      const task: ITask = new Task(
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task-with-attributes',
+        'test-topic',
+        () => undefined,
+        taskOptions
+      );
+      registry.addNewTask(task);
+
+      const messagePayload: any = { a: 'payload' };
+      const messageContext: IMessageRoutingOptions = { key: 'context', deDuplicationId: 'random' };
+      const expectedMessageBody = {
+        ...messagePayload,
+        _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
+      };
+      const expectedPayload = {
+        MessageAttributes: {
+          Timestamp: { DataType: 'Number', StringValue: clock.now.toString() },
+        },
+        MessageBody: JSON.stringify(expectedMessageBody),
+        QueueUrl: undefined,
+        MessageGroupId: messageContext.key,
+        MessageDeduplicationId: messageContext.deDuplicationId
+      };
+
+      const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
+
+      await producer.send(
+        'test-topic',
+        messagePayload,
+        messageContext
+      );
+      sinon.assert.calledWith(sendMessageStub, expectedPayload);
     });
   });
 });
