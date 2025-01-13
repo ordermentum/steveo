@@ -247,8 +247,7 @@ describe('SQS Producer', () => {
       registry.addNewTask(task);
 
       const messagePayload: any = { a: 'payload' };
-      const messageContext: any = { any: 'context' };
-      const messageGroupId: undefined = undefined;
+      const messageContext: any = { key: 'context' };
       const expectedMessageBody = {
         ...messagePayload,
         _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
@@ -267,7 +266,6 @@ describe('SQS Producer', () => {
       await producer.send(
         'test-topic',
         messagePayload,
-        messageGroupId,
         messageContext
       );
       sinon.assert.calledWith(sendMessageStub, expectedPayload);
@@ -307,7 +305,6 @@ describe('SQS Producer', () => {
       await producer.send(
         'test-topic',
         messagePayload,
-        messageGroupId,
         messageContext
       );
       sinon.assert.calledWith(sendMessageStub, expectedPayload);
