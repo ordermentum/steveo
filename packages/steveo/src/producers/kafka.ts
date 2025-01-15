@@ -128,6 +128,11 @@ class KafkaProducer
     options: IMessageRoutingOptions = {}
   ) {
     try {
+      if (options.deDuplicationId) {
+        this.logger.warn(
+          'Deduplication with ID [deDuplicationId] is not supported for Kafka tasks'
+        );
+      }
       await this.wrap({ topic, payload }, async c => {
         const data = this.getPayload(c.payload, topic, options);
         await this.publish(c.topic, data, options.key);

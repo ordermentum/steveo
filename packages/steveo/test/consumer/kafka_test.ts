@@ -5,6 +5,7 @@ import Runner from '../../src/consumers/kafka';
 import { build } from '../../src/lib/pool';
 import Registry from '../../src/runtime/registry';
 import { getContext } from '../../src/lib/context';
+import {IMessageRoutingOptions} from "../../lib/common";
 
 describe('runner/kafka', () => {
   let sandbox;
@@ -135,7 +136,7 @@ describe('runner/kafka', () => {
       'commitMessage'
     );
     const expectedPayload: any = { attr: 'value' };
-    const messageContext: any = { any: 'context' };
+    const messageContext: IMessageRoutingOptions = { key: 'context' };
     const messagePayload: Buffer = Buffer.from(
       JSON.stringify({ ...expectedPayload, _meta: messageContext })
     );
