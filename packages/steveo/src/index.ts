@@ -317,8 +317,7 @@ class SQSSteveo extends Steveo {
     payload: T,
     options?: SQSMessageRoutingOptions
   ) {
-    const topic = this.registry.getTopic(name);
-    return this.producer.send<T>(topic, payload, options);
+    return super.publish<T>(name, payload, options);
   }
 }
 
