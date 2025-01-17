@@ -5,8 +5,9 @@ import buildClient from '../src';
 
 describe('statsd', () => {
   it('should build client', () => {
+    //@ts-expect-error
     const steveo = new Steveo({
-      engine: 'dummy',
+      engine: 'sqs',
     });
     const statsd = new StatsD();
     buildClient(steveo, statsd);

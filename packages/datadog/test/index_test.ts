@@ -13,8 +13,9 @@ describe('DataDogMiddleware', () => {
 
   it('add to steveo', () => {
     const middleware = new DataDogMiddleware();
+    //@ts-expect-error
     const steveo = new Steveo({
-      engine: 'dummy',
+      engine: 'sqs',
       middleware: [middleware],
     });
 

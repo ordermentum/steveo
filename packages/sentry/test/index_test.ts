@@ -4,8 +4,9 @@ import buildClient from '../src';
 
 describe('sentry', () => {
   it('should build client', () => {
+    //@ts-expect-error
     const steveo = new Steveo({
-      engine: 'dummy',
+      engine: 'sqs',
     });
     buildClient(steveo);
     expect(1).to.exist;
