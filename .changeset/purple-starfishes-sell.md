@@ -2,4 +2,4 @@
 "steveo": major
 ---
 
-Add FIFO queue parameters support
+Typed steveo instances based on engines
