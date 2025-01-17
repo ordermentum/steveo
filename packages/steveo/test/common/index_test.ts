@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from 'chai';
 import sinon from 'sinon';
-import create from '../../src';
+import create, {DummyConfiguration} from '../../src';
 import DummyProducer from '../../src/producers/dummy';
 import { consoleLogger } from '../../src/lib/logger';
-import { Configuration, ITask } from '../../lib/common';
+import { ITask } from '../../lib/common';
 import { TaskOptions } from '../../src/types/task-options';
 import { Storage } from '../../src/types/storage';
 import config from '../../src/config';
@@ -68,7 +68,7 @@ describe('Index', () => {
   describe('Steveo::task factory', () => {
     it('should return a new task and register task in Steveo', () => {
       const storage: Storage | undefined = undefined;
-      const steveoConfig: Configuration = config({
+      const steveoConfig: DummyConfiguration = config({
         engine: 'dummy',
         queuePrefix: 'prefix',
         upperCaseNames: false,
@@ -93,7 +93,7 @@ describe('Index', () => {
 
     it('should use queueName in Task::Options, if set, as topic name', () => {
       const storage: Storage | undefined = undefined;
-      const steveoConfig: Configuration = config({
+      const steveoConfig: DummyConfiguration = config({
         engine: 'dummy',
         upperCaseNames: false,
       });
@@ -109,7 +109,7 @@ describe('Index', () => {
 
     it('should format topic to add prefix if queuePrefix is set in Steveo config', () => {
       const storage: Storage | undefined = undefined;
-      const steveoConfig: Configuration = config({
+      const steveoConfig: DummyConfiguration = config({
         engine: 'dummy',
         queuePrefix: 'prefix',
         upperCaseNames: false,
@@ -123,7 +123,7 @@ describe('Index', () => {
 
     it('should format topic to uppercase if upperCaseNames options is set to true in Steveo config', () => {
       const storage: Storage | undefined = undefined;
-      const steveoConfig: Configuration = config({ engine: 'dummy' });
+      const steveoConfig: DummyConfiguration = config({ engine: 'dummy' });
       const steveo = create(steveoConfig, consoleLogger, storage);
 
       const myTask: ITask = steveo.task('my-task-name', () => {});

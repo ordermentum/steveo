@@ -51,7 +51,7 @@ describe('Integration Test', () => {
       queuePrefix: `steveo`,
       shuffleQueue: false,
       redisHost: process.env.REDIS_HOST || '127.0.0.1',
-      redisPort: process.env.REDIS_PORT || 6379,
+      redisPort: parseInt(process.env.REDIS_PORT || '6379', 10),
       maxNumberOfMessages: 1,
       workerConfig: {
         max: 2,

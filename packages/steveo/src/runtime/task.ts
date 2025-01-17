@@ -7,11 +7,14 @@ import {
   Callback,
   IProducer,
   IRegistry,
-  IMessageRoutingOptions,
+  MessageRoutingOptions,
+  Configuration,
 } from '../common';
 import { TaskOptions } from '../types/task-options';
 
-class Task<T = any, R = any> implements ITask<T, R> {
+class Task<T = any, R = any, E extends Configuration['engine'] = any>
+  implements ITask<T, R>
+{
   config:
     | KafkaConfiguration
     | RedisConfiguration
@@ -52,7 +55,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
     this.options = options;
   }
 
-  async publish(payload: T | T[], options?: IMessageRoutingOptions) {
+  async publish(payload: T | T[], options?: MessageRoutingOptions[E]) {
     let params;
     if (!Array.isArray(payload)) {
       params = [payload];

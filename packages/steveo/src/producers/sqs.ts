@@ -15,7 +15,7 @@ import {
   IRegistry,
   sqsUrls,
   SQSConfiguration,
-  IMessageRoutingOptions,
+  SQSMessageRoutingOptions,
 } from '../common';
 import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
@@ -207,7 +207,7 @@ class SqsProducer extends BaseProducer implements IProducer {
   getPayload(
     msg: any,
     topic: string,
-    options: IMessageRoutingOptions
+    options: SQSMessageRoutingOptions
   ): SendMessageCommandInput {
     const messageMetadata = {
       ...createMessageMetadata(msg),
@@ -251,7 +251,7 @@ class SqsProducer extends BaseProducer implements IProducer {
   async send<T = any>(
     topic: string,
     payload: T,
-    options: IMessageRoutingOptions = {}
+    options: SQSMessageRoutingOptions = {}
   ): Promise<void> {
     try {
       await this.wrap({ topic, payload }, async c => {

@@ -3,7 +3,7 @@ import {
   KafkaConfiguration,
   IProducer,
   IRegistry,
-  IMessageRoutingOptions,
+  KafkaMessageRoutingOptions,
 } from '../common';
 import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
@@ -79,7 +79,7 @@ class KafkaProducer
   getPayload = <T>(
     payload: T,
     _topic: string,
-    options: IMessageRoutingOptions
+    options: KafkaMessageRoutingOptions
   ) => {
     if (typeof payload === 'string') {
       return Buffer.from(payload, 'utf-8');
@@ -125,14 +125,9 @@ class KafkaProducer
   async send<T = any>(
     topic: string,
     payload: T,
-    options: IMessageRoutingOptions = {}
+    options: KafkaMessageRoutingOptions = {}
   ) {
     try {
-      if (options.deDuplicationId) {
-        this.logger.warn(
-          'Deduplication with ID [deDuplicationId] is not supported for Kafka tasks'
-        );
-      }
       await this.wrap({ topic, payload }, async c => {
         const data = this.getPayload(c.payload, topic, options);
         await this.publish(c.topic, data, options.key);

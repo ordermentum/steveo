@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import assert from 'node:assert';
 import { bind, take } from '../lib/not-lodash';
 import { Step, StepUnknown } from '../types/workflow-step';
-import { IMessageRoutingOptions, IProducer, IRegistry } from '../common';
+import { MessageRoutingOptions, IProducer, IRegistry } from '../common';
 import { WorkflowState } from '../types/workflow-state';
 import { Repositories, Storage } from '../types/storage';
 import { WorkflowOptions, WorkflowPayload } from '../types/workflow';
@@ -103,7 +103,7 @@ export class Workflow {
    */
   async publish<T extends WorkflowPayload>(
     payload: T | T[],
-    options?: IMessageRoutingOptions
+    options?: MessageRoutingOptions[keyof MessageRoutingOptions]
   ) {
     const step = this.steps[0];
 
@@ -169,7 +169,7 @@ export class Workflow {
   private async publishInternal<T extends WorkflowPayload>(
     message: string,
     payload: T | T[],
-    options: IMessageRoutingOptions | undefined,
+    options: MessageRoutingOptions[keyof MessageRoutingOptions] | undefined,
     log: Logger
   ) {
     const payloadArray = Array.isArray(payload) ? payload : [payload];
