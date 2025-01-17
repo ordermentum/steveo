@@ -3,7 +3,8 @@ import sinon from 'sinon';
 import { promisify } from 'util';
 import Bluebird from 'bluebird';
 import logger from 'pino';
-import { KafkaConfiguration, Steveo } from '../../src';
+import {  Steveo } from '../../src';
+import {KafkaConfiguration} from "../../src/common";
 
 const sleep = promisify(setTimeout);
 

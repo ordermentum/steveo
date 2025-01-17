@@ -2,11 +2,11 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import Producer from '../../src/producers/sqs';
 import Registry from '../../src/runtime/registry';
-import Task from '../../src/runtime/task';
+import {Task} from '../../src/runtime/task';
 import { ITask } from '../../src/common';
 import { createMessageMetadata } from '../../src/lib/context';
 import { TaskOptions } from '../../src/types/task-options';
-import {IMessageRoutingOptions} from "../../lib/common";
+import {SQSMessageRoutingOptions} from "../../lib/common";
 
 describe('SQS Producer', () => {
   let sandbox: sinon.SinonSandbox;
@@ -201,6 +201,7 @@ describe('SQS Producer', () => {
         },
       ];
       const task = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -237,6 +238,7 @@ describe('SQS Producer', () => {
     it('should merge the context object into payload metadata if context given', async () => {
       const taskOptions: TaskOptions = {};
       const task: ITask = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -248,7 +250,7 @@ describe('SQS Producer', () => {
       registry.addNewTask(task);
 
       const messagePayload: any = { a: 'payload' };
-      const messageContext: IMessageRoutingOptions = { key: 'context' };
+      const messageContext: SQSMessageRoutingOptions = { key: 'context' };
       const expectedMessageBody = {
         ...messagePayload,
         _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
@@ -276,6 +278,7 @@ describe('SQS Producer', () => {
     it('should use key as MessageGroupId if task is configured as fifo and key is present', async () => {
       const taskOptions: TaskOptions = { fifo: true };
       const task: ITask = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -287,7 +290,7 @@ describe('SQS Producer', () => {
       registry.addNewTask(task);
 
       const messagePayload: any = { a: 'payload' };
-      const messageContext: IMessageRoutingOptions = { key: 'context' };
+      const messageContext: SQSMessageRoutingOptions = { key: 'context' };
       const expectedMessageBody = {
         ...messagePayload,
         _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
@@ -316,6 +319,7 @@ describe('SQS Producer', () => {
       initializeStub.throws();
 
       const task = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -343,6 +347,7 @@ describe('SQS Producer', () => {
       sendMessageStub.rejects(new Error('Bad message'));
 
       const task = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -368,6 +373,7 @@ describe('SQS Producer', () => {
         fifo: true
       };
       const task: ITask = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -379,7 +385,7 @@ describe('SQS Producer', () => {
       registry.addNewTask(task);
 
       const messagePayload: any = { a: 'payload' };
-      const messageContext: IMessageRoutingOptions = { key: 'context', deDuplicationId: 'random' };
+      const messageContext: SQSMessageRoutingOptions = { key: 'context', deDuplicationId: 'random' };
       const expectedMessageBody = {
         ...messagePayload,
         _meta: { ...createMessageMetadata(messagePayload), ...messageContext },

@@ -16,8 +16,9 @@ describe('Base', () => {
       topic: 'test-topic',
     });
 
-    const steveo = new Steveo({ engine: 'dummy' as const });
-    // @ts-ignore
+    //@ts-expect-error
+    const steveo = new Steveo({ engine: 'sqs' as const });
+
     steveo.registry = registry;
     runner = new Runner(steveo);
     sandbox = sinon.createSandbox();

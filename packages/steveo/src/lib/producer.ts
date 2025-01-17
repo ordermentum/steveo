@@ -2,22 +2,16 @@ import KafkaProducer from '../producers/kafka';
 import SqsProducer from '../producers/sqs';
 import RedisProducer from '../producers/redis';
 import {
-  DummyConfiguration,
   IRegistry,
   KafkaConfiguration,
   RedisConfiguration,
   SQSConfiguration,
 } from '../common';
 import { Logger } from './logger';
-import DummyProducer from '../producers/dummy';
 
 const getProducer = (
-  type: 'kafka' | 'redis' | 'sqs' | 'dummy',
-  config:
-    | KafkaConfiguration
-    | RedisConfiguration
-    | SQSConfiguration
-    | DummyConfiguration,
+  type: 'kafka' | 'redis' | 'sqs',
+  config: KafkaConfiguration | RedisConfiguration | SQSConfiguration,
   registry: IRegistry,
   logger: Logger
 ) => {
@@ -30,8 +24,7 @@ const getProducer = (
   if (type === 'sqs') {
     return new SqsProducer(config as SQSConfiguration, registry, logger);
   }
-
-  return new DummyProducer(config as DummyConfiguration, registry, logger);
+  throw new Error('Invalid producer type');
 };
 
 export default getProducer;

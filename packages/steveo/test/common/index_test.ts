@@ -2,7 +2,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import create from '../../src';
-import DummyProducer from '../../src/producers/dummy';
+import SQSProducer from '../../src/producers/sqs';
 import { consoleLogger } from '../../src/lib/logger';
 import { Configuration, ITask } from '../../lib/common';
 import { TaskOptions } from '../../src/types/task-options';
@@ -22,42 +22,42 @@ describe('Index', () => {
 
   it('handles registering tasks', async () => {
     // @ts-ignore
-    const steveo = create({ engine: 'dummy' }, consoleLogger, {});
+    const steveo = create({ engine: 'sqs' }, consoleLogger, {});
     // @ts-ignore
-    const dummy = new DummyProducer({}, steveo.registry, consoleLogger);
-    const initializeStub = sandbox.stub(dummy, 'initialize').resolves();
-    steveo._producer = dummy;
+    const sqsProducerStub = new SQSProducer({}, steveo.registry, consoleLogger);
+    const initializeStub = sandbox.stub(sqsProducerStub, 'initialize').resolves();
+    steveo._producer = sqsProducerStub;
     await steveo.registerTopic('TEST_TOPIC', 'TEST_TOPIC');
     expect(steveo.registry.items.size).to.equal(1);
     expect(initializeStub.calledOnce).to.equal(true);
   });
   it('handles registering topics', async () => {
     // @ts-ignore
-    const steveo = create({ engine: 'dummy' }, consoleLogger, {});
+    const steveo = create({ engine: 'sqs' }, consoleLogger, {});
     const registryStub = sandbox.stub(steveo.registry, 'addNewTask').resolves();
     steveo.task('TEST_TOPIC', () => {});
     expect(registryStub.calledOnce).to.equal(true);
   });
   it('handles publishing topics', async () => {
     // @ts-ignore
-    const steveo = create({ engine: 'dummy' }, consoleLogger, {});
+    const steveo = create({ engine: 'sqs' }, consoleLogger, {});
     steveo.registry.addTopic('TEST_TOPIC');
     // @ts-ignore
-    const dummy = new DummyProducer({}, steveo.registry, consoleLogger);
-    const sendStub = sandbox.stub(dummy, 'send').resolves();
-    steveo._producer = dummy;
+    const sqsProducerStub = new SQSProducer({}, steveo.registry, consoleLogger);
+    const sendStub = sandbox.stub(sqsProducerStub, 'send').resolves();
+    steveo._producer = sqsProducerStub;
     await steveo.publish('TEST_TOPIC', {});
     expect(sendStub.calledOnce).to.equal(true);
   });
 
   it('handles publishing to named topics', async () => {
     // @ts-ignore
-    const steveo = create({ engine: 'dummy' }, consoleLogger, {});
+    const steveo = create({ engine: 'sqs' }, consoleLogger, {});
     steveo.registry.addTopic('TEST_TOPIC', 'PRODUCTION_TEST_TOPIC');
     // @ts-ignore
-    const dummy = new DummyProducer({}, steveo.registry, consoleLogger);
-    const sendStub = sandbox.stub(dummy, 'send').resolves();
-    steveo._producer = dummy;
+    const sqsProducerStub = new SQSProducer({}, steveo.registry, consoleLogger);
+    const sendStub = sandbox.stub(sqsProducerStub, 'send').resolves();
+    steveo._producer = sqsProducerStub;
     await steveo.publish('TEST_TOPIC', { hello: 'world' });
     expect(sendStub.calledOnce).to.equal(true);
     expect(
@@ -68,11 +68,13 @@ describe('Index', () => {
   describe('Steveo::task factory', () => {
     it('should return a new task and register task in Steveo', () => {
       const storage: Storage | undefined = undefined;
+      // @ts-expect-error
       const steveoConfig: Configuration = config({
-        engine: 'dummy',
+        engine: 'sqs',
         queuePrefix: 'prefix',
         upperCaseNames: false,
       });
+      // @ts-expect-error
       const steveo = create(steveoConfig, consoleLogger, storage);
 
       const expectedCountBeforeCreateTask: number = 0;
@@ -93,10 +95,12 @@ describe('Index', () => {
 
     it('should use queueName in Task::Options, if set, as topic name', () => {
       const storage: Storage | undefined = undefined;
+      // @ts-expect-error
       const steveoConfig: Configuration = config({
-        engine: 'dummy',
+        engine: 'sqs',
         upperCaseNames: false,
       });
+      // @ts-expect-error
       const steveo = create(steveoConfig, consoleLogger, storage);
 
       const taskOptions: TaskOptions = {
@@ -109,11 +113,13 @@ describe('Index', () => {
 
     it('should format topic to add prefix if queuePrefix is set in Steveo config', () => {
       const storage: Storage | undefined = undefined;
+      // @ts-expect-error
       const steveoConfig: Configuration = config({
-        engine: 'dummy',
+        engine: 'sqs',
         queuePrefix: 'prefix',
         upperCaseNames: false,
       });
+      // @ts-expect-error
       const steveo = create(steveoConfig, consoleLogger, storage);
 
       const myTask: ITask = steveo.task('my-task-name', () => {});
@@ -123,7 +129,9 @@ describe('Index', () => {
 
     it('should format topic to uppercase if upperCaseNames options is set to true in Steveo config', () => {
       const storage: Storage | undefined = undefined;
-      const steveoConfig: Configuration = config({ engine: 'dummy' });
+      // @ts-expect-error
+      const steveoConfig: Configuration = config({ engine: 'sqs' });
+      // @ts-expect-error
       const steveo = create(steveoConfig, consoleLogger, storage);
 
       const myTask: ITask = steveo.task('my-task-name', () => {});
@@ -137,7 +145,7 @@ describe('Index', () => {
       const steveo = create(
         // @ts-ignore
         {
-          engine: 'dummy',
+          engine: 'sqs',
           tasksPath: __filename,
         },
         consoleLogger

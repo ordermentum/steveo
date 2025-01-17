@@ -3,7 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 import assert from 'node:assert';
 import { consoleLogger, Logger } from './lib/logger';
-import Task from './runtime/task';
+import { KafkaTask, SQSTask, Task } from './runtime/task';
 import Registry from './runtime/registry';
 import getRunner from './lib/runner';
 import getProducer from './lib/producer';
@@ -13,7 +13,6 @@ import { Manager } from './lib/manager';
 
 import {
   IRunner,
-  ITask,
   Callback,
   Pool,
   ISteveo,
@@ -23,9 +22,9 @@ import {
   KafkaConfiguration,
   RedisConfiguration,
   SQSConfiguration,
-  DummyConfiguration,
   Middleware,
-  IMessageRoutingOptions,
+  SQSMessageRoutingOptions,
+  KafkaMessageRoutingOptions,
 } from './common';
 import { Storage } from './types/storage';
 import { TaskOptions } from './types/task-options';
@@ -39,14 +38,6 @@ export { WorkflowStateRepository } from './types/workflow-repo';
 export { WorkflowState } from './types/workflow-state';
 export { WorkflowPayload } from './types/workflow';
 export { consoleLogger } from './lib/logger';
-
-export {
-  KafkaConfiguration,
-  RedisConfiguration,
-  SQSConfiguration,
-  DummyConfiguration,
-} from './common';
-
 export { Middleware };
 
 export class Steveo implements ISteveo {
@@ -76,18 +67,12 @@ export class Steveo implements ISteveo {
 
   paused: boolean;
 
-  MAX_RESTARTS = 20;
-
   manager: Manager;
 
   middleware: Middleware[];
 
   constructor(
-    configuration:
-      | KafkaConfiguration
-      | RedisConfiguration
-      | SQSConfiguration
-      | DummyConfiguration,
+    configuration: KafkaConfiguration | RedisConfiguration | SQSConfiguration,
     logger: Logger = consoleLogger,
     storage: Storage | undefined = undefined
   ) {
@@ -145,13 +130,14 @@ export class Steveo implements ISteveo {
     name: string,
     callback: Callback<T, R, C>,
     options: TaskOptions = {}
-  ): ITask<T> {
+  ) {
     const queueFormatOptions: QueueFormatOptions = {
       queueName: options.queueName,
       upperCaseNames: this.config.upperCaseNames,
       queuePrefix: this.config.queuePrefix,
     };
     const topic = formatTopicName(name, queueFormatOptions);
+
     const task = new Task<T, R>(
       this.config,
       this.registry,
@@ -161,6 +147,7 @@ export class Steveo implements ISteveo {
       callback,
       options
     );
+
     this.logger.info(
       { task: task.name, topic: task.topic, taskOptions: options },
       `Registering ${task.name} Task to Steveo.`
@@ -172,12 +159,14 @@ export class Steveo implements ISteveo {
 
   /**
    * Publish the given payload to the given topic
-   * @param key
+   * @param name
+   * @param payload
+   * @param options
    */
-  async publish<T = any>(
+  async publish<T = Record<string, any>>(
     name: string,
     payload: T,
-    options?: IMessageRoutingOptions
+    options?: SQSMessageRoutingOptions | KafkaMessageRoutingOptions
   ) {
     const topic = this.registry.getTopic(name);
     return this.producer.send<T>(topic, payload, options);
@@ -284,12 +273,118 @@ export class Steveo implements ISteveo {
   }
 }
 
-export default (
-  config:
-    | KafkaConfiguration
-    | RedisConfiguration
-    | SQSConfiguration
-    | DummyConfiguration,
+class SQSSteveo extends Steveo {
+  constructor(
+    configuration: SQSConfiguration,
+    logger: Logger = consoleLogger,
+    storage: Storage | undefined = undefined
+  ) {
+    super(configuration, logger, storage);
+  }
+
+  /**
+   * Declare a task consumer.
+   * Given the Steveo instance configuration, this will monitor the topic (queue) for the
+   * message `name` and call back the given function.
+   *
+   * @template T - The type of the task input.
+   * @template R - The type of the task result.
+   * @template C - The type of the task context.
+   * @param {string} name - The name of the task.
+   * @param {Callback<T, R, C>} callback - The callback function to be executed when a message is received.
+   * @param {TaskOptions} [options={}] - Optional task configuration options.
+   * @returns {SQSTask<T, R>} - The registered Kafka task.
+   */
+  task<T = any, R = any, C = any>(
+    name: string,
+    callback: Callback<T, R, C>,
+    options: TaskOptions = {}
+  ) {
+    return super.task<T, R, C>(name, callback, options) as SQSTask<T, R>;
+  }
+
+  /**
+   * Publish the given payload to the given topic.
+   *
+   * @template T - The type of the payload.
+   * @param {string} name - The name of the topic.
+   * @param {T} payload - The payload to be published.
+   * @param {SQSMessageRoutingOptions} [options] - Optional routing options for SQS messages.
+   * @returns {Promise<void>} - A promise that resolves when the message is published.
+   */
+  async publish<T = Record<string, any>>(
+    name: string,
+    payload: T,
+    options?: SQSMessageRoutingOptions
+  ) {
+    const topic = this.registry.getTopic(name);
+    return this.producer.send<T>(topic, payload, options);
+  }
+}
+
+class KafkaSteveo extends Steveo {
+  constructor(
+    configuration: KafkaConfiguration,
+    logger: Logger = consoleLogger,
+    storage: Storage | undefined = undefined
+  ) {
+    super(configuration, logger, storage);
+  }
+
+  /**
+   * Declare a task consumer.
+   * Given the Steveo instance configuration, this will monitor the topic (queue) for the
+   * message `name` and call back the given function.
+   *
+   * @template T - The type of the task input.
+   * @template R - The type of the task result.
+   * @template C - The type of the task context.
+   * @param {string} name - The name of the task.
+   * @param {Callback<T, R, C>} callback - The callback function to be executed when a message is received.
+   * @param {TaskOptions} [options={}] - Optional task configuration options.
+   * @returns {KafkaTask<T, R>} - The registered Kafka task.
+   */
+  task<T = any, R = any, C = any>(
+    name: string,
+    callback: Callback<T, R, C>,
+    options: TaskOptions = {}
+  ) {
+    return super.task<T, R, C>(name, callback, options) as KafkaTask<T, R>;
+  }
+
+  /**
+   * Publish the given payload to the specified topic.
+   *
+   * @template T - The type of the payload.
+   * @param {string} name - The name of the topic.
+   * @param {T} payload - The payload to be published.
+   * @param {KafkaMessageRoutingOptions} [options] - Optional routing options for Kafka messages.
+   * @returns {Promise<void>} - A promise that resolves when the message is published.
+   */
+  async publish<T = Record<string, any>>(
+    name: string,
+    payload: T,
+    options?: KafkaMessageRoutingOptions
+  ) {
+    return super.publish<T>(name, payload, options);
+  }
+}
+
+export default <
+  T extends KafkaConfiguration | RedisConfiguration | SQSConfiguration
+>(
+  config: T,
   logger: Logger,
   storage?: Storage
-) => new Steveo(config, logger, storage);
+): T['engine'] extends 'kafka'
+  ? KafkaSteveo
+  : T['engine'] extends 'sqs'
+  ? SQSSteveo
+  : Steveo => {
+  const configuration = getConfig(config);
+  if (configuration.engine === 'kafka')
+    return new KafkaSteveo(configuration, logger, storage);
+  if (configuration.engine === 'sqs')
+    return new SQSSteveo(configuration, logger, storage);
+  return new Steveo(configuration, logger, storage);
+};

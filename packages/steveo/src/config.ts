@@ -1,11 +1,11 @@
 import merge from 'lodash.merge';
 import {
-  Configuration,
   KafkaConsumerConfig,
   KafkaProducerConfig,
   KafkaConfiguration,
   SQSConfiguration,
   RedisConfiguration,
+  Configuration,
 } from './common';
 
 const KafkaConsumerDefault: KafkaConsumerConfig = {
@@ -24,56 +24,75 @@ const KafkaProducerDefault: KafkaProducerConfig = {
   topic: {},
 };
 
-export const getConfig = (config: Configuration) => {
-  const parameters: any = {};
-  parameters.engine = config.engine ?? 'kafka';
-  parameters.shuffleQueue = !!config.shuffleQueue;
-  parameters.workerConfig = config.workerConfig ?? {};
-  parameters.queuePrefix = config.queuePrefix ?? '';
-  parameters.upperCaseNames = config.upperCaseNames ?? true;
-  parameters.middleware = config.middleware ?? [];
-  parameters.terminationWaitCount = config.terminationWaitCount ?? 180;
-  parameters.tasksPath = config.tasksPath;
+export const getConfig = (
+  config: KafkaConfiguration | RedisConfiguration | SQSConfiguration
+) => {
+  const baseConfig: Configuration = {
+    engine: config.engine,
+    shuffleQueue: !!config.shuffleQueue,
+    workerConfig: config.workerConfig ?? {},
+    queuePrefix: config.queuePrefix ?? '',
+    upperCaseNames: config.upperCaseNames ?? true,
+    middleware: config.middleware ?? [],
+    terminationWaitCount: config.terminationWaitCount ?? 180,
+    tasksPath: config.tasksPath,
+  };
 
-  if (parameters.engine === 'kafka') {
-    const kafkaConfig = config as KafkaConfiguration;
-    parameters.bootstrapServers = kafkaConfig.bootstrapServers;
-    parameters.securityProtocol = kafkaConfig.securityProtocol ?? 'ssl';
-    parameters.connectionTimeout = kafkaConfig.connectionTimeout ?? 30000; // 30 seconds
-    parameters.waitToCommit = kafkaConfig.waitToCommit ?? true;
-    parameters.consumer = merge({}, KafkaConsumerDefault, {
-      ...(kafkaConfig.consumer ?? {}),
-    });
-    parameters.producer = merge({}, KafkaProducerDefault, {
-      ...(kafkaConfig.producer ?? {}),
-    });
-    parameters.admin = kafkaConfig.admin ?? {};
-    parameters.defaultTopicPartitions = kafkaConfig.defaultTopicPartitions ?? 6;
-    parameters.defaultTopicReplicationFactor =
-      kafkaConfig.defaultTopicReplicationFactor ?? 3;
-  } else if (parameters.engine === 'sqs') {
+  if (baseConfig.engine === 'sqs') {
     const sqsConfig = config as SQSConfiguration;
-    parameters.region = sqsConfig.region;
-    parameters.apiVersion = sqsConfig.apiVersion;
-    parameters.messageRetentionPeriod = sqsConfig.messageRetentionPeriod;
-    parameters.receiveMessageWaitTimeSeconds =
-      sqsConfig.receiveMessageWaitTimeSeconds;
-    parameters.credentials = sqsConfig.credentials;
-    parameters.maxNumberOfMessages = sqsConfig.maxNumberOfMessages;
-    parameters.visibilityTimeout = sqsConfig.visibilityTimeout;
-    parameters.waitTimeSeconds = sqsConfig.waitTimeSeconds;
-    parameters.endpoint = sqsConfig.endpoint;
-    parameters.httpOptions = sqsConfig.httpOptions;
-    parameters.consumerPollInterval = sqsConfig.consumerPollInterval || 1000;
-  } else if (parameters.engine === 'redis') {
-    const redisConfig = config as RedisConfiguration;
-    parameters.redisHost = redisConfig.redisHost;
-    parameters.redisPort = redisConfig.redisPort;
-    parameters.visibilityTimeout = redisConfig.visibilityTimeout || 604800;
-    parameters.redisMessageMaxsize = redisConfig.redisMessageMaxsize || 65536;
-    parameters.consumerPollInterval = redisConfig.consumerPollInterval || 1000;
+    return {
+      ...baseConfig,
+      engine: 'sqs' as const,
+      region: sqsConfig.region,
+      apiVersion: sqsConfig.apiVersion,
+      messageRetentionPeriod: sqsConfig.messageRetentionPeriod,
+      receiveMessageWaitTimeSeconds: sqsConfig.receiveMessageWaitTimeSeconds,
+      credentials: sqsConfig.credentials,
+      maxNumberOfMessages: sqsConfig.maxNumberOfMessages,
+      visibilityTimeout: sqsConfig.visibilityTimeout,
+      waitTimeSeconds: sqsConfig.waitTimeSeconds,
+      endpoint: sqsConfig.endpoint,
+      httpOptions: sqsConfig.httpOptions,
+      consumerPollInterval: sqsConfig.consumerPollInterval || 1000,
+    } as SQSConfiguration;
   }
-  return parameters;
+
+  if (baseConfig.engine === 'kafka') {
+    const kafkaConfig = config as KafkaConfiguration;
+    return {
+      ...baseConfig,
+      engine: 'kafka' as const,
+      bootstrapServers: kafkaConfig.bootstrapServers,
+      securityProtocol: kafkaConfig.securityProtocol ?? 'ssl',
+      connectionTimeout: kafkaConfig.connectionTimeout ?? 30000, // 30 seconds
+      waitToCommit: kafkaConfig.waitToCommit ?? true,
+      consumer: merge({}, KafkaConsumerDefault, {
+        ...(kafkaConfig.consumer ?? {}),
+      }),
+      producer: merge({}, KafkaProducerDefault, {
+        ...(kafkaConfig.producer ?? {}),
+      }),
+      admin: kafkaConfig.admin ?? {},
+      defaultTopicPartitions: kafkaConfig.defaultTopicPartitions ?? 6,
+      defaultTopicReplicationFactor:
+        kafkaConfig.defaultTopicReplicationFactor ?? 3,
+    } as KafkaConfiguration;
+  }
+
+  if (baseConfig.engine === 'redis') {
+    const redisConfig = config as RedisConfiguration;
+    return {
+      ...baseConfig,
+      engine: 'redis' as const,
+      redisHost: redisConfig.redisHost,
+      redisPort: redisConfig.redisPort,
+      visibilityTimeout: redisConfig.visibilityTimeout || 604800,
+      redisMessageMaxsize: redisConfig.redisMessageMaxsize || 65536,
+      consumerPollInterval: redisConfig.consumerPollInterval || 1000,
+    } as RedisConfiguration;
+  }
+
+  throw new Error('Invalid engine');
 };
 
 export default getConfig;

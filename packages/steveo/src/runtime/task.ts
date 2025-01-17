@@ -3,20 +3,16 @@ import {
   KafkaConfiguration,
   RedisConfiguration,
   SQSConfiguration,
-  DummyConfiguration,
   Callback,
   IProducer,
   IRegistry,
-  IMessageRoutingOptions,
+  SQSMessageRoutingOptions,
+  KafkaMessageRoutingOptions,
 } from '../common';
 import { TaskOptions } from '../types/task-options';
 
-class Task<T = any, R = any> implements ITask<T, R> {
-  config:
-    | KafkaConfiguration
-    | RedisConfiguration
-    | SQSConfiguration
-    | DummyConfiguration;
+export class Task<T = any, R = any> implements ITask<T, R> {
+  config: KafkaConfiguration | RedisConfiguration | SQSConfiguration;
 
   registry: IRegistry;
 
@@ -31,11 +27,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
   options: TaskOptions;
 
   constructor(
-    config:
-      | KafkaConfiguration
-      | RedisConfiguration
-      | SQSConfiguration
-      | DummyConfiguration,
+    config: KafkaConfiguration | RedisConfiguration | SQSConfiguration,
     registry: IRegistry,
     producer: IProducer,
     name: string,
@@ -52,7 +44,10 @@ class Task<T = any, R = any> implements ITask<T, R> {
     this.options = options;
   }
 
-  async publish(payload: T | T[], options?: IMessageRoutingOptions) {
+  async publish(
+    payload: T | T[],
+    options?: SQSMessageRoutingOptions | KafkaMessageRoutingOptions
+  ) {
     let params;
     if (!Array.isArray(payload)) {
       params = [payload];
@@ -76,4 +71,38 @@ class Task<T = any, R = any> implements ITask<T, R> {
   }
 }
 
-export default Task;
+export class SQSTask<T = any, R = any> extends Task<T, R> {
+  constructor(
+    config: SQSConfiguration,
+    registry: IRegistry,
+    producer: IProducer,
+    name: string,
+    topic: string,
+    subscribe: Callback<T, R>,
+    options: TaskOptions = {}
+  ) {
+    super(config, registry, producer, name, topic, subscribe, options);
+  }
+
+  async publish(payload: any, options?: SQSMessageRoutingOptions) {
+    return super.publish(payload, options);
+  }
+}
+
+export class KafkaTask<T = any, R = any> extends Task<T, R> {
+  constructor(
+    config: KafkaConfiguration,
+    registry: IRegistry,
+    producer: IProducer,
+    name: string,
+    topic: string,
+    subscribe: Callback<T, R>,
+    options: TaskOptions = {}
+  ) {
+    super(config, registry, producer, name, topic, subscribe, options);
+  }
+
+  async publish(payload: any, options?: KafkaMessageRoutingOptions) {
+    return super.publish(payload, options);
+  }
+}
