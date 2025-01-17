@@ -13,7 +13,6 @@ import { Manager } from './lib/manager';
 
 import {
   IRunner,
-  ITask,
   Callback,
   Pool,
   ISteveo,
@@ -25,6 +24,8 @@ import {
   SQSConfiguration,
   DummyConfiguration,
   Middleware,
+  MessageRoutingOptions,
+  Configuration,
 } from './common';
 import { Storage } from './types/storage';
 import { TaskOptions } from './types/task-options';
@@ -48,7 +49,9 @@ export {
 
 export { Middleware };
 
-export class Steveo implements ISteveo {
+export class Steveo<E extends Configuration['engine'] = any>
+  implements ISteveo
+{
   config: KafkaConfiguration | RedisConfiguration | SQSConfiguration;
 
   logger: Logger;
@@ -74,8 +77,6 @@ export class Steveo implements ISteveo {
   exiting: boolean;
 
   paused: boolean;
-
-  MAX_RESTARTS = 20;
 
   manager: Manager;
 
@@ -144,14 +145,14 @@ export class Steveo implements ISteveo {
     name: string,
     callback: Callback<T, R, C>,
     options: TaskOptions = {}
-  ): ITask<T> {
+  ) {
     const queueFormatOptions: QueueFormatOptions = {
       queueName: options.queueName,
       upperCaseNames: this.config.upperCaseNames,
       queuePrefix: this.config.queuePrefix,
     };
     const topic = formatTopicName(name, queueFormatOptions);
-    const task = new Task<T, R>(
+    const task = new Task<T, R, E>(
       this.config,
       this.registry,
       this.producer,
@@ -173,9 +174,13 @@ export class Steveo implements ISteveo {
    * Publish the given payload to the given topic
    * @param key
    */
-  async publish<T = any>(name: string, payload: T, key?: string) {
+  async publish<T = any>(
+    name: string,
+    payload: T,
+    options?: MessageRoutingOptions[E]
+  ) {
     const topic = this.registry.getTopic(name);
-    return this.producer.send<T>(topic, payload, key);
+    return this.producer.send<T>(topic, payload, options);
   }
 
   /**
@@ -279,12 +284,14 @@ export class Steveo implements ISteveo {
   }
 }
 
-export default (
-  config:
+export default <
+  T extends
     | KafkaConfiguration
     | RedisConfiguration
     | SQSConfiguration
-    | DummyConfiguration,
+    | DummyConfiguration
+>(
+  config: T,
   logger: Logger,
   storage?: Storage
-) => new Steveo(config, logger, storage);
+) => new Steveo<T['engine']>(config, logger, storage);

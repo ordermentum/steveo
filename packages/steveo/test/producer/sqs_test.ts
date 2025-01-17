@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import Producer from '../../src/producers/sqs';
 import Registry from '../../src/runtime/registry';
 import Task from '../../src/runtime/task';
-import { ITask } from '../../src/common';
+import {ITask, SQSMessageRoutingOptions} from '../../src/common';
 import { createMessageMetadata } from '../../src/lib/context';
 import { TaskOptions } from '../../src/types/task-options';
 
@@ -200,6 +200,7 @@ describe('SQS Producer', () => {
         },
       ];
       const task = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -236,6 +237,7 @@ describe('SQS Producer', () => {
     it('should merge the context object into payload metadata if context given', async () => {
       const taskOptions: TaskOptions = {};
       const task: ITask = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -247,8 +249,7 @@ describe('SQS Producer', () => {
       registry.addNewTask(task);
 
       const messagePayload: any = { a: 'payload' };
-      const messageContext: any = { any: 'context' };
-      const messageGroupId: undefined = undefined;
+      const messageContext: SQSMessageRoutingOptions = { key: 'context' };
       const expectedMessageBody = {
         ...messagePayload,
         _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
@@ -260,6 +261,7 @@ describe('SQS Producer', () => {
         MessageBody: JSON.stringify(expectedMessageBody),
         QueueUrl: undefined,
         MessageGroupId: undefined,
+        MessageDeduplicationId: undefined
       };
 
       const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
@@ -267,7 +269,6 @@ describe('SQS Producer', () => {
       await producer.send(
         'test-topic',
         messagePayload,
-        messageGroupId,
         messageContext
       );
       sinon.assert.calledWith(sendMessageStub, expectedPayload);
@@ -276,6 +277,7 @@ describe('SQS Producer', () => {
     it('should use key as MessageGroupId if task is configured as fifo and key is present', async () => {
       const taskOptions: TaskOptions = { fifo: true };
       const task: ITask = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -287,8 +289,7 @@ describe('SQS Producer', () => {
       registry.addNewTask(task);
 
       const messagePayload: any = { a: 'payload' };
-      const messageContext: any = { any: 'context' };
-      const messageGroupId: string = 'any-key';
+      const messageContext: SQSMessageRoutingOptions = { key: 'context' };
       const expectedMessageBody = {
         ...messagePayload,
         _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
@@ -300,14 +301,14 @@ describe('SQS Producer', () => {
         },
         MessageBody: JSON.stringify(expectedMessageBody),
         QueueUrl: undefined,
-        MessageGroupId: messageGroupId,
+        MessageGroupId: messageContext.key,
+        MessageDeduplicationId: undefined
       };
 
       const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
       await producer.send(
         'test-topic',
         messagePayload,
-        messageGroupId,
         messageContext
       );
       sinon.assert.calledWith(sendMessageStub, expectedPayload);
@@ -317,6 +318,7 @@ describe('SQS Producer', () => {
       initializeStub.throws();
 
       const task = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -344,6 +346,7 @@ describe('SQS Producer', () => {
       sendMessageStub.rejects(new Error('Bad message'));
 
       const task = new Task(
+        //@ts-expect-error
         { engine: 'sqs' },
         registry,
         producer,
@@ -362,6 +365,48 @@ describe('SQS Producer', () => {
         expect(ex).not.equal(null, 'error is not null');
       }
       expect(didCatchError, 'didCatchError is true').to.equal(true);
+    });
+
+    it('should set FIFO queue options if passed to a FIFO queue task', async () => {
+      const taskOptions: TaskOptions = {
+        fifo: true
+      };
+      const task: ITask = new Task(
+        //@ts-expect-error
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task-with-attributes',
+        'test-topic',
+        () => undefined,
+        taskOptions
+      );
+      registry.addNewTask(task);
+
+      const messagePayload: any = { a: 'payload' };
+      const messageContext: SQSMessageRoutingOptions = { key: 'context', deDuplicationId: 'random' };
+      const expectedMessageBody = {
+        ...messagePayload,
+        _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
+      };
+      const expectedPayload = {
+        MessageAttributes: {
+          Timestamp: { DataType: 'Number', StringValue: clock.now.toString() },
+        },
+        MessageBody: JSON.stringify(expectedMessageBody),
+        QueueUrl: undefined,
+        MessageGroupId: messageContext.key,
+        MessageDeduplicationId: messageContext.deDuplicationId
+      };
+
+      const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
+
+      await producer.send(
+        'test-topic',
+        messagePayload,
+        messageContext
+      );
+      sinon.assert.calledWith(sendMessageStub, expectedPayload);
     });
   });
 });

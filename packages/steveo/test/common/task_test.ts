@@ -109,6 +109,6 @@ describe('Task', () => {
     const args = producerSendStub.args[0];
     expect(args[0]).to.equals(task.topic);
     expect(args[1]).to.deep.equals({ payload: 'something-small' });
-    expect(args[2]).to.equals('sample key');
+    expect(args[2]).to.eqls({ key: 'sample key' } );
   });
 });

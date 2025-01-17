@@ -36,8 +36,6 @@ export type getPayload = (
 
 export type RunnerState = 'running' | 'terminating' | 'terminated' | 'paused';
 
-export type Engine = 'kafka' | 'sqs' | 'redis';
-
 export type KafkaConsumerConfig = {
   global: ConsumerGlobalConfig;
   topic: ConsumerTopicConfig;
@@ -49,6 +47,7 @@ export type KafkaProducerConfig = {
 };
 
 export interface KafkaConfiguration extends Configuration {
+  engine: 'kafka';
   bootstrapServers: string;
   securityProtocol?:
     | 'plaintext'
@@ -73,7 +72,8 @@ export interface KafkaConfiguration extends Configuration {
 }
 
 export interface SQSConfiguration extends Configuration {
-  region: string;
+  engine: 'sqs';
+  region?: string;
   apiVersion: string;
   messageRetentionPeriod: string;
   receiveMessageWaitTimeSeconds: string;
@@ -91,6 +91,7 @@ export interface SQSConfiguration extends Configuration {
 }
 
 export interface RedisConfiguration extends Configuration {
+  engine: 'redis';
   redisHost: string;
   redisPort: number;
   namespace?: string;
@@ -99,7 +100,9 @@ export interface RedisConfiguration extends Configuration {
   visibilityTimeout?: number;
 }
 
-export interface DummyConfiguration extends Configuration {}
+export interface DummyConfiguration extends Configuration {
+  engine: 'dummy';
+}
 
 export interface Configuration {
   engine: 'sqs' | 'kafka' | 'redis' | 'dummy';
@@ -155,6 +158,40 @@ export interface IRegistry {
   getTask(topic: string): RegistryElem | null;
 }
 
+/**
+ * @description Kafka message routing options
+ */
+export interface KafkaMessageRoutingOptions {
+  /**
+   * @description Determines which partition this message lands in.
+   *         See https://www.confluent.io/learn/kafka-message-key/
+   */
+  key?: string;
+}
+
+/**
+ * @description SQS FIFO message routing options
+ */
+export interface SQSMessageRoutingOptions {
+  /**
+   * @description Groups messages with the same key.
+   *         See https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html
+   */
+  key?: string;
+  /**
+   * @description The message deduplication ID.
+   * SQS FIFO engine uses content-based deduplication by default if no message deduplication ID is provided.
+   */
+  deDuplicationId?: string;
+}
+
+export type MessageRoutingOptions = {
+  sqs: SQSMessageRoutingOptions;
+  kafka: KafkaMessageRoutingOptions;
+  redis: Record<string, any>;
+  dummy: Record<string, any>;
+};
+
 export interface ITask<T = any, R = any> {
   config: Configuration;
   registry: IRegistry;
@@ -163,7 +200,10 @@ export interface ITask<T = any, R = any> {
   topic: string;
   options: TaskOptions;
   producer: any;
-  publish(payload: T | T[], context?: { key: string }): Promise<void>;
+  publish(
+    payload: T | T[],
+    options?: MessageRoutingOptions[keyof MessageRoutingOptions]
+  ): Promise<void>;
 }
 
 export interface IRunner<T = any, M = any> {
@@ -216,14 +256,12 @@ export interface IProducer<P = any> {
   getPayload<T = any>(
     msg: T,
     topic: string,
-    key?: string,
-    context?: { [key: string]: string }
+    options?: MessageRoutingOptions[keyof MessageRoutingOptions]
   ): any;
   send<T = any>(
     topic: string,
     payload: T,
-    key?: string,
-    context?: { [key: string]: string }
+    options?: MessageRoutingOptions[keyof MessageRoutingOptions]
   ): Promise<void>;
   // FIXME: Replace T = any with Record<string, any> or an explicit list of
   // types we will handle as first-class citizens,

@@ -12,6 +12,7 @@ export interface Logger {
   info(format: LogEntry, ...params: unknown[]): void;
   debug(format: LogEntry, ...params: unknown[]): void;
   error(format: LogEntry, ...params: unknown[]): void;
+  warn(format: LogEntry, ...params: unknown[]): void;
 }
 
 /**
@@ -37,6 +38,7 @@ function loggerFactory<T>(baseEntry?: T): Logger {
     info: output,
     debug: output,
     error: output,
+    warn: output,
   };
 }
 

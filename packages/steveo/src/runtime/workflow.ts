@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import assert from 'node:assert';
 import { bind, take } from '../lib/not-lodash';
 import { Step, StepUnknown } from '../types/workflow-step';
-import { IProducer, IRegistry } from '../common';
+import { MessageRoutingOptions, IProducer, IRegistry } from '../common';
 import { WorkflowState } from '../types/workflow-state';
 import { Repositories, Storage } from '../types/storage';
 import { WorkflowOptions, WorkflowPayload } from '../types/workflow';
@@ -103,16 +103,14 @@ export class Workflow {
    */
   async publish<T extends WorkflowPayload>(
     payload: T | T[],
-    context?: {
-      key?: string;
-    }
+    options?: MessageRoutingOptions[keyof MessageRoutingOptions]
   ) {
     const step = this.steps[0];
 
     return this.publishInternal(
       step.name,
       payload,
-      context,
+      options,
       this.logger.child({
         current: step.name,
         workflow: this.name,
@@ -171,11 +169,7 @@ export class Workflow {
   private async publishInternal<T extends WorkflowPayload>(
     message: string,
     payload: T | T[],
-    context:
-      | {
-          key?: string;
-        }
-      | undefined,
+    options: MessageRoutingOptions[keyof MessageRoutingOptions] | undefined,
     log: Logger
   ) {
     const payloadArray = Array.isArray(payload) ? payload : [payload];
@@ -189,12 +183,7 @@ export class Workflow {
 
       await Promise.all(
         payloadArray.map(data => {
-          const result = this.producer.send(
-            message,
-            data,
-            context?.key,
-            context
-          );
+          const result = this.producer.send(message, data, options);
 
           this.registry.emit('workflow_send', message, data);
 

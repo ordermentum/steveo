@@ -66,6 +66,7 @@ describe('runner/sqs', () => {
       registry: anotherRegistry,
     };
 
+    //@ts-expect-error
     const steveo = new Steveo(config);
     // @ts-ignore
     steveo.registry = anotherRegistry;
@@ -113,6 +114,7 @@ describe('runner/sqs', () => {
       registry: anotherRegistry,
     };
 
+    //@ts-expect-error
     const steveo = new Steveo(config);
     // @ts-ignore
     steveo.registry = anotherRegistry;
@@ -166,6 +168,7 @@ describe('runner/sqs', () => {
       registry: anotherRegistry,
     };
 
+    //@ts-expect-error
     const steveo = new Steveo(config);
     // @ts-ignore
     steveo.registry = anotherRegistry;
@@ -227,6 +230,7 @@ describe('runner/sqs', () => {
       registry: anotherRegistry,
     };
 
+    //@ts-expect-error
     const steveo = new Steveo(config);
     // @ts-ignore
     steveo.registry = anotherRegistry;
@@ -284,6 +288,7 @@ describe('runner/sqs', () => {
       registry: anotherRegistry,
     };
 
+    //@ts-expect-error
     const steveo = new Steveo(config);
     // @ts-ignore
     steveo.registry = anotherRegistry;
