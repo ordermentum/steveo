@@ -1,5 +1,16 @@
 # steveo
 
+## 7.1.0
+
+### Minor Changes
+
+- de83802: Hardening workflow execution for first development use
+- 51fccf9: Update logging to adhere to bunyan API
+
+### Patch Changes
+
+- 320d043: Remove duplicate log line
+
 ## 7.0.3
 
 ### Patch Changes

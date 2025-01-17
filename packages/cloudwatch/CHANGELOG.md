@@ -1,5 +1,12 @@
 # @steveojs/cloudwatch
 
+## 6.0.0
+
+### Patch Changes
+
+- Updated dependencies [51fccf9]
+  - @steveojs/scheduler-prisma@7.5.0
+
 ## 5.0.0
 
 ### Patch Changes
