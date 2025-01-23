@@ -24,6 +24,7 @@ const client = new CloudWatchClient({
   region:
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1',
 });
+
 const publishCountForService = (
   metricName: string,
   serviceTag: string,
@@ -58,10 +59,10 @@ export const schedulerMetrics = (
   scheduler: PrismaScheduler | SequelizeScheduler,
   service: string
 ) => {
-  scheduler.events.on('duration', (job: Job) => {
+  scheduler.events.on('duration', async (job: Job) => {
     try {
       const jobName = job.name.toUpperCase();
-      publishCountForService(jobName, service, 'completed', 1);
+      await publishCountForService(jobName, service, 'completed', 1);
     } catch (err) {
       scheduler.logger.error(
         `Error while putting CloudWatch metrics for duration job: ${err}`
@@ -70,11 +71,11 @@ export const schedulerMetrics = (
     }
   });
 
-  scheduler.events.on('lagged', (jobs: JobAttributes[]) => {
+  scheduler.events.on('lagged', async (jobs: JobAttributes[]) => {
     for (const job of jobs) {
       try {
         const jobName = job.name.toUpperCase();
-        publishCountForService(jobName, service, 'stuck', 1);
+        await publishCountForService(jobName, service, 'stuck', 1);
       } catch (err) {
         scheduler.logger.error(
           `Error while putting CloudWatch metrics for lagged job: ${err}`
@@ -84,10 +85,10 @@ export const schedulerMetrics = (
     }
   });
 
-  scheduler.events.on('reset', (job: JobAttributes) => {
+  scheduler.events.on('reset', async (job: JobAttributes) => {
     try {
       const jobName = job.name.toUpperCase();
-      publishCountForService(jobName, service, 'restarted', 1);
+      await publishCountForService(jobName, service, 'restarted', 1);
     } catch (err) {
       scheduler.logger.error(
         `Error while putting CloudWatch metrics for restarted job: ${err}`
@@ -96,11 +97,11 @@ export const schedulerMetrics = (
     }
   });
 
-  scheduler.events.on('pending', (data: PendingJobs) => {
+  scheduler.events.on('pending', async (data: PendingJobs) => {
     for (const [name, count] of Object.entries(data)) {
       try {
         const jobName = name.toUpperCase();
-        publishCountForService(jobName, service, 'pending', count);
+        await publishCountForService(jobName, service, 'pending', count);
       } catch (err) {
         scheduler.logger.error(
           `Error while putting CloudWatch metrics for pending job: ${err}`
