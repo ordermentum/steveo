@@ -70,7 +70,7 @@ describe('Kafka Producer', () => {
       },
       registry
     );
-    const messageContext = { any: 'context' };
+    const messageContext = { key: 'random' };
     const messagePayload: any = { a: 'payload' };
     const expectedMessage = JSON.stringify({
       ...messagePayload,
@@ -78,7 +78,7 @@ describe('Kafka Producer', () => {
     });
 
     const sendStub = sandbox.stub(p.producer, 'produce').callsArgWith(5);
-    await p.send('test-topic', messagePayload, null, messageContext);
+    await p.send('test-topic', messagePayload, messageContext);
 
     const inputMessageBuffer: Buffer = sendStub.args[0][2];
     expect(inputMessageBuffer.toString()).to.be.equal(expectedMessage);

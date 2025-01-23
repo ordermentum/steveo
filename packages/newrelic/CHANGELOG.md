@@ -1,5 +1,14 @@
 # @steveojs/newrelic
 
+## 8.0.0
+
+### Patch Changes
+
+- Updated dependencies [de83802]
+- Updated dependencies [51fccf9]
+- Updated dependencies [320d043]
+  - steveo@7.1.0
+
 ## 7.0.0
 
 ### Minor Changes

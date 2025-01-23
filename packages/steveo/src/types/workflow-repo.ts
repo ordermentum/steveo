@@ -27,6 +27,12 @@ export interface WorkflowStateRepository {
   updateWorkflowCompleted(workflowId: string): Promise<void>;
 
   /**
+   * Delete a workflow from storage
+   * This is generally done when a workflow completes
+   */
+  deleteWorkflow(workflowId: string): Promise<void>;
+
+  /**
    * Update the given workflow ID current step name
    */
   updateCurrentStep(workflowId: string, stepName: string): Promise<void>;

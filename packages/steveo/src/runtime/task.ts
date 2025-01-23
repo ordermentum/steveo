@@ -7,10 +7,14 @@ import {
   Callback,
   IProducer,
   IRegistry,
+  MessageRoutingOptions,
+  Configuration,
 } from '../common';
 import { TaskOptions } from '../types/task-options';
 
-class Task<T = any, R = any> implements ITask<T, R> {
+class Task<T = any, R = any, E extends Configuration['engine'] = any>
+  implements ITask<T, R>
+{
   config:
     | KafkaConfiguration
     | RedisConfiguration
@@ -51,7 +55,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
     this.options = options;
   }
 
-  async publish(payload: T | T[], context?: { key: string }) {
+  async publish(payload: T | T[], options?: MessageRoutingOptions[E]) {
     let params;
     if (!Array.isArray(payload)) {
       params = [payload];
@@ -64,7 +68,7 @@ class Task<T = any, R = any> implements ITask<T, R> {
       await Promise.all(
         params.map((data: T) => {
           this.registry.emit('task_send', this.topic, data);
-          return this.producer.send(this.topic, data, context?.key, context);
+          return this.producer.send(this.topic, data, options);
         })
       );
       this.registry.emit('task_success', this.topic, payload);

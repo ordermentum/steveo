@@ -74,6 +74,17 @@ export class WorkflowStateRepositoryPostgres
   /**
    *
    */
+  async deleteWorkflow(workflowId: string): Promise<void> {
+    await this.prisma.workflowState.delete({
+      where: {
+        workflowId,
+      },
+    });
+  }
+
+  /**
+   *
+   */
   async updateCurrentStep(workflowId: string, stepName: string): Promise<void> {
     const result = await this.prisma.workflowState.update({
       where: {
