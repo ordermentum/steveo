@@ -1,6 +1,7 @@
 import {
   CloudWatchClient,
   PutMetricDataCommand,
+  PutMetricDataCommandOutput,
 } from '@aws-sdk/client-cloudwatch';
 import {
   Job as PrismaJob,
@@ -18,127 +19,95 @@ import {
 type Job = PrismaJob | JobInstance;
 type JobAttributes = SequelizeJob | PrismaJob;
 
+const Namespace = 'Steveo-DB-Jobs';
 const client = new CloudWatchClient({
   region:
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1',
 });
-const Namespace = 'Steveo-DB-Jobs';
+
+const publishCountForService = (
+  metricName: string,
+  serviceTag: string,
+  statusTag: string,
+  count: number
+): Promise<PutMetricDataCommandOutput> => {
+  const command = new PutMetricDataCommand({
+    Namespace,
+    MetricData: [
+      {
+        MetricName: metricName,
+        Dimensions: [
+          {
+            Name: 'service',
+            Value: serviceTag,
+          },
+          {
+            Name: 'status',
+            Value: statusTag,
+          },
+        ],
+        Unit: 'Count',
+        Timestamp: new Date(),
+        Value: count,
+      },
+    ],
+  });
+  return client.send(command);
+};
 
 export const schedulerMetrics = (
   scheduler: PrismaScheduler | SequelizeScheduler,
   service: string
 ) => {
-  scheduler.events.on('duration', (job: Job) => {
-    const MetricName = job.name.toUpperCase();
-    const command = new PutMetricDataCommand({
-      MetricData: [
-        {
-          MetricName,
-          Dimensions: [
-            {
-              Name: 'service',
-              Value: service,
-            },
-            {
-              Name: 'status',
-              Value: 'completed',
-            },
-          ],
-          Unit: 'Count',
-          Timestamp: new Date(),
-          Value: 1,
-        },
-      ],
-      Namespace,
-    });
-
-    client.send(command);
-  });
-
-  scheduler.events.on('lagged', (jobs: JobAttributes[]) => {
-    for (const job of jobs) {
-      const MetricName = job.name.toUpperCase();
-      const command = new PutMetricDataCommand({
-        MetricData: [
-          {
-            MetricName,
-            Dimensions: [
-              {
-                Name: 'service',
-                Value: service,
-              },
-              {
-                Name: 'status',
-                Value: 'stuck',
-              },
-            ],
-            Unit: 'Count',
-            Timestamp: new Date(),
-            Value: 1,
-          },
-        ],
-        Namespace,
-      });
-
-      client.send(command, err => {
-        if (err) throw err;
-      });
+  scheduler.events.on('duration', async (job: Job) => {
+    try {
+      const jobName = job.name.toUpperCase();
+      await publishCountForService(jobName, service, 'completed', 1);
+    } catch (err) {
+      scheduler.logger.error(
+        `Error while putting CloudWatch metrics for duration job: ${err}`
+      );
+      throw err;
     }
   });
 
-  scheduler.events.on('reset', (job: JobAttributes) => {
-    const MetricName = job.name.toUpperCase();
-    const command = new PutMetricDataCommand({
-      MetricData: [
-        {
-          MetricName,
-          Dimensions: [
-            {
-              Name: 'service',
-              Value: service,
-            },
-            {
-              Name: 'status',
-              Value: 'restarted',
-            },
-          ],
-          Unit: 'Count',
-          Timestamp: new Date(),
-          Value: 1,
-        },
-      ],
-      Namespace,
-    });
-
-    client.send(command);
+  scheduler.events.on('lagged', async (jobs: JobAttributes[]) => {
+    for (const job of jobs) {
+      try {
+        const jobName = job.name.toUpperCase();
+        await publishCountForService(jobName, service, 'stuck', 1);
+      } catch (err) {
+        scheduler.logger.error(
+          `Error while putting CloudWatch metrics for lagged job: ${err}`
+        );
+        throw err;
+      }
+    }
   });
 
-  scheduler.events.on('pending', (data: PendingJobs) => {
-    for (const [name, count] of Object.entries(data)) {
-      const MetricName = name.toUpperCase();
-      const command = new PutMetricDataCommand({
-        MetricData: [
-          {
-            MetricName,
-            Dimensions: [
-              {
-                Name: 'service',
-                Value: service,
-              },
-              {
-                Name: 'status',
-                Value: 'pending',
-              },
-            ],
-            Unit: 'Count',
-            Timestamp: new Date(),
-            Value: count,
-          },
-        ],
-        Namespace,
-      });
+  scheduler.events.on('reset', async (job: JobAttributes) => {
+    try {
+      const jobName = job.name.toUpperCase();
+      await publishCountForService(jobName, service, 'restarted', 1);
+    } catch (err) {
+      scheduler.logger.error(
+        `Error while putting CloudWatch metrics for restarted job: ${err}`
+      );
+      throw err;
+    }
+  });
 
-      client.send(command);
+  scheduler.events.on('pending', async (data: PendingJobs) => {
+    for (const [name, count] of Object.entries(data)) {
+      try {
+        const jobName = name.toUpperCase();
+        await publishCountForService(jobName, service, 'pending', count);
+      } catch (err) {
+        scheduler.logger.error(
+          `Error while putting CloudWatch metrics for pending job: ${err}`
+        );
+        throw err;
+      }
     }
   });
 };
