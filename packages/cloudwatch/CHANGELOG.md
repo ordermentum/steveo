@@ -1,5 +1,11 @@
 # @steveojs/cloudwatch
 
+## 6.1.0
+
+### Minor Changes
+
+- c3b4692: Log errors returned when submitting metrics
+
 ## 6.0.0
 
 ### Patch Changes
