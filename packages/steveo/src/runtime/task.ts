@@ -12,8 +12,14 @@ import {
 } from '../common';
 import { TaskOptions } from '../types/task-options';
 
-class Task<T = any, R = any, E extends Configuration['engine'] = any>
-  implements ITask<T, R>
+class Task<
+  T extends Record<string, any> | Record<string, any>[] | undefined = Record<
+    string,
+    any
+  >,
+  R = any,
+  E extends Configuration['engine'] = any
+> implements ITask<T, R>
 {
   config:
     | KafkaConfiguration

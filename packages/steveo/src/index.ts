@@ -141,11 +141,14 @@ export class Steveo<E extends Configuration['engine'] = any>
    * @param options
    * @returns
    */
-  task<T = any, R = any, C = any>(
-    name: string,
-    callback: Callback<T, R, C>,
-    options: TaskOptions = {}
-  ) {
+  task<
+    T extends Record<string, any> | Record<string, any>[] | undefined = Record<
+      string,
+      any
+    >,
+    R = any,
+    C = any
+  >(name: string, callback: Callback<T, R, C>, options: TaskOptions = {}) {
     const queueFormatOptions: QueueFormatOptions = {
       queueName: options.queueName,
       upperCaseNames: this.config.upperCaseNames,
