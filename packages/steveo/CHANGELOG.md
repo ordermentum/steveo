@@ -1,5 +1,11 @@
 # steveo
 
+## 7.2.0
+
+### Minor Changes
+
+- 19d9a48: Add type guards to publish methods (tasks and root instance)
+
 ## 7.1.0
 
 ### Minor Changes
