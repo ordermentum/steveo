@@ -9,11 +9,15 @@ import {
   IRegistry,
   MessageRoutingOptions,
   Configuration,
+  PayloadT,
 } from '../common';
 import { TaskOptions } from '../types/task-options';
 
-class Task<T = any, R = any, E extends Configuration['engine'] = any>
-  implements ITask<T, R>
+class Task<
+  T extends PayloadT = Record<string, any>,
+  R = any,
+  E extends Configuration['engine'] = any
+> implements ITask<T, R>
 {
   config:
     | KafkaConfiguration

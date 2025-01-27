@@ -26,6 +26,7 @@ import {
   Middleware,
   MessageRoutingOptions,
   Configuration,
+  PayloadT,
 } from './common';
 import { Storage } from './types/storage';
 import { TaskOptions } from './types/task-options';
@@ -141,7 +142,7 @@ export class Steveo<E extends Configuration['engine'] = any>
    * @param options
    * @returns
    */
-  task<T = any, R = any, C = any>(
+  task<T extends PayloadT = Record<string, any>, R = any, C = any>(
     name: string,
     callback: Callback<T, R, C>,
     options: TaskOptions = {}
@@ -174,7 +175,7 @@ export class Steveo<E extends Configuration['engine'] = any>
    * Publish the given payload to the given topic
    * @param key
    */
-  async publish<T = any>(
+  async publish<T extends PayloadT = Record<string, any>>(
     name: string,
     payload: T,
     options?: MessageRoutingOptions[E]
