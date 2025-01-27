@@ -229,6 +229,11 @@ export interface ISteveo {
   producer: IProducer;
   task(topic: string, callBack: Callback, opts?: TaskOptions): ITask;
   runner(): IRunner;
+  publish: <T extends PayloadT>(
+    name: string,
+    payload: T,
+    options?: MessageRoutingOptions[keyof MessageRoutingOptions]
+  ) => Promise<void>;
 }
 
 export type AsyncWrapper = {
@@ -287,3 +292,5 @@ export interface Middleware {
 }
 
 export type sqsUrls = Record<string, string>;
+
+export type PayloadT = Record<string, any> | Record<string, any>[] | undefined;

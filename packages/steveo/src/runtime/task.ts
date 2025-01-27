@@ -9,14 +9,12 @@ import {
   IRegistry,
   MessageRoutingOptions,
   Configuration,
+  PayloadT,
 } from '../common';
 import { TaskOptions } from '../types/task-options';
 
 class Task<
-  T extends Record<string, any> | Record<string, any>[] | undefined = Record<
-    string,
-    any
-  >,
+  T extends PayloadT = Record<string, any>,
   R = any,
   E extends Configuration['engine'] = any
 > implements ITask<T, R>
