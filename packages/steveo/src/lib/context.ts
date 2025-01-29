@@ -38,7 +38,8 @@ export const getContext = params => {
 
   // 0 lets us filter out messages that don't have a start time
   let duration: number = 0;
-  if (meta?.start) {
+  // Array check is to ignore in-flight messages with a start time emitted by the process.hrtime() method
+  if (meta?.start && !Array.isArray(meta.start)) {
     duration = getDuration(meta.start);
   }
 
