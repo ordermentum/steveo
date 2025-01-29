@@ -412,7 +412,7 @@ describe('runner/kafka', () => {
 
   it('calculates duration of a task run correctly', async () => {
     clock.restore();
-    const start = Date.now();
+    const startMs = Date.now();
     const subscribeStub = sinon
       .stub()
       .returns(Promise.resolve({ some: 'success' }));
@@ -443,7 +443,7 @@ describe('runner/kafka', () => {
       'commitMessage'
     );
     const expectedPayload: any = { attr: 'value' };
-    const messageContext = { key: 'context', start };
+    const messageContext = { key: 'context', startMs };
     const messagePayload: Buffer = Buffer.from(
       JSON.stringify({ ...expectedPayload, _meta: messageContext })
     );

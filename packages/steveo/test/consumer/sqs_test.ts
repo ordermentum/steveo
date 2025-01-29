@@ -614,7 +614,7 @@ describe('runner/sqs', () => {
 
   it('calculates duration of a task run correctly', async () => {
     clock.restore();
-    const start = Date.now();
+    const startMs = Date.now();
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
     const anotherRegistry = {
       registeredTasks: [],
@@ -653,7 +653,7 @@ describe('runner/sqs', () => {
       // @ts-ignore
       .returns({ promise: async () => {} });
 
-    const inputContext = { contextKey: 'contextValue', start };
+    const inputContext = { contextKey: 'contextValue', startMs };
     const messageBody = { data: 'Hello', _meta: inputContext };
 
     // Wait a second to avoid flakiness
