@@ -125,13 +125,16 @@ class SqsRunner extends BaseRunner implements IRunner {
 
       logger.debug('Completed subscribe');
 
-      const completedContext = getContext(payload);
-
       if (waitToCommit) {
         await this.deleteMessage(topic, message);
       }
 
-      this.registry.emit('runner_complete', topic, payload, completedContext);
+      this.registry.emit(
+        'runner_complete',
+        topic,
+        payload,
+        getContext(payload)
+      );
     } catch (error) {
       logger.error(
         {
