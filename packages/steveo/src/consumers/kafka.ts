@@ -7,7 +7,7 @@ import Kafka, {
 import nullLogger from 'null-logger';
 import { Pool } from 'generic-pool';
 import BaseRunner from './base';
-import { getContext, getDuration } from '../lib/context';
+import { getContext } from '../lib/context';
 import { IRunner, KafkaConfiguration } from '../common';
 import { Logger } from '../lib/logger';
 import { Steveo } from '..';
@@ -73,6 +73,7 @@ class KafkaRunner
 
     try {
       const payload = this.parseMessagePayload(message);
+
       await this.wrap({ topic, payload }, async c => {
         this.logger.debug(`waiting for pool ${c.topic}`);
         resource = await this.pool.acquire();
@@ -84,10 +85,12 @@ class KafkaRunner
           key: message.key?.toString(),
         };
 
-        this.registry.emit('runner_receive', c.topic, parsed, {
-          ...message,
-          start: getDuration(),
-        });
+        this.registry.emit(
+          'runner_receive',
+          c.topic,
+          parsed,
+          getContext(payload)
+        );
         this.logger.debug(`loading task`);
         const task = this.registry.getTask(c.topic);
 
@@ -103,7 +106,6 @@ class KafkaRunner
         }
 
         this.logger.debug('Start subscribe', c.topic, message);
-        const runnerContext = getContext(c.payload);
         const { _meta: _ = {}, ...data } = c.payload;
 
         /**
@@ -111,7 +113,7 @@ class KafkaRunner
          * to have backwards compatibility when upgrading steveo version
          * without needing to update every task with the new shape
          */
-        await task.subscribe({ ...data, value: data }, runnerContext);
+        await task.subscribe({ ...data, value: data }, getContext(payload));
 
         if (waitToCommit) {
           this.logger.debug({ message }, 'committing message');
@@ -119,10 +121,12 @@ class KafkaRunner
         }
 
         this.logger.debug('Finish subscribe', c.topic, message);
-        this.registry.emit('runner_complete', c.topic, parsed, {
-          ...message,
-          end: getDuration(),
-        });
+        this.registry.emit(
+          'runner_complete',
+          c.topic,
+          parsed,
+          getContext(payload)
+        );
       });
     } catch (error) {
       this.logger.error(
