@@ -1,5 +1,11 @@
 # steveo
 
+## 7.3.0
+
+### Minor Changes
+
+- c43bb96: Change duration calculation in task runs [Steveo]
+
 ## 7.2.0
 
 ### Minor Changes
