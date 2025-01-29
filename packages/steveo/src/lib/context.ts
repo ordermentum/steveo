@@ -38,7 +38,7 @@ export const getContext = params => {
 
   // 0 lets us filter out messages that don't have a start time
   let duration: number = 0;
-  if (meta) {
+  if (meta?.start) {
     duration = getDuration(meta.start);
   }
 

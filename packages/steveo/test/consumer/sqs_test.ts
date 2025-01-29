@@ -611,4 +611,67 @@ describe('runner/sqs', () => {
       )
     ).to.equal(true);
   });
+
+  it('calculates duration of a task run correctly', async () => {
+    clock.restore();
+    const start = Date.now();
+    const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+    const anotherRegistry = {
+      registeredTasks: [],
+      addNewTask: () => {},
+      removeTask: () => {},
+      getTopics: () => [],
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const log = logger({ level: 'debug' });
+    const config = {
+      engine: 'sqs' as const,
+      logger: log,
+      registry: anotherRegistry,
+    };
+
+    //@ts-expect-error
+    const steveo = new Steveo(config);
+    // @ts-ignore
+    steveo.registry = anotherRegistry;
+    // @ts-ignore
+    steveo.pool = build(anotherRegistry);
+
+    const anotherRunner = new Runner(steveo);
+
+    // @ts-ignore
+    sandbox
+      .stub(anotherRunner.sqs, 'deleteMessage')
+      // @ts-ignore
+      .returns({ promise: async () => {} });
+
+    const inputContext = { contextKey: 'contextValue', start };
+    const messageBody = { data: 'Hello', _meta: inputContext };
+
+    // Wait a second to avoid flakiness
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    await anotherRunner.receive(
+      [
+        {
+          ReceiptHandle: v4(),
+          Body: JSON.stringify(messageBody),
+        },
+      ],
+      'a-topic'
+    );
+
+    // Greater than or equal to 1 second and less than a reasonable 15 seconds, as the test runs in a few milliseconds
+    // To catch calculation errors
+    // Note: Duration is in milliseconds
+    expect(subscribeStub.args[0][1].duration).to.be.greaterThanOrEqual(1000).lessThan(15000);
+  });
 });

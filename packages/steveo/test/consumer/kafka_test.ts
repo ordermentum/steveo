@@ -409,4 +409,60 @@ describe('runner/kafka', () => {
     ]);
     expect(messagePayload).to.be.deep.equal(receivedContext);
   });
+
+  it('calculates duration of a task run correctly', async () => {
+    clock.restore();
+    const start = Date.now();
+    const subscribeStub = sinon
+      .stub()
+      .returns(Promise.resolve({ some: 'success' }));
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => {},
+        subscribe: subscribeStub,
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+    const steveo = {
+      config: {
+        bootstrapServers: 'kafka:9200',
+        engine: 'kafka',
+        securityProtocol: 'plaintext',
+      },
+      registry: anotherRegistry,
+      // @ts-ignore
+      pool: build(anotherRegistry),
+    };
+    // @ts-ignore
+    const anotherRunner = new Runner(steveo);
+    const commitOffsetStub = sandbox.stub(
+      anotherRunner.consumer,
+      'commitMessage'
+    );
+    const expectedPayload: any = { attr: 'value' };
+    const messageContext = { key: 'context', start };
+    const messagePayload: Buffer = Buffer.from(
+      JSON.stringify({ ...expectedPayload, _meta: messageContext })
+    );
+
+    // Wait a second to avoid flakiness
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    await anotherRunner.receive({
+      value: messagePayload,
+      size: 1000,
+      offset: 0,
+      topic: 'a-topic',
+      partition: 1,
+    });
+    sinon.assert.called(commitOffsetStub);
+
+    // Greater than or equal to 1 second and less than a reasonable 15 seconds, as the test runs in a few milliseconds
+    // To catch calculation errors
+    // Note: Duration is in milliseconds
+    expect(subscribeStub.args[0][1].duration).to.be.greaterThanOrEqual(1000).lessThan(15000);
+  });
 });
