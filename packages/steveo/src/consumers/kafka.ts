@@ -42,6 +42,43 @@ class KafkaRunner
       {
         'bootstrap.servers': this.config.bootstrapServers,
         'security.protocol': this.config.securityProtocol,
+        rebalance_cb: (err, assignment) => {
+          this.logger.debug('Rebalance event', err, assignment);
+          try {
+            /**
+             * These error codes can mean that the consumer needs to reassign
+             *
+             * KafkaJS (another kafka client) has a similar implementation
+             * See: https://github.com/tulios/kafkajs/pull/1474
+             * See: https://github.com/tulios/kafkajs/blob/master/src/consumer/runner.js#L115-L160
+             */
+            if (
+              [
+                Kafka.CODES.ERRORS.ERR__ASSIGN_PARTITIONS,
+                Kafka.CODES.ERRORS.ERR_NOT_COORDINATOR_FOR_GROUP,
+                Kafka.CODES.ERRORS.ERR_REBALANCE_IN_PROGRESS,
+                Kafka.CODES.ERRORS.ERR_ILLEGAL_GENERATION,
+                Kafka.CODES.ERRORS.ERR_UNKNOWN_MEMBER_ID,
+              ].includes(err.code)
+            ) {
+              if (this.consumer.rebalanceProtocol() === 'COOPERATIVE') {
+                this.consumer.incrementalAssign(assignment);
+              } else {
+                this.consumer.assign(assignment);
+              }
+            } else if (err.code === Kafka.CODES.ERRORS.ERR__REVOKE_PARTITIONS) {
+              if (this.consumer.rebalanceProtocol() === 'COOPERATIVE') {
+                this.consumer.incrementalUnassign(assignment);
+              } else {
+                this.consumer.unassign();
+              }
+            }
+          } catch (e) {
+            this.logger.error('Error during rebalance', e);
+            // Shutting down the consumer to not have a zombie consumer
+            if (this.consumer.isConnected()) this.shutdown();
+          }
+        },
         offset_commit_cb: (err, topicPartitions) => {
           if (err) {
             this.logger.error(err);
@@ -208,7 +245,7 @@ class KafkaRunner
     if (this.state === 'terminating') {
       this.logger.debug(`terminating kafka consumer`);
       this.state = 'terminated';
-      this.disconnect();
+      await this.shutdown();
       return;
     }
 
