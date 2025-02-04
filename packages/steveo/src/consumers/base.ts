@@ -75,8 +75,10 @@ class BaseRunner {
     this.manager.state = state;
   }
 
+  // eslint-disable-next-line no-empty-function
   async disconnect() {}
 
+  // eslint-disable-next-line no-empty-function
   async reconnect() {}
 
   /**

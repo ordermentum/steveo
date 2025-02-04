@@ -1,9 +1,9 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 import sinon from 'sinon';
-import {promisify} from 'util';
+import { promisify } from 'util';
 import Bluebird from 'bluebird';
 import logger from 'pino';
-import {KafkaConfiguration, Steveo} from '../../src';
+import { KafkaConfiguration, Steveo } from '../../src';
 
 const sleep = promisify(setTimeout);
 
@@ -43,7 +43,7 @@ describe('Kafka Integration Test', () => {
       upperCaseNames: true,
       middleware: [],
     };
-    const log = logger({level: 'debug'});
+    const log = logger({ level: 'debug' });
     const steveo = new Steveo(configuration, log);
     const tasks = ['one', 'two', 'three'];
 
@@ -52,7 +52,7 @@ describe('Kafka Integration Test', () => {
     }
 
     await steveo
-      ?.runner()
+      .runner()
       .createQueues()
       .catch(e => {
         log.error('Error creating queues', e);
@@ -68,7 +68,7 @@ describe('Kafka Integration Test', () => {
         const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
         await steveo.publish(`steveo_integration_${randomTask}`, {});
       },
-      {concurrency: 50}
+      { concurrency: 50 }
     );
 
     steveo.runner().process();
@@ -105,21 +105,22 @@ describe('Kafka Integration Test', () => {
       upperCaseNames: true,
       middleware: [],
     };
-    const log = logger({level: 'debug'});
+    const log = logger({ level: 'debug' });
     const steveo = new Steveo(configuration, log);
     const tasks = ['one', 'two', 'three'];
 
     const noopTask = steveo.task('steveo_integration_noop_task', async () => {
       log.info('noop task');
-      return;
     });
 
     for (const task of tasks) {
-      steveo.task(`steveo_integration_${task}`, async () => noopTask.publish({}));
+      steveo.task(`steveo_integration_${task}`, async () =>
+        noopTask.publish({})
+      );
     }
 
     await steveo
-      ?.runner()
+      .runner()
       .createQueues()
       .catch(e => {
         log.error('Error creating queues', e);
@@ -135,7 +136,7 @@ describe('Kafka Integration Test', () => {
         const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
         await steveo.publish(`steveo_integration_${randomTask}`, {});
       },
-      {concurrency: 50}
+      { concurrency: 50 }
     );
 
     let receivedProducerFailure = false;

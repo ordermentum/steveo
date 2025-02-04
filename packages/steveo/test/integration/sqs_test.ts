@@ -78,7 +78,7 @@ describe('SQS Integration Test', () => {
       steveo.task(`steveo_integration_${task}`, async () => Promise.resolve());
     }
 
-    await steveo?.runner().createQueues();
+    await steveo.runner().createQueues();
 
     const iterations = 50;
     await Bluebird.map(
@@ -139,16 +139,17 @@ describe('SQS Integration Test', () => {
 
     const noopTask = steveo.task('steveo_integration_noop_task', async () => {
       log.info('noop task');
-      return;
     });
 
     const tasks = ['one', 'two', 'three'];
 
     for (const task of tasks) {
-      steveo.task(`steveo_integration_${task}`, async () => noopTask.publish({}));
+      steveo.task(`steveo_integration_${task}`, async () =>
+        noopTask.publish({})
+      );
     }
 
-    await steveo?.runner().createQueues();
+    await steveo.runner().createQueues();
 
     const iterations = 50;
     await Bluebird.map(
@@ -182,5 +183,4 @@ describe('SQS Integration Test', () => {
 
     expect(steveo.manager.state).to.equal('terminated');
   });
-
 });

@@ -1,8 +1,9 @@
-import * as runtime from '@prisma/client/runtime/library.js';
 import assert from 'node:assert';
-import _ from 'lodash';
 import { WorkflowState, WorkflowStateRepository } from 'steveo';
-import { InputJsonValue } from '@prisma/client/runtime/library';
+import {
+  InputJsonValue,
+  ITXClientDenyList,
+} from '@prisma/client/runtime/library';
 import { PrismaClient } from '@prisma/client';
 
 export interface WorkflowInitProps {
@@ -18,7 +19,8 @@ export interface WorkflowInitProps {
 export class WorkflowStateRepositoryPostgres
   implements WorkflowStateRepository
 {
-  constructor(private prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) {}
+  // eslint-disable-next-line no-empty-function
+  constructor(private prisma: Omit<PrismaClient, ITXClientDenyList>) {}
 
   /**
    * Create a brand new workflow state given the identifier.

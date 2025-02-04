@@ -1,10 +1,10 @@
-import {KafkaConfiguration, Steveo} from "../src";
-import logger from "pino";
-import Bluebird from "bluebird";
-import {expect} from "chai";
-import {promisify} from "util";
-const sleep = promisify(setTimeout);
+import logger from 'pino';
+import Bluebird from 'bluebird';
+import { expect } from 'chai';
+import { promisify } from 'util';
+import { KafkaConfiguration, Steveo } from '../src';
 
+const sleep = promisify(setTimeout);
 
 describe('Steveo Integration Test', () => {
   it('gracefully shuts itself down when multiple steveo instances are running and are dependent on each other', async () => {
@@ -58,29 +58,31 @@ describe('Steveo Integration Test', () => {
       tasksPath: '.',
     };
 
-    const log = logger({level: 'debug'});
-    const sqs = new Steveo(sqsConfiguration, log.child({engine: 'sqs'}));
-    const kafka = new Steveo(kafkaConfiguration, log.child({engine: 'kafka'}));
+    const log = logger({ level: 'debug' });
+    const sqs = new Steveo(sqsConfiguration, log.child({ engine: 'sqs' }));
+    const kafka = new Steveo(
+      kafkaConfiguration,
+      log.child({ engine: 'kafka' })
+    );
     const tasks = ['one', 'two', 'three'];
 
     kafka.task('steveo_integration_noop_task', async () => {
       log.info('noop task');
-      return;
     });
 
     /**
      * create a dependency between the two steveo instances
      */
     for (const task of tasks) {
-      sqs.task(`steveo_integration_${task}`, async () => kafka.publish('steveo_integration_noop_task', {}));
+      sqs.task(`steveo_integration_${task}`, async () =>
+        kafka.publish('steveo_integration_noop_task', {})
+      );
     }
 
-    await Promise.all(
-      [
-        sqs.runner().createQueues(),
-        kafka.runner().createQueues()
-      ]
-    );
+    await Promise.all([
+      sqs.runner().createQueues(),
+      kafka.runner().createQueues(),
+    ]);
 
     await Promise.all([sqs.start(), kafka.start()]);
     await kafka.producer.initialize();
@@ -92,7 +94,7 @@ describe('Steveo Integration Test', () => {
         const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
         await sqs.publish(`steveo_integration_${randomTask}`, {});
       },
-      {concurrency: 50}
+      { concurrency: 50 }
     );
 
     sqs.runner().process();
@@ -110,12 +112,7 @@ describe('Steveo Integration Test', () => {
 
     await sleep(5000);
 
-    await Promise.all(
-      [
-        sqs.stop(),
-        kafka.stop()
-      ]
-    );
+    await Promise.all([sqs.stop(), kafka.stop()]);
 
     await sleep(1000);
 

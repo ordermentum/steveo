@@ -1,3 +1,3 @@
-describe('cloudwatch', function () {
-    it('Should create some unit tests');
+describe('cloudwatch', () => {
+  it('Should create some unit tests');
 });
