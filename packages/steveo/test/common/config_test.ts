@@ -15,6 +15,7 @@ describe('Config', () => {
       'socket.keepalive.enable': true,
       'enable.auto.commit': false,
       'group.id': 'KAFKA_CONSUMERS',
+      'partition.assignment.strategy': 'cooperative-sticky',
     });
     expect(config.producer).to.eqls({ global: {}, topic: {} });
     expect(config.admin).to.eqls({});
@@ -55,6 +56,7 @@ describe('Config', () => {
       'socket.keepalive.enable': true,
       'enable.auto.commit': false,
       'group.id': 'TEST_CONSUMERS',
+      'partition.assignment.strategy': 'cooperative-sticky',
       a: 1,
     });
     expect(config.producer).to.eqls({
