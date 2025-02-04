@@ -112,7 +112,7 @@ class SqsRunner extends BaseRunner implements IRunner {
         return;
       }
 
-      logger.info(
+      logger.debug(
         {
           taskName: task.name,
           context: runnerContext,
