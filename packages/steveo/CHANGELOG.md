@@ -1,5 +1,11 @@
 # steveo
 
+## 8.0.0
+
+### Major Changes
+
+- 29389d6: Upgrade node-rdkafka, add custom rebalancing
+
 ## 7.3.0
 
 ### Minor Changes
