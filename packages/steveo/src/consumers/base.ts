@@ -79,6 +79,9 @@ class BaseRunner {
 
   async reconnect() {}
 
+  /**
+   * This method is called by the manager (lib/manager.ts) to stop the runners
+   */
   async stop() {
     this.logger.debug(
       `${this.config.engine.toUpperCase()}: stopping consumer ${this.name}`

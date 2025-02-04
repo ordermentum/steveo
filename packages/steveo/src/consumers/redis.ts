@@ -108,9 +108,9 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   poll(topics?: string[]) {
-    if (this.state === 'terminating') {
+    if (this.manager.shouldTerminate) {
       this.logger.debug(`terminating redis`);
-      this.state = 'terminated';
+      this.manager.terminate();
       this.shutdown();
       return;
     }
@@ -169,7 +169,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     return true;
   }
 
-  async shutdown() {
+  shutdown() {
     this.redis.quit(() => {});
   }
 }

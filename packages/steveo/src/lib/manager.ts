@@ -83,4 +83,9 @@ export class Manager {
   get shouldTerminate() {
     return ['terminating', 'terminated'].includes(this._state);
   }
+
+  terminate() {
+    this.logger.debug('gracefully terminating runner');
+    this.state = 'terminated';
+  }
 }

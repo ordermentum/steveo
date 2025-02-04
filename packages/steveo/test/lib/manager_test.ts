@@ -4,23 +4,24 @@ import { Manager } from '../../src/lib/manager';
 
 describe('Manager', () => {
   describe('pause and resumes', () => {
-    it('pauses', () => {
+    it('pauses', async () => {
       const steveo = new Steveo({ engine: 'dummy' as const });
       const manager = new Manager(steveo);
-      manager.pause();
+      await manager.pause();
       expect(manager.state).to.equal('paused');
     });
 
-    it('resumes', () => {
+    it('resumes', async () => {
       const steveo = new Steveo({ engine: 'dummy' as const });
       const manager = new Manager(steveo);
-      manager.resume();
+      await manager.resume();
       expect(manager.state).to.equal('running');
     });
   });
 
-  describe('shutdown', () => {
-    it('sets terminating state', () => {
+  describe('shutdown', function () {
+    this.timeout(10000);
+    it('sets terminating state', async () => {
       const steveo = new Steveo({ engine: 'dummy' as const });
       const manager = new Manager(steveo);
       manager.shutdown();
@@ -29,10 +30,16 @@ describe('Manager', () => {
       expect(manager.state).to.equal('terminated');
     });
 
-    it('shouldTerminate', () => {
+    it('should terminate when consumers shut down', async () => {
       const steveo = new Steveo({ engine: 'dummy' as const });
       const manager = new Manager(steveo);
-      manager.shutdown();
+      await new Promise<void>((resolve) => {
+        setTimeout(()=> {
+          manager.terminate();
+          resolve();
+        }, 5000); // Terminate in 5 seconds
+      });
+      await manager.shutdown();
       expect(manager.shouldTerminate).to.equal(true);
       manager.state = 'terminated';
     });

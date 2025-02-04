@@ -165,7 +165,6 @@ class SqsRunner extends BaseRunner implements IRunner {
       QueueUrl: this.sqsUrls[sqsTopic],
       ReceiptHandle: message.ReceiptHandle,
     };
-
     try {
       this.logger.debug('Deleting Message from Queue URL', deleteParams);
       const data: DeleteMessageCommandOutput = await this.sqs.deleteMessage(
@@ -198,12 +197,12 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   private poll(topics?: string[]) {
     this.logger.debug(`looping ${this.manager.state}`);
-    if (this.manager.state === 'terminating') {
-      this.manager.state = 'terminated';
+    if (this.currentTimeout) clearTimeout(this.currentTimeout);
+    if (this.manager.shouldTerminate) {
+      this.manager.terminate();
       this.logger.debug(`terminating sqs consumer ${this.state}`);
       return;
     }
-    if (this.currentTimeout) clearTimeout(this.currentTimeout);
     this.currentTimeout = setTimeout(
       this.process.bind(this, topics),
       this.config.consumerPollInterval ?? 1000
@@ -213,6 +212,15 @@ class SqsRunner extends BaseRunner implements IRunner {
   async process(topics?: string[]): Promise<void> {
     if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
+      this.poll(topics);
+      return;
+    }
+
+    /**
+     * If the consumer is supposed to terminate,
+     * do not process any more messages
+     */
+    if (this.manager.shouldTerminate) {
       this.poll(topics);
       return;
     }
