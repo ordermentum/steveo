@@ -1,5 +1,12 @@
 # @steveojs/storage-postgres
 
+## 8.0.0
+
+### Patch Changes
+
+- Updated dependencies [ee711cb]
+  - steveo@8.1.0
+
 ## 7.0.0
 
 ### Major Changes
