@@ -26,15 +26,16 @@ export default function initMaintenance(
 
     try {
       // Returns a grouped object of jobs that are pending (jobs that are not currently running and are due to run)
-      const pendingJobs = await client.$queryRaw<
-        { name: string; count: string }[]
-      >`
+      const pendingJobs =
+        allJobs.length > 0
+          ? await client.$queryRaw<{ name: string; count: string }[]>`
         SELECT name, count(name) from jobs
         WHERE queued = false AND next_run_at < CURRENT_TIMESTAMP
-        AND name in (${Prisma.join(allJobs)})
+        AND name IN (${Prisma.join(allJobs)})
         AND deleted_at is NULL
         GROUP BY 1
-      `;
+      `
+          : [];
 
       events.emit(
         'pending',
@@ -81,7 +82,7 @@ export default function initMaintenance(
 
       // All other blocked jobs - update them to run next time - too risky to just start again
       await Promise.all(
-        blockedJobs.map(async job =>
+        blockedJobs.map(job =>
           resetJob(client, job, events).catch(e => logger.error(e))
         )
       );
@@ -144,7 +145,7 @@ export default function initMaintenance(
         }
 
         await Promise.all(
-          resetJobs.map(async job =>
+          resetJobs.map(job =>
             resetJob(client, job, events).catch(e => logger.error(e))
           )
         );
@@ -157,7 +158,7 @@ export default function initMaintenance(
         }
       }
     } catch (e) {
-      logger.error('Maintenance failed', e);
+      logger.warn({ error: e }, 'Maintenance failed');
     }
   };
 }
