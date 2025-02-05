@@ -1,5 +1,11 @@
 # @steveojs/scheduler-prisma
 
+## 7.6.0
+
+### Minor Changes
+
+- 50b51f1: Handle case where there are no safe or risky jobs defined
+
 ## 7.5.0
 
 ### Minor Changes
