@@ -5,7 +5,7 @@ import Runner from '../../src/consumers/kafka';
 import { build } from '../../src/lib/pool';
 import Registry from '../../src/runtime/registry';
 import { getContext } from '../../src/lib/context';
-import {KafkaMessageRoutingOptions} from "../../lib/common";
+import { KafkaMessageRoutingOptions } from '../../lib/common';
 
 describe('runner/kafka', () => {
   let sandbox;
@@ -368,7 +368,7 @@ describe('runner/kafka', () => {
       },
     };
     const messagePayload: Record<string, string> = {
-      my: 'payload'
+      my: 'payload',
     };
     let receivedContext: Record<string, string> = {};
     const steveo = {
@@ -380,11 +380,11 @@ describe('runner/kafka', () => {
         middleware: [
           {
             publish: () => {},
-            consume: (context) => {
+            consume: context => {
               receivedContext = context.payload;
             },
           },
-        ]
+        ],
       },
       registry: anotherRegistry,
       // @ts-ignore
@@ -449,7 +449,9 @@ describe('runner/kafka', () => {
     );
 
     // Wait a second to avoid flakiness
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => {
+      setTimeout(resolve, 1000);
+    });
 
     await anotherRunner.receive({
       value: messagePayload,
@@ -463,6 +465,8 @@ describe('runner/kafka', () => {
     // Greater than or equal to 1 second and less than a reasonable 15 seconds, as the test runs in a few milliseconds
     // To catch calculation errors
     // Note: Duration is in milliseconds
-    expect(subscribeStub.args[0][1].duration).to.be.greaterThanOrEqual(1000).lessThan(15000);
+    expect(subscribeStub.args[0][1].duration)
+      .to.be.greaterThanOrEqual(1000)
+      .lessThan(15000);
   });
 });

@@ -1,6 +1,9 @@
 {
-    "extends": [
-      "@ordermentum/ordermentum/mocha",
-      "@ordermentum/ordermentum/jest"
-    ]
+  "extends": [
+    "@ordermentum/ordermentum/mocha",
+    "@ordermentum/ordermentum/jest"
+  ],
+  "parserOptions": {
+    "project": "../tsconfig.test.json"
   }
+}

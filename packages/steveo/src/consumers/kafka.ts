@@ -87,7 +87,10 @@ class KafkaRunner
               'Offset commit successful',
               topicPartitions,
               ' assigments',
-              this.consumer.assignments()
+              // We need to rely on the manager state
+              // to avoid race condition between this callback and
+              // the termination
+              this.manager.shouldTerminate ? [] : this.consumer.assignments()
             );
           }
         },
@@ -240,11 +243,10 @@ class KafkaRunner
   };
 
   consumeCallback = async (err, messages) => {
-    this.logger.debug(`Consumer callback: ${messages?.[0]}`);
+    this.logger.debug('Consumer callback: ', messages?.[0]);
 
-    if (this.state === 'terminating') {
+    if (this.manager.shouldTerminate) {
       this.logger.debug(`terminating kafka consumer`);
-      this.state = 'terminated';
       await this.shutdown();
       return;
     }
@@ -361,6 +363,7 @@ class KafkaRunner
     this.logger.debug(`stopping consumer ${this.name}`);
     this.consumer.disconnect();
     this.adminClient.disconnect();
+    this.manager.terminate();
   }
 }
 

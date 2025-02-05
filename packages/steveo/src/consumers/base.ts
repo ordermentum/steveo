@@ -75,10 +75,15 @@ class BaseRunner {
     this.manager.state = state;
   }
 
+  // eslint-disable-next-line no-empty-function
   async disconnect() {}
 
+  // eslint-disable-next-line no-empty-function
   async reconnect() {}
 
+  /**
+   * This method is called by the manager (lib/manager.ts) to stop the runners
+   */
   async stop() {
     this.logger.debug(
       `${this.config.engine.toUpperCase()}: stopping consumer ${this.name}`

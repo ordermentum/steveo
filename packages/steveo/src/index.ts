@@ -162,7 +162,7 @@ export class Steveo<E extends Configuration['engine'] = any>
       callback,
       options
     );
-    this.logger.info(
+    this.logger.debug(
       { task: task.name, topic: task.topic, taskOptions: options },
       `Registering ${task.name} Task to Steveo.`
     );

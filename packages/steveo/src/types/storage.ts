@@ -10,7 +10,8 @@ export interface Repositories {
  * details will be unique to the storage providers.
  */
 export abstract class Storage {
-  constructor(private $name: string) {}
+  // eslint-disable-next-line no-empty-function
+  constructor(private $name: string) {} // TODO: Should this be empty?
 
   /**
    * Debug information only

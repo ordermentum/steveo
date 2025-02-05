@@ -12,7 +12,9 @@ export class BaseProducer {
     return composePublish(this.middleware);
   }
 
+  // eslint-disable-next-line no-empty-function
   async reconnect() {}
 
+  // eslint-disable-next-line no-empty-function
   async stop() {}
 }

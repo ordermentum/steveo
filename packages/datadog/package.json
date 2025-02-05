@@ -19,7 +19,6 @@
     "lib"
   ],
   "devDependencies": {
-    "@ordermentum/eslint-config-ordermentum": "^2.3.3",
     "@types/chai": "^4.3.11",
     "chai": "4.4.1",
     "mocha": "^10.2.0",
