@@ -44,20 +44,23 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
   return async () => {
     try {
       // Returns a grouped object of jobs that are pending (jobs that are not currently running and are due to run)
-      const pendingJobs = await Job.findAll({
-        where: {
-          queued: false,
-          nextRunAt: {
-            [Op.lt]: new Date().toISOString(),
-          },
-          name: {
-            [Op.in]: allJobs,
-          },
-          deletedAt: null,
-        },
-        attributes: ['name', [fn('COUNT', 'name'), 'count']],
-        group: ['name'],
-      });
+      const pendingJobs =
+        allJobs.length > 0
+          ? await Job.findAll({
+              where: {
+                queued: false,
+                nextRunAt: {
+                  [Op.lt]: new Date().toISOString(),
+                },
+                name: {
+                  [Op.in]: allJobs,
+                },
+                deletedAt: null,
+              },
+              attributes: ['name', [fn('COUNT', 'name'), 'count']],
+              group: ['name'],
+            })
+          : [];
 
       events.emit(
         'pending',
@@ -93,7 +96,7 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
 
       // All other blocked jobs - update them to run next time - too risky to just start again
       await Promise.all(
-        blockedJobs.map(async job =>
+        blockedJobs.map(job =>
           resetJob(job, events).catch(e => logger.error(e))
         )
       );
@@ -141,7 +144,7 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
         }
 
         await Promise.all(
-          resetJobs.map(async job =>
+          resetJobs.map(job =>
             resetJob(job, events).catch(e => logger.error(e))
           )
         );
@@ -154,7 +157,7 @@ export default function initMaintenance(jobScheduler: JobScheduler) {
         }
       }
     } catch (e) {
-      logger.error('Maintenance failed', e);
+      logger.warn({ error: e }, 'Maintenance failed');
     }
   };
 }
