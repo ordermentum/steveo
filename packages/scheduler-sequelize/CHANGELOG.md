@@ -1,5 +1,11 @@
 # @steveojs/scheduler-sequelize
 
+## 7.5.0
+
+### Minor Changes
+
+- 2e4d803: Handle allJobs being empty
+
 ## 7.4.0
 
 ### Minor Changes
