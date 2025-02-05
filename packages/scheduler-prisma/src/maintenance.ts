@@ -158,7 +158,7 @@ export default function initMaintenance(
         }
       }
     } catch (e) {
-      logger.error('Maintenance failed', e);
+      logger.warn({ error: e }, 'Maintenance failed');
     }
   };
 }
