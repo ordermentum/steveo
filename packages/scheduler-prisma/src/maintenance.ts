@@ -82,7 +82,7 @@ export default function initMaintenance(
 
       // All other blocked jobs - update them to run next time - too risky to just start again
       await Promise.all(
-        blockedJobs.map(async job =>
+        blockedJobs.map(job =>
           resetJob(client, job, events).catch(e => logger.error(e))
         )
       );
@@ -145,7 +145,7 @@ export default function initMaintenance(
         }
 
         await Promise.all(
-          resetJobs.map(async job =>
+          resetJobs.map(job =>
             resetJob(client, job, events).catch(e => logger.error(e))
           )
         );
