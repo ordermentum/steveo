@@ -1,5 +1,11 @@
 # steveo
 
+## 8.1.0
+
+### Minor Changes
+
+- ee711cb: Improve shutting down process - steveo
+
 ## 8.0.0
 
 ### Major Changes

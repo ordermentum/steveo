@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/sentry",
-  "version": "11.0.0",
+  "version": "12.0.0",
   "main": "lib/index.js",
   "repository": "git@github.com:ordermentum/steveo.git",
   "license": "Apache-2.0",

@@ -1,5 +1,12 @@
 # @steveojs/datadog
 
+## 12.0.0
+
+### Patch Changes
+
+- Updated dependencies [ee711cb]
+  - steveo@8.1.0
+
 ## 11.0.0
 
 ### Patch Changes
