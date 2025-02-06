@@ -54,7 +54,7 @@
     "@types/mocha": "8.2.3",
     "@types/moment-timezone": "0.5.30",
     "@types/node": "20.14.9",
-    "@types/qs": "6.9.15",
+    "@types/qs": "6.9.18",
     "@types/sinon": "10.0.20",
     "@types/uuid": "8.3.4",
     "@types/validator": "13.11.10",
