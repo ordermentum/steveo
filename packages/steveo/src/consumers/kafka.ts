@@ -42,7 +42,7 @@ class KafkaRunner
       {
         'bootstrap.servers': this.config.bootstrapServers,
         'security.protocol': this.config.securityProtocol,
-        rebalance_cb: (err, assignment) => {
+        rebalance_cb(err, assignment) {
           this.logger.debug('Rebalance event', err, assignment);
           try {
             /**
