@@ -1,5 +1,11 @@
 # steveo
 
+## 8.1.1
+
+### Patch Changes
+
+- 0c876b3: Revert default partitioning strategy to non-eager [Kafka]
+
 ## 8.1.0
 
 ### Minor Changes
