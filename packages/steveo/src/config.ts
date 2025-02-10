@@ -13,15 +13,6 @@ const KafkaConsumerDefault: KafkaConsumerConfig = {
     'socket.keepalive.enable': true,
     'enable.auto.commit': false,
     'group.id': 'KAFKA_CONSUMERS',
-    /**
-     * See: https://www.confluent.io/blog/incremental-cooperative-rebalancing-in-kafka/
-     * This is a new feature in Kafka 2.4.0 that allows consumers to join and leave the group
-     * without triggering a full rebalance. This can be useful for scaling out consumers in a
-     * consumer group without causing a rebalance of the entire group.
-     * The default value is 'eager' which means that the consumer will trigger a rebalance
-     * when it joins or leaves the group, which is STOP THE WORLD behavior.
-     */
-    'partition.assignment.strategy': 'cooperative-sticky',
   },
   topic: {
     'auto.offset.reset': 'latest',

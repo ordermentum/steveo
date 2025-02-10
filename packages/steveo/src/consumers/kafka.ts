@@ -61,17 +61,10 @@ class KafkaRunner
                 Kafka.CODES.ERRORS.ERR_UNKNOWN_MEMBER_ID,
               ].includes(err.code)
             ) {
-              if (this.consumer.rebalanceProtocol() === 'COOPERATIVE') {
-                this.consumer.incrementalAssign(assignment);
-              } else {
-                this.consumer.assign(assignment);
-              }
+              //
+              this.consumer.assign(assignment);
             } else if (err.code === Kafka.CODES.ERRORS.ERR__REVOKE_PARTITIONS) {
-              if (this.consumer.rebalanceProtocol() === 'COOPERATIVE') {
-                this.consumer.incrementalUnassign(assignment);
-              } else {
-                this.consumer.unassign();
-              }
+              this.consumer.unassign();
             }
           } catch (e) {
             this.logger.error('Error during rebalance', e);

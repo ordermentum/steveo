@@ -7080,6 +7080,29 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
 
+steveo@*:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/steveo/-/steveo-8.1.0.tgz#84c0318f888d12c566d861797d405886619b412c"
+  integrity sha512-eWZkx00h+b9ogCeZmteNbE40JMhhpXlZ9ZecrfZBFrj1aYe8Fq1/0G2tKiOEfAl2W9xFc2FHFR/XXKBIvLSL5Q==
+  dependencies:
+    "@aws-sdk/client-sqs" "^3.637.0"
+    "@smithy/node-http-handler" "^3.1.4"
+    "@types/bluebird" "^3.5.38"
+    bluebird "^3.7.2"
+    generic-pool "^3.9.0"
+    husky "^9.1.7"
+    lazy-object "^1.0.1"
+    lint-staged "^15.4.3"
+    lodash.difference "^4.5.0"
+    lodash.intersection "^4.4.0"
+    lodash.merge "4.6.2"
+    lodash.shuffle "^4.2.0"
+    moment "2.30.1"
+    node-rdkafka "^3.2.1"
+    null-logger "^2.0.0"
+    rsmq "^0.12.4"
+    uuid "^9.0.0"
+
 string-argv@^0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/string-argv/-/string-argv-0.3.2.tgz#2b6d0ef24b656274d957d54e0a4bbf6153dc02b6"
