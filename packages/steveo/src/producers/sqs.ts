@@ -253,23 +253,35 @@ class SqsProducer extends BaseProducer implements IProducer {
     payload: T,
     options: SQSMessageRoutingOptions = {}
   ): Promise<void> {
+
+    const handleError = (e: any) => {
+      this.logger.error('Error while sending Payload', topic, e);
+      this.registry.emit('producer_failure', topic, e, payload);
+      throw e;
+    }
+
     try {
       await this.wrap({ topic, payload }, async c => {
-        if (!this.sqsUrls[c.topic]) {
-          await this.initialize(c.topic);
+        try {
+          if (!this.sqsUrls[c.topic]) {
+            await this.initialize(c.topic);
+          }
+          const data: SendMessageCommandInput = this.getPayload(
+            c.payload,
+            c.topic,
+            options
+          );
+
+          this.logger.debug('Sending Payload', c.topic, data);
+          await this.producer.sendMessage(data);
+          this.registry.emit('producer_success', c.topic, data);
+
+        } catch(e) {
+          handleError(e);  // This wont be caught by the parent try/catch becuase of wrap
         }
-        const data: SendMessageCommandInput = this.getPayload(
-          c.payload,
-          c.topic,
-          options
-        );
-        await this.producer.sendMessage(data);
-        this.registry.emit('producer_success', c.topic, data);
       });
     } catch (ex) {
-      this.logger.error('Error while sending Payload', topic, ex);
-      this.registry.emit('producer_failure', topic, ex, payload);
-      throw ex;
+      handleError(ex);
     }
   }
 }
