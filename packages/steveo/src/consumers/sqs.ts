@@ -235,6 +235,9 @@ class SqsRunner extends BaseRunner implements IRunner {
     await bluebird.map(
       subscriptions,
       async topic => {
+        // If the consumer is supposed to terminate
+        // do not process any more messages
+        if (this.manager.shouldTerminate) return;
         const queueURL: string = await this.getQueueUrl(topic);
         if (queueURL) {
           this.logger.debug(`starting processing of ${topic} with ${queueURL}`);
