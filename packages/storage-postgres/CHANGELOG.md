@@ -1,5 +1,12 @@
 # @steveojs/storage-postgres
 
+## 9.0.0
+
+### Patch Changes
+
+- Updated dependencies [97d030a]
+  - steveo@8.2.0
+
 ## 8.0.0
 
 ### Patch Changes

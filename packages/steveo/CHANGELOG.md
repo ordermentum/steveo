@@ -1,5 +1,11 @@
 # steveo
 
+## 8.2.0
+
+### Minor Changes
+
+- 97d030a: Drain resource pools when steveo instances shuts down
+
 ## 8.1.1
 
 ### Patch Changes
