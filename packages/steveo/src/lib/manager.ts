@@ -69,20 +69,12 @@ export class Manager {
    *
    */
   async stop() {
-    this.logger.debug('signal runner to terminate');
-    await Promise.all(
-      [
-        this.steveo.runner().stop(),
-        this.shutdown()
-      ]
-    );
-    await this._drainAndClearPools();
-    this.logger.debug('signal producer to terminate');
-    await this.steveo.producer.stop();
+    this.logger.debug('signal runner and producer to terminate');
+    await this.shutdown();
   }
 
   async shutdown() {
-    this.logger.debug(`shutting down`);
+    this.logger.debug('shutting down');
 
     if (['running', 'paused'].includes(this.state)) {
       this.state = 'terminating';
@@ -95,11 +87,12 @@ export class Manager {
         this.forceTerminate();
         break;
       }
-      this.steveo.logger.debug(`waiting for consumers to terminate`);
+      this.steveo.logger.debug('waiting for consumers to terminate');
       await sleep(1000);
       count += 1;
     }
-
+    await this._drainAndClearPools();
+    await this.steveo.producer.stop();
     this.steveo.registry.emit('terminate', true);
   }
 
