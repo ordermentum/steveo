@@ -28,15 +28,57 @@ export class Manager {
     this.state = 'paused';
   }
 
-  // allow runner and producer to gracefully stop processing
-  async stop() {
-    this.logger.debug(`signal runner and producer to terminate`);
-    await Promise.all([
-      this.steveo.runner().stop(),
-      this.steveo.producer.stop(),
-    ]);
+  /**
+   * Drain and clear the pools managed by global.steveo.
+   *
+   * @private
+   */
+  async _drainAndClearPools() {
+    // Steveo maintains a list of pools that need to be drained and cleared
+    // Look at packages/steveo/src/lib/pool.ts for more info
+    const pools = global.steveo?.pools;
 
-    await this.shutdown();
+    if (!pools || pools.length === 0) {
+      return;
+    }
+
+    await Promise.all(
+      pools.map(async (pool) => {
+        try {
+          if (pool.borrowed > 0) {
+            await pool.drain();
+            await pool.clear();
+          }
+        } catch (error) {
+          this.logger.error('Error draining and clearing pool', error);
+        }
+      })
+    );
+  }
+
+  /**
+   * Gracefully shuts down the system by stopping the runner, producer, and draining/clearing any active pools.
+   *
+   * - Signals the runner to terminate
+   * - Initiates the shutdown, which waits for a set amount of time before force terminating the runner.
+   * - If there are any active pools managed by Steveo, it ensures that:
+   *    1. All borrowed items are drained from the pool.
+   *    2. The pool is cleared to prevent any lingering resources.
+   * - Signals the producer to terminate
+   * - Handles any errors that occur during the draining/clearing process.
+   *
+   */
+  async stop() {
+    this.logger.debug('signal runner to terminate');
+    await Promise.all(
+      [
+        this.steveo.runner().stop(),
+        this.shutdown()
+      ]
+    );
+    await this._drainAndClearPools();
+    this.logger.debug('signal producer to terminate');
+    await this.steveo.producer.stop();
   }
 
   async shutdown() {
