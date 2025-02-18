@@ -91,6 +91,10 @@ class SqsRunner extends BaseRunner implements IRunner {
     payload: PayLoad,
     logger: Logger
   ): Promise<void> {
+    // If the consumer is supposed to terminate
+    // do not process any more messages
+    if (this.manager.shouldTerminate) return;
+
     const resource = await this.pool.acquire();
     const { _meta: _, ...data } = payload;
 
