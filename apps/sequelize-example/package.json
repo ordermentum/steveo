@@ -53,7 +53,7 @@
     "@types/config": "0.0.41",
     "@types/mocha": "8.2.3",
     "@types/moment-timezone": "0.5.30",
-    "@types/node": "20.17.17",
+    "@types/node": "20.17.19",
     "@types/qs": "6.9.18",
     "@types/sinon": "10.0.20",
     "@types/uuid": "8.3.4",
