@@ -1,5 +1,11 @@
 # steveo
 
+## 8.2.1
+
+### Patch Changes
+
+- 5f567e1: Improve graceful shutdown for sqs consumers - Steveo
+
 ## 8.2.0
 
 ### Minor Changes
