@@ -5640,11 +5640,6 @@ nan@^2.14.0, nan@^2.16.0:
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.17.0.tgz#c0150a2368a182f033e9aa5195ec76ea41a199cb"
   integrity sha512-2ZTgtl0nJsO0KQCjEpxcIr5D+Yv90plTitZt9JBfQvVJDS5seMl3FOvsh3+9CoYWXf/1l5OaZzzF6nDm4cagaQ==
 
-nan@^2.19.0:
-  version "2.22.0"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-2.22.0.tgz#31bc433fc33213c97bad36404bb68063de604de3"
-  integrity sha512-nbajikzWTMwsW+eSsNm3QwlOs7het9gGJU5dDZzRTQGk03vyBOauxgI4VakDzE0PtsGTmXPsXTbbjVhRwR5mpw==
-
 nan@^2.22.0:
   version "2.22.1"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.22.1.tgz#27aacbba463b05ed7751d3c0035f73cb1afcfb75"
@@ -5756,21 +5751,13 @@ node-preload@^0.2.1:
   dependencies:
     process-on-spawn "^1.0.0"
 
-node-rdkafka@3.3.0:
+node-rdkafka@3.3.0, node-rdkafka@^3.2.1:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-3.3.0.tgz#5cd93a880763ab5dc0f946953bbc2691d26f8050"
   integrity sha512-LbeWj2WlyXnl0IKJhBHrU9aPPJ9e+Cxgp14vx6a/L6c1/SdUjN0a6R9KSVh/zl/sfkGYBh2MTa0e2Ya7hZvEHg==
   dependencies:
     bindings "^1.3.1"
     nan "^2.22.0"
-
-node-rdkafka@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-3.2.1.tgz#1e41ed61e88c551745ca9de097c9e64a7cb1803d"
-  integrity sha512-lf/U8LLCLA8v2tAh2x4guizfFAZSt/KJSzzaIEXtYGospfeZVf2U0RfHlCo7+XvbUoAG4V3uyMgif/tjHQIYfA==
-  dependencies:
-    bindings "^1.3.1"
-    nan "^2.19.0"
 
 node-releases@^2.0.0:
   version "2.0.0"
