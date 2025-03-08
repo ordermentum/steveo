@@ -2100,7 +2100,12 @@
   resolved "https://registry.yarnpkg.com/@types/ms/-/ms-0.7.31.tgz#31b7ca6407128a3d2bbc27fe2d21b345397f6197"
   integrity sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==
 
-"@types/newrelic@9.14.7", "@types/newrelic@^9.4.0":
+"@types/newrelic@9.14.8":
+  version "9.14.8"
+  resolved "https://registry.yarnpkg.com/@types/newrelic/-/newrelic-9.14.8.tgz#68cb95f327dc212b8d0bebc083ff9e69dac864ee"
+  integrity sha512-rkOTEVR7Lui4TTEykDUxIxCbFkcI/yw3C8URLOWM84zjuHh9W35RAequHTEvGBbbrLCdn43FVTHMLji4uunDWQ==
+
+"@types/newrelic@^9.4.0":
   version "9.14.7"
   resolved "https://registry.yarnpkg.com/@types/newrelic/-/newrelic-9.14.7.tgz#62b92b8573df73f1e6d7dfa84b1ddcb5ca75cb55"
   integrity sha512-d22uZq5lc6Wwxc4h6dz9mSNBv7doxMhorkNrX5//aE8jISxs85TLGHi/gPr/Xkxfe/d43bEIMe4EhQvpvgCJ/w==
