@@ -3,23 +3,12 @@ import { Op } from 'sequelize';
 import { createLogger } from 'bunyan';
 import moment from 'moment-timezone';
 import { SinonStub, createSandbox, SinonSandbox } from 'sinon';
-import { JobScheduler } from '../src/index';
-import initMaintenance, * as maintenance from '../src/maintenance';
+import * as maintenanceHelpers from '../src/maintenance';
 
-describe('Maintenance task', async () => {
-  let maintenanceCallback;
+describe('Maintenance task', () => {
+  let maintenanceCallback: maintenanceHelpers.MaintenanceScheduler;
   let sandbox: SinonSandbox;
   let eventsStub: SinonStub;
-  let JobStub: {
-    scope: SinonStub<
-      any,
-      {
-        update: SinonStub;
-        findAll: SinonStub;
-      }
-    >;
-    findAll: SinonStub;
-  };
   let scopeStub: SinonStub;
   let updateStub: SinonStub;
   let findAllStub: SinonStub;
@@ -28,8 +17,16 @@ describe('Maintenance task', async () => {
   const jobsCustomRestart = {
     D: moment.duration(15, 'minutes'),
   };
-  let resetJobStub: SinonStub;
   let findPendingJobsStub: SinonStub;
+  let JobStub: {
+    scope: SinonStub<
+      any,
+      {
+        update: SinonStub;
+        findAll: SinonStub;
+      }
+    >;
+  };
 
   beforeEach(() => {
     sandbox = createSandbox();
@@ -41,25 +38,40 @@ describe('Maintenance task', async () => {
       update: updateStub,
       findAll: findAllStub,
     });
-    JobStub = {
-      scope: scopeStub,
-      findAll: findPendingJobsStub
+    
+    // Create a minimal JobModel stub that satisfies the type requirements
+    JobStub = Object.assign(
+      function() {} as any,
+      {
+        scope: scopeStub,
+        findAll: findPendingJobsStub,
+        prototype: {},
+        tableName: 'jobs',
+        primaryKeyAttribute: 'id',
+        primaryKeyAttributes: ['id'],
+        associations: {},
+        getTableName: () => 'jobs',
+        // Add any other required Model static methods/properties
+      }
+    );
+    
+    const logger = createLogger({ name: 'test' });
+    const events = {
+      emit: eventsStub
     };
-    resetJobStub = sandbox.stub(maintenance, 'resetJob').resolves();
-    // @ts-ignore
-    maintenanceCallback = initMaintenance({
-      logger: createLogger({
-        name: 'test',
-      }),
+
+    const MaintenanceScheduler = require('../src/maintenance').MaintenanceScheduler;
+    maintenanceCallback = new MaintenanceScheduler(
+      JobStub,
+      logger,
       jobsSafeToRestart,
       jobsCustomRestart,
       jobsRiskyToRestart,
-      events: {
-        emit: eventsStub,
-      },
-      Job: JobStub,
-    } as JobScheduler);
+      events
+    );
+    
   });
+
   afterEach(() => {
     sandbox.restore();
   });
@@ -77,16 +89,22 @@ describe('Maintenance task', async () => {
         jobsRiskyToRestart.map(data => ({
           get: () => data,
           name: data,
+          repeatInterval: 'FREQ=HOURLY;INTERVAL=1',
+          update: sandbox.stub().resolves(),
         }))
       );
 
     const customLaggyJobs = jobsRiskyToRestart.map(data => ({
       get: () => data,
       name: data,
+      repeatInterval: 'FREQ=HOURLY;INTERVAL=1',
+      update: sandbox.stub().resolves(),
     }));
     customLaggyJobs.push({
       get: () => 'D',
       name: 'D',
+      repeatInterval: 'FREQ=MINUTELY;INTERVAL=15',
+      update: sandbox.stub().resolves(),
     });
 
     // Laggy jobs
@@ -103,9 +121,19 @@ describe('Maintenance task', async () => {
       get: () => ({
         name: 'pending',
         count: '120'
-      })
+      }),
+      repeatInterval: 'FREQ=MINUTELY;INTERVAL=5',
+      update: sandbox.stub().resolves(),
     }]);
-    await maintenanceCallback();
+
+    maintenanceCallback.start();
+    
+    // Wait a small amount of time for the maintenance to run
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    maintenanceCallback.stop();
+
+    // Verify basic call counts
     expect(JobStub.scope.callCount).to.eql(4);
     expect(findPendingJobsStub.callCount).to.eql(1);
     expect(updateStub.callCount).to.eqls(2);
@@ -130,22 +158,24 @@ describe('Maintenance task', async () => {
       },
     });
 
-    expect(resetJobStub.callCount).to.eql(2);
-
-    // Reset blocked risky to restart jobs
-    expect(resetJobStub.args[0][0].get()).to.eqls('B');
-
-    // Resets laggy risky jobs with custom restart
-    expect(resetJobStub.args[1][0].get()).to.eqls('D');
-
-    // Expect a pending jobs event
+    // Events emitted in order:
+    // 1. Pending jobs
     expect(eventsStub.args[0][0]).to.eqls('pending');
     expect(eventsStub.args[0][1]).to.eqls({
       pending: 120
     });
 
-    // Emits an event for laggy jobs and don't have custom restart policy
-    expect(eventsStub.args[1][0]).to.eqls('lagged');
-    expect(eventsStub.args[1][1]).to.eqls(['B']);
+    // 2. Reset events for each blocked risky job
+    expect(eventsStub.args[1][0]).to.eqls('reset');
+    expect(eventsStub.args[1][1]).to.eqls('B');
+    expect(eventsStub.args[1][2]).to.not.be.undefined; // nextRunAt
+
+    // 3. Reset events for each laggy job
+    expect(eventsStub.args[2][0]).to.eqls('reset');
+    expect(eventsStub.args[2][1]).to.eqls('D');
+    expect(eventsStub.args[2][2]).to.not.be.undefined; // nextRunAt
+
+    expect(eventsStub.args[3][0]).to.eqls('lagged');
+    expect(eventsStub.args[3][1]).to.eqls(['B']);
   });
 });
