@@ -13,7 +13,7 @@ import { JobAttributes, JobInstance } from './models/job';
 import initSequelize, { JobModel } from './models/index';
 import { JobSet } from './types';
 import { buildEnqueueJobsQuery } from './enqueue_jobs_query';
-import initMaintenance from './maintenance';
+import { MaintenanceScheduler } from './maintenance';
 
 const DEFAULT_LAG = 6; // after 6 minutes, a job is considered laggy
 const DEFAULT_BLOCKED_DURATION = 10; // after 10 minutes, a job is considered blocked
@@ -24,8 +24,6 @@ export const DEFAULT_BACKOFF = 60000; // 60 seconds
 export type PendingJobs = {
   [name: string]: number;
 };
-
-const MAINTENANCE_JOB_NAME = 'check';
 
 export interface Events {
   /**
@@ -166,28 +164,6 @@ export interface JobSchedulerInterface {
   namespace?: string;
 }
 
-/**
- * This scheduler works on the assumption that the database provided should have a jobs table with the following schema
- * "column_name","column_default","is_nullable","data_type"
-    "id",,"NO","uuid"
-    "name",,"NO","character varying"
-    "data","'{}'::jsonb","YES","jsonb"
-    "last_finished_at",,"YES","timestamp with time zone"
-    "last_modified_by",,"YES","character varying"
-    "last_run_at",,"YES","timestamp with time zone"
-    "next_run_at",,"YES","timestamp with time zone"
-    "repeat_interval",,"YES","character varying"
-    "type",,"YES","character varying"
-    "fail_reason","'{}'::jsonb","YES","jsonb"
-    "failed_at",,"YES","timestamp with time zone"
-    "queued","false","YES","boolean"
-    "created_at","now()","NO","timestamp with time zone"
-    "updated_at","now()","NO","timestamp with time zone"
-    "deleted_at",,"YES","timestamp with time zone"
-    "timezone","'UTC'::character varying","NO","character varying"
-    "accepted_at",,"YES","timestamp with time zone"
-    "priority","1","NO","integer"
- */
 export class JobScheduler implements JobSchedulerInterface {
   logger: Logger;
 
@@ -245,6 +221,8 @@ export class JobScheduler implements JobSchedulerInterface {
 
   processing: boolean;
 
+  private maintenanceScheduler?: MaintenanceScheduler;
+
   constructor({
     logger,
     databaseUri,
@@ -283,14 +261,7 @@ export class JobScheduler implements JobSchedulerInterface {
     this.sequelize = sequelize;
     this.Job = Job;
     this.timestampHelper = timestampHelperFactory(this);
-    const maintenanceTask = this.timestampHelper(
-      this.Job,
-      initMaintenance(this)
-    );
-    this.tasks = {
-      ...this.wrapTasks(tasks),
-      [MAINTENANCE_JOB_NAME]: maintenanceTask,
-    };
+    this.tasks = this.wrapTasks(tasks);
     this.allJobs = Array.from(
       new Set([
         ...Object.keys(this.tasks),
@@ -336,7 +307,7 @@ export class JobScheduler implements JobSchedulerInterface {
     });
 
   publishMessages = async (rows: JobSet[]) => {
-    if (!rows || !rows.length) {
+    if (!rows.length) {
       return false;
     }
 
@@ -408,28 +379,31 @@ export class JobScheduler implements JobSchedulerInterface {
     this.paused = false;
   }
 
+  async stopMaintenance() {
+    this.maintenanceScheduler?.stop();
+  }
+
   async terminate() {
     this.logger.info(`terminating`);
     this.exiting = true;
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
+    await this.stopMaintenance();
   }
 
   async init() {
     if (this.startupCheck) return;
     this.startupCheck = true;
-    await this.Job.findOrCreate({
-      where: {
-        name: MAINTENANCE_JOB_NAME,
-      },
-      paranoid: false,
-      defaults: {
-        name: MAINTENANCE_JOB_NAME,
-        nextRunAt: new Date().toISOString(),
-        queued: false,
-        data: {},
-        repeatInterval: 'FREQ=MINUTELY;INTERVAL=1',
-      },
-    });
+
+    // Start maintenance check
+    this.maintenanceScheduler = new MaintenanceScheduler(
+      this.Job,
+      this.logger,
+      this.jobsSafeToRestart,
+      this.jobsCustomRestart,
+      this.jobsRiskyToRestart,
+      this.events
+    );
+    this.maintenanceScheduler.start();
   }
 
   runScheduledJobs = async (
@@ -439,7 +413,7 @@ export class JobScheduler implements JobSchedulerInterface {
     waitTime: number = this.defaultRunInterval
   ): Promise<void> => {
     await this.init();
-    const loop = async () => {
+    const loop = () => {
       if (this.currentTimeout) {
         clearTimeout(this.currentTimeout);
       }
@@ -448,11 +422,10 @@ export class JobScheduler implements JobSchedulerInterface {
         return;
       }
 
-      this.currentTimeout = setTimeout(
-        this.runScheduledJobs.bind(this),
-        waitTime,
-        waitTime
-      );
+      this.currentTimeout = setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.runScheduledJobs(waitTime);
+      }, waitTime);
     };
 
     if (this.paused) {
