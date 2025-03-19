@@ -1,7 +1,7 @@
 /**
- *
- * @param ms
- * @returns
+ * Waits for a specified amount of time
+ * @param ms - The amount of time to wait in milliseconds
+ * @returns A promise that resolves after the specified time has elapsed
  */
 export function waitTime(ms: number): Promise<void> {
   return new Promise(resolve => {
@@ -10,11 +10,11 @@ export function waitTime(ms: number): Promise<void> {
 }
 
 /**
- *
- * @param fn
- * @param timeout
- * @param interval
- * @returns
+ * Waits for a condition to change
+ * @param fn - The condition to wait for
+ * @param timeout - The maximum amount of time to wait in milliseconds
+ * @param interval - The interval at which to check the condition in milliseconds
+ * @returns A promise that resolves when the condition changes
  */
 export function waitForChange(
   fn: () => boolean,
