@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/scheduler-sequelize",
-  "version": "7.5.0",
+  "version": "7.6.0",
   "description": "A helper lib for a Sequelize/Postgres backed in-process job queue",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

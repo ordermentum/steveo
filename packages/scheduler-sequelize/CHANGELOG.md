@@ -1,5 +1,11 @@
 # @steveojs/scheduler-sequelize
 
+## 7.6.0
+
+### Minor Changes
+
+- daeb03a: Fix for sequelize scheduler graceful termination
+
 ## 7.5.0
 
 ### Minor Changes

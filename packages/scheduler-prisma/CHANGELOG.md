@@ -1,5 +1,11 @@
 # @steveojs/scheduler-prisma
 
+## 7.7.0
+
+### Minor Changes
+
+- daeb03a: Fix scheduler terminate gracefully
+
 ## 7.6.0
 
 ### Minor Changes
