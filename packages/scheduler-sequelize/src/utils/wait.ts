@@ -21,7 +21,7 @@ export function waitForChange(
   timeout = 5000,
   interval = 50
 ) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const startTime = Date.now();
 
     const checkCondition = () => {
@@ -32,7 +32,7 @@ export function waitForChange(
 
       // If timeout has been exceeded, reject with an error.
       if (Date.now() - startTime > timeout) {
-        reject(new Error('Timeout exceeded while waiting for variable change'));
+        resolve(false);
         return;
       }
 
