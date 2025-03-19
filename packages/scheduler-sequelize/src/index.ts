@@ -336,6 +336,12 @@ export class JobScheduler implements JobSchedulerInterface {
       },
     });
 
+  /**
+   * @description Processes a batch of jobs. Will not exit early if the scheduler is terminating,
+   * which is by design to not leave the batch partially processed.
+   * @param rows - The batch of jobs to process
+   * @returns A boolean indicating whether the jobs were processed successfully
+   */
   publishMessages = async (rows: JobSet[]) => {
     if (!rows || !rows.length) {
       return false;
@@ -348,10 +354,6 @@ export class JobScheduler implements JobSchedulerInterface {
       const task = this.tasks[name];
       if (task) {
         for (const item of items) {
-          if (this.exiting) {
-            return false;
-          }
-
           try {
             // @ts-ignore
             await task(item.data, {
@@ -375,6 +377,11 @@ export class JobScheduler implements JobSchedulerInterface {
     this.beat();
 
     try {
+      // If the scheduler is terminating, don't process any more jobs
+      if (this.exiting) {
+        return;
+      }
+
       const jobs = await this.fetchAndEnqueueJobs();
       await this.publishMessages(jobs);
     } catch (e) {
