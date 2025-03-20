@@ -1,5 +1,5 @@
-import RedisSMQ from 'rsmq';
-import redisConf from '../config/redis';
+import { Queue, QueueOptions } from 'bullmq';
+import IORedis from 'ioredis';
 import { IProducer, IRegistry, RedisConfiguration } from '../common';
 import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
@@ -12,7 +12,9 @@ class RedisProducer extends BaseProducer implements IProducer {
 
   logger: Logger;
 
-  producer: RedisSMQ;
+  connection: IORedis;
+
+  queues: Map<string, Queue>;
 
   constructor(
     config: RedisConfiguration,
@@ -21,47 +23,80 @@ class RedisProducer extends BaseProducer implements IProducer {
   ) {
     super(config.middleware ?? []);
     this.config = config;
-    this.producer = redisConf.redis(config);
     this.logger = logger;
     this.registry = registry;
+    this.queues = new Map();
+
+    // Create Redis connection
+    this.connection = new IORedis({
+      host: config.host,
+      port: config.port,
+      password: config.password,
+      db: config.db,
+    });
   }
 
   async initialize(topic: string) {
-    const params = {
-      qname: topic,
-      vt: this.config.visibilityTimeout,
-      maxsize: this.config.redisMessageMaxsize,
-    };
-    const queues = await this.producer.listQueuesAsync();
-    if (!queues.find(q => q === topic)) {
-      this.producer.createQueueAsync(params);
+    if (!this.queues.has(topic)) {
+      const queueOptions: QueueOptions = {
+        connection: this.connection,
+        defaultJobOptions: {
+          removeOnComplete: false,
+          removeOnFail: false,
+          attempts: 3,
+          timeout: this.config.visibilityTimeout,
+        },
+      };
+
+      const queue = new Queue(topic, queueOptions);
+      this.queues.set(topic, queue);
+      this.logger.debug(`Initialized BullMQ queue: ${topic}`);
     }
   }
 
-  getPayload(msg: any, topic: string): any {
+  getPayload(msg: any): any {
     const context = createMessageMetadata(msg);
-    return {
-      qname: topic,
-      message: JSON.stringify({ ...msg, _meta: context }),
-    };
+    return { ...msg, _meta: context };
   }
 
   async send<T = any>(topic: string, payload: T) {
     try {
       await this.wrap({ topic, payload }, async c => {
-        const data = this.getPayload(c.payload, c.topic);
-        await this.producer.sendMessageAsync(data);
-        const queueAttributes = await this.producer.getQueueAttributesAsync({
-          qname: c.topic,
+        // Ensure the queue exists
+        if (!this.queues.has(c.topic)) {
+          await this.initialize(c.topic);
+        }
+
+        const queue = this.queues.get(c.topic);
+        const data = this.getPayload(c.payload);
+
+        // Add job to the queue
+        await queue.add(c.topic, data, {
+          // You can customize job options here if needed
+          removeOnComplete: false,
+          removeOnFail: false,
         });
-        this.logger.debug(`queue stats: ${queueAttributes}`);
-        this.registry.emit('producer_success', topic, payload);
+
+        // Get queue statistics
+        const jobCounts = await queue.getJobCounts();
+        this.logger.debug(`Queue stats: ${JSON.stringify(jobCounts)}`);
+
+        this.registry.emit('producer_success', c.topic, c.payload);
       });
     } catch (ex) {
-      this.logger.error('Error while sending Redis payload', topic, ex);
+      this.logger.error('Error while sending BullMQ payload', topic, ex);
       this.registry.emit('producer_failure', topic, ex, payload);
       throw ex;
     }
+  }
+
+  async stop() {
+    for (const [name, queue] of this.queues.entries()) {
+      await queue.close();
+      this.logger.debug(`Closed queue: ${name}`);
+    }
+    await this.connection.quit();
+    this.logger.debug('Closed Redis connection');
   }
 }
 
