@@ -7,9 +7,12 @@ import {
   ProducerGlobalConfig,
   ProducerTopicConfig,
 } from 'node-rdkafka';
+import { Redis } from 'ioredis';
+import { DefaultJobOptions } from 'bullmq';
 import { Workflow } from './runtime/workflow';
 import { TaskOptions } from './types/task-options';
 import { Logger } from './lib/logger';
+import Task from './runtime/task';
 
 // https://github.com/aws/aws-sdk-js-v3/issues/3063
 // 🤌🏾🤌🏾🤌🏾
@@ -92,9 +95,7 @@ export interface SQSConfiguration extends Configuration {
 
 export interface RedisConfiguration extends Configuration {
   engine: 'redis';
-  redisHost: string;
-  redisPort: number;
-  namespace?: string;
+  connectionUrl: string;
   redisMessageMaxsize?: number;
   consumerPollInterval?: number;
   visibilityTimeout?: number;
@@ -185,10 +186,12 @@ export interface SQSMessageRoutingOptions {
   deDuplicationId?: string;
 }
 
+export interface RedisMessageRoutingOptions extends DefaultJobOptions {}
+
 export type MessageRoutingOptions = {
   sqs: SQSMessageRoutingOptions;
   kafka: KafkaMessageRoutingOptions;
-  redis: Record<string, any>;
+  redis: RedisMessageRoutingOptions;
   dummy: Record<string, any>;
 };
 
@@ -198,7 +201,7 @@ export interface ITask<T = any, R = any> {
   subscribe: Callback<T, R>;
   name: string;
   topic: string;
-  options: TaskOptions;
+  options?: TaskOptions[keyof TaskOptions];
   producer: any;
   publish(
     payload: T | T[],
@@ -257,7 +260,10 @@ export interface IProducer<P = any> {
   logger: Logger;
   registry: IRegistry;
   producer?: any;
-  initialize(topic?: string): Promise<P>;
+  initialize(
+    topic?: string,
+    options?: MessageRoutingOptions[keyof MessageRoutingOptions]
+  ): Promise<P>;
   getPayload<T = any>(
     msg: T,
     topic: string,

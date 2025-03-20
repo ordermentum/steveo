@@ -35,7 +35,7 @@ class Task<
 
   topic: string;
 
-  options: TaskOptions;
+  options?: TaskOptions[E];
 
   constructor(
     config:
@@ -48,7 +48,7 @@ class Task<
     name: string,
     topic: string,
     subscribe: Callback<T, R>,
-    options: TaskOptions = {}
+    options?: TaskOptions[E]
   ) {
     this.config = config;
     this.registry = registry;
@@ -68,7 +68,7 @@ class Task<
     }
     try {
       // sqs calls this method twice
-      await this.producer.initialize(this.topic);
+      await this.producer.initialize(this.topic, options);
       await Promise.all(
         params.map((data: T) => {
           this.registry.emit('task_send', this.topic, data);

@@ -145,10 +145,10 @@ export class Steveo<E extends Configuration['engine'] = any>
   task<T extends PayloadT = Record<string, any>, R = any, C = any>(
     name: string,
     callback: Callback<T, R, C>,
-    options: TaskOptions = {}
+    options?: TaskOptions[E]
   ) {
     const queueFormatOptions: QueueFormatOptions = {
-      queueName: options.queueName,
+      queueName: options?.queueName,
       upperCaseNames: this.config.upperCaseNames,
       queuePrefix: this.config.queuePrefix,
     };
