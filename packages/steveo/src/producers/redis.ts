@@ -1,6 +1,11 @@
 import { Queue, QueueOptions } from 'bullmq';
 import IORedis from 'ioredis';
-import { IProducer, IRegistry, RedisConfiguration } from '../common';
+import {
+  IProducer,
+  IRegistry,
+  RedisConfiguration,
+  RedisMessageRoutingOptions,
+} from '../common';
 import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
@@ -28,15 +33,10 @@ class RedisProducer extends BaseProducer implements IProducer {
     this.queues = new Map();
 
     // Create Redis connection
-    this.connection = new IORedis({
-      host: config.host,
-      port: config.port,
-      password: config.password,
-      db: config.db,
-    });
+    this.connection = new IORedis(config.connectionUrl);
   }
 
-  async initialize(topic: string) {
+  async initialize(topic: string, options: RedisMessageRoutingOptions) {
     if (!this.queues.has(topic)) {
       const queueOptions: QueueOptions = {
         connection: this.connection,
@@ -44,7 +44,7 @@ class RedisProducer extends BaseProducer implements IProducer {
           removeOnComplete: false,
           removeOnFail: false,
           attempts: 3,
-          timeout: this.config.visibilityTimeout,
+          ...options,
         },
       };
 
@@ -59,15 +59,21 @@ class RedisProducer extends BaseProducer implements IProducer {
     return { ...msg, _meta: context };
   }
 
-  async send<T = any>(topic: string, payload: T) {
+  async send<T = any>(
+    topic: string,
+    payload: T,
+    options: RedisMessageRoutingOptions = {}
+  ) {
     try {
       await this.wrap({ topic, payload }, async c => {
         // Ensure the queue exists
         if (!this.queues.has(c.topic)) {
-          await this.initialize(c.topic);
+          await this.initialize(c.topic, options);
         }
 
         const queue = this.queues.get(c.topic);
+        if (!queue) throw new Error(`Queue not found for topic ${c.topic}`);
+
         const data = this.getPayload(c.payload);
 
         // Add job to the queue
@@ -75,6 +81,7 @@ class RedisProducer extends BaseProducer implements IProducer {
           // You can customize job options here if needed
           removeOnComplete: false,
           removeOnFail: false,
+          ...options,
         });
 
         // Get queue statistics
