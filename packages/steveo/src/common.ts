@@ -7,12 +7,10 @@ import {
   ProducerGlobalConfig,
   ProducerTopicConfig,
 } from 'node-rdkafka';
-import { Redis } from 'ioredis';
 import { DefaultJobOptions } from 'bullmq';
 import { Workflow } from './runtime/workflow';
 import { TaskOptions } from './types/task-options';
 import { Logger } from './lib/logger';
-import Task from './runtime/task';
 
 // https://github.com/aws/aws-sdk-js-v3/issues/3063
 // 🤌🏾🤌🏾🤌🏾
