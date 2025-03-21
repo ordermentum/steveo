@@ -1,13 +1,12 @@
-/* eslint-disable no-continue */
 import Bluebird from 'bluebird';
-import { Queue, QueueEvents, Worker, Job } from 'bullmq';
+import { Queue, QueueEvents, Worker } from 'bullmq';
 import IORedis from 'ioredis';
-import nullLogger from 'null-logger';
 import { Steveo } from '..';
-import { IRunner, Pool, RedisConfiguration } from '../common';
+import { IRunner, RedisConfiguration } from '../common';
 import { getContext } from '../lib/context';
 import { Logger } from '../lib/logger';
 import BaseRunner from './base';
+import { RedisTaskOptions } from '../types/task-options';
 
 class RedisRunner extends BaseRunner implements IRunner {
   config: RedisConfiguration;
@@ -16,53 +15,92 @@ class RedisRunner extends BaseRunner implements IRunner {
 
   redisConnection: IORedis;
 
-  pool: Pool<any>;
-
   queues: Map<string, Queue>;
 
   workers: Map<string, Worker>;
 
   queueEvents: Map<string, QueueEvents>;
 
-  // Add dead letter queues map
-  deadLetterQueues: Map<string, Queue>;
+  private stateCheckInterval: NodeJS.Timeout | null = null;
 
   constructor(steveo: Steveo) {
     super(steveo);
     this.config = steveo.config as RedisConfiguration;
-    this.logger = steveo.logger ?? nullLogger;
+    this.logger = steveo.logger;
 
     // Create Redis connection
-    this.redisConnection = new IORedis(this.config.redisOptions);
+    this.redisConnection = new IORedis(this.config.connectionUrl);
 
-    this.pool = steveo.pool;
     this.queues = new Map();
     this.workers = new Map();
     this.queueEvents = new Map();
-    this.deadLetterQueues = new Map();
+
+    // Start the state check interval
+    this.startStateCheck();
   }
 
-  async receive(messages: any[], topic: string): Promise<any> {
-    // This method is not directly used in BullMQ as it handles message receiving internally
+  private startStateCheck() {
+    // Clear any existing interval
+    if (this.stateCheckInterval) {
+      clearInterval(this.stateCheckInterval);
+    }
+
+    // Check state every 5 seconds
+    this.stateCheckInterval = setInterval(() => {
+      this.checkState();
+    }, 5000);
+  }
+
+  private async checkState() {
+    try {
+      if (this.manager.shouldTerminate) {
+        this.logger.debug('State check: terminating Redis runner');
+        this.manager.terminate();
+        await this.shutdown();
+        return;
+      }
+
+      if (this.state === 'paused') {
+        // Check if workers need to be paused
+        for (const [topic, worker] of this.workers.entries()) {
+          if (!worker.isPaused()) {
+            this.logger.debug(`State check: pausing worker for ${topic}`);
+            await worker.pause();
+          }
+        }
+      } else if (this.state === 'running') {
+        // Check if workers need to be resumed
+        for (const [topic, worker] of this.workers.entries()) {
+          if (worker.isPaused()) {
+            this.logger.debug(`State check: resuming worker for ${topic}`);
+            worker.resume();
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error({ error }, 'Error in state check interval');
+    }
+  }
+
+  // These methods have empty implementations as BullMQ handles them internally
+  async receive(_messages: any[], _topic: string): Promise<any> {
     return Promise.resolve();
   }
 
-  async deleteMessage(topic: string, messageId: string) {
-    // Not needed in BullMQ as it handles message deletion internally
+  async deleteMessage(_topic: string, _messageId: string) {
     return Promise.resolve();
   }
 
-  async dequeue(topic: string) {
-    // This is not needed in BullMQ as Workers handle dequeueing
+  async dequeue(_topic: string) {
     return Promise.resolve();
   }
 
-  poll(topics?: string[]) {
-    // BullMQ doesn't require polling as it uses Redis pub/sub for notifications
+  poll(_topics?: string[]) {
+    // Check for termination
     if (this.manager.shouldTerminate) {
       this.logger.debug(`terminating redis`);
       this.manager.terminate();
-      this.shutdown();
+      await this.shutdown();
     }
   }
 
@@ -77,82 +115,31 @@ class RedisRunner extends BaseRunner implements IRunner {
           await this.setupWorker(topic);
         }
       },
-      { concurrency: this.config.workerConfig?.max ?? 1 }
+      { concurrency: this.config.workerConfig?.max ?? 4 }
     );
   }
 
   // Get retry configuration from config or use defaults
-  private getRetryConfig() {
+  private getRetryConfig(topic: string) {
+    const task = this.registry.getTask(topic);
+    if (!task) {
+      throw new Error(`Task not found for topic: ${topic}`);
+    }
+    const options = task.options as RedisTaskOptions;
     return {
-      attempts: this.config.retryConfig?.attempts ?? 3,
-      backoff: this.config.retryConfig?.backoff ?? {
+      removeOnComplete: true,
+      removeOnFail: false, // Keep failed jobs in the queue for inspection
+      attempts: 3,
+      backoff: options.backoff || {
         type: 'exponential',
         delay: 1000,
       },
-      removeOnComplete: true,
-      removeOnFail: false,
+      ...options,
     };
   }
 
-  // Create a dead letter queue for a topic
-  private async createDeadLetterQueue(topic: string): Promise<Queue> {
-    const deadLetterQueueName = `${topic}:dead-letter`;
-
-    if (this.deadLetterQueues.has(deadLetterQueueName)) {
-      return this.deadLetterQueues.get(deadLetterQueueName)!;
-    }
-
-    this.logger.info(`Creating dead letter queue: ${deadLetterQueueName}`);
-    const deadLetterQueue = new Queue(deadLetterQueueName, {
-      connection: this.redisConnection,
-    });
-
-    this.deadLetterQueues.set(deadLetterQueueName, deadLetterQueue);
-    return deadLetterQueue;
-  }
-
-  // Move a failed job to the dead letter queue
-  private async moveToDeadLetter(job: Job, error: Error): Promise<void> {
-    try {
-      const topic = job.queueName;
-      const deadLetterQueue = await this.createDeadLetterQueue(topic);
-
-      // Add the job to the dead letter queue with error information
-      await deadLetterQueue.add(
-        'failed-job',
-        {
-          originalData: job.data,
-          processedOn: job.processedOn,
-          failedReason: error.message,
-          stack: error.stack,
-          attemptsMade: job.attemptsMade,
-        },
-        {
-          jobId: `${job.id}-failed-${Date.now()}`,
-        }
-      );
-
-      this.logger.info(
-        { jobId: job.id, topic, error: error.message },
-        'Moved failed job to dead letter queue'
-      );
-
-      // Optionally, you might want to remove the job from the original queue
-      // await job.remove();
-    } catch (dlqError) {
-      this.logger.error(
-        {
-          jobId: job.id,
-          topic: job.queueName,
-          originalError: error.message,
-          dlqError,
-        },
-        'Failed to move job to dead letter queue'
-      );
-    }
-  }
-
   async setupWorker(topic: string) {
+    const workerConfig = this.getRetryConfig(topic);
     // Ensure queue exists
     await this.createQueue(topic);
 
@@ -160,15 +147,9 @@ class RedisRunner extends BaseRunner implements IRunner {
     const worker = new Worker(
       topic,
       async job => {
-        if (this.state === 'paused') {
-          return;
-        }
-
         await this.wrap({ topic, payload: { message: job.data } }, async c => {
           let params;
-          let resource;
           try {
-            resource = await this.pool.acquire();
             params = job.data;
             const runnerContext = getContext(params);
             this.registry.emit(
@@ -203,16 +184,14 @@ class RedisRunner extends BaseRunner implements IRunner {
                 topic,
                 error,
                 attempt: job.attemptsMade,
-                maxAttempts: this.getRetryConfig().attempts,
+                maxAttempts: workerConfig.attempts,
               },
               'Error while executing consumer callback'
             );
 
             this.registry.emit('runner_failure', topic, error, params);
-
-            // If this was the final retry attempt, move to dead letter queue
-            if (job.attemptsMade >= this.getRetryConfig().attempts) {
-              await this.moveToDeadLetter(job, error);
+            // If this was the final retry attempt, emit a special event
+            if (job.attemptsMade >= workerConfig.attempts) {
               this.registry.emit(
                 'runner_max_retries',
                 topic,
@@ -223,8 +202,6 @@ class RedisRunner extends BaseRunner implements IRunner {
             }
 
             throw error; // Let BullMQ know the job failed and should be retried if attempts remain
-          } finally {
-            if (resource) await this.pool.release(resource);
           }
         });
       },
@@ -239,10 +216,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     worker.on('failed', (job, error) => {
       if (!job) return;
 
-      const attemptDetails = job
-        ? `(Attempt ${job.attemptsMade}/${this.getRetryConfig().attempts})`
-        : '';
-
+      const attemptDetails = `(Attempt ${job.attemptsMade}/${workerConfig.attempts})`;
       this.logger.error(
         { jobId: job.id, topic, error, attemptDetails },
         `Job failed ${attemptDetails}`
@@ -284,10 +258,16 @@ class RedisRunner extends BaseRunner implements IRunner {
       return false;
     }
 
+    const task = this.registry.getTask(topic);
+    if (!task) {
+      this.logger.error(`Unknown Task ${topic}`);
+      return false;
+    }
+
     this.logger.info(`creating BullMQ queue ${topic}`);
     const queue = new Queue(topic, {
       connection: this.redisConnection,
-      defaultJobOptions: this.getRetryConfig(),
+      defaultJobOptions: this.getRetryConfig(topic),
     });
 
     this.queues.set(topic, queue);
@@ -295,6 +275,12 @@ class RedisRunner extends BaseRunner implements IRunner {
   }
 
   async shutdown() {
+    // Clear the state check interval
+    if (this.stateCheckInterval) {
+      clearInterval(this.stateCheckInterval);
+      this.stateCheckInterval = null;
+    }
+
     // Close all workers
     for (const [topic, worker] of this.workers.entries()) {
       this.logger.debug(`Closing worker for ${topic}`);
@@ -313,14 +299,9 @@ class RedisRunner extends BaseRunner implements IRunner {
       await queue.close();
     }
 
-    // Close all dead letter queues
-    for (const [topic, queue] of this.deadLetterQueues.entries()) {
-      this.logger.debug(`Closing dead letter queue for ${topic}`);
-      await queue.close();
-    }
-
     // Close Redis connection
     this.redisConnection.disconnect();
   }
 }
+
 export default RedisRunner;

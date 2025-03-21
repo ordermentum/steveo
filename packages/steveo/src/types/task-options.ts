@@ -1,5 +1,5 @@
 import { ReceiveMessageRequest } from '@aws-sdk/client-sqs';
-import { WorkerOptions } from 'bullmq';
+import { DefaultJobOptions } from 'bullmq';
 import { ConsumerTopicConfig } from 'node-rdkafka';
 
 export type Attribute = {
@@ -25,7 +25,7 @@ export type SQSTaskOptions =
       maxReceiveCount?: number;
     };
 
-export type RedisTaskOptions = WorkerOptions;
+export type RedisTaskOptions = DefaultJobOptions;
 
 type BaseTaskOptions = {
   waitToCommit?: boolean;

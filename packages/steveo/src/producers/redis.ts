@@ -41,9 +41,13 @@ class RedisProducer extends BaseProducer implements IProducer {
       const queueOptions: QueueOptions = {
         connection: this.connection,
         defaultJobOptions: {
-          removeOnComplete: false,
-          removeOnFail: false,
+          removeOnComplete: true,
+          removeOnFail: true,
           attempts: 3,
+          backoff: options.backoff || {
+            type: 'exponential',
+            delay: 1000,
+          },
           ...options,
         },
       };
