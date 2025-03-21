@@ -246,6 +246,8 @@ export class JobScheduler implements JobSchedulerInterface {
 
   processing: boolean;
 
+  processingCount: number;
+
   constructor({
     logger,
     databaseUri,
@@ -266,6 +268,7 @@ export class JobScheduler implements JobSchedulerInterface {
     this.heartbeat = new Date().getTime();
     this.timeout = 60 * 15 * 1000;
     this.processing = false;
+    this.processingCount = 0;
 
     this.wrapAllTasksWithTimestampHelper = wrapAllTasksWithTimestampHelper;
     this.maxRestartsOnFailure = maxRestartsOnFailure;
@@ -348,6 +351,8 @@ export class JobScheduler implements JobSchedulerInterface {
     }
 
     this.processing = true;
+    this.processingCount = rows.length;
+
     for (const batch of rows) {
       this.beat();
       const { name, items } = batch;
@@ -369,7 +374,10 @@ export class JobScheduler implements JobSchedulerInterface {
         );
       }
     }
+
     this.processing = false;
+    this.processingCount = 0;
+
     return true;
   };
 
@@ -424,7 +432,10 @@ export class JobScheduler implements JobSchedulerInterface {
    * Terminates the scheduler and waits for any currently executing tasks to complete
    */
   async terminate() {
-    this.logger.info('Terminating scheduler sequelize jobs');
+    this.logger.info(
+      { processing: this.processing, processingCount: this.processingCount },
+      'Terminating scheduler sequelize jobs'
+    );
 
     // Signal to the message processing loop that the scheduler is terminating
     this.exiting = true;
@@ -433,6 +444,11 @@ export class JobScheduler implements JobSchedulerInterface {
 
     // Wait for any currently executing tasks to complete
     await waitForChange(() => this.processing === false);
+
+    this.logger.info(
+      { processing: this.processing, processingCount: this.processingCount },
+      'Finished terminating scheduler sequelize jobs'
+    );
   }
 
   async init() {
