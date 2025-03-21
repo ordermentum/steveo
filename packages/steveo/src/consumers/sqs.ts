@@ -21,6 +21,7 @@ import { getSqsInstance } from '../config/sqs';
 import { IRunner, Pool, SQSConfiguration } from '../common';
 import { Logger } from '../lib/logger';
 import { Steveo } from '..';
+import { TaskOptions } from '../types/task-options';
 
 class SqsRunner extends BaseRunner implements IRunner {
   config: SQSConfiguration;
@@ -104,8 +105,9 @@ class SqsRunner extends BaseRunner implements IRunner {
       this.registry.emit('runner_receive', topic, payload, runnerContext);
 
       const task = this.registry.getTask(topic);
+      const options = (task?.options || {}) as TaskOptions['sqs'];
       const waitToCommit =
-        (task?.options?.waitToCommit || this.config.waitToCommit) ?? false;
+        (options.waitToCommit || this.config.waitToCommit) ?? false;
 
       if (!waitToCommit) {
         await this.deleteMessage(topic, message);
@@ -303,7 +305,8 @@ class SqsRunner extends BaseRunner implements IRunner {
 
   private getTopic(topic: string): string {
     const task = this.registry.getTask(topic);
-    const fifo: boolean = !!task?.options?.fifo;
+    const options = (task?.options || {}) as TaskOptions['sqs'];
+    const fifo: boolean = !!options.fifo;
     return fifo ? `${topic}.fifo` : topic;
   }
 
@@ -321,8 +324,8 @@ class SqsRunner extends BaseRunner implements IRunner {
     queueName: string
   ): Promise<Record<string, string> | null> {
     const task = this.registry.getTask(queueName);
-
-    if (!task?.options?.deadLetterQueue) {
+    const options = (task?.options || {}) as TaskOptions['sqs'];
+    if (!options.deadLetterQueue) {
       return null;
     }
 
@@ -383,7 +386,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     return {
       deadLetterTargetArn: dlQueueArn,
-      maxReceiveCount: (task.options.maxReceiveCount ?? 5).toString(),
+      maxReceiveCount: (options.maxReceiveCount ?? 5).toString(),
     };
   }
 
@@ -397,7 +400,8 @@ class SqsRunner extends BaseRunner implements IRunner {
     };
 
     const task = this.registry.getTask(topic);
-    const isFifoTask: boolean = task?.options?.fifo ?? false;
+    const options = (task?.options ?? {}) as TaskOptions['sqs'];
+    const isFifoTask: boolean = options.fifo ?? false;
     if (isFifoTask) {
       queueName = `${queueName}.fifo`;
       commandAttributes.FifoQueue = 'true';

@@ -9,6 +9,7 @@ import {
 import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
+import { getRedisInstance } from '../config/redis';
 
 class RedisProducer extends BaseProducer implements IProducer {
   config: RedisConfiguration;
@@ -31,9 +32,7 @@ class RedisProducer extends BaseProducer implements IProducer {
     this.logger = logger;
     this.registry = registry;
     this.queues = new Map();
-
-    // Create Redis connection
-    this.connection = new IORedis(config.connectionUrl);
+    this.connection = getRedisInstance(this.config);
   }
 
   async initialize(topic: string, options: RedisMessageRoutingOptions) {

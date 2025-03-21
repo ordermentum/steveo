@@ -9,16 +9,14 @@ export type Attribute = {
 };
 
 export type KafkaTaskOptions =
-  | ConsumerTopicConfig
-  | {
+  | ConsumerTopicConfig & {
       // num_partitions and replication_factor are used for kafka
       replication_factor?: number;
       num_partitions?: number;
     };
 
 export type SQSTaskOptions =
-  | ReceiveMessageRequest
-  | {
+  | Omit<ReceiveMessageRequest, 'QueueUrl'> & {
       attributes?: Attribute[];
       fifo?: boolean;
       deadLetterQueue?: boolean;

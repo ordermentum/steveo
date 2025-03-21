@@ -6,7 +6,8 @@ import { IRunner, RedisConfiguration } from '../common';
 import { getContext } from '../lib/context';
 import { Logger } from '../lib/logger';
 import BaseRunner from './base';
-import { RedisTaskOptions } from '../types/task-options';
+import { TaskOptions } from '../types/task-options';
+import { getRedisInstance } from '../config/redis';
 
 class RedisRunner extends BaseRunner implements IRunner {
   config: RedisConfiguration;
@@ -29,7 +30,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     this.logger = steveo.logger;
 
     // Create Redis connection
-    this.redisConnection = new IORedis(this.config.connectionUrl);
+    this.redisConnection = getRedisInstance(this.config);
 
     this.queues = new Map();
     this.workers = new Map();
@@ -87,23 +88,6 @@ class RedisRunner extends BaseRunner implements IRunner {
     return Promise.resolve();
   }
 
-  async deleteMessage(_topic: string, _messageId: string) {
-    return Promise.resolve();
-  }
-
-  async dequeue(_topic: string) {
-    return Promise.resolve();
-  }
-
-  poll(_topics?: string[]) {
-    // Check for termination
-    if (this.manager.shouldTerminate) {
-      this.logger.debug(`terminating redis`);
-      this.manager.terminate();
-      await this.shutdown();
-    }
-  }
-
   async process(topics?: string[]) {
     const subscriptions = this.getActiveSubsciptions(topics);
 
@@ -125,7 +109,7 @@ class RedisRunner extends BaseRunner implements IRunner {
     if (!task) {
       throw new Error(`Task not found for topic: ${topic}`);
     }
-    const options = task.options as RedisTaskOptions;
+    const options = task.options as TaskOptions['redis'];
     return {
       removeOnComplete: true,
       removeOnFail: false, // Keep failed jobs in the queue for inspection

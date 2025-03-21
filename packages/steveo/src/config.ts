@@ -67,8 +67,7 @@ export const getConfig = (config: Configuration) => {
     parameters.consumerPollInterval = sqsConfig.consumerPollInterval || 1000;
   } else if (parameters.engine === 'redis') {
     const redisConfig = config as RedisConfiguration;
-    parameters.redisHost = redisConfig.redisHost;
-    parameters.redisPort = redisConfig.redisPort;
+    parameters.connectionUrl = redisConfig.connectionUrl;
     parameters.visibilityTimeout = redisConfig.visibilityTimeout || 604800;
     parameters.redisMessageMaxsize = redisConfig.redisMessageMaxsize || 65536;
     parameters.consumerPollInterval = redisConfig.consumerPollInterval || 1000;

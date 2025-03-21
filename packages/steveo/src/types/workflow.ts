@@ -11,7 +11,7 @@ export interface WorkflowPayload {
 /**
  *
  */
-export interface WorkflowOptions extends TaskOptions {
+export type WorkflowOptions = TaskOptions[keyof TaskOptions] & {
   /**
    * Debug ID for this service
    * Will be used to detect cross service workflow message processing too.
@@ -25,4 +25,4 @@ export interface WorkflowOptions extends TaskOptions {
    * diagnostics.
    */
   deleteOnComplete: boolean;
-}
+};

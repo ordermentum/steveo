@@ -235,7 +235,7 @@ describe('SQS Producer', () => {
     });
 
     it('should merge the context object into payload metadata if context given', async () => {
-      const taskOptions: TaskOptions = {};
+      const taskOptions: TaskOptions['sqs'] = {};
       const task: ITask = new Task(
         //@ts-expect-error
         { engine: 'sqs' },
@@ -275,7 +275,7 @@ describe('SQS Producer', () => {
     });
 
     it('should use key as MessageGroupId if task is configured as fifo and key is present', async () => {
-      const taskOptions: TaskOptions = { fifo: true };
+      const taskOptions: TaskOptions['sqs'] = { fifo: true };
       const task: ITask = new Task(
         //@ts-expect-error
         { engine: 'sqs' },
@@ -368,7 +368,7 @@ describe('SQS Producer', () => {
     });
 
     it('should set FIFO queue options if passed to a FIFO queue task', async () => {
-      const taskOptions: TaskOptions = {
+      const taskOptions: TaskOptions['sqs'] = {
         fifo: true
       };
       const task: ITask = new Task(

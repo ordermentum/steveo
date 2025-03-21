@@ -13,6 +13,7 @@ import { Logger } from '../lib/logger';
 import { Steveo } from '..';
 import { Resource } from '../lib/pool';
 import { sleep } from '../lib/utils';
+import { TaskOptions } from '../types/task-options';
 
 class JsonParsingError extends Error {}
 
@@ -327,7 +328,7 @@ class KafkaRunner
 
     const task = this.registry.getTask(topic);
     return new Promise<boolean>((resolve, reject) => {
-      const options = task?.options ?? {};
+      const options = (task?.options ?? {}) as TaskOptions['kafka'];
 
       const partitions =
         options.num_partitions ?? this.config.defaultTopicPartitions ?? 1;

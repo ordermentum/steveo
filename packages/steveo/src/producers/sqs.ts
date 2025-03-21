@@ -20,7 +20,7 @@ import {
 import { consoleLogger, Logger } from '../lib/logger';
 import { createMessageMetadata } from '../lib/context';
 import { BaseProducer } from './base';
-import { Attribute } from '../types/task-options';
+import { Attribute, TaskOptions } from '../types/task-options';
 
 class SqsProducer extends BaseProducer implements IProducer {
   config: SQSConfiguration;
@@ -56,7 +56,8 @@ class SqsProducer extends BaseProducer implements IProducer {
     let queueName = topic;
 
     const task = this.registry.getTask(topic);
-    const fifo: boolean = !!task?.options?.fifo;
+    const options = (task?.options || {}) as TaskOptions['sqs'];
+    const fifo: boolean = !!options.fifo;
 
     const fifoAttributes: {
       FifoQueue?: string;
@@ -127,8 +128,9 @@ class SqsProducer extends BaseProducer implements IProducer {
     queueName: string
   ): Promise<Record<string, string> | null> {
     const task = this.registry.getTask(queueName);
+    const options = (task?.options || {}) as TaskOptions['sqs'];
 
-    if (!task?.options?.deadLetterQueue) {
+    if (!options.deadLetterQueue) {
       return null;
     }
 
@@ -200,7 +202,7 @@ class SqsProducer extends BaseProducer implements IProducer {
 
     return {
       deadLetterTargetArn: dlQueueArn,
-      maxReceiveCount: (task.options.maxReceiveCount ?? 5).toString(),
+      maxReceiveCount: (options.maxReceiveCount ?? 5).toString(),
     };
   }
 
@@ -215,9 +217,10 @@ class SqsProducer extends BaseProducer implements IProducer {
     };
 
     const task = this.registry.getTask(topic);
+    const taskOptions = (task?.options || {}) as TaskOptions['sqs'];
     let attributes: Attribute[] = [] as Attribute[];
     if (task) {
-      attributes = (task.options?.attributes ?? []) as Attribute[];
+      attributes = (taskOptions.attributes ?? []) as Attribute[];
     }
 
     const messageAttributes = {
@@ -234,7 +237,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       };
     }
 
-    const fifo = !!task?.options?.fifo;
+    const fifo = !!taskOptions.fifo;
 
     const sqsTopic = fifo ? `${topic}.fifo` : topic;
 
