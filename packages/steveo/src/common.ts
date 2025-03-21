@@ -228,7 +228,11 @@ export interface ISteveo {
   logger: Logger;
   registry: IRegistry;
   producer: IProducer;
-  task(topic: string, callBack: Callback, opts?: TaskOptions): ITask;
+  task(
+    topic: string,
+    callBack: Callback,
+    opts?: TaskOptions[keyof TaskOptions]
+  ): ITask;
   runner(): IRunner;
   publish: <T extends PayloadT>(
     name: string,
