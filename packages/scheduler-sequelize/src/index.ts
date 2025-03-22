@@ -14,6 +14,7 @@ import initSequelize, { JobModel } from './models/index';
 import { JobSet } from './types';
 import { buildEnqueueJobsQuery } from './enqueue_jobs_query';
 import { MaintenanceScheduler } from './maintenance';
+import { waitForChange } from './utils/wait';
 
 const DEFAULT_LAG = 6; // after 6 minutes, a job is considered laggy
 const DEFAULT_BLOCKED_DURATION = 10; // after 10 minutes, a job is considered blocked
@@ -306,6 +307,12 @@ export class JobScheduler implements JobSchedulerInterface {
       },
     });
 
+  /**
+   * @description Processes a batch of jobs. Will not exit early if the scheduler is terminating,
+   * which is by design to not leave the batch partially processed.
+   * @param rows - The batch of jobs to process
+   * @returns A boolean indicating whether the jobs were processed successfully
+   */
   publishMessages = async (rows: JobSet[]) => {
     if (!rows.length) {
       return false;
@@ -341,6 +348,11 @@ export class JobScheduler implements JobSchedulerInterface {
     this.beat();
 
     try {
+      // If the scheduler is terminating, don't process any more jobs
+      if (this.exiting) {
+        return;
+      }
+
       const jobs = await this.fetchAndEnqueueJobs();
       await this.publishMessages(jobs);
     } catch (e) {
@@ -383,11 +395,20 @@ export class JobScheduler implements JobSchedulerInterface {
     this.maintenanceScheduler?.stop();
   }
 
+  /**
+   * Terminates the scheduler and waits for any currently executing tasks to complete
+   */
   async terminate() {
-    this.logger.info(`terminating`);
+    this.logger.info('Terminating scheduler sequelize jobs');
+
+    // Signal to the message processing loop that the scheduler is terminating
     this.exiting = true;
+
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
     await this.stopMaintenance();
+
+    // Wait for any currently executing tasks to complete
+    await waitForChange(() => this.processing === false);
   }
 
   async init() {
