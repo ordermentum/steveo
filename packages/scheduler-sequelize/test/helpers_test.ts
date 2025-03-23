@@ -1,8 +1,7 @@
 import moment, { Moment } from 'moment-timezone';
 import { expect } from 'chai';
 import sinon, { SinonSandbox, SinonFakeTimers } from 'sinon';
-import { computeNextRun, computeNextRuns, isHealthy, taskRunner } from '../src/helpers';
-import { PublishableTask } from '../src/index'
+import { computeNextRun, computeNextRuns, isHealthy } from '../src/helpers';
 
 describe('helpers', () => {
   let sandbox: SinonSandbox;
@@ -27,58 +26,64 @@ describe('helpers', () => {
     });
 
     it('Calculates the next date correctly with DTSTART rule', () => {
-      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss')
-      const every3Hours =
-        `DTSTART;TZID=UTC:${start}\nRRULE:FREQ=HOURLY;BYMINUTE=0;INTERVAL=3`;
+      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss');
+      const every3Hours = `DTSTART;TZID=UTC:${start}\nRRULE:FREQ=HOURLY;BYMINUTE=0;INTERVAL=3`;
       const nextRun = moment(computeNextRun(every3Hours));
-      const nextDate = moment().tz('Australia/Sydney').add(3, 'hours').minute(0).second(0).millisecond(0);
+      const nextDate = moment()
+        .tz('Australia/Sydney')
+        .add(3, 'hours')
+        .minute(0)
+        .second(0)
+        .millisecond(0);
       expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
     });
 
     it('Calculates the next date correctly with DTSTART at the end', () => {
-      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss')
-      const daily =
-        `FREQ=DAILY;INTERVAL=1;BYMINUTE=0;TZID=UTC;DTSTART=${start}`;
+      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss');
+      const daily = `FREQ=DAILY;INTERVAL=1;BYMINUTE=0;TZID=UTC;DTSTART=${start}`;
       const nextRun = moment(computeNextRun(daily));
-      const nextDate = moment(start).tz('UTC').add(1, 'day').minute(0).second(0).millisecond(0);
+      const nextDate = moment(start)
+        .tz('UTC')
+        .add(1, 'day')
+        .minute(0)
+        .second(0)
+        .millisecond(0);
       expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
     });
 
     // List of recurrence rules to test
     // comparator that returns boolean
-    (
+    for (const [rule, timezone, comparator] of [
       [
-        [
-          'FREQ=HOURLY;INTERVAL=1',
-          'UTC',
-          (m: Moment) => moment().tz('utc').diff(m, 'minutes') === -59,
-        ],
-        [
-          'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;BYHOUR=16;BYMINUTE=40',
-          'Australia/Sydney',
-          (m: Moment) =>
-            m.day() === 1 &&
-            m.hour() === 16 &&
-            m.minute() === 40 &&
-            ['+1100', '+1000'].some(x => x === m.format('ZZ')),
-        ],
-        [
-          'FREQ=WEEKLY;INTERVAL=1;BYDAY=WE;BYHOUR=17;BYMINUTE=40;BYSECOND=0',
-          'Australia/Sydney',
-          (m: Moment) =>
-            m.day() === 3 &&
-            m.hour() === 17 &&
-            m.minute() === 40 &&
-            m.second() === 0 &&
-            ['+1100', '+1000'].some(x => x === m.format('ZZ')),
-        ],
-      ] as [string, string, (m: Moment) => boolean][]
-    ).forEach(([rule, timezone, comparator]) => {
+        'FREQ=HOURLY;INTERVAL=1',
+        'UTC',
+        (m: Moment) => moment().tz('utc').diff(m, 'minutes') === -59,
+      ],
+      [
+        'FREQ=WEEKLY;INTERVAL=1;BYDAY=MO;BYHOUR=16;BYMINUTE=40',
+        'Australia/Sydney',
+        (m: Moment) =>
+          m.day() === 1 &&
+          m.hour() === 16 &&
+          m.minute() === 40 &&
+          ['+1100', '+1000'].some(x => x === m.format('ZZ')),
+      ],
+      [
+        'FREQ=WEEKLY;INTERVAL=1;BYDAY=WE;BYHOUR=17;BYMINUTE=40;BYSECOND=0',
+        'Australia/Sydney',
+        (m: Moment) =>
+          m.day() === 3 &&
+          m.hour() === 17 &&
+          m.minute() === 40 &&
+          m.second() === 0 &&
+          ['+1100', '+1000'].some(x => x === m.format('ZZ')),
+      ],
+    ] as [string, string, (m: Moment) => boolean][]) {
       it(`Calculates the next date for rule ${rule} correctly`, () => {
         expect(comparator(moment(computeNextRun(rule, { timezone })))).to.be
           .true;
       });
-    });
+    }
 
     it('Can handle fortnightly rrule with a set day', () => {
       // set the current date to a thursday
@@ -163,22 +168,30 @@ describe('helpers', () => {
     });
 
     it('Calculates the next dates correctly with DTSTART rule', () => {
-      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss')
-      const every3Hours =
-        `DTSTART;TZID=UTC:${start}\nRRULE:FREQ=HOURLY;BYMINUTE=0;INTERVAL=3`;
+      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss');
+      const every3Hours = `DTSTART;TZID=UTC:${start}\nRRULE:FREQ=HOURLY;BYMINUTE=0;INTERVAL=3`;
       const [nextRuns] = computeNextRuns(every3Hours);
       const nextRun = moment(nextRuns);
-      const nextDate = moment().tz('Australia/Sydney').add(3, 'hours').minute(0).second(0).millisecond(0);
+      const nextDate = moment()
+        .tz('Australia/Sydney')
+        .add(3, 'hours')
+        .minute(0)
+        .second(0)
+        .millisecond(0);
       expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
     });
 
     it('Calculates the next dates correctly with DTSTART at the end', () => {
-      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss')
-      const daily =
-        `FREQ=DAILY;INTERVAL=1;BYMINUTE=0;TZID=UTC;DTSTART=${start}`;
-        const [nextRuns] = computeNextRuns(daily);
-        const nextRun = moment(nextRuns);
-      const nextDate = moment(start).tz('UTC').add(1, 'day').minute(0).second(0).millisecond(0);
+      const start = moment().tz('UTC').second(0).format('YYYYMMDDTHHmmss');
+      const daily = `FREQ=DAILY;INTERVAL=1;BYMINUTE=0;TZID=UTC;DTSTART=${start}`;
+      const [nextRuns] = computeNextRuns(daily);
+      const nextRun = moment(nextRuns);
+      const nextDate = moment(start)
+        .tz('UTC')
+        .add(1, 'day')
+        .minute(0)
+        .second(0)
+        .millisecond(0);
       expect(nextRun.toISOString()).to.equal(nextDate.toISOString());
     });
 
@@ -196,10 +209,10 @@ describe('helpers', () => {
     });
 
     it('Lunartick rule and DTSTART rule should match', () => {
-      const lunartickRecurrence = 'FREQ=DAILY;INTERVAL=1;BYMINUTE=0;BYSECOND=0;';
-      const start = moment().tz('UTC').millisecond(0).format('YYYYMMDDTHHmmss')
-      const rruleRecurrence =
-        `DTSTART;TZID=UTC:${start}\nRRULE:FREQ=DAILY;BYMINUTE=0;BYSECOND=0;INTERVAL=1`;
+      const lunartickRecurrence =
+        'FREQ=DAILY;INTERVAL=1;BYMINUTE=0;BYSECOND=0;';
+      const start = moment().tz('UTC').millisecond(0).format('YYYYMMDDTHHmmss');
+      const rruleRecurrence = `DTSTART;TZID=UTC:${start}\nRRULE:FREQ=DAILY;BYMINUTE=0;BYSECOND=0;INTERVAL=1`;
 
       const lunartickDates = computeNextRuns(lunartickRecurrence, {
         count: 10,
@@ -219,24 +232,6 @@ describe('helpers', () => {
     it('fails', () => {
       expect(isHealthy(moment().subtract(5, 'hours').unix(), 60 * 1000 * 5)).to
         .be.false;
-    });
-  });
-
-  describe('taskRunner Helper', () => {
-    it('should not merge context with data before publishing message to queue', () => {
-      const publishStub = sandbox.stub();
-      const fakeTask: PublishableTask = {
-        publish: publishStub
-      };
-      const wrappedTask = taskRunner(fakeTask);
-      const payload: any = {
-        fake: 'payload',
-      }
-      const context: any = {
-        job: {}
-      }
-      wrappedTask(payload, context)
-      sinon.assert.calledWith(publishStub, payload, context);
     });
   });
 });

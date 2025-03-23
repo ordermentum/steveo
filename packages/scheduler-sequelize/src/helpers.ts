@@ -8,7 +8,6 @@ import {
   DEFAULT_MAX_RESTARTS_ON_FAILURE,
   JobContext,
   JobScheduler,
-  PublishableTask,
 } from './index';
 
 import { Properties } from './types';
@@ -110,15 +109,6 @@ export const computeNextRun = (
   return nextRun;
 };
 
-/**
- * @description Call publish method on Publishable Tasks passing JobContext
- * @param task {SteveoTask}
- * @returns
- */
-export const taskRunner =
-  (task: PublishableTask) => (payload: Properties, context?: JobContext) =>
-    task.publish(payload, context);
-
 const updateStartTask = async (job?: JobInstance | null) => {
   if (!job) {
     return;
@@ -214,12 +204,9 @@ const updateFinishTask = async (job?: JobInstance | null) => {
  */
 export const timestampHelperFactory =
   (jobScheduler: JobScheduler): TimestampHelper =>
-  <T extends { context?: JobContext } = any, R = any>(
-    job: JobModel,
-    task: TaskCallback<T, R>
-  ) =>
+  <T = any, R = any>(job: JobModel, task: TaskCallback<T, R>) =>
   async (args: T, context: JobContext): Promise<any> => {
-    const jobId = args?.context?.job?.id ?? context?.job?.id;
+    const jobId = context.job.id;
 
     if (!jobId) {
       try {
@@ -228,7 +215,7 @@ export const timestampHelperFactory =
         return null;
       }
     }
-    const jobInstance = await job?.findByPk(jobId);
+    const jobInstance = await job.findByPk(jobId);
 
     if (!jobInstance) {
       try {

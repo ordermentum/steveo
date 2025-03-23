@@ -4,7 +4,6 @@ import TypedEmitter from 'typed-emitter';
 import { Job, PrismaClient, Prisma } from '@prisma/client';
 import { Duration } from 'moment-timezone';
 import {
-  taskRunner,
   timestampHelperFactory,
   TimestampHelper,
   isHealthy,
@@ -53,7 +52,7 @@ export interface Events {
 }
 
 export type JobContext = {
-  job?: Job;
+  job: Job;
 };
 
 export type TaskArguments = {
@@ -71,7 +70,7 @@ export type TaskCallback<T, R, C = JobContext> =
   | ((data: T, context: C) => Promise<R>);
 
 export type Tasks = {
-  [name: string]: TaskCallback<any, any> | PublishableTask;
+  [name: string]: TaskCallback<any, any>;
 };
 
 export interface JobSchedulerInterface {
@@ -135,21 +134,6 @@ export interface JobSchedulerInterface {
   tasks: Tasks;
 
   /**
-   * @description Register all tasks with the timestamp helper
-   * Timestamp helper will perform the following:
-   * 1. Adds an accepted at timestamp (as the current timestamp) on the job to signal the job was accepted at this time
-   * 2. Runs the callback (whatever the task is)
-   * 3. When the callback runs successfully without any issues, it calculates the next run at for the job using its ical rrule and adds the following to the job
-   * - queued: false //signalling the job is now over and ready to be picked up at the next run time
-   * - nextRunAt: timestamp //time to pick up the job
-   * - lastFinishedAt: timestamp //when did the job finish
-   * 4. If the callback fails for some reason, it adds a failure to the job and reruns it with a backoff
-   * NOTE - It doesn't wrap publishable callbacks, to wrap publishable callbacks use the exported {timestampHelperFactory}
-   * @default(false)
-   */
-  wrapAllTasksWithTimestampHelper?: boolean;
-
-  /**
    * @description Number of jobs to enqueue at a time
    */
   enqueueLimit?: number;
@@ -200,9 +184,7 @@ export class JobScheduler implements JobSchedulerInterface {
 
   timestampHelper: TimestampHelper;
 
-  wrapAllTasksWithTimestampHelper: boolean = false;
-
-  enqueueLimit: number = 1;
+  enqueueLimit: number;
 
   backOffMs: number = DEFAULT_BACKOFF;
 
@@ -238,8 +220,7 @@ export class JobScheduler implements JobSchedulerInterface {
     blockedInMinutes,
     tasks,
     defaultRunInterval,
-    wrapAllTasksWithTimestampHelper = false,
-    enqueueLimit = 1,
+    enqueueLimit = 4,
     backOffMs = DEFAULT_BACKOFF,
     maxRestartsOnFailure = DEFAULT_MAX_RESTARTS_ON_FAILURE,
     namespace,
@@ -250,7 +231,6 @@ export class JobScheduler implements JobSchedulerInterface {
     this.timeout = 60 * 15 * 1000;
     this.processing = false;
     this.client = client;
-    this.wrapAllTasksWithTimestampHelper = wrapAllTasksWithTimestampHelper;
     this.enqueueLimit = enqueueLimit;
     this.backOffMs = backOffMs;
     this.maxRestartsOnFailure = maxRestartsOnFailure;
@@ -262,7 +242,7 @@ export class JobScheduler implements JobSchedulerInterface {
     this.defaultRunInterval = defaultRunInterval ?? DEFAULT_RUN_INTERVAL;
     this.events = events;
     this.timestampHelper = timestampHelperFactory(this);
-    this.tasks = this.wrapTasks(tasks);
+    this.tasks = tasks;
     this.allJobs = Array.from(
       new Set([
         ...Object.keys(this.tasks),
@@ -278,28 +258,6 @@ export class JobScheduler implements JobSchedulerInterface {
       this.namespace
     );
   }
-
-  /**
-   * @description Wraps the callbacks with the helpers that do the following:
-   * - if a publishable callback, wraps the task with a task runner helper that publishes job data by calling publish on the callback
-   * - if {wrapAllTasksWithTimestampHelper} is true, wraps the task with a timestamp helper {timestampHelperFactory}
-   */
-  wrapTasks = (tasks: Tasks): Tasks =>
-    // eslint-disable-next-line unicorn/no-array-reduce
-    Object.keys(tasks).reduce((acc, taskName) => {
-      const task = tasks[taskName];
-      if ('publish' in task) {
-        if (this.wrapAllTasksWithTimestampHelper) {
-          task.subscribe = this.timestampHelper(this.client, task.subscribe);
-        }
-        acc[taskName] = taskRunner(task);
-        return acc;
-      }
-      acc[taskName] = this.wrapAllTasksWithTimestampHelper
-        ? this.timestampHelper(this.client, task)
-        : task;
-      return acc;
-    }, {} as Tasks);
 
   fetchAndEnqueueJobs = async (): Promise<JobSet[]> =>
     this.client.$queryRaw<JobSet[]>(this.enqueueJobsQuery);
@@ -323,11 +281,8 @@ export class JobScheduler implements JobSchedulerInterface {
       if (task) {
         for (const item of items) {
           try {
-            // @ts-ignore
             await task(item.data, {
-              job: {
-                id: item.id,
-              },
+              job: item,
             });
           } catch (ex) {
             this.logger.error(`action ${name} failed to publish message`, ex);
