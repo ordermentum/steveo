@@ -5751,7 +5751,15 @@ node-preload@^0.2.1:
   dependencies:
     process-on-spawn "^1.0.0"
 
-node-rdkafka@3.3.0, node-rdkafka@^3.2.1:
+node-rdkafka@3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-3.3.1.tgz#415fc6db65c119bab6e3256716e51aa58d8626ba"
+  integrity sha512-dx4vHvt1RkoGsOVqGQBpu72WRx/7+1FyeZMB+f3frQODRlAFnUgFhK+h+dWuL9Majx0FFdgVx8VehOgJT6vGrw==
+  dependencies:
+    bindings "^1.3.1"
+    nan "^2.22.0"
+
+node-rdkafka@^3.2.1:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/node-rdkafka/-/node-rdkafka-3.3.0.tgz#5cd93a880763ab5dc0f946953bbc2691d26f8050"
   integrity sha512-LbeWj2WlyXnl0IKJhBHrU9aPPJ9e+Cxgp14vx6a/L6c1/SdUjN0a6R9KSVh/zl/sfkGYBh2MTa0e2Ya7hZvEHg==
