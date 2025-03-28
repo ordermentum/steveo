@@ -48,7 +48,7 @@ export {
   DummyConfiguration,
 } from './common';
 
-export { Middleware };
+export { Middleware, MiddlewareContext, MiddlewareCallback } from './common';
 
 export class Steveo<E extends Configuration['engine'] = any>
   implements ISteveo
