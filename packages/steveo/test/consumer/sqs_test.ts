@@ -503,7 +503,7 @@ describe('runner/sqs', () => {
 
       await runner.healthCheck();
 
-      expect(getQueueUrlStub.calledOnce).to.be.true;
+      expect(getQueueUrlStub.calledOnce).to.equal(true);
       expect(getQueueUrlStub.args[0][0]).to.deep.equal({
         QueueName: 'fifo-health-topic.fifo',
       });
@@ -522,7 +522,7 @@ describe('runner/sqs', () => {
 
       await runner.healthCheck();
 
-      expect(getQueueUrlStub.calledOnce).to.be.true;
+      expect(getQueueUrlStub.calledOnce).to.equal(true);
       expect(getQueueUrlStub.args[0][0]).to.deep.equal({
         QueueName: 'standard-health-topic',
       });
