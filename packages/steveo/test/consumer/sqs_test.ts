@@ -8,6 +8,91 @@ import Runner from '../../src/consumers/sqs';
 import { build } from '../../src/lib/pool';
 import Registry from '../../src/runtime/registry';
 import { Steveo } from '../../src';
+import {
+  DummyConfiguration,
+  IRegistry,
+  SQSConfiguration,
+} from '../../src/common';
+
+interface MockRegistryOptions {
+  subscribeStub?: sinon.SinonStub;
+  fifo?: boolean;
+  waitToCommit?: boolean;
+  emitStub?: sinon.SinonStub;
+}
+
+function createMockRegistry(
+  sandbox: sinon.SinonSandbox,
+  options: MockRegistryOptions = {}
+): IRegistry {
+  const {
+    subscribeStub = sandbox.stub().resolves({ some: 'success' }),
+    fifo = false,
+    waitToCommit = false,
+    emitStub = sandbox.stub(),
+  } = options;
+
+  const taskOptions: Record<string, unknown> = {};
+
+  if (fifo) {
+    taskOptions.fifo = true;
+  }
+
+  if (waitToCommit) {
+    taskOptions.waitToCommit = true;
+  }
+
+  const task: Record<string, unknown> = {
+    publish: sandbox.stub(),
+    subscribe: subscribeStub,
+  };
+
+  if (Object.keys(taskOptions).length > 0) {
+    task.options = taskOptions;
+  }
+
+  return {
+    registeredTasks: {},
+    items: new Map(),
+    heartbeat: 0,
+    addNewTask: sandbox.stub(),
+    removeTask: sandbox.stub(),
+    getTopics: sandbox.stub().returns([]),
+    getTaskTopics: sandbox.stub().returns([]),
+    getTopic: sandbox.stub().callsFake(name => name),
+    addTopic: sandbox.stub(),
+    getTask: sandbox.stub().returns(task),
+    emit: emitStub,
+    events: {
+      emit: emitStub,
+      on: sandbox.stub(),
+    },
+  };
+}
+
+function createSQSConfig(): SQSConfiguration {
+  return {
+    engine: 'sqs' as const,
+    apiVersion: '2012-11-05',
+    messageRetentionPeriod: '345600', // 4 days
+    receiveMessageWaitTimeSeconds: '20',
+    maxNumberOfMessages: 10,
+    visibilityTimeout: 30,
+    waitTimeSeconds: 20,
+  };
+}
+
+function createSteveoInstance(
+  registry: IRegistry,
+  config: SQSConfiguration | DummyConfiguration = createSQSConfig()
+): Steveo {
+  const log = logger({ level: 'debug' });
+  const steveo = new Steveo(config, log);
+  steveo.registry = registry;
+  steveo.pool = build(registry);
+
+  return steveo;
+}
 
 describe('runner/sqs', () => {
   let runner: Runner;
@@ -28,7 +113,7 @@ describe('runner/sqs', () => {
       registry,
       pool: build(registry),
     };
-    // @ts-ignore
+    // @ts-expect-error - Steveo type doesn't expose registry property
     runner = new Runner(steveo);
   });
 
@@ -43,48 +128,19 @@ describe('runner/sqs', () => {
   });
 
   it('should create queue with fifo suffix if enabled', async () => {
-    const anotherRegistry = {
-      registeredTasks: [],
-      addNewTask: () => {},
-      removeTask: () => {},
-      getTopics: () => [],
-      getTask: () => ({
-        options: {
-          fifo: true,
-        },
-      }),
-      emit: sandbox.stub(),
-      events: {
-        emit: sandbox.stub(),
-      },
-    };
+    // Create a registry with fifo enabled
+    const registry = createMockRegistry(sandbox, { fifo: true });
+    const steveo = createSteveoInstance(registry);
+    const runner = new Runner(steveo);
 
-    const log = logger({ level: 'debug' });
-    const config = {
-      engine: 'sqs' as const,
-      logger: log,
-      registry: anotherRegistry,
-    };
+    // Stub the createQueue method
+    const createQueueStub = sandbox.stub(runner.sqs, 'createQueue').resolves();
 
-    //@ts-expect-error
-    const steveo = new Steveo(config);
-    // @ts-ignore
-    steveo.registry = anotherRegistry;
-    // @ts-ignore
-    steveo.pool = build(anotherRegistry);
+    await runner.createQueue('a-topic');
 
-    const anotherRunner = new Runner(steveo);
+    expect(createQueueStub.called).to.equal(true);
 
-    const createQueueStub = sandbox
-      .stub(anotherRunner.sqs, 'createQueue')
-      // @ts-ignore
-      .returns({ promise: async () => {} });
-
-    await anotherRunner.createQueue('a-topic');
-
-    expect(createQueueStub.called).to.be.true;
-
-    const createQueueArgs: any = createQueueStub.args[0][0];
+    const createQueueArgs = createQueueStub.args[0][0] as { QueueName: string };
     expect(createQueueArgs.QueueName, 'should have fifo suffix').to.eqls(
       'a-topic.fifo'
     );
@@ -92,44 +148,16 @@ describe('runner/sqs', () => {
 
   it('should invoke callback when receives a message on topic', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
-    const anotherRegistry = {
-      registeredTasks: [],
-      addNewTask: () => {},
-      removeTask: () => {},
-      getTopics: () => [],
-      getTask: () => ({
-        publish: () => {},
-        subscribe: subscribeStub,
-      }),
-      emit: sandbox.stub(),
-      events: {
-        emit: sandbox.stub(),
-      },
-    };
+    const registry = createMockRegistry(sandbox, { subscribeStub });
+    const steveo = createSteveoInstance(registry);
+    const runner = new Runner(steveo);
 
-    const log = logger({ level: 'debug' });
-    const config = {
-      engine: 'sqs' as const,
-      logger: log,
-      registry: anotherRegistry,
-    };
-
-    //@ts-expect-error
-    const steveo = new Steveo(config);
-    // @ts-ignore
-    steveo.registry = anotherRegistry;
-    // @ts-ignore
-    steveo.pool = build(anotherRegistry);
-
-    const anotherRunner = new Runner(steveo);
-
-    // @ts-ignore
+    // Stub the deleteMessage method
     const deleteMessageStub = sandbox
-      .stub(anotherRunner.sqs, 'deleteMessage')
-      // @ts-ignore
-      .returns({ promise: async () => {} });
+      .stub(runner.sqs, 'deleteMessage')
+      .resolves();
 
-    await anotherRunner.receive(
+    await runner.receive(
       [
         { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'Hello' }) },
         { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'World' }) },
@@ -146,46 +174,15 @@ describe('runner/sqs', () => {
 
   it('should invoke callback with context if context is present in message body', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
-    const anotherRegistry = {
-      registeredTasks: [],
-      addNewTask: () => {},
-      removeTask: () => {},
-      getTopics: () => [],
-      getTask: () => ({
-        publish: () => {},
-        subscribe: subscribeStub,
-      }),
-      emit: sandbox.stub(),
-      events: {
-        emit: sandbox.stub(),
-      },
-    };
+    const registry = createMockRegistry(sandbox, { subscribeStub });
+    const steveo = createSteveoInstance(registry);
+    const runner = new Runner(steveo);
 
-    const log = logger({ level: 'debug' });
-    const config = {
-      engine: 'sqs' as const,
-      logger: log,
-      registry: anotherRegistry,
-    };
-
-    //@ts-expect-error
-    const steveo = new Steveo(config);
-    // @ts-ignore
-    steveo.registry = anotherRegistry;
-    // @ts-ignore
-    steveo.pool = build(anotherRegistry);
-
-    const anotherRunner = new Runner(steveo);
-
-    // @ts-ignore
-    sandbox
-      .stub(anotherRunner.sqs, 'deleteMessage')
-      // @ts-ignore
-      .returns({ promise: async () => {} });
+    sandbox.stub(runner.sqs, 'deleteMessage').resolves();
 
     const inputContext = { contextKey: 'contextValue' };
     const messageBody = { data: 'Hello', _meta: inputContext };
-    await anotherRunner.receive(
+    await runner.receive(
       [
         {
           ReceiptHandle: v4(),
@@ -205,47 +202,19 @@ describe('runner/sqs', () => {
 
   it('should delete message if waitToCommit is true after processing', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
-    const anotherRegistry = {
-      registeredTasks: [],
-      addNewTask: () => {},
-      removeTask: () => {},
-      getTopics: () => [],
-      getTask: () => ({
-        publish: () => {},
-        subscribe: subscribeStub,
-        options: {
-          waitToCommit: true,
-        },
-      }),
-      emit: sandbox.stub(),
-      events: {
-        emit: sandbox.stub(),
-      },
-    };
+    const registry = createMockRegistry(sandbox, {
+      subscribeStub,
+      waitToCommit: true,
+    });
+    const steveo = createSteveoInstance(registry);
+    const runner = new Runner(steveo);
 
-    const log = logger({ level: 'debug' });
-    const config = {
-      engine: 'sqs' as const,
-      logger: log,
-      registry: anotherRegistry,
-    };
-
-    //@ts-expect-error
-    const steveo = new Steveo(config);
-    // @ts-ignore
-    steveo.registry = anotherRegistry;
-    // @ts-ignore
-    steveo.pool = build(anotherRegistry);
-
-    const anotherRunner = new Runner(steveo);
-
-    // @ts-ignore
+    // Stub the deleteMessage method
     const deleteMessageStub = sandbox
-      .stub(anotherRunner.sqs, 'deleteMessage')
-      // @ts-ignore
-      .returns({ promise: async () => {} });
+      .stub(runner.sqs, 'deleteMessage')
+      .resolves();
 
-    await anotherRunner.receive(
+    await runner.receive(
       [
         { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'Hello' }) },
         { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'World' }) },
@@ -262,54 +231,26 @@ describe('runner/sqs', () => {
 
   it('should delete message using the FIFO QueueUrl if enabled in task', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
-    const anotherRegistry = {
-      registeredTasks: [],
-      addNewTask: () => {},
-      removeTask: () => {},
-      getTopics: () => [],
-      getTaskTopics: () => [],
-      getTask: () => ({
-        publish: () => {},
-        subscribe: subscribeStub,
-        options: {
-          fifo: true,
-        },
-      }),
-      emit: sandbox.stub(),
-      events: {
-        emit: sandbox.stub(),
-      },
-    };
+    const registry = createMockRegistry(sandbox, {
+      subscribeStub,
+      fifo: true,
+    });
+    const steveo = createSteveoInstance(registry);
+    const runner = new Runner(steveo);
 
-    const log = logger({ level: 'debug' });
-    const config = {
-      engine: 'sqs' as const,
-      logger: log,
-      registry: anotherRegistry,
-    };
-
-    //@ts-expect-error
-    const steveo = new Steveo(config);
-    // @ts-ignore
-    steveo.registry = anotherRegistry;
-    // @ts-ignore
-    steveo.pool = build(anotherRegistry);
-
-    const anotherRunner = new Runner(steveo);
-
-    // @ts-ignore
+    // Stub the deleteMessage method
     const deleteMessageStub = sandbox
-      .stub(anotherRunner.sqs, 'deleteMessage')
+      .stub(runner.sqs, 'deleteMessage')
       .resolves({});
 
     const randomId = randomUUID();
-    sandbox.stub(anotherRunner.sqs, 'getQueueUrl').resolves({
+    sandbox.stub(runner.sqs, 'getQueueUrl').resolves({
       QueueUrl: `https://ap-southeast2.aws.com/${randomId}/a-topic.fifo`,
     });
 
-    const url: string = await anotherRunner.getQueueUrl('a-topic');
+    const url: string = await runner.getQueueUrl('a-topic');
 
-    await anotherRunner.receive(
+    await runner.receive(
       [
         { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'Hello' }) },
         { ReceiptHandle: v4(), Body: JSON.stringify({ data: 'World' }) },
@@ -327,213 +268,155 @@ describe('runner/sqs', () => {
 
   it('get all urls for queues', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
-    const anotherRegistry = {
-      getTask: () => ({
-        publish: () => {},
-        subscribe: subscribeStub,
-      }),
-      emit: sandbox.stub(),
-      events: {
-        emit: sandbox.stub(),
-      },
-    };
+    const registry = createMockRegistry(sandbox, { subscribeStub });
 
+    // Use a different config for this test
     const config = {
       engine: 'dummy' as const,
     };
+    const steveo = createSteveoInstance(registry, config);
+    const runner = new Runner(steveo);
 
-    const steveo = new Steveo(config);
-    // @ts-ignore
-    steveo.registry = anotherRegistry;
-
-    const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
-      .stub(anotherRunner.sqs, 'getQueueUrl')
+      .stub(runner.sqs, 'getQueueUrl')
       .resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
 
-    expect(anotherRunner.sqsUrls).to.deep.equal({});
-    await anotherRunner.getQueueUrl('test');
-    expect(anotherRunner.sqsUrls).to.deep.equal({
+    expect(runner.sqsUrls).to.deep.equal({});
+    await runner.getQueueUrl('test');
+    expect(runner.sqsUrls).to.deep.equal({
       test: 'https://ap-southeast2.aws.com',
     });
-    await anotherRunner.getQueueUrl('test');
+    await runner.getQueueUrl('test');
     expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
   });
 
   it('continues to work if queue does not exist', async () => {
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
-    const anotherRegistry = {
-      getTask: () => ({
-        publish: () => {},
-        subscribe: subscribeStub,
-      }),
-      emit: sandbox.stub(),
-      events: {
-        emit: sandbox.stub(),
-      },
-    };
+    const registry = createMockRegistry(sandbox, { subscribeStub });
 
+    // Use a different config for this test
     const config = {
       engine: 'dummy' as const,
     };
+    const steveo = createSteveoInstance(registry, config);
+    const runner = new Runner(steveo);
 
-    const steveo = new Steveo(config);
-    // @ts-ignore
-    steveo.registry = anotherRegistry;
-
-    const anotherRunner = new Runner(steveo);
     const getQueueUrlAsyncStub = sandbox
-      .stub(anotherRunner.sqs, 'getQueueUrl')
+      .stub(runner.sqs, 'getQueueUrl')
       .rejects(new Error());
 
-    expect(anotherRunner.sqsUrls).to.deep.equal({});
-    await anotherRunner.getQueueUrl('test');
-    expect(anotherRunner.sqsUrls).to.deep.equal({});
-    await anotherRunner.getQueueUrl('test');
+    expect(runner.sqsUrls).to.deep.equal({});
+    await runner.getQueueUrl('test');
+    expect(runner.sqsUrls).to.deep.equal({});
+    await runner.getQueueUrl('test');
     expect(getQueueUrlAsyncStub.callCount).to.equal(2);
   });
 
   describe('process', () => {
     it('terminates', async () => {
       const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+      const registry = createMockRegistry(sandbox, {
+        subscribeStub,
+      });
 
-      const anotherRegistry = {
-        getTask: () => ({
-          publish: () => {},
-          subscribe: subscribeStub,
-        }),
-        getTopics: () => ['test'],
-        getTaskTopics: () => ['test'],
-        emit: sandbox.stub(),
-        events: {
-          emit: sandbox.stub(),
-        },
-      };
+      // Override getTopics and getTaskTopics for this test
+      registry.getTopics = sandbox.stub().returns(['test']);
+      registry.getTaskTopics = sandbox.stub().returns(['test']);
 
+      // Use a different config for this test
       const config = {
         engine: 'dummy' as const,
       };
+      const steveo = createSteveoInstance(registry, config);
+      const runner = new Runner(steveo);
 
-      const steveo = new Steveo(config);
-      // @ts-ignore
-      steveo.registry = anotherRegistry;
-      const anotherRunner = new Runner(steveo);
-      anotherRunner.state = 'terminating';
-      await anotherRunner.process();
-      expect(anotherRunner.state).to.equal('terminated');
+      runner.state = 'terminating';
+      await runner.process();
+      expect(runner.state).to.equal('terminated');
     });
 
     it('paused', async () => {
       const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+      const registry = createMockRegistry(sandbox, {
+        subscribeStub,
+      });
 
-      const anotherRegistry = {
-        getTask: () => ({
-          publish: () => {},
-          subscribe: subscribeStub,
-        }),
-        getTopics: () => ['test'],
-        getTaskTopics: () => ['test'],
-        emit: sandbox.stub(),
-        events: {
-          emit: sandbox.stub(),
-        },
-      };
+      // Override getTopics and getTaskTopics for this test
+      registry.getTopics = sandbox.stub().returns(['test']);
+      registry.getTaskTopics = sandbox.stub().returns(['test']);
 
+      // Use a different config for this test
       const config = {
         engine: 'dummy' as const,
       };
-
-      const steveo = new Steveo(config);
-      // @ts-ignore
-      steveo.registry = anotherRegistry;
-      // @ts-ignore
-      const anotherRunner = new Runner(steveo);
+      const steveo = createSteveoInstance(registry, config);
+      const runner = new Runner(steveo);
 
       const getQueueUrlAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'getQueueUrl')
+        .stub(runner.sqs, 'getQueueUrl')
         .resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
 
       const receiveMessageAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'receiveMessage')
+        .stub(runner.sqs, 'receiveMessage')
         .resolves([]);
 
-      anotherRunner.state = 'paused';
-      await anotherRunner.process();
+      runner.state = 'paused';
+      await runner.process();
       expect(getQueueUrlAsyncStub.calledOnce).to.equal(false);
       expect(receiveMessageAsyncStub.calledOnce).to.equal(false);
     });
 
     it('processes a message', async () => {
       const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+      const registry = createMockRegistry(sandbox, {
+        subscribeStub,
+      });
 
-      const anotherRegistry = {
-        getTask: () => ({
-          publish: () => {},
-          subscribe: subscribeStub,
-        }),
-        getTopics: () => ['test'],
-        getTaskTopics: () => ['test'],
-        emit: sandbox.stub(),
-        events: {
-          emit: sandbox.stub(),
-        },
-      };
+      // Override getTopics and getTaskTopics for this test
+      registry.getTopics = sandbox.stub().returns(['test']);
+      registry.getTaskTopics = sandbox.stub().returns(['test']);
 
+      // Use a different config for this test
       const config = {
         engine: 'dummy' as const,
       };
-
-      const steveo = new Steveo(config);
-      // @ts-ignore
-      steveo.registry = anotherRegistry;
-
-      const anotherRunner = new Runner(steveo);
+      const steveo = createSteveoInstance(registry, config);
+      const runner = new Runner(steveo);
 
       const getQueueUrlAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'getQueueUrl')
+        .stub(runner.sqs, 'getQueueUrl')
         .resolves({ QueueUrl: 'https://ap-southeast2.aws.com' });
 
       const receiveMessageAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'receiveMessage')
+        .stub(runner.sqs, 'receiveMessage')
         .resolves([]);
 
-      await anotherRunner.process();
+      await runner.process();
       expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
       expect(receiveMessageAsyncStub.calledOnce).to.equal(true);
     });
 
     it('processes a message from a FIFO queue', async () => {
       const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+      const registry = createMockRegistry(sandbox, {
+        subscribeStub,
+        fifo: true,
+      });
 
-      const anotherRegistry = {
-        getTask: () => ({
-          publish: () => {},
-          subscribe: subscribeStub,
-          options: {
-            fifo: true,
-          },
-        }),
-        getTopics: () => ['test'],
-        getTaskTopics: () => ['test'],
-        emit: sandbox.stub(),
-        events: {
-          emit: sandbox.stub(),
-        },
-      };
+      // Override getTopics and getTaskTopics for this test
+      registry.getTopics = sandbox.stub().returns(['test']);
+      registry.getTaskTopics = sandbox.stub().returns(['test']);
 
+      // Use a different config for this test
       const config = {
         engine: 'dummy' as const,
       };
-
-      const steveo = new Steveo(config);
-      // @ts-ignore
-      steveo.registry = anotherRegistry;
-
-      const anotherRunner = new Runner(steveo);
+      const steveo = createSteveoInstance(registry, config);
+      const runner = new Runner(steveo);
 
       const randomId = randomUUID();
       const getQueueUrlAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'getQueueUrl')
+        .stub(runner.sqs, 'getQueueUrl')
         // if are logic is correct, and that it appends .fifo to the plain `test` topic
         //  this would be the argument passed on the getQueueUrl to SQS
         .withArgs({ QueueName: 'test.fifo' })
@@ -542,10 +425,10 @@ describe('runner/sqs', () => {
         });
 
       const receiveMessageAsyncStub = sandbox
-        .stub(anotherRunner.sqs, 'receiveMessage')
+        .stub(runner.sqs, 'receiveMessage')
         .resolves([]);
 
-      await anotherRunner.process();
+      await runner.process();
       expect(getQueueUrlAsyncStub.calledOnce).to.equal(true);
       expect(receiveMessageAsyncStub.calledOnce).to.equal(true);
 
@@ -559,32 +442,23 @@ describe('runner/sqs', () => {
   it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
     const subscribeStub = sandbox.stub().throws({ some: 'error' });
     const emitStub = sandbox.stub();
-    const anotherRegistry = {
-      getTask: () => ({
-        publish: () => {},
-        subscribe: subscribeStub,
-      }),
-      emit: emitStub,
-      events: {
-        emit: emitStub,
-      },
-    };
+    const registry = createMockRegistry(sandbox, {
+      subscribeStub,
+      emitStub,
+    });
+
+    // Use a different config for this test
     const config = {
       engine: 'dummy' as const,
     };
-
-    const steveo = new Steveo(config);
-    // @ts-ignore
-    steveo.registry = anotherRegistry;
-
-    const anotherRunner = new Runner(steveo);
+    const steveo = createSteveoInstance(registry, config);
+    const runner = new Runner(steveo);
 
     const deleteMessageStub = sandbox
-      .stub(anotherRunner.sqs, 'deleteMessage')
-      // @ts-ignore
-      .returns({ promise: async () => {} });
+      .stub(runner.sqs, 'deleteMessage')
+      .resolves();
 
-    await anotherRunner.receive(
+    await runner.receive(
       [
         {
           ReceiptHandle: v4(),
@@ -612,54 +486,83 @@ describe('runner/sqs', () => {
     ).to.equal(true);
   });
 
+  describe('healthCheck', () => {
+    it('should call getQueueUrl with .fifo suffix for FIFO queues', async () => {
+      const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+      const registry = createMockRegistry(sandbox, {
+        subscribeStub,
+        fifo: true,
+      });
+      registry.getTopics = sandbox.stub().returns(['fifo-health-topic']);
+      const steveo = createSteveoInstance(registry);
+      const runner = new Runner(steveo);
+
+      const getQueueUrlStub = sandbox
+        .stub(runner.sqs, 'getQueueUrl')
+        .resolves({});
+
+      await runner.healthCheck();
+
+      expect(getQueueUrlStub.calledOnce).to.be.true;
+      expect(getQueueUrlStub.args[0][0]).to.deep.equal({
+        QueueName: 'fifo-health-topic.fifo',
+      });
+    });
+
+    it('should call getQueueUrl without .fifo suffix for standard queues', async () => {
+      const subscribeStub = sandbox.stub().resolves({ some: 'success' });
+      const registry = createMockRegistry(sandbox, { subscribeStub });
+      registry.getTopics = sandbox.stub().returns(['standard-health-topic']);
+      const steveo = createSteveoInstance(registry);
+      const runner = new Runner(steveo);
+
+      const getQueueUrlStub = sandbox
+        .stub(runner.sqs, 'getQueueUrl')
+        .resolves({});
+
+      await runner.healthCheck();
+
+      expect(getQueueUrlStub.calledOnce).to.be.true;
+      expect(getQueueUrlStub.args[0][0]).to.deep.equal({
+        QueueName: 'standard-health-topic',
+      });
+    });
+
+    it('should throw error if no queues are registered', async () => {
+      const registry = createMockRegistry(sandbox);
+      registry.getTopics = sandbox.stub().returns([]);
+      const steveo = createSteveoInstance(registry);
+      const runner = new Runner(steveo);
+      try {
+        await runner.healthCheck();
+        expect.fail('Expected an error to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(Error);
+        expect((err as Error).message).to.equal('No queues registered');
+      }
+    });
+  });
+
   it('calculates duration of a task run correctly', async () => {
     clock.restore();
     const startMs = Date.now();
     const subscribeStub = sandbox.stub().resolves({ some: 'success' });
-    const anotherRegistry = {
-      registeredTasks: [],
-      addNewTask: () => {},
-      removeTask: () => {},
-      getTopics: () => [],
-      getTask: () => ({
-        publish: () => {},
-        subscribe: subscribeStub,
-      }),
-      emit: sandbox.stub(),
-      events: {
-        emit: sandbox.stub(),
-      },
-    };
+    const registry = createMockRegistry(sandbox, { subscribeStub });
+    const config = createSQSConfig();
+    const steveo = createSteveoInstance(registry, config);
+    const runner = new Runner(steveo);
 
-    const log = logger({ level: 'debug' });
-    const config = {
-      engine: 'sqs' as const,
-      logger: log,
-      registry: anotherRegistry,
-    };
-
-    //@ts-expect-error
-    const steveo = new Steveo(config);
-    // @ts-ignore
-    steveo.registry = anotherRegistry;
-    // @ts-ignore
-    steveo.pool = build(anotherRegistry);
-
-    const anotherRunner = new Runner(steveo);
-
-    // @ts-ignore
-    sandbox
-      .stub(anotherRunner.sqs, 'deleteMessage')
-      // @ts-ignore
-      .returns({ promise: async () => {} });
+    sandbox.stub(runner.sqs, 'deleteMessage').resolves();
 
     const inputContext = { contextKey: 'contextValue', startMs };
     const messageBody = { data: 'Hello', _meta: inputContext };
 
     // Wait a second to avoid flakiness
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => {
+      setTimeout(resolve, 1000);
+    });
 
-    await anotherRunner.receive(
+    await runner.receive(
       [
         {
           ReceiptHandle: v4(),
@@ -672,6 +575,8 @@ describe('runner/sqs', () => {
     // Greater than or equal to 1 second and less than a reasonable 15 seconds, as the test runs in a few milliseconds
     // To catch calculation errors
     // Note: Duration is in milliseconds
-    expect(subscribeStub.args[0][1].duration).to.be.greaterThanOrEqual(1000).lessThan(15000);
+    expect(subscribeStub.args[0][1].duration)
+      .to.be.greaterThanOrEqual(1000)
+      .lessThan(15000);
   });
 });

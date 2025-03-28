@@ -4,6 +4,6 @@
     "@ordermentum/ordermentum/jest"
   ],
   "parserOptions": {
-    "project": "../tsconfig.test.json"
+    "project": "./tsconfig.test.json"
   }
 }
