@@ -284,8 +284,9 @@ class SqsRunner extends BaseRunner implements IRunner {
     if (!item) {
       throw new Error('No queues registered');
     }
+    const topic = this.getTopic(item);
 
-    await this.sqs.getQueueUrl({ QueueName: item });
+    await this.sqs.getQueueUrl({ QueueName: topic });
   };
 
   async getQueueUrl(topic: string) {
