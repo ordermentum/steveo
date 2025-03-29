@@ -420,9 +420,9 @@
   integrity sha512-sXXKG+uL9IrKqViTtao2Ws6dy0znu9sOaP1di/jKGW1M6VssO8vlpXCQcpZ+jisQ1tTFAC5Jo/EOzFbggBagFQ==
 
 "@steveojs/scheduler-prisma@*":
-  version "7.6.0"
-  resolved "https://registry.yarnpkg.com/@steveojs/scheduler-prisma/-/scheduler-prisma-7.6.0.tgz#6e5f68d7adb2c0fa9231c38c029fe5d3b222deba"
-  integrity sha512-ks5g+FXiaj0XGFFBVVOGwriXma9j343L+7udi0WiEJcBJZh+/LD4UFCaH/0sEJ3CI9VNKgDE2xRPQAGRCLbDqQ==
+  version "7.7.0"
+  resolved "https://registry.yarnpkg.com/@steveojs/scheduler-prisma/-/scheduler-prisma-7.7.0.tgz#5df657b248b98b4bdb66d57103ecb4a039aa9e80"
+  integrity sha512-ebVT2+MhD10kY85e97MvJqgM5teLXV3smDmfZyawyC+jisXzfRDfrVekm7pdeByCEgTPH/L3TMXDSAZSD+PbrA==
   dependencies:
     "@prisma/client" "5.7.1"
     bunyan "^1.8.15"
