@@ -1,5 +1,13 @@
 # @steveojs/cloudwatch
 
+## 9.0.0
+
+### Patch Changes
+
+- Updated dependencies [b283e98]
+  - @steveojs/scheduler-sequelize@7.7.0
+  - @steveojs/scheduler-prisma@7.8.0
+
 ## 8.0.0
 
 ### Patch Changes

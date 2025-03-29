@@ -1,5 +1,11 @@
 # steveo
 
+## 8.2.2
+
+### Patch Changes
+
+- bf5de7f: Support FIFO queues when doing health checks in sqs consumers
+
 ## 8.2.1
 
 ### Patch Changes
