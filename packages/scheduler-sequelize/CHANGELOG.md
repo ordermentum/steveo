@@ -1,5 +1,11 @@
 # @steveojs/scheduler-sequelize
 
+## 7.7.0
+
+### Minor Changes
+
+- b283e98: Update terminating log output
+
 ## 7.6.0
 
 ### Minor Changes
