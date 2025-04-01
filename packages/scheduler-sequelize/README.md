@@ -1,5 +1,11 @@
 # steveo-scheduler-sequelize
 
+⚠️ **DEPRECATION NOTICE** ⚠️
+
+This package is deprecated and no longer actively maintained. Users are strongly recommended to migrate to the consolidated `@ordermentum/scheduler` package.
+
+---
+
 A scheduler provider for [steveo](https://github.com/ordermentum/steveo) library.
 
 - Computes next run of a schedule
