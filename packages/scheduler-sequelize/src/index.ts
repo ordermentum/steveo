@@ -190,7 +190,7 @@ export interface JobSchedulerInterface {
     "priority","1","NO","integer"
  */
 /**
- * @deprecated Use @ordermentum/scheduler instead. See https://github.com/ordermentum/libs/tree/main/packages/scheduler
+ * @deprecated Use @ordermentum/scheduler instead.
  */
 export class JobScheduler implements JobSchedulerInterface {
   logger: Logger;
