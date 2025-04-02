@@ -1,3 +1,9 @@
+⚠️ **DEPRECATION NOTICE**
+
+> **This package is deprecated and no longer actively maintained.**
+> 
+> Users are strongly recommended to migrate to the consolidated `@ordermentum/scheduler` package.
+
 # steveo-scheduler-prisma
 
 A scheduler provider for [steveo](https://github.com/ordermentum/steveo) library.
@@ -32,4 +38,3 @@ Version 7.1.0
     #### Usage
     ```
     computeNextRuns(interval, { timezone: 'Australia/Sydney', startDate: moment().toISOString(), count: 5 })
-    ```

@@ -196,6 +196,9 @@ export interface JobSchedulerInterface {
     "accepted_at",,"YES","timestamp with time zone"
     "priority","1","NO","integer"
  */
+/**
+ * @deprecated Use @ordermentum/scheduler instead.
+ */
 export class JobScheduler implements JobSchedulerInterface {
   logger: Logger;
 
