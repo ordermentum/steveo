@@ -15,7 +15,7 @@ services:
     depends_on:
       - zookeeper
   zookeeper:
-    image: 'bitnami/zookeeper:3.7.0'
+    image: 'bitnami/zookeeper:3.9.3'
     ports:
       - '2181:2181'
     environment:
