@@ -1,0 +1,39 @@
+{
+  "name": "@steveojs/kms",
+  "version": "7.1.3",
+  "main": "lib/index.js",
+  "repository": "git@github.com:ordermentum/steveo.git",
+  "license": "Apache-2.0",
+  "author": "Ordermentum <engineering@ordermentum.com>",
+  "scripts": {
+    "build": "yarn run tsc",
+    "test": "NODE_ENV=test nyc yarn spec",
+    "spec": "tsc && yarn mocha",
+    "lint": "yarn eslint 'src/**/*.{ts,js}'",
+    "lint:test": "yarn eslint 'test/**/*.{ts,js}'",
+    "autotest": "yarn run mocha --watch",
+    "prepublish": "yarn run build",
+    "typecheck": "yarn run tsc --noEmit"
+  },
+  "files": [
+    "lib"
+  ],
+  "devDependencies": {
+    "@ordermentum/eslint-config-ordermentum": "^2.3.3",
+    "@types/chai": "^4.3.11",
+    "chai": "4.4.1",
+    "mocha": "^10.2.0",
+    "nyc": "^15.1.0",
+    "prettier": "2.8.8",
+    "source-map-support": "0.5.21",
+    "steveo": "*",
+    "ts-node": "10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "aws-sdk": "2.1692.0"
+  },
+  "peerDependencies": {
+    "steveo": "*"
+  }
+}
