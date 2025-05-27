@@ -51,8 +51,7 @@ export {
 export { Middleware };
 
 export class Steveo<E extends Configuration['engine'] = any>
-  implements ISteveo
-{
+  implements ISteveo {
   config: KafkaConfiguration | RedisConfiguration | SQSConfiguration;
 
   logger: Logger;
@@ -270,7 +269,7 @@ export class Steveo<E extends Configuration['engine'] = any>
       topic => !!this.registry.getTask(topic)
     );
     this.logger.info(
-      { topics:topicsWithRegisteredTasks },
+      { topics: topicsWithRegisteredTasks },
       'Starting Steveo Runner'
     );
     runner.process(topicsWithRegisteredTasks);
@@ -290,10 +289,10 @@ export class Steveo<E extends Configuration['engine'] = any>
 
 export default <
   T extends
-    | KafkaConfiguration
-    | RedisConfiguration
-    | SQSConfiguration
-    | DummyConfiguration
+  | KafkaConfiguration
+  | RedisConfiguration
+  | SQSConfiguration
+  | DummyConfiguration
 >(
   config: T,
   logger: Logger,
