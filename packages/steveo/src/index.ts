@@ -51,7 +51,8 @@ export {
 export { Middleware };
 
 export class Steveo<E extends Configuration['engine'] = any>
-  implements ISteveo {
+  implements ISteveo
+{
   config: KafkaConfiguration | RedisConfiguration | SQSConfiguration;
 
   logger: Logger;
