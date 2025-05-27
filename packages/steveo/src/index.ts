@@ -269,7 +269,10 @@ export class Steveo<E extends Configuration['engine'] = any>
     const topicsWithRegisteredTasks = topics.filter(
       topic => !!this.registry.getTask(topic)
     );
-
+    this.logger.info(
+      { topics: topicsWithRegisteredTasks },
+      'Starting Steveo Runner'
+    );
     runner.process(topicsWithRegisteredTasks);
   }
 
