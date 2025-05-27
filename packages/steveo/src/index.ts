@@ -289,10 +289,10 @@ export class Steveo<E extends Configuration['engine'] = any>
 
 export default <
   T extends
-  | KafkaConfiguration
-  | RedisConfiguration
-  | SQSConfiguration
-  | DummyConfiguration
+    | KafkaConfiguration
+    | RedisConfiguration
+    | SQSConfiguration
+    | DummyConfiguration
 >(
   config: T,
   logger: Logger,
