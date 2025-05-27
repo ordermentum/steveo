@@ -1,5 +1,11 @@
 # steveo
 
+## 8.2.3
+
+### Patch Changes
+
+- fcc2a47: added log line when starting runner
+
 ## 8.2.2
 
 ### Patch Changes
