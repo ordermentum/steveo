@@ -270,12 +270,13 @@ export class Steveo<E extends Configuration['engine'] = any>
       topic => !!this.registry.getTask(topic)
     );
     this.logger.info(
-      { 
-        topics: topicsWithRegisteredTasks, 
+      {
+        topics: topicsWithRegisteredTasks,
         workerConfig: this.config.workerConfig,
         ...(this.config.engine === 'sqs' && {
-          maxNumberOfMessages: (this.config as SQSConfiguration).maxNumberOfMessages
-        })
+          maxNumberOfMessages: (this.config as SQSConfiguration)
+            .maxNumberOfMessages,
+        }),
       },
       'Starting Steveo Runner'
     );

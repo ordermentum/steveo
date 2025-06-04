@@ -134,12 +134,10 @@ class SqsRunner extends BaseRunner implements IRunner {
         await this.deleteMessage(topic, message);
       }
 
-      this.registry.emit(
-        'runner_complete',
-        topic,
-        payload,
-        { ...getContext(payload), processingMs: Date.now() - startTime }
-      );
+      this.registry.emit('runner_complete', topic, payload, {
+        ...getContext(payload),
+        processingMs: Date.now() - startTime,
+      });
     } catch (error) {
       logger.error(
         {
@@ -201,21 +199,22 @@ class SqsRunner extends BaseRunner implements IRunner {
   }
 
   private poll(topics?: string[], wasWorkDone: boolean = false) {
-    this.logger.debug(`looping ${this.manager.state} (work done: ${wasWorkDone})`);
+    this.logger.debug(
+      `looping ${this.manager.state} (work done: ${wasWorkDone})`
+    );
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
     if (this.manager.shouldTerminate) {
       this.manager.terminate();
       this.logger.debug(`terminating sqs consumer ${this.state}`);
       return;
     }
-    
+
     // If work was done, poll again almost immediately (small delay for safety)
-    const interval = wasWorkDone ? 10 : (this.config.consumerPollInterval ?? 1000);
-    
-    this.currentTimeout = setTimeout(
-      this.process.bind(this, topics),
-      interval
-    );
+    const interval = wasWorkDone
+      ? 10
+      : this.config.consumerPollInterval ?? 1000;
+
+    this.currentTimeout = setTimeout(this.process.bind(this, topics), interval);
   }
 
   async process(topics?: string[]): Promise<void> {
