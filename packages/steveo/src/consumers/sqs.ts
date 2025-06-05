@@ -100,6 +100,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     try {
       const runnerContext = getContext(payload);
+      const startTime = Date.now();
 
       this.registry.emit('runner_receive', topic, payload, runnerContext);
 
@@ -133,12 +134,10 @@ class SqsRunner extends BaseRunner implements IRunner {
         await this.deleteMessage(topic, message);
       }
 
-      this.registry.emit(
-        'runner_complete',
-        topic,
-        payload,
-        getContext(payload)
-      );
+      this.registry.emit('runner_complete', topic, payload, {
+        ...getContext(payload),
+        processingMs: Date.now() - startTime,
+      });
     } catch (error) {
       logger.error(
         {
@@ -199,24 +198,29 @@ class SqsRunner extends BaseRunner implements IRunner {
     return data?.Messages;
   }
 
-  private poll(topics?: string[]) {
-    this.logger.debug(`looping ${this.manager.state}`);
+  private poll(topics?: string[], wasWorkDone: boolean = false) {
+    this.logger.debug(
+      `looping ${this.manager.state} (work done: ${wasWorkDone})`
+    );
     if (this.currentTimeout) clearTimeout(this.currentTimeout);
     if (this.manager.shouldTerminate) {
       this.manager.terminate();
       this.logger.debug(`terminating sqs consumer ${this.state}`);
       return;
     }
-    this.currentTimeout = setTimeout(
-      this.process.bind(this, topics),
-      this.config.consumerPollInterval ?? 1000
-    );
+
+    // If work was done, poll again almost immediately (small delay for safety)
+    const interval = wasWorkDone
+      ? 10
+      : this.config.consumerPollInterval ?? 1000;
+
+    this.currentTimeout = setTimeout(this.process.bind(this, topics), interval);
   }
 
   async process(topics?: string[]): Promise<void> {
     if (this.state === 'paused') {
       this.logger.debug(`paused processing`);
-      this.poll(topics);
+      this.poll(topics, false);
       return;
     }
 
@@ -225,7 +229,7 @@ class SqsRunner extends BaseRunner implements IRunner {
      * do not process any more messages
      */
     if (this.manager.shouldTerminate) {
-      this.poll(topics);
+      this.poll(topics, false);
       return;
     }
 
@@ -235,6 +239,8 @@ class SqsRunner extends BaseRunner implements IRunner {
         this.manager.state
       }) (${topics ? topics.join(',') : 'all'})`
     );
+
+    let messagesProcessed = false;
 
     await bluebird.map(
       subscriptions,
@@ -259,6 +265,9 @@ class SqsRunner extends BaseRunner implements IRunner {
 
           try {
             await this.receive(messages, topic);
+            if (messages.length > 0) {
+              messagesProcessed = true;
+            }
           } catch (ex) {
             this.logger.error('Error while invoking receive', {
               error: ex,
@@ -273,7 +282,7 @@ class SqsRunner extends BaseRunner implements IRunner {
       { concurrency: this.concurrency }
     );
 
-    this.poll(topics);
+    this.poll(topics, messagesProcessed);
   }
 
   healthCheck = async function () {
