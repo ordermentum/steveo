@@ -1,5 +1,11 @@
 # steveo
 
+## 8.3.0
+
+### Minor Changes
+
+- b90e293: Poll Interval is reduced after a run that actually picked up tasks
+
 ## 8.2.3
 
 ### Patch Changes
