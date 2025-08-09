@@ -38,7 +38,7 @@
   "dependencies": {
     "bunyan": "^1.8.15",
     "cron-parser": "^3.5.0",
-    "moment-timezone": "^0.5.33",
+    "moment-timezone": "^0.6.0",
     "pg": "^8.6.0",
     "rrule-rust": "^1.2.0",
     "sequelize": "^6.6.2",
