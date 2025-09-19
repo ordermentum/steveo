@@ -6,7 +6,7 @@
     "doc": "docs"
   },
   "dependencies": {
-    "debug": "4.4.1",
+    "debug": "4.4.3",
     "mocha": "10.2.0",
     "sinon": "^15.2.0",
     "ts-node": "10.9.2"
