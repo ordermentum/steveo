@@ -3728,11 +3728,11 @@ eslint-config-prettier@^9.0.0:
   integrity sha512-iI1f+D2ViGn+uvv5HuHVUamg8ll4tN+JRHGc6IJi4TP9Kl976C57fzPXgseXNs8v0iA8aSJpHsTWjDb9QJamGQ==
 
 eslint-config-turbo@^2.4.0:
-  version "2.5.5"
-  resolved "https://registry.yarnpkg.com/eslint-config-turbo/-/eslint-config-turbo-2.5.5.tgz#8c98664920dc9a4582332e27a6c6e20112490c7e"
-  integrity sha512-23lKrCr66HQR62aa94n2dBGUUFz0GzM6N1KwmcREZHxomZ5Ik2rDm00wAz95lOEkhzSt6IaxW00Uz0az/Fcq5Q==
+  version "2.5.6"
+  resolved "https://registry.yarnpkg.com/eslint-config-turbo/-/eslint-config-turbo-2.5.6.tgz#e86003e96d3c9f3d466fc420310c04217edca7a5"
+  integrity sha512-1EV/UqdKE75st9q6y0MCxz7qp2v7RyGvbQsMLSuCz+VH8ScnSfmhd8FcAbqx3BshCy5IluujzMB6T5iCgL3/sA==
   dependencies:
-    eslint-plugin-turbo "2.5.5"
+    eslint-plugin-turbo "2.5.6"
 
 eslint-import-resolver-node@^0.3.9:
   version "0.3.9"
@@ -3865,10 +3865,10 @@ eslint-plugin-tailwindcss@^3.17.5:
     fast-glob "^3.2.5"
     postcss "^8.4.4"
 
-eslint-plugin-turbo@2.5.5:
-  version "2.5.5"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-turbo/-/eslint-plugin-turbo-2.5.5.tgz#f9b08724c663bf634d39d02f179fa5ca2cbe4299"
-  integrity sha512-IlN65X6W7rgK88u5xl1xC+7FIGKA7eyaca0yxZQ9CBNV6keAaqtjZQLw8ZfXdv7T+MzTLYkYOeOHAv8yCRUx4Q==
+eslint-plugin-turbo@2.5.6:
+  version "2.5.6"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-turbo/-/eslint-plugin-turbo-2.5.6.tgz#8cc3417e607629dbfe69842e49a80210c934245b"
+  integrity sha512-KUDE23aP2JV8zbfZ4TeM1HpAXzMM/AYG/bJam7P4AalUxas8Pd/lS/6R3p4uX91qJcH1LwL4h0ED48nDe8KorQ==
   dependencies:
     dotenv "16.0.3"
 
