@@ -242,7 +242,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       MessageAttributes: messageAttributes,
       MessageBody: JSON.stringify({ ...msg, _meta: messageMetadata }),
       QueueUrl: this.sqsUrls[sqsTopic],
-      MessageGroupId: fifo && options.key ? options.key : undefined,
+      MessageGroupId: options.key || undefined,
       MessageDeduplicationId:
         fifo && options.deDuplicationId ? options.deDuplicationId : undefined,
     } as SendMessageCommandInput;

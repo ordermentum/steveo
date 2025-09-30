@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import Producer from '../../src/producers/sqs';
 import Registry from '../../src/runtime/registry';
 import Task from '../../src/runtime/task';
-import {ITask, SQSMessageRoutingOptions} from '../../src/common';
+import { ITask, SQSMessageRoutingOptions } from '../../src/common';
 import { createMessageMetadata } from '../../src/lib/context';
 import { TaskOptions } from '../../src/types/task-options';
 
@@ -77,12 +77,12 @@ describe('SQS Producer', () => {
       const subscribeStub = sandbox.stub().resolves({ some: 'success' });
       const anotherRegistry = {
         registeredTasks: [],
-        addNewTask: () => {},
-        removeTask: () => {},
+        addNewTask: () => { },
+        removeTask: () => { },
         getTopics: () => [],
         getTaskTopics: () => [],
         getTask: () => ({
-          publish: () => {},
+          publish: () => { },
           subscribe: subscribeStub,
           options: {
             deadLetterQueue: true,
@@ -217,7 +217,7 @@ describe('SQS Producer', () => {
 
       const sentAttributes =
         sendMessageStub.getCall(0).args[0].MessageAttributes[
-          attributes[0].name
+        attributes[0].name
         ];
       const sentDataType = sentAttributes.DataType;
       const sentStringValue = sentAttributes.StringValue;
@@ -401,6 +401,84 @@ describe('SQS Producer', () => {
 
       const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
 
+      await producer.send(
+        'test-topic',
+        messagePayload,
+        messageContext
+      );
+      sinon.assert.calledWith(sendMessageStub, expectedPayload);
+    });
+
+    it('should set MessageGroupId on standard queue when key is provided', async () => {
+      const task: ITask = new Task(
+        //@ts-expect-error
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task-standard-with-key',
+        'test-topic',
+        () => undefined,
+        {} // Standard queue (no fifo flag)
+      );
+      registry.addNewTask(task);
+
+      const messagePayload: any = { a: 'payload' };
+      const messageContext: SQSMessageRoutingOptions = { key: 'tenant-123' };
+      const expectedMessageBody = {
+        ...messagePayload,
+        _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
+      };
+
+      const expectedPayload = {
+        MessageAttributes: {
+          Timestamp: { DataType: 'Number', StringValue: clock.now.toString() },
+        },
+        MessageBody: JSON.stringify(expectedMessageBody),
+        QueueUrl: undefined,
+        MessageGroupId: messageContext.key, // Should be set on standard queue
+        MessageDeduplicationId: undefined
+      };
+
+      const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
+      await producer.send(
+        'test-topic',
+        messagePayload,
+        messageContext
+      );
+      sinon.assert.calledWith(sendMessageStub, expectedPayload);
+    });
+
+    it('should not set MessageGroupId when key is not provided', async () => {
+      const task: ITask = new Task(
+        //@ts-expect-error
+        { engine: 'sqs' },
+        registry,
+        producer,
+        'test-task-no-key',
+        'test-topic',
+        () => undefined,
+        {}
+      );
+      registry.addNewTask(task);
+
+      const messagePayload = { a: 'payload' };
+      const messageContext: SQSMessageRoutingOptions = {}; // No key
+      const expectedMessageBody = {
+        ...messagePayload,
+        _meta: { ...createMessageMetadata(messagePayload), ...messageContext },
+      };
+
+      const expectedPayload = {
+        MessageAttributes: {
+          Timestamp: { DataType: 'Number', StringValue: clock.now.toString() },
+        },
+        MessageBody: JSON.stringify(expectedMessageBody),
+        QueueUrl: undefined,
+        MessageGroupId: undefined, // Should be undefined without key
+        MessageDeduplicationId: undefined
+      };
+
+      const sendMessageStub = sandbox.stub(producer.producer, 'sendMessage');
       await producer.send(
         'test-topic',
         messagePayload,

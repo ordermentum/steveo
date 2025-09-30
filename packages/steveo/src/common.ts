@@ -170,16 +170,22 @@ export interface KafkaMessageRoutingOptions {
 }
 
 /**
- * @description SQS FIFO message routing options
+ * @description SQS message routing options
  */
 export interface SQSMessageRoutingOptions {
   /**
-   * @description Groups messages with the same key.
-   *         See https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html
+   * @description Groups messages with the same key (MessageGroupId).
+   *
+   * Behavior depends on queue type:
+   * - **FIFO queues**: Messages with the same key are processed in strict order, one at a time.
+   * - **Standard queues**: Enables Fair Queue behavior - messages with the same key can be processed
+   *   in parallel while maintaining fair distribution across different keys/tenants.
+   *
+   * See https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html
    */
   key?: string;
   /**
-   * @description The message deduplication ID.
+   * @description The message deduplication ID (FIFO queues only).
    * SQS FIFO engine uses content-based deduplication by default if no message deduplication ID is provided.
    */
   deDuplicationId?: string;
