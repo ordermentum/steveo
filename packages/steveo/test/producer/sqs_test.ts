@@ -260,7 +260,7 @@ describe('SQS Producer', () => {
         },
         MessageBody: JSON.stringify(expectedMessageBody),
         QueueUrl: undefined,
-        MessageGroupId: undefined,
+        MessageGroupId: 'context',
         MessageDeduplicationId: undefined
       };
 
