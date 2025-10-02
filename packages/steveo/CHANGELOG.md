@@ -1,5 +1,11 @@
 # steveo
 
+## 8.4.0
+
+### Minor Changes
+
+- 72ec8c6: Steveo - Add sqs fair queues support
+
 ## 8.3.0
 
 ### Minor Changes
