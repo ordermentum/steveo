@@ -68,7 +68,7 @@
     "@types/newrelic": "9.14.8",
     "@types/node": "20.17.28",
     "@types/rsmq": "0.8.4",
-    "@types/sinon": "10.0.20",
+    "@types/sinon": "17.0.4",
     "@types/uuid": "8.3.4",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
