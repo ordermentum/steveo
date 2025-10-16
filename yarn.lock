@@ -927,6 +927,13 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
+"@datadog/flagging-core@0.1.0-preview.10":
+  version "0.1.0-preview.10"
+  resolved "https://registry.yarnpkg.com/@datadog/flagging-core/-/flagging-core-0.1.0-preview.10.tgz#a581d391955ec6b7963494cf5312f77c52d2e46f"
+  integrity sha512-E1jRY80xqgL9Hie3vGbQUiK8FXijeN+h9DHXourcPgw+F2fiQ3m1sLTNrjrZTOOpKfhJE/lvahssQpMRtQh1TA==
+  dependencies:
+    spark-md5 "^3.0.2"
+
 "@datadog/libdatadog@0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@datadog/libdatadog/-/libdatadog-0.7.0.tgz#81e07d3040c628892db697ccd01ae3c4d2a76315"
@@ -954,10 +961,18 @@
     node-addon-api "^6.1.0"
     node-gyp-build "^3.9.0"
 
-"@datadog/pprof@5.10.0":
-  version "5.10.0"
-  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.10.0.tgz#47e9589c6d9c423470e312e00def06e249672571"
-  integrity sha512-tEMhLeOM78FHC/rTltDd7pQN8WPAUZ1b0BPadYsKWqo/v6jWTbF6xeIMojdJa5yIW2vHjDU4LFJpkFFNacHpQw==
+"@datadog/openfeature-node-server@0.1.0-preview.10":
+  version "0.1.0-preview.10"
+  resolved "https://registry.yarnpkg.com/@datadog/openfeature-node-server/-/openfeature-node-server-0.1.0-preview.10.tgz#9ed827d8d35f09132b65c1cd32a82df31daedd70"
+  integrity sha512-btTKlz80Gn2Xj0m2LR9ZKkoB/Wybu4mFa86wPJv3G1IKU61wgPpvdIILDEwDz+lg5gLjxxeJM50r4tP82bEteQ==
+  dependencies:
+    "@datadog/flagging-core" "0.1.0-preview.10"
+    "@openfeature/server-sdk" "~1.18.0"
+
+"@datadog/pprof@5.11.1":
+  version "5.11.1"
+  resolved "https://registry.yarnpkg.com/@datadog/pprof/-/pprof-5.11.1.tgz#3eea3fb815b2d06111954d66dfaf6197fd874576"
+  integrity sha512-DX3F0v0BVOuP7RUBiu7bDhuGfFfICJRcElB+ZrEykMvkvBXe7FdVXoybYFviLH177hulwYTtW9Rcly7NXGarTw==
   dependencies:
     delay "^5.0.0"
     node-gyp-build "<4.0"
@@ -1207,22 +1222,54 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@opentelemetry/api@1.8.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/api/-/api-1.8.0.tgz#5aa7abb48f23f693068ed2999ae627d2f7d902ec"
-  integrity sha512-I/s6F7yKUDdtMsoBWXJe8Qz40Tui5vsuKCWJEWVL+5q9sSWRzzx6v2KeNsOBEwd94j0eWkpWCH4yB6rZg9Mf0w==
+"@openfeature/server-sdk@~1.18.0":
+  version "1.18.0"
+  resolved "https://registry.yarnpkg.com/@openfeature/server-sdk/-/server-sdk-1.18.0.tgz#5fed5f1d0900b2535878db18a78295bbaebb997b"
+  integrity sha512-uP8nqEGBS58s3iWXx6d8vnJ6ZVt3DACJL4PWADOAuwIS4xXpID91783e9f6zQ0i1ijQpj3yx+3ZuCB2LfQMUMA==
 
-"@opentelemetry/core@^1.14.0":
-  version "1.21.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/core/-/core-1.21.0.tgz#8c16faf16edf861b073c03c9d45977b3f4003ee1"
-  integrity sha512-KP+OIweb3wYoP7qTYL/j5IpOlu52uxBv5M4+QhSmmUfLyTgu1OIS71msK3chFo1D6Y61BIH3wMiMYRCxJCQctA==
+"@opentelemetry/api-logs@<1.0.0":
+  version "0.206.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/api-logs/-/api-logs-0.206.0.tgz#4df1526fed55fe686e69100cbeea0311fa04565d"
+  integrity sha512-yIVDu9jX//nV5wSMLZLdHdb1SKHIMj9k+wQVFtln5Flcgdldz9BkHtavvExQiJqBZg2OpEEJEZmzQazYztdz2A==
   dependencies:
-    "@opentelemetry/semantic-conventions" "1.21.0"
+    "@opentelemetry/api" "^1.3.0"
 
-"@opentelemetry/semantic-conventions@1.21.0":
-  version "1.21.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.21.0.tgz#83f7479c524ab523ac2df702ade30b9724476c72"
-  integrity sha512-lkC8kZYntxVKr7b8xmjCVUgE0a8xgDakPyDo9uSWavXPyYqLgYYGdEd2j8NxihRyb6UwpX3G/hFUF4/9q2V+/g==
+"@opentelemetry/api@>=1.0.0 <1.10.0", "@opentelemetry/api@^1.3.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/api/-/api-1.9.0.tgz#d03eba68273dc0f7509e2a3d5cba21eae10379fe"
+  integrity sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==
+
+"@opentelemetry/core@1.9.1":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/core/-/core-1.9.1.tgz#e343337e1a7bf30e9a6aef3ef659b9b76379762a"
+  integrity sha512-6/qon6tw2I8ZaJnHAQUUn4BqhTbTNRS0WP8/bA0ynaX+Uzp/DDbd0NS0Cq6TMlh8+mrlsyqDE7mO50nmv2Yvlg==
+  dependencies:
+    "@opentelemetry/semantic-conventions" "1.9.1"
+
+"@opentelemetry/core@>=1.14.0 <1.31.0":
+  version "1.30.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/core/-/core-1.30.1.tgz#a0b468bb396358df801881709ea38299fc30ab27"
+  integrity sha512-OOCM2C/QIURhJMuKaekP3TRBxBKxG/TWWA0TL2J6nXUtDnuCtccy49LUJF8xPFXMX+0LMcxFpCo8M9cGY1W6rQ==
+  dependencies:
+    "@opentelemetry/semantic-conventions" "1.28.0"
+
+"@opentelemetry/resources@>=1.0.0 <1.10.0":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/resources/-/resources-1.9.1.tgz#5ad3d80ba968a3a0e56498ce4bc82a6a01f2682f"
+  integrity sha512-VqBGbnAfubI+l+yrtYxeLyOoL358JK57btPMJDd3TCOV3mV5TNBmzvOfmesM4NeTyXuGJByd3XvOHvFezLn3rQ==
+  dependencies:
+    "@opentelemetry/core" "1.9.1"
+    "@opentelemetry/semantic-conventions" "1.9.1"
+
+"@opentelemetry/semantic-conventions@1.28.0":
+  version "1.28.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.28.0.tgz#337fb2bca0453d0726696e745f50064411f646d6"
+  integrity sha512-lp4qAiMTD4sNWW4DbKLBkfiMZ4jbAboJIGOQr5DvciMRI494OapieI9qiODpOt0XBr1LjIDy1xAGAnVs5supTA==
+
+"@opentelemetry/semantic-conventions@1.9.1":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.9.1.tgz#ad3367684a57879392513479e0a436cb2ac46dad"
+  integrity sha512-oPQdbFDmZvjXk5ZDoBGXG8B4tSB/qW5vQunJWQMFUBp7Xe8O1ByPANueJ+Jzg58esEBegyyxZ7LRmfJr7kFcFg==
 
 "@ordermentum/eslint-config-ordermentum@^3.0.1":
   version "3.0.1"
@@ -3282,20 +3329,23 @@ dc-polyfill@^0.1.10:
   integrity sha512-9iSbB8XZ7aIrhUtWI5ulEOJ+IyUN+axquodHK+bZO4r7HfY/xwmo6I4fYYf+aiDom+WMcN/wnzCz+pKvHDDCug==
 
 dd-trace@^5.2.0:
-  version "5.67.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.67.0.tgz#409ba6b2560cb2c4511297162fd775bf05668f59"
-  integrity sha512-tMHk8NYWFNn2t2L2Vj7VWWKIIRArZIjnlzcgon9PNfhOzAi0t+Zt+E4OaGLbGoftDf/S+ZK0o4aHQwsSu3UE3w==
+  version "5.72.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.72.0.tgz#3707a9c783802149904519266f5a49e2491a346d"
+  integrity sha512-3lH4RIJqzpjIvEISkbDBqPB7M4XDwrcj3r4zcF0LXgKYdyzU/Ebo/8uy+0XWaQBqj2kYERDw2lpJVLb0AbzNdw==
   dependencies:
     "@datadog/libdatadog" "0.7.0"
     "@datadog/native-appsec" "10.2.1"
     "@datadog/native-iast-taint-tracking" "4.0.0"
     "@datadog/native-metrics" "3.1.1"
-    "@datadog/pprof" "5.10.0"
+    "@datadog/openfeature-node-server" "0.1.0-preview.10"
+    "@datadog/pprof" "5.11.1"
     "@datadog/sketches-js" "2.1.1"
     "@datadog/wasm-js-rewriter" "4.0.1"
     "@isaacs/ttlcache" "^1.4.1"
-    "@opentelemetry/api" "1.8.0"
-    "@opentelemetry/core" "^1.14.0"
+    "@opentelemetry/api" ">=1.0.0 <1.10.0"
+    "@opentelemetry/api-logs" "<1.0.0"
+    "@opentelemetry/core" ">=1.14.0 <1.31.0"
+    "@opentelemetry/resources" ">=1.0.0 <1.10.0"
     crypto-randomuuid "^1.0.0"
     dc-polyfill "^0.1.10"
     ignore "^7.0.5"
@@ -3303,7 +3353,6 @@ dd-trace@^5.2.0:
     istanbul-lib-coverage "^3.2.2"
     jest-docblock "^29.7.0"
     jsonpath-plus "^10.3.0"
-    koalas "^1.0.2"
     limiter "^1.1.5"
     lodash.sortby "^4.7.0"
     lru-cache "^10.4.3"
@@ -5190,11 +5239,6 @@ keyv@^4.5.3:
   integrity sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==
   dependencies:
     json-buffer "3.0.1"
-
-koalas@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/koalas/-/koalas-1.0.2.tgz#318433f074235db78fae5661a02a8ca53ee295cd"
-  integrity sha512-RYhBbYaTTTHId3l6fnMZc3eGQNW6FVCqMG6AMwA5I1Mafr6AflaXeoi6x3xQuATRotGYRLk6+1ELZH4dstFNOA==
 
 language-subtag-registry@^0.3.20:
   version "0.3.23"
@@ -7095,6 +7139,11 @@ source-map@^0.7.4:
   version "0.7.4"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.4.tgz#a9bbe705c9d8846f4e08ff6765acf0f1b0898656"
   integrity sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==
+
+spark-md5@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/spark-md5/-/spark-md5-3.0.2.tgz#7952c4a30784347abcee73268e473b9c0167e3fc"
+  integrity sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==
 
 spawn-wrap@^2.0.0:
   version "2.0.0"
