@@ -59,16 +59,93 @@ export interface KafkaConfiguration extends Configuration {
   defaultTopicReplicationFactor?: number;
 
   /**
-   * @description Wait for commiting the message? True - wait, False - immediate commit, Default - True
-   */
-  waitToCommit?: boolean;
-  /**
    * @description Consumer/Producer connection ready timeout
    */
   connectionTimeout?: number;
   consumer?: KafkaConsumerConfig;
   producer?: KafkaProducerConfig;
   admin?: GlobalConfig;
+
+  /**
+   * @description Batch processing configuration for improved throughput
+   *
+   * When enabled, the consumer will fetch and process multiple messages at once
+   * instead of processing them one at a time. This significantly improves throughput
+   * by reducing the overhead of individual message handling.
+   *
+   * Example:
+   * ```ts
+   * batchProcessing: {
+   *   enabled: true,
+   *   batchSize: 10  // Process up to 10 messages at a time
+   * }
+   * ```
+   *
+   * How it works:
+   * - The consumer fetches up to `batchSize` messages from Kafka
+   * - Messages in the batch are processed concurrently (controlled by `concurrency` setting)
+   * - The batch offset is committed after all messages are processed
+   * - Failed messages are logged and emitted as events, but do not block the commit
+   * - This prevents infinite reprocessing loops while maintaining forward progress
+   *
+   * Use cases:
+   * - High-throughput scenarios where you can process multiple messages together
+   * - When your handler can benefit from batch operations (e.g., bulk database inserts)
+   * - When message processing overhead is high relative to actual work
+   * - When you prefer throughput over strict error-based retry semantics
+   *
+   * Trade-offs:
+   * - Better throughput but higher memory usage
+   * - Failed messages are skipped (not retried automatically)
+   * - Monitor `runner_failure` events to handle failures externally (e.g., DLQ)
+   * - Increased latency for individual messages (waiting for batch to fill)
+   *
+   * Note: When disabled, batchSize defaults to 1 but still uses batch processing internally
+   */
+  batchProcessing?: {
+    enabled: boolean;
+    batchSize: number;
+  };
+
+  /**
+   * @description Concurrency control configuration
+   *
+   * Controls how many messages can be processed simultaneously. When enabled,
+   * the consumer will process multiple messages in parallel up to the specified limit,
+   * rather than processing them sequentially one at a time.
+   *
+   * Example:
+   * ```ts
+   * concurrency: {
+   *   enabled: true,
+   *   maxConcurrent: 5  // Process up to 5 messages in parallel
+   * }
+   * ```
+   *
+   * How it works:
+   * - Within each batch, up to `maxConcurrent` messages are processed in parallel
+   * - Uses Bluebird.map with concurrency control for efficient parallel processing
+   * - When disabled, all messages in the batch run concurrently without limit
+   * - Offsets are committed after the batch completes, regardless of individual failures
+   *
+   * Use cases:
+   * - I/O-bound operations (database queries, API calls, file operations)
+   * - When message processing involves waiting (network requests, external services)
+   * - When you want to limit resource consumption (connections, memory)
+   * - When you need to respect downstream rate limits
+   *
+   * Trade-offs:
+   * - Better throughput for I/O-bound tasks
+   * - Messages may complete out of order within a batch
+   * - Higher resource usage (memory, connections) compared to sequential processing
+   * - Set `maxConcurrent` based on your system resources and downstream capacity
+   *
+   * Note: Works at the batch level - controls parallelism within each batch
+   */
+  concurrency?: {
+    enabled: boolean;
+    maxConcurrent: number;
+  };
 }
 
 export interface SQSConfiguration extends Configuration {

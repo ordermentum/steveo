@@ -68,7 +68,7 @@ describe('runner/kafka', () => {
       .returns(Promise.resolve({ some: 'success' }));
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
+        publish: () => { },
         subscribe: subscribeStub,
       }),
       emit: sandbox.stub(),
@@ -92,15 +92,17 @@ describe('runner/kafka', () => {
       anotherRunner.consumer,
       'commitMessage'
     );
-    await anotherRunner.receive({
-      value: Buffer.from(
-        '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
-      ),
-      size: 1000,
-      offset: 0,
-      topic: 'a-topic',
-      partition: 1,
-    });
+    await anotherRunner['processBatch']([
+      {
+        value: Buffer.from(
+          '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
+        ),
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1,
+      },
+    ]);
     expect(commitOffsetStub.callCount).to.equal(1);
     expect(subscribeStub.callCount).to.equal(1);
   });
@@ -111,7 +113,7 @@ describe('runner/kafka', () => {
       .returns(Promise.resolve({ some: 'success' }));
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
+        publish: () => { },
         subscribe: subscribeStub,
       }),
       emit: sandbox.stub(),
@@ -140,13 +142,15 @@ describe('runner/kafka', () => {
     const messagePayload: Buffer = Buffer.from(
       JSON.stringify({ ...expectedPayload, _meta: messageContext })
     );
-    await anotherRunner.receive({
-      value: messagePayload,
-      size: 1000,
-      offset: 0,
-      topic: 'a-topic',
-      partition: 1,
-    });
+    await anotherRunner['processBatch']([
+      {
+        value: messagePayload,
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1,
+      },
+    ]);
     const expectedContext: any = {
       duration: 0,
       ...messageContext,
@@ -159,11 +163,11 @@ describe('runner/kafka', () => {
     );
   });
 
-  it('should not commit when the subsribe fails and wait to commit config is true', async () => {
-    const subscribeStub = sinon.stub().rejects();
+  it('should commit even when subscribe fails in batch mode', async () => {
+    const subscribeStub = sinon.stub().rejects(new Error('Subscription failed'));
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
+        publish: () => { },
         subscribe: subscribeStub,
       }),
       emit: sandbox.stub(),
@@ -177,7 +181,6 @@ describe('runner/kafka', () => {
         bootstrapServers: 'kafka:9200',
         engine: 'kafka',
         securityProtocol: 'plaintext',
-        waitToCommit: true,
       },
       registry: anotherRegistry,
       // @ts-ignore
@@ -189,24 +192,27 @@ describe('runner/kafka', () => {
       anotherRunner.consumer,
       'commitMessage'
     );
-    await anotherRunner.receive({
-      value: Buffer.from(
-        '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
-      ),
-      size: 1000,
-      offset: 0,
-      topic: 'a-topic',
-      partition: 1,
-    });
-    expect(commitOffsetStub.callCount).to.equal(0);
+    await anotherRunner['processBatch']([
+      {
+        value: Buffer.from(
+          '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
+        ),
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1,
+      },
+    ]);
+    // In batch mode, we commit even on failures to avoid infinite reprocessing
+    expect(commitOffsetStub.callCount).to.equal(1);
     expect(subscribeStub.callCount).to.equal(1);
   });
 
   it('should invoke capture error when callback throws error on receiving a message on topic', async () => {
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
-        subscribe: sandbox.stub().rejects({ some: 'error' }),
+        publish: () => { },
+        subscribe: sandbox.stub().rejects(new Error('some error')),
       }),
       emit: sandbox.stub(),
       events: {
@@ -225,27 +231,28 @@ describe('runner/kafka', () => {
     };
     // @ts-ignore
     const anotherRunner = new Runner(steveo);
-    const stub = sandbox
-      .stub(anotherRunner.consumer, 'commitMessage')
-      .throws({ some: 'error' });
+    const commitStub = sandbox.stub(anotherRunner.consumer, 'commitMessage');
 
-    await anotherRunner.receive({
-      value: Buffer.from(
-        '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
-      ),
-      size: 1000,
-      offset: 0,
-      topic: 'a-topic',
-      partition: 1,
-    });
-    expect(stub.called).to.be.true;
+    await anotherRunner['processBatch']([
+      {
+        value: Buffer.from(
+          '\x7B\x20\x22\x61\x22\x3A\x20\x22\x31\x32\x33\x22\x20\x7D'
+        ),
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1,
+      },
+    ]);
+    // Even with errors, we still commit in batch mode
+    expect(commitStub.called).to.be.true;
   });
 
   it('should not process a message when the instance in paused mode', async () => {
-    const subscribeStub = sinon.stub().rejects();
+    const subscribeStub = sinon.stub().rejects(new Error('Should not be called'));
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
+        publish: () => { },
         subscribe: subscribeStub,
       }),
       emit: sandbox.stub(),
@@ -259,7 +266,6 @@ describe('runner/kafka', () => {
         bootstrapServers: 'kafka:9200',
         engine: 'kafka',
         securityProtocol: 'plaintext',
-        waitToCommit: true,
       },
       registry: anotherRegistry,
       // @ts-ignore
@@ -297,7 +303,7 @@ describe('runner/kafka', () => {
     const subscribeStub = sinon.stub().rejects();
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
+        publish: () => { },
         subscribe: subscribeStub,
       }),
       emit: sandbox.stub(),
@@ -311,7 +317,6 @@ describe('runner/kafka', () => {
         bootstrapServers: 'kafka:9200',
         engine: 'kafka',
         securityProtocol: 'plaintext',
-        waitToCommit: true,
       },
       registry: anotherRegistry,
       // @ts-ignore
@@ -359,7 +364,7 @@ describe('runner/kafka', () => {
     const subscribeStub = sinon.stub();
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
+        publish: () => { },
         subscribe: subscribeStub,
       }),
       emit: sandbox.stub(),
@@ -376,10 +381,9 @@ describe('runner/kafka', () => {
         bootstrapServers: 'kafka:9200',
         engine: 'kafka',
         securityProtocol: 'plaintext',
-        waitToCommit: true,
         middleware: [
           {
-            publish: () => {},
+            publish: () => { },
             consume: context => {
               receivedContext = context.payload;
             },
@@ -418,7 +422,7 @@ describe('runner/kafka', () => {
       .returns(Promise.resolve({ some: 'success' }));
     const anotherRegistry = {
       getTask: () => ({
-        publish: () => {},
+        publish: () => { },
         subscribe: subscribeStub,
       }),
       emit: sandbox.stub(),
@@ -453,13 +457,15 @@ describe('runner/kafka', () => {
       setTimeout(resolve, 1000);
     });
 
-    await anotherRunner.receive({
-      value: messagePayload,
-      size: 1000,
-      offset: 0,
-      topic: 'a-topic',
-      partition: 1,
-    });
+    await anotherRunner['processBatch']([
+      {
+        value: messagePayload,
+        size: 1000,
+        offset: 0,
+        topic: 'a-topic',
+        partition: 1,
+      },
+    ]);
     sinon.assert.called(commitOffsetStub);
 
     // Greater than or equal to 1 second and less than a reasonable 15 seconds, as the test runs in a few milliseconds
@@ -468,5 +474,63 @@ describe('runner/kafka', () => {
     expect(subscribeStub.args[0][1].duration)
       .to.be.greaterThanOrEqual(1000)
       .lessThan(15000);
+  });
+
+  it('should respect concurrency limits when processing multiple messages', async () => {
+    let concurrentCount = 0;
+    let maxConcurrentSeen = 0;
+
+    const subscribeStub = sinon.stub().callsFake(async () => {
+      concurrentCount++;
+      maxConcurrentSeen = Math.max(maxConcurrentSeen, concurrentCount);
+      concurrentCount--;
+      return { success: true };
+    });
+
+    const anotherRegistry = {
+      getTask: () => ({
+        publish: () => { },
+        subscribe: subscribeStub,
+      }),
+      emit: sandbox.stub(),
+      events: {
+        emit: sandbox.stub(),
+      },
+    };
+
+    const steveo = {
+      config: {
+        bootstrapServers: 'kafka:9200',
+        engine: 'kafka',
+        securityProtocol: 'plaintext',
+        concurrency: {
+          enabled: true,
+          maxConcurrent: 3,
+        },
+        batchProcessing: {
+          enabled: true,
+          batchSize: 10,
+        }
+      },
+      registry: anotherRegistry,
+    };
+    // @ts-expect-error
+    const anotherRunner = new Runner(steveo);
+    sandbox.stub(anotherRunner.consumer, 'commitMessage').resolves();
+
+    const messages = Array.from({ length: 10 }, (_, i) => ({
+      value: Buffer.from(JSON.stringify({ index: i })),
+      offset: 100 + i,
+      topic: 'a-topic',
+      partition: 1,
+      size: 100,
+    }));
+
+    await anotherRunner['processBatch'](messages);
+    // All 10 messages should be processed
+    expect(subscribeStub.callCount).to.equal(10);
+
+    // Max concurrent should not exceed limit of 3
+    expect(maxConcurrentSeen).to.be.at.most(3);
   });
 });

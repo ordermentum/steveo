@@ -4,22 +4,20 @@ import Kafka, {
   KafkaConsumer,
   Message,
 } from 'node-rdkafka';
+import Bluebird from 'bluebird';
 import nullLogger from 'null-logger';
-import { Pool } from 'generic-pool';
 import BaseRunner from './base';
 import { getContext } from '../lib/context';
 import { IRunner, KafkaConfiguration } from '../common';
 import { Logger } from '../lib/logger';
 import { Steveo } from '..';
-import { Resource } from '../lib/pool';
 import { sleep } from '../lib/utils';
 
-class JsonParsingError extends Error {}
+class JsonParsingError extends Error { }
 
 class KafkaRunner
   extends BaseRunner
-  implements IRunner<KafkaConsumer, Message>
-{
+  implements IRunner<KafkaConsumer, Message> {
   config: KafkaConfiguration;
 
   logger: Logger;
@@ -30,12 +28,9 @@ class KafkaRunner
 
   consumerReady: boolean;
 
-  pool: Pool<Resource>;
-
   constructor(steveo: Steveo) {
     super(steveo);
     this.config = steveo.config as KafkaConfiguration;
-    this.pool = steveo.pool;
     this.logger = steveo.logger ?? nullLogger;
     this.consumerReady = false;
     this.consumer = new Kafka.KafkaConsumer(
@@ -99,19 +94,18 @@ class KafkaRunner
     });
   }
 
-  async receive(message: Message) {
+  /**
+   * Required by IRunner interface, but in Kafka it processes a single message without the topic/partition params.
+   * For Kafka, the message object already contains topic and partition information.
+   * This is called internally by processBatch. Concurrency is controlled by Bluebird.map.
+   */
+  async receive(message: Message, _topic?: string, _partition?: number): Promise<void> {
     const { topic } = message;
-    const { waitToCommit } = this.config;
-    let resource: Resource | null = null;
 
     try {
       const payload = this.parseMessagePayload(message);
 
       await this.wrap({ topic, payload }, async c => {
-        this.logger.debug(`waiting for pool ${c.topic}`);
-        resource = await this.pool.acquire();
-        this.logger.debug(`acquired pool`);
-
         const parsed = {
           ...message,
           value: c.payload,
@@ -129,29 +123,13 @@ class KafkaRunner
 
         if (!task) {
           this.logger.error(`Unknown Task ${c.topic}`);
-          this.consumer.commitMessage(message);
           return;
-        }
-
-        if (!waitToCommit) {
-          this.logger.debug(`commit offset ${message.offset}`);
-          this.consumer.commitMessage(message);
         }
 
         this.logger.debug('Start subscribe', c.topic, message);
         const { _meta: _ = {}, ...data } = c.payload;
 
-        /**
-         * We still need the `value` property on the callback payload
-         * to have backwards compatibility when upgrading steveo version
-         * without needing to update every task with the new shape
-         */
         await task.subscribe({ ...data, value: data }, getContext(payload));
-
-        if (waitToCommit) {
-          this.logger.debug({ message }, 'committing message');
-          this.consumer.commitMessage(message);
-        }
 
         this.logger.debug('Finish subscribe', c.topic, message);
         this.registry.emit(
@@ -171,14 +149,7 @@ class KafkaRunner
         'Error while executing consumer callback'
       );
       this.registry.emit('runner_failure', topic, error, message);
-      if (error instanceof JsonParsingError) {
-        this.consumer.commitMessage(message);
-      }
-    }
-
-    if (resource) {
-      this.logger.debug('releasing pool');
-      await this.pool.release(resource);
+      throw error;
     }
   }
 
@@ -189,6 +160,97 @@ class KafkaRunner
     } catch (e) {
       throw new JsonParsingError();
     }
+  }
+
+  /**
+   * Get batch size based on configuration
+   */
+  private getBatchSize(): number {
+    return this.config.batchProcessing?.enabled
+      ? this.config.batchProcessing.batchSize || 5
+      : 1;
+  }
+
+  private async processBatch(messages: Message[]): Promise<void> {
+    // Handle empty batch
+    if (messages.length === 0) {
+      return;
+    }
+
+    // Determine how many messages to process from the batch
+    const batchSize = Math.min(
+      messages.length,
+      this.getBatchSize()
+    );
+    const batch = messages.slice(0, batchSize);
+
+    this.logger.debug(`Processing batch of ${batch.length} messages`);
+
+    const startTime = Date.now();
+
+    // Determine concurrency limit
+    // If concurrency is enabled, use the configured limit (default: 10)
+    // Otherwise, process all messages in the batch concurrently (no limit)
+    const concurrency = this.config.concurrency?.enabled
+      ? this.config.concurrency.maxConcurrent || 10
+      : batch.length;
+
+    // Process all messages in the batch concurrently (with concurrency control)
+    const results = await Bluebird.map(
+      batch,
+      async (msg: Message) => {
+        try {
+          await this.receive(msg);
+          return { status: 'fulfilled' as const };
+        } catch (error) {
+          return { status: 'rejected' as const, reason: error };
+        }
+      },
+      { concurrency }
+    );
+
+    const failures = results.filter(r => r.status === 'rejected');
+    const succeeded = results.length - failures.length;
+    const duration = Date.now() - startTime;
+
+    // Emit batch metrics
+    this.registry.emit('batch_processed', {
+      batchSize: batch.length,
+      succeeded,
+      failed: failures.length,
+      duration,
+    });
+
+    // Always commit, even if there are failures
+    // This prevents infinite reprocessing of failed messages
+    // Only JsonParsingError (poison pills) should prevent commit
+    const lastMessage = batch[batch.length - 1];
+
+    if (failures.length > 0) {
+      this.logger.warn(
+        `Batch had ${failures.length} failures out of ${batch.length} messages.`
+      );
+
+      // Log first failure for debugging
+      const firstFailure = failures[0];
+      if (firstFailure.status === 'rejected') {
+        this.logger.error('First batch failure:', firstFailure.reason);
+      }
+
+      // Emit failure event
+      this.registry.emit('batch_failure', {
+        batchSize: batch.length,
+        failureCount: failures.length,
+        error: failures[0],
+      });
+    } else {
+      this.logger.debug(
+        `Batch succeeded (${batch.length} messages), committing offset ${lastMessage.offset}`
+      );
+    }
+
+    // Always commit the last offset to move forward
+    this.consumer.commitMessage(lastMessage);
   }
 
   reconnect = async () =>
@@ -247,23 +309,24 @@ class KafkaRunner
     if (this.state === 'paused') {
       this.logger.debug('Consumer paused');
       await sleep(1000);
-      this.consumer.consume(1, this.consumeCallback);
+      this.consumer.consume(this.getBatchSize(), this.consumeCallback);
       return;
     }
 
     if (err) {
       const message = 'Error while consumption';
       this.logger.error(`${message} - ${err}`);
-      this.registry.emit('runner_connection_failure', null, err, message); // keeping the argument order - (eventName, topicName, error, message)
-      this.consumer.consume(1, this.consumeCallback);
+      this.registry.emit('runner_connection_failure', null, err, message);
+      this.consumer.consume(this.getBatchSize(), this.consumeCallback);
       return;
     }
+
     try {
       if (messages && messages?.length) {
-        await this.receive(messages[0]);
+        await this.processBatch(messages);
       }
     } finally {
-      this.consumer.consume(1, this.consumeCallback);
+      this.consumer.consume(this.getBatchSize(), this.consumeCallback);
     }
   };
 
@@ -308,7 +371,7 @@ class KafkaRunner
 
         if (topicsWithTasks.length) {
           this.consumer.subscribe(topicsWithTasks);
-          this.consumer.consume(1, this.consumeCallback);
+          this.consumer.consume(this.getBatchSize(), this.consumeCallback);
         }
         resolve(this.consumer);
       });
