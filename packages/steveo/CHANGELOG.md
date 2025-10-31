@@ -1,5 +1,11 @@
 # steveo
 
+## 9.0.0
+
+### Patch Changes
+
+- e6ec987: Add kafka batching and concurrency support
+
 ## 8.4.0
 
 ### Minor Changes
