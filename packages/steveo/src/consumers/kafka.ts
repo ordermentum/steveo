@@ -13,11 +13,12 @@ import { Logger } from '../lib/logger';
 import { Steveo } from '..';
 import { sleep } from '../lib/utils';
 
-class JsonParsingError extends Error { }
+class JsonParsingError extends Error {}
 
 class KafkaRunner
   extends BaseRunner
-  implements IRunner<KafkaConsumer, Message> {
+  implements IRunner<KafkaConsumer, Message>
+{
   config: KafkaConfiguration;
 
   logger: Logger;
@@ -99,7 +100,11 @@ class KafkaRunner
    * For Kafka, the message object already contains topic and partition information.
    * This is called internally by processBatch. Concurrency is controlled by Bluebird.map.
    */
-  async receive(message: Message, _topic?: string, _partition?: number): Promise<void> {
+  async receive(
+    message: Message,
+    _topic?: string,
+    _partition?: number
+  ): Promise<void> {
     const { topic } = message;
 
     try {
@@ -172,16 +177,10 @@ class KafkaRunner
   }
 
   private async processBatch(messages: Message[]): Promise<void> {
-    // Handle empty batch
     if (messages.length === 0) {
       return;
     }
-
-    // Determine how many messages to process from the batch
-    const batchSize = Math.min(
-      messages.length,
-      this.getBatchSize()
-    );
+    const batchSize = Math.min(messages.length, this.getBatchSize());
     const batch = messages.slice(0, batchSize);
 
     this.logger.debug(`Processing batch of ${batch.length} messages`);
@@ -195,7 +194,6 @@ class KafkaRunner
       ? this.config.concurrency.maxConcurrent || 10
       : batch.length;
 
-    // Process all messages in the batch concurrently (with concurrency control)
     const results = await Bluebird.map(
       batch,
       async (msg: Message) => {
@@ -213,7 +211,6 @@ class KafkaRunner
     const succeeded = results.length - failures.length;
     const duration = Date.now() - startTime;
 
-    // Emit batch metrics
     this.registry.emit('batch_processed', {
       batchSize: batch.length,
       succeeded,
@@ -223,7 +220,6 @@ class KafkaRunner
 
     // Always commit, even if there are failures
     // This prevents infinite reprocessing of failed messages
-    // Only JsonParsingError (poison pills) should prevent commit
     const lastMessage = batch[batch.length - 1];
 
     if (failures.length > 0) {
