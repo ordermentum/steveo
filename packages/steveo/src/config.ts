@@ -40,7 +40,6 @@ export const getConfig = (config: Configuration) => {
     parameters.bootstrapServers = kafkaConfig.bootstrapServers;
     parameters.securityProtocol = kafkaConfig.securityProtocol ?? 'ssl';
     parameters.connectionTimeout = kafkaConfig.connectionTimeout ?? 30000; // 30 seconds
-    parameters.waitToCommit = kafkaConfig.waitToCommit ?? true;
     parameters.consumer = merge({}, KafkaConsumerDefault, {
       ...(kafkaConfig.consumer ?? {}),
     });
@@ -51,6 +50,14 @@ export const getConfig = (config: Configuration) => {
     parameters.defaultTopicPartitions = kafkaConfig.defaultTopicPartitions ?? 6;
     parameters.defaultTopicReplicationFactor =
       kafkaConfig.defaultTopicReplicationFactor ?? 3;
+    parameters.batchProcessing = {
+      enabled: kafkaConfig.batchProcessing?.enabled ?? false,
+      batchSize: kafkaConfig.batchProcessing?.batchSize ?? 5,
+    };
+    parameters.concurrency = {
+      enabled: kafkaConfig.concurrency?.enabled ?? false,
+      maxConcurrent: kafkaConfig.concurrency?.maxConcurrent ?? 10,
+    };
   } else if (parameters.engine === 'sqs') {
     const sqsConfig = config as SQSConfiguration;
     parameters.region = sqsConfig.region;

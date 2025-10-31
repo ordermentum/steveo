@@ -39,7 +39,6 @@ describe('Kafka Integration Test', () => {
         global: {},
         topic: {},
       },
-      waitToCommit: true,
       upperCaseNames: true,
       middleware: [],
     };
@@ -101,7 +100,6 @@ describe('Kafka Integration Test', () => {
         global: {},
         topic: {},
       },
-      waitToCommit: true,
       upperCaseNames: true,
       middleware: [],
     };

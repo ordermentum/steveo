@@ -29,7 +29,6 @@ describe('Steveo Integration Test', () => {
         global: {},
         topic: {},
       },
-      waitToCommit: true,
       upperCaseNames: true,
       middleware: [],
     };
@@ -144,7 +143,6 @@ describe('Steveo Integration Test', () => {
         global: {},
         topic: {},
       },
-      waitToCommit: true,
       upperCaseNames: true,
       middleware: [],
     };
