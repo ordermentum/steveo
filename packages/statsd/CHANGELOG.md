@@ -1,5 +1,11 @@
 # @steveojs/statsd
 
+## 15.1.0
+
+### Minor Changes
+
+- 84dfe07: add partition tags to StatsD metrics for SQS fair queue monitoring
+
 ## 15.0.0
 
 ### Patch Changes
