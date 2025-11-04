@@ -10,7 +10,7 @@ export const build = (steveo: Steveo, stats: StatsD) => {
     }
     stats.increment('producer_success', tags);
   });
-  
+
   steveo.events.on('producer_failure', async (topic, _ex, payload, options) => {
     const tags: Record<string, string> = { topic };
     const partition = options?.key ?? payload?._meta?.key;
