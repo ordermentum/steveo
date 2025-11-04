@@ -1,5 +1,13 @@
 # @steveojs/statsd
 
+## 15.1.1
+
+### Patch Changes
+
+- 2c526f6: Add partition tags to Steveo StatsD producer/runner metrics for better queue visibility
+- Updated dependencies [2c526f6]
+  - steveo@9.0.1
+
 ## 15.1.0
 
 ### Minor Changes
