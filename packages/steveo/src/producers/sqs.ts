@@ -268,7 +268,7 @@ class SqsProducer extends BaseProducer implements IProducer {
       });
     } catch (ex) {
       this.logger.error('Error while sending Payload', topic, ex);
-      this.registry.emit('producer_failure', topic, ex, payload);
+      this.registry.emit('producer_failure', topic, ex, payload, options);
       throw ex;
     }
   }

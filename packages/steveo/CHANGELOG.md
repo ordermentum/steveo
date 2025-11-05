@@ -1,5 +1,11 @@
 # steveo
 
+## 9.0.1
+
+### Patch Changes
+
+- 2c526f6: Add partition tags to Steveo StatsD producer/runner metrics for better queue visibility
+
 ## 9.0.0
 
 ### Patch Changes
