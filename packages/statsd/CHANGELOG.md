@@ -1,5 +1,13 @@
 # @steveojs/statsd
 
+## 15.1.2
+
+### Patch Changes
+
+- 80b56c0: Add partition tags to Steveo StatsD
+- Updated dependencies [80b56c0]
+  - steveo@9.0.2
+
 ## 15.1.1
 
 ### Patch Changes

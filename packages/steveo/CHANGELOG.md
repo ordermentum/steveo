@@ -1,5 +1,11 @@
 # steveo
 
+## 9.0.2
+
+### Patch Changes
+
+- 80b56c0: Add partition tags to Steveo StatsD
+
 ## 9.0.1
 
 ### Patch Changes
