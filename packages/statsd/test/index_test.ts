@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { Steveo } from 'steveo';
-import { StatsD } from 'hot-shots';
 import buildClient from '../src';
 
 describe('statsd', () => {
@@ -8,7 +7,11 @@ describe('statsd', () => {
     const steveo = new Steveo({
       engine: 'dummy',
     });
-    const statsd = new StatsD();
+    const statsd = {
+      increment: () => { },
+      timing: () => { },
+      gauge: () => { },
+    };
     buildClient(steveo, statsd);
     expect(1).to.exist;
   });
