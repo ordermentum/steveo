@@ -18,9 +18,6 @@
   "files": [
     "lib"
   ],
-  "dependencies": {
-    "hot-shots": "^10.0.0"
-  },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@types/chai": "4.3.20",
