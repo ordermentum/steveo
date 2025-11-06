@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/statsd",
-  "version": "15.1.2",
+  "version": "15.2.0",
   "main": "lib/index.js",
   "repository": "git@github.com:ordermentum/steveo.git",
   "license": "Apache-2.0",

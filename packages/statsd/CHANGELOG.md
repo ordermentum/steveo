@@ -1,5 +1,11 @@
 # @steveojs/statsd
 
+## 15.2.0
+
+### Minor Changes
+
+- e4c6e03: Change stats metric type, remove hot-shots dep
+
 ## 15.1.2
 
 ### Patch Changes
