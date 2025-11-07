@@ -1,5 +1,11 @@
 # steveo
 
+## 9.0.3
+
+### Patch Changes
+
+- cdc8b1c: adding processingMs metric to kafka competion
+
 ## 9.0.2
 
 ### Patch Changes
