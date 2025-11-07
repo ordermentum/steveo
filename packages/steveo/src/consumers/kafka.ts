@@ -108,6 +108,7 @@ class KafkaRunner
     const { topic } = message;
 
     try {
+      const startTime = Date.now();
       const payload = this.parseMessagePayload(message);
 
       await this.wrap({ topic, payload }, async c => {
@@ -116,7 +117,7 @@ class KafkaRunner
           value: c.payload,
           key: message.key?.toString(),
         };
-
+        
         this.registry.emit(
           'runner_receive',
           c.topic,
@@ -141,7 +142,10 @@ class KafkaRunner
           'runner_complete',
           c.topic,
           parsed,
-          getContext(payload)
+          {
+            ...getContext(payload),
+            processingMs: Date.now() - startTime,
+          }
         );
       });
     } catch (error) {
