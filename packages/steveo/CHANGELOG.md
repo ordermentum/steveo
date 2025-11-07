@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- cdc8b1c: adding processingMs metric to kafka
+- cdc8b1c: adding processingMs metric to kafka competion
 
 ## 9.0.2
 
