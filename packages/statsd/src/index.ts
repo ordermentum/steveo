@@ -62,6 +62,7 @@ export const build = (steveo: Steveo, stats: MetricsClient) => {
     }
     stats.increment('runner_complete', 1, tags);
     stats.timing('runner_success_ms', context.duration, tags);
+    stats.timing('runner_work_ms', context.processingMs, tags);
   });
 
   steveo.events.on('runner_failure', async (topic, _ex, payload) => {
