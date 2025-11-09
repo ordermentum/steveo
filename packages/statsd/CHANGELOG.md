@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- 2ef4e79: adding runner_work_ms metric
+- 2ef4e79: adding runner_work_ms metric.
 
 ## 15.2.0
 
