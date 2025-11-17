@@ -926,10 +926,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@datadog/flagging-core@0.1.0-preview.15":
-  version "0.1.0-preview.15"
-  resolved "https://registry.yarnpkg.com/@datadog/flagging-core/-/flagging-core-0.1.0-preview.15.tgz#bd8c21a7a7e96428c584d5b6f103b8011fa4f847"
-  integrity sha512-p6YhX7lHOlD3IhyBerL2OM7EEmOLA0MmjgIvEUX61cbRiK983m51rF8b8zXyiCCp/tdfBSmmsujtPwjMwXGiug==
+"@datadog/flagging-core@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@datadog/flagging-core/-/flagging-core-0.2.0.tgz#d29d81486068b870c41cebb2524721a71184eb16"
+  integrity sha512-DocYjr8NFJZfsnqzu3MuBUNqgbJquq1doimkKEXI5UImLmz/tR0LO09dd651pBhoz1Pa4SKcnPaxWFLTqxWtsA==
   dependencies:
     spark-md5 "^3.0.2"
 
@@ -960,12 +960,12 @@
     node-addon-api "^6.1.0"
     node-gyp-build "^3.9.0"
 
-"@datadog/openfeature-node-server@0.1.0-preview.15":
-  version "0.1.0-preview.15"
-  resolved "https://registry.yarnpkg.com/@datadog/openfeature-node-server/-/openfeature-node-server-0.1.0-preview.15.tgz#f9ec9f9614aefd9c03e83c62ea57c6163843a053"
-  integrity sha512-SXWseSmtEg+mKB2WzCzT5f/m61GEmFNBLchBaPO5w6dECk4jz4g6BXmfLTVdFZXi26/M644niZWHpv9cJVhoqg==
+"@datadog/openfeature-node-server@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@datadog/openfeature-node-server/-/openfeature-node-server-0.2.0.tgz#905032cc6d7d1eb1d6620aabe323ed552366d65a"
+  integrity sha512-Jn8lShFyqNji0tiKntLcCRwu3xrhg93fTTJS3gHSPKMfBDBKxjB9uF8Hu5Ayn2k0QuwJexx5atN9GSiWX0h5qg==
   dependencies:
-    "@datadog/flagging-core" "0.1.0-preview.15"
+    "@datadog/flagging-core" "0.2.0"
     "@openfeature/server-sdk" "~1.18.0"
 
 "@datadog/pprof@5.12.0":
@@ -3322,15 +3322,15 @@ dc-polyfill@^0.1.10:
   integrity sha512-9iSbB8XZ7aIrhUtWI5ulEOJ+IyUN+axquodHK+bZO4r7HfY/xwmo6I4fYYf+aiDom+WMcN/wnzCz+pKvHDDCug==
 
 dd-trace@^5.2.0:
-  version "5.78.0"
-  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.78.0.tgz#2096afb37dd518357bd922c97bba79e5c64719a3"
-  integrity sha512-SPp6WU+ur3s5sVFl7M0lURgpuMdfpgRSo80puIRG3Q/wqFffM02703Ya78SNkffx7WyGGQr9ia63q6kVR6GFMQ==
+  version "5.79.0"
+  resolved "https://registry.yarnpkg.com/dd-trace/-/dd-trace-5.79.0.tgz#2b64df72040408d652ba6201f2f29654befbb5d1"
+  integrity sha512-ugikmKS980aHQ4qT/cYCprYCfRJroj2fLvdfExERH2/l1vMgs0m2454lsImB0YZILKjn6bazCW1Px7oxJ77r4w==
   dependencies:
     "@datadog/libdatadog" "0.7.0"
     "@datadog/native-appsec" "10.3.0"
     "@datadog/native-iast-taint-tracking" "4.0.0"
     "@datadog/native-metrics" "3.1.1"
-    "@datadog/openfeature-node-server" "0.1.0-preview.15"
+    "@datadog/openfeature-node-server" "^0.2.0"
     "@datadog/pprof" "5.12.0"
     "@datadog/sketches-js" "2.1.1"
     "@datadog/wasm-js-rewriter" "5.0.1"
