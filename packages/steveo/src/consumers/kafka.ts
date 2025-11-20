@@ -29,11 +29,20 @@ class KafkaRunner
 
   consumerReady: boolean;
 
+  private debugEnabled: boolean;
+
   constructor(steveo: Steveo) {
     super(steveo);
     this.config = steveo.config as KafkaConfiguration;
     this.logger = steveo.logger ?? nullLogger;
     this.consumerReady = false;
+    const debugValue =
+      this.config.consumer?.global?.debug ??
+      (process.env.KAFKA_DEBUG !== undefined && process.env.KAFKA_DEBUG !== ''
+        ? process.env.KAFKA_DEBUG
+        : undefined);
+    this.debugEnabled = !!debugValue;
+
     this.consumer = new Kafka.KafkaConsumer(
       {
         'bootstrap.servers': this.config.bootstrapServers,
@@ -83,14 +92,9 @@ class KafkaRunner
             );
           }
         },
-        // Enable debug logging to see join/leave events in event.log
-        // Priority: config > KAFKA_DEBUG env var > default ('cgrp,broker,topic')
-        // Set KAFKA_DEBUG='' to disable debug logging
-        debug:
-          this.config.consumer?.global?.debug ??
-          (process.env.KAFKA_DEBUG !== undefined
-            ? process.env.KAFKA_DEBUG
-            : 'cgrp,broker,topic'),
+        // Only include debug property if explicitly enabled
+        // Set KAFKA_DEBUG='cgrp,broker,topic' to enable debug logging
+        ...(debugValue ? { debug: debugValue } : {}),
         ...(this.config.consumer?.global ?? {}),
       },
       this.config.consumer?.topic ?? {}
@@ -353,8 +357,10 @@ class KafkaRunner
       });
 
       this.consumer.on('event.log', log => {
-        // Log Kafka internal messages (includes join/leave/rebalance events)
-        this.logger.info(log.message);
+        // Log Kafka internal messages (includes join/leave/rebalance events) only when debug is enabled
+        if (this.debugEnabled) {
+          this.logger.info(log.message);
+        }
       });
 
       this.consumer.on('disconnected', () => {
