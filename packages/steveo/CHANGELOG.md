@@ -1,5 +1,11 @@
 # steveo
 
+## 9.0.6
+
+### Patch Changes
+
+- 70c27ff: Pick up FIFO config when registering topics
+
 ## 9.0.5
 
 ### Patch Changes
