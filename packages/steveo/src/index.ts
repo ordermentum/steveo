@@ -51,8 +51,7 @@ export {
 export { Middleware };
 
 export class Steveo<E extends Configuration['engine'] = any>
-  implements ISteveo
-{
+  implements ISteveo {
   config: KafkaConfiguration | RedisConfiguration | SQSConfiguration;
 
   logger: Logger;
@@ -188,13 +187,18 @@ export class Steveo<E extends Configuration['engine'] = any>
    * Formats a topic name to the queue naming convention
    */
   getTopicName(name: string) {
+    // Extract .fifo suffix if present
+    const hasFifoSuffix = name.endsWith('.fifo');
+    const baseName = hasFifoSuffix ? name.slice(0, -5) : name;
+
     const withOrWithoutPrefix = this.config.queuePrefix
-      ? `${this.config.queuePrefix}_${name}`
-      : name;
+      ? `${this.config.queuePrefix}_${baseName}`
+      : baseName;
     const uppercased = this.config.upperCaseNames
       ? withOrWithoutPrefix.toUpperCase()
       : withOrWithoutPrefix;
-    return uppercased;
+
+    return hasFifoSuffix ? `${uppercased}.fifo` : uppercased;
   }
 
   /**
@@ -297,10 +301,10 @@ export class Steveo<E extends Configuration['engine'] = any>
 
 export default <
   T extends
-    | KafkaConfiguration
-    | RedisConfiguration
-    | SQSConfiguration
-    | DummyConfiguration
+  | KafkaConfiguration
+  | RedisConfiguration
+  | SQSConfiguration
+  | DummyConfiguration
 >(
   config: T,
   logger: Logger,
