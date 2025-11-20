@@ -1,5 +1,12 @@
 # steveo
 
+## 9.0.4
+
+### Patch Changes
+
+- b1d0359: Add fifo queue support in getTopicName
+- 44e2884: Added Kafka debug logging for consumer group join/leave events
+
 ## 9.0.3
 
 ### Patch Changes
