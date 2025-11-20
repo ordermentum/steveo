@@ -1,5 +1,11 @@
 # steveo
 
+## 9.0.5
+
+### Patch Changes
+
+- 8aec4e3: fixing issue with debug logs always being on
+
 ## 9.0.4
 
 ### Patch Changes
