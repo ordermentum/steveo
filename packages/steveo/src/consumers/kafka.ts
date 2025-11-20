@@ -83,6 +83,14 @@ class KafkaRunner
             );
           }
         },
+        // Enable debug logging to see join/leave events in event.log
+        // Priority: config > KAFKA_DEBUG env var > default ('cgrp,broker,topic')
+        // Set KAFKA_DEBUG='' to disable debug logging
+        debug:
+          this.config.consumer?.global?.debug ??
+          (process.env.KAFKA_DEBUG !== undefined
+            ? process.env.KAFKA_DEBUG
+            : 'cgrp,broker,topic'),
         ...(this.config.consumer?.global ?? {}),
       },
       this.config.consumer?.topic ?? {}
@@ -345,7 +353,8 @@ class KafkaRunner
       });
 
       this.consumer.on('event.log', log => {
-        this.logger.debug(log.message);
+        // Log Kafka internal messages (includes join/leave/rebalance events)
+        this.logger.info(log.message);
       });
 
       this.consumer.on('disconnected', () => {
