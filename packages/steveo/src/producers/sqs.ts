@@ -56,7 +56,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     let queueName = topic;
 
     const task = this.registry.getTask(topic);
-    const fifo: boolean = !!task?.options?.fifo;
+    const fifo: boolean = topic.endsWith('.fifo') || !!task?.options?.fifo;
 
     const fifoAttributes: {
       FifoQueue?: string;
@@ -64,7 +64,7 @@ class SqsProducer extends BaseProducer implements IProducer {
     } = {};
 
     if (fifo) {
-      queueName = `${queueName}.fifo`;
+      queueName = topic.endsWith('.fifo') ? topic : `${queueName}.fifo`;
       fifoAttributes.FifoQueue = 'true';
       fifoAttributes.ContentBasedDeduplication = 'true';
     }
