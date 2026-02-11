@@ -926,7 +926,7 @@
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
 
-"@confluentinc/kafka-javascript@^1.8.0":
+"@confluentinc/kafka-javascript@1.8.0":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@confluentinc/kafka-javascript/-/kafka-javascript-1.8.0.tgz#afb55b79ce6e672ac10be0c6ea89450cadc1ccd0"
   integrity sha512-VNrfUkLmnTYklLsjgrq1xDq6e6DU/oSGTkfSDeA5TnkTN8PC9dyWhn/8VLQ6ywsV5i1FwQfqs6Y021Fi6NDKKw==
