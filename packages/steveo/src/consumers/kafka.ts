@@ -3,7 +3,7 @@ import Kafka, {
   IAdminClient,
   KafkaConsumer,
   Message,
-} from 'node-rdkafka';
+} from '@confluentinc/kafka-javascript';
 import Bluebird from 'bluebird';
 import nullLogger from 'null-logger';
 import BaseRunner from './base';
