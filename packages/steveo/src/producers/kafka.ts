@@ -1,4 +1,4 @@
-import { HighLevelProducer } from 'node-rdkafka';
+import { HighLevelProducer } from '@confluentinc/kafka-javascript';
 import {
   KafkaConfiguration,
   IProducer,

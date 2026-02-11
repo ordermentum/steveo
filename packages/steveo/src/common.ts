@@ -6,7 +6,7 @@ import {
   GlobalConfig,
   ProducerGlobalConfig,
   ProducerTopicConfig,
-} from 'node-rdkafka';
+} from '@confluentinc/kafka-javascript';
 import { Workflow } from './runtime/workflow';
 import { TaskOptions } from './types/task-options';
 import { Logger } from './lib/logger';
