@@ -1302,6 +1302,11 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.28.0.tgz#337fb2bca0453d0726696e745f50064411f646d6"
   integrity sha512-lp4qAiMTD4sNWW4DbKLBkfiMZ4jbAboJIGOQr5DvciMRI494OapieI9qiODpOt0XBr1LjIDy1xAGAnVs5supTA==
 
+"@ordermentum/eslint-config-ordermentum@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@ordermentum/eslint-config-ordermentum/-/eslint-config-ordermentum-3.0.1.tgz#cda6ac405ef8164ce7833c63617ea34a285d1b74"
+  integrity sha512-JZMhPs5FBe1fivUfWdGbw4Lu2zyQSlEer2hgoIcZPN9pgNJsemeZO0uRNlPVb9mavIMkySKkWkMdJDkNKQ3AEA==
+
 "@prisma/client@5.19.1":
   version "5.19.1"
   resolved "https://registry.yarnpkg.com/@prisma/client/-/client-5.19.1.tgz#d73f2b17b08628b6450c1c2dd20924d7a993aadf"
