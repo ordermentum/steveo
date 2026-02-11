@@ -1,5 +1,11 @@
 # steveo
 
+## 10.0.0
+
+### Major Changes
+
+- c661de4: Change kafka library from node-rdkafka to @confluent/kafka-javascript as the officially supported node package for librdkafka
+
 ## 9.0.6
 
 ### Patch Changes
