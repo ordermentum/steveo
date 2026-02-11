@@ -42,7 +42,7 @@
     ]
   },
   "dependencies": {
-    "@prisma/client": "5.19.1",
+    "@prisma/client": "5.22.0",
     "@types/bluebird": "^3.5.38",
     "aws-sdk": "^2.1043.0",
     "bluebird": "^3.7.2",
