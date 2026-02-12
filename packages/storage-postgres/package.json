@@ -76,7 +76,7 @@
     "@types/node": "20.17.28",
     "@types/rsmq": "0.8.4",
     "@types/sinon": "10.0.20",
-    "@types/uuid": "10.0.0",
+    "@types/uuid": "11.0.0",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "aws-sdk": "^2.1043.0",
