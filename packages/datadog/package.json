@@ -19,7 +19,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@types/chai": "^4.3.11",
+    "@types/chai": "^5.0.0",
     "chai": "4.5.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",

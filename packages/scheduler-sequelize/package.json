@@ -48,7 +48,7 @@
   "devDependencies": {
     "lunartick-deprecated": "npm:@ordermentum/lunartick@0.0.19",
     "@types/bunyan": "1.8.11",
-    "@types/chai": "4.3.20",
+    "@types/chai": "5.2.3",
     "@types/mocha": "8.2.3",
     "@types/moment-timezone": "0.5.30",
     "@types/qs": "6.14.0",
