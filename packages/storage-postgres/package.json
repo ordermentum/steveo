@@ -80,7 +80,7 @@
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "aws-sdk": "^2.1043.0",
-    "chai": "4.5.0",
+    "chai": "6.2.2",
     "cross-env": "7.0.3",
     "mocha": "10.2.0",
     "nyc": "15.1.0",
