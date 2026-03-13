@@ -29,7 +29,7 @@ export const getConfig = (config: Configuration) => {
   parameters.engine = config.engine ?? 'kafka';
   parameters.shuffleQueue = !!config.shuffleQueue;
   parameters.workerConfig = config.workerConfig ?? {};
-  parameters.queuePrefix = config.queuePrefix ?? '';
+  parameters.queuePrefix = process.env.QUEUE_PREFIX ?? config.queuePrefix ?? '';
   parameters.upperCaseNames = config.upperCaseNames ?? true;
   parameters.middleware = config.middleware ?? [];
   parameters.terminationWaitCount = config.terminationWaitCount ?? 180;
@@ -43,6 +43,10 @@ export const getConfig = (config: Configuration) => {
     parameters.consumer = merge({}, KafkaConsumerDefault, {
       ...(kafkaConfig.consumer ?? {}),
     });
+    if (process.env.CONSUMER_GROUP_PREFIX && parameters.consumer.global['group.id']) {
+      parameters.consumer.global['group.id'] =
+        `${process.env.CONSUMER_GROUP_PREFIX}_${parameters.consumer.global['group.id']}`;
+    }
     parameters.producer = merge({}, KafkaProducerDefault, {
       ...(kafkaConfig.producer ?? {}),
     });
