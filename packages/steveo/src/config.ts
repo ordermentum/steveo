@@ -43,9 +43,13 @@ export const getConfig = (config: Configuration) => {
     parameters.consumer = merge({}, KafkaConsumerDefault, {
       ...(kafkaConfig.consumer ?? {}),
     });
-    if (process.env.CONSUMER_GROUP_PREFIX && parameters.consumer.global['group.id']) {
-      parameters.consumer.global['group.id'] =
-        `${process.env.CONSUMER_GROUP_PREFIX}_${parameters.consumer.global['group.id']}`;
+    if (
+      process.env.CONSUMER_GROUP_PREFIX &&
+      parameters.consumer.global['group.id']
+    ) {
+      parameters.consumer.global[
+        'group.id'
+      ] = `${process.env.CONSUMER_GROUP_PREFIX}_${parameters.consumer.global['group.id']}`;
     }
     parameters.producer = merge({}, KafkaProducerDefault, {
       ...(kafkaConfig.producer ?? {}),
