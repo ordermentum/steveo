@@ -1,5 +1,11 @@
 # steveo
 
+## 10.1.1
+
+### Patch Changes
+
+- 63ef919: Add npm provenance attestations and publishConfig for trusted publishing
+
 ## 10.1.0
 
 ### Minor Changes
