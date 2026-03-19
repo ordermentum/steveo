@@ -1,5 +1,12 @@
 # @steveojs/sentry
 
+## 17.0.0
+
+### Patch Changes
+
+- Updated dependencies [551670b]
+  - steveo@10.1.0
+
 ## 16.0.0
 
 ### Patch Changes
