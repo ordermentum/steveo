@@ -2,7 +2,11 @@
   "name": "@steveojs/sentry",
   "version": "16.0.0",
   "main": "lib/index.js",
-  "repository": "git@github.com:ordermentum/steveo.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ordermentum/steveo.git",
+    "directory": "packages/sentry"
+  },
   "license": "Apache-2.0",
   "author": "Ordermentum <engineering@ordermentum.com>",
   "scripts": {
