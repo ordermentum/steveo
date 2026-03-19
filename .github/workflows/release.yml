@@ -26,14 +26,10 @@ jobs:
           node-version: 20.x
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Configure npm auth for private deps
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" >> ~/.npmrc
-          echo "@ordermentum:registry=https://registry.npmjs.org/" >> ~/.npmrc
-          echo "@steveojs:registry=https://registry.npmjs.org/" >> ~/.npmrc
-
       - name: Install Dependencies
         run: yarn
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
