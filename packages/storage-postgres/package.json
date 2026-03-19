@@ -7,7 +7,15 @@
   "author": "engineering@ordermentum.com",
   "private": false,
   "license": "Apache-2.0",
-  "repository": "git@github.com:ordermentum/steveo.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ordermentum/steveo.git",
+    "directory": "packages/storage-postgres"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "test": "NODE_ENV=test nyc yarn spec",
     "spec": "tsc && yarn mocha",

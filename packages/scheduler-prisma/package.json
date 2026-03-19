@@ -27,7 +27,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ordermentum/steveo.git"
+    "url": "https://github.com/ordermentum/steveo.git",
+    "directory": "packages/scheduler-prisma"
   },
   "keywords": [
     "postgres",
@@ -36,6 +37,10 @@
     "sequelize"
   ],
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "dependencies": {
     "@prisma/client": "5.7.1",
     "bunyan": "^1.8.15",
