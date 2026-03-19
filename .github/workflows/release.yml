@@ -20,16 +20,22 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20.x
+      - name: Setup Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20.x
-          registry-url: 'https://registry.npmjs.org'
+          node-version: 22.x
+
+      - name: Install latest npm
+        run: npm install -g npm@latest
+
+      - name: Configure npm for install
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
+          echo "@ordermentum:registry=https://registry.npmjs.org/" >> ~/.npmrc
+          echo "@steveojs:registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       - name: Install Dependencies
         run: yarn
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
