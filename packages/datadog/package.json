@@ -9,6 +9,10 @@
   },
   "license": "Apache-2.0",
   "author": "Ordermentum <engineering@ordermentum.com>",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "yarn run tsc",
     "test": "NODE_ENV=test nyc yarn spec",
