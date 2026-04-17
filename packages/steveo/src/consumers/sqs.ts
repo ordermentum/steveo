@@ -299,7 +299,7 @@ class SqsRunner extends BaseRunner implements IRunner {
 
     if (this.config.healthCheckTimeout != null) {
       let timerId: ReturnType<typeof setTimeout>;
-      const timeout = new Promise<never>((_, reject) => {
+      const timeout = new Promise<never>((_resolve, reject) => {
         timerId = setTimeout(
           () => reject(new Error('SQS health check timed out')),
           this.config.healthCheckTimeout
