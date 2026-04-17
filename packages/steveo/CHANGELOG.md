@@ -1,5 +1,11 @@
 # steveo
 
+## 10.2.0
+
+### Minor Changes
+
+- 108e1c4: Add configurable health check timeout.
+
 ## 10.1.1
 
 ### Patch Changes
