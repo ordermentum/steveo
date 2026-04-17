@@ -197,6 +197,11 @@ export interface Configuration {
    */
   tasksPath?: string;
   middleware?: Middleware[];
+  /**
+   * @description Timeout in milliseconds for health check calls.
+   * Kafka default: 1000ms. SQS default: no timeout.
+   */
+  healthCheckTimeout?: number;
 }
 
 export type Pool<T> = GenericPool<T>;

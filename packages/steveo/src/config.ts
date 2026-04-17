@@ -34,6 +34,7 @@ export const getConfig = (config: Configuration) => {
   parameters.middleware = config.middleware ?? [];
   parameters.terminationWaitCount = config.terminationWaitCount ?? 180;
   parameters.tasksPath = config.tasksPath;
+  parameters.healthCheckTimeout = config.healthCheckTimeout;
 
   if (parameters.engine === 'kafka') {
     const kafkaConfig = config as KafkaConfiguration;

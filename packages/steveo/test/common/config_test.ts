@@ -164,4 +164,23 @@ describe('Config', () => {
       expect(config.consumer).to.be.undefined;
     });
   });
+
+  describe('healthCheckTimeout', () => {
+    it('passes through healthCheckTimeout when provided', () => {
+      const config = Config({
+        engine: 'kafka',
+        bootstrapServers: 'kafka://kafka:9200',
+        healthCheckTimeout: 5000,
+      });
+      expect(config.healthCheckTimeout).to.equal(5000);
+    });
+
+    it('does not set healthCheckTimeout when not provided', () => {
+      const config = Config({
+        engine: 'kafka',
+        bootstrapServers: 'kafka://kafka:9200',
+      });
+      expect(config.healthCheckTimeout).to.be.undefined;
+    });
+  });
 });

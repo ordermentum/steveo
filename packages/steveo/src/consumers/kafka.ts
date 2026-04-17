@@ -290,7 +290,7 @@ class KafkaRunner
         {
           allTopics: false,
           topic: '',
-          timeout: 1000,
+          timeout: this.config.healthCheckTimeout ?? 1000,
         },
         (err: Error, meta) => {
           this.logger.debug(`metadata response meta=${meta} err=${err}`);
