@@ -533,4 +533,39 @@ describe('runner/kafka', () => {
     // Max concurrent should not exceed limit of 3
     expect(maxConcurrentSeen).to.be.at.most(3);
   });
+
+  describe('healthCheck', () => {
+    it('should use default 1000ms timeout when healthCheckTimeout is not configured', async () => {
+      const getMetadataStub = sandbox
+        .stub(runner.consumer, 'getMetadata')
+        .callsArgWith(1, null, {});
+
+      await runner.healthCheck();
+
+      expect(getMetadataStub.calledOnce).to.equal(true);
+      expect(getMetadataStub.args[0][0].timeout).to.equal(1000);
+    });
+
+    it('should use configured healthCheckTimeout', async () => {
+      const steveo = {
+        config: {
+          bootstrapServers: 'kafka:9200',
+          engine: 'kafka',
+          securityProtocol: 'plaintext',
+          healthCheckTimeout: 5000,
+        },
+        registry,
+      };
+      // @ts-ignore
+      const customRunner = new Runner(steveo);
+      const getMetadataStub = sandbox
+        .stub(customRunner.consumer, 'getMetadata')
+        .callsArgWith(1, null, {});
+
+      await customRunner.healthCheck();
+
+      expect(getMetadataStub.calledOnce).to.equal(true);
+      expect(getMetadataStub.args[0][0].timeout).to.equal(5000);
+    });
+  });
 });

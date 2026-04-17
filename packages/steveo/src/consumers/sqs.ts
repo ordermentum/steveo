@@ -295,7 +295,24 @@ class SqsRunner extends BaseRunner implements IRunner {
     }
     const topic = this.getTopic(item);
 
-    await this.sqs.getQueueUrl({ QueueName: topic });
+    const check = this.sqs.getQueueUrl({ QueueName: topic });
+
+    if (this.config.healthCheckTimeout != null) {
+      let timerId: ReturnType<typeof setTimeout>;
+      const timeout = new Promise<never>((_resolve, reject) => {
+        timerId = setTimeout(
+          () => reject(new Error('SQS health check timed out')),
+          this.config.healthCheckTimeout
+        );
+      });
+      try {
+        await Promise.race([check, timeout]);
+      } finally {
+        clearTimeout(timerId!);
+      }
+    } else {
+      await check;
+    }
   };
 
   async getQueueUrl(topic: string) {

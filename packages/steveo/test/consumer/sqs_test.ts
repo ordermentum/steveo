@@ -541,6 +541,65 @@ describe('runner/sqs', () => {
         expect((err as Error).message).to.equal('No queues registered');
       }
     });
+
+    it('should not apply a timeout when healthCheckTimeout is not configured', async () => {
+      const registry = createMockRegistry(sandbox);
+      registry.getTopics = sandbox.stub().returns(['health-topic']);
+      const steveo = createSteveoInstance(registry);
+      const runner = new Runner(steveo);
+
+      // getQueueUrl resolves after 50ms — should still succeed with no timeout
+      const getQueueUrlStub = sandbox
+        .stub(runner.sqs, 'getQueueUrl')
+        .callsFake(() => new Promise(resolve => setTimeout(() => resolve({}), 50)));
+
+      await runner.healthCheck();
+
+      expect(getQueueUrlStub.calledOnce).to.equal(true);
+    });
+
+    it('should reject when healthCheckTimeout is exceeded', async () => {
+      const config: SQSConfiguration = {
+        ...createSQSConfig(),
+        healthCheckTimeout: 10,
+      };
+      const registry = createMockRegistry(sandbox);
+      registry.getTopics = sandbox.stub().returns(['health-topic']);
+      const steveo = createSteveoInstance(registry, config);
+      const runner = new Runner(steveo);
+
+      // getQueueUrl takes 200ms — longer than the 10ms timeout
+      sandbox
+        .stub(runner.sqs, 'getQueueUrl')
+        .callsFake(() => new Promise(resolve => setTimeout(() => resolve({}), 200)));
+
+      try {
+        await runner.healthCheck();
+        expect.fail('Expected an error to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(Error);
+        expect((err as Error).message).to.equal('SQS health check timed out');
+      }
+    });
+
+    it('should succeed when healthCheckTimeout is configured and not exceeded', async () => {
+      const config: SQSConfiguration = {
+        ...createSQSConfig(),
+        healthCheckTimeout: 5000,
+      };
+      const registry = createMockRegistry(sandbox);
+      registry.getTopics = sandbox.stub().returns(['health-topic']);
+      const steveo = createSteveoInstance(registry, config);
+      const runner = new Runner(steveo);
+
+      const getQueueUrlStub = sandbox
+        .stub(runner.sqs, 'getQueueUrl')
+        .resolves({});
+
+      await runner.healthCheck();
+
+      expect(getQueueUrlStub.calledOnce).to.equal(true);
+    });
   });
 
   it('calculates duration of a task run correctly', async () => {
