@@ -26,7 +26,7 @@ jobs:
           node-version: 22.x
 
       - name: Install latest npm
-        run: npm install -g npm@latest
+        run: npm install -g npm@11.10.0
 
       - name: Configure npm for install
         run: |
