@@ -535,37 +535,28 @@ describe('runner/kafka', () => {
   });
 
   describe('healthCheck', () => {
-    it('should use default 1000ms timeout when healthCheckTimeout is not configured', async () => {
-      const getMetadataStub = sandbox
-        .stub(runner.consumer, 'getMetadata')
-        .callsArgWith(1, null, {});
+    it('should resolve when consumer is connected', async () => {
+      const isConnectedStub = sandbox
+        .stub(runner.consumer, 'isConnected')
+        .returns(true);
 
       await runner.healthCheck();
 
-      expect(getMetadataStub.calledOnce).to.equal(true);
-      expect(getMetadataStub.args[0][0].timeout).to.equal(1000);
+      expect(isConnectedStub.calledOnce).to.equal(true);
     });
 
-    it('should use configured healthCheckTimeout', async () => {
-      const steveo = {
-        config: {
-          bootstrapServers: 'kafka:9200',
-          engine: 'kafka',
-          securityProtocol: 'plaintext',
-          healthCheckTimeout: 5000,
-        },
-        registry,
-      };
-      // @ts-ignore
-      const customRunner = new Runner(steveo);
-      const getMetadataStub = sandbox
-        .stub(customRunner.consumer, 'getMetadata')
-        .callsArgWith(1, null, {});
+    it('should reject when consumer is not connected', async () => {
+      sandbox.stub(runner.consumer, 'isConnected').returns(false);
 
-      await customRunner.healthCheck();
+      let error: Error | undefined;
+      try {
+        await runner.healthCheck();
+      } catch (e) {
+        error = e as Error;
+      }
 
-      expect(getMetadataStub.calledOnce).to.equal(true);
-      expect(getMetadataStub.args[0][0].timeout).to.equal(5000);
+      expect(error).to.be.an.instanceOf(Error);
+      expect(error?.message).to.equal('Kafka consumer is not connected');
     });
   });
 });
