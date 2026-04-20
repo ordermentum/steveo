@@ -281,25 +281,10 @@ class KafkaRunner
    */
   healthCheck = async function () {
     return new Promise<void>((resolve, reject) => {
-      /**
-       * if you are concerned about potential performance issues,
-       * don't be, it returns early if it has a local connection status
-       * only falls back to the kafka client if the local connection status is missing
-       */
-      this.consumer.getMetadata(
-        {
-          allTopics: false,
-          topic: '',
-          timeout: this.config.healthCheckTimeout ?? 1000,
-        },
-        (err: Error, meta) => {
-          this.logger.debug(`metadata response meta=${meta} err=${err}`);
-          if (err) {
-            return reject(err);
-          }
-          return resolve(meta);
-        }
-      );
+      if (this.consumer.isConnected()) {
+        return resolve();
+      }
+      return reject(new Error('Kafka consumer is not connected'));
     });
   };
 
