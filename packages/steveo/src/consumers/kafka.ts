@@ -282,9 +282,10 @@ class KafkaRunner
   healthCheck = async function () {
     return new Promise<void>((resolve, reject) => {
       if (this.consumer.isConnected()) {
-        return resolve();
+        resolve();
+        return;
       }
-      return reject(new Error('Kafka consumer is not connected'));
+      reject(new Error('Kafka consumer is not connected'));
     });
   };
 
