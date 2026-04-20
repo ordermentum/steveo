@@ -1,5 +1,11 @@
 # steveo
 
+## 11.0.0
+
+### Major Changes
+
+- 476da70: Change Kafka health check to simple connectivity check
+
 ## 10.2.0
 
 ### Minor Changes

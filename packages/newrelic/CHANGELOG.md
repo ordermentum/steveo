@@ -1,5 +1,12 @@
 # @steveojs/newrelic
 
+## 19.0.0
+
+### Patch Changes
+
+- Updated dependencies [476da70]
+  - steveo@11.0.0
+
 ## 18.0.0
 
 ### Patch Changes
