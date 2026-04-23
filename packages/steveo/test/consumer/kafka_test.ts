@@ -534,6 +534,61 @@ describe('runner/kafka', () => {
     expect(maxConcurrentSeen).to.be.at.most(3);
   });
 
+  describe('process', () => {
+    it('should reject with an Error when the connection times out', async () => {
+      // Arrange: connect never invokes its callback, so only the timeout path fires
+      sandbox.stub(runner.consumer, 'connect');
+      sandbox.stub(runner.consumer, 'on');
+
+      // Act
+      const promise = runner.process(['test-topic']);
+      const caught = promise.catch((e: unknown) => e);
+      await clock.tickAsync(5000);
+      const error = (await caught) as Error;
+
+      // Assert: rejection carries an Error (not undefined) so Node won't crash
+      // with an unhandled rejection that has no stack.
+      expect(error).to.be.an.instanceOf(Error);
+      expect(error.message).to.equal('Kafka connection timed out');
+    });
+
+    it('should log bootstrap servers when the connection times out', async () => {
+      const errorSpy = sandbox.spy(runner.logger, 'error');
+      sandbox.stub(runner.consumer, 'connect');
+      sandbox.stub(runner.consumer, 'on');
+
+      const promise = runner.process(['test-topic']);
+      const caught = promise.catch(() => undefined);
+      await clock.tickAsync(5000);
+      await caught;
+
+      sinon.assert.calledWith(
+        errorSpy,
+        'Kafka connection timed out. Bootstrap servers:',
+        'kafka:9200'
+      );
+    });
+
+    it('should reject with the underlying error when consumer.connect fails', async () => {
+      const connectError = new Error('Broker not available');
+      sandbox
+        .stub(runner.consumer, 'connect')
+        .callsArgWith(1, connectError);
+      sandbox.stub(runner.consumer, 'on');
+
+      let caught: unknown;
+      try {
+        await runner.process(['test-topic']);
+      } catch (e) {
+        caught = e;
+      }
+
+      // The original error object must be preserved so callers can inspect
+      // `.message` / `.code` / stack rather than receive `undefined`.
+      expect(caught).to.equal(connectError);
+    });
+  });
+
   describe('healthCheck', () => {
     it('should resolve when consumer is connected', async () => {
       const isConnectedStub = sandbox

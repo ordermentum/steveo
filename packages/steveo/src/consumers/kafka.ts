@@ -330,15 +330,18 @@ class KafkaRunner
   process(topics: Array<string>) {
     return new Promise<KafkaConsumer>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        this.logger.error('Connection timed out');
-        reject();
+        this.logger.error(
+          'Kafka connection timed out. Bootstrap servers:',
+          this.config.bootstrapServers
+        );
+        reject(new Error('Kafka connection timed out'));
       }, this.config.connectionTimeout);
 
       this.consumer.connect({}, err => {
         clearTimeout(timeoutId);
         if (err) {
           this.logger.error('Error initializing consumer', err);
-          reject();
+          reject(err);
         }
       });
 
