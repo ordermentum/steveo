@@ -67,7 +67,7 @@
     "radash": "^12.1.0",
     "redlock": "^5.0.0-beta.2",
     "rsmq": "^0.12.4",
-    "uuid": "10.0.0"
+    "uuid": "14.0.0"
   },
   "peerDependencies": {
     "steveo": "*"

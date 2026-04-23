@@ -42,7 +42,7 @@
     "null-logger": "^2.0.0",
     "rsmq": "^0.12.3",
     "ts-dotenv": "^0.9.1",
-    "uuid": "^3.1.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
   }
