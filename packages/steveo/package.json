@@ -62,7 +62,7 @@
     "@confluentinc/kafka-javascript": "1.8.2",
     "null-logger": "^2.0.0",
     "rsmq": "^0.12.4",
-    "uuid": "^9.0.0"
+    "uuid": "^14.0.0"
   },
   "peerDependencies": {},
   "devDependencies": {
