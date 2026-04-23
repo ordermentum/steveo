@@ -1,5 +1,12 @@
 # @steveojs/statsd
 
+## 20.0.0
+
+### Patch Changes
+
+- Updated dependencies [a8f7bdd]
+  - steveo@11.1.0
+
 ## 19.0.0
 
 ### Patch Changes
