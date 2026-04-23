@@ -1,5 +1,11 @@
 # steveo
 
+## 11.1.0
+
+### Minor Changes
+
+- a8f7bdd: Added errors to connection rejection
+
 ## 11.0.0
 
 ### Major Changes

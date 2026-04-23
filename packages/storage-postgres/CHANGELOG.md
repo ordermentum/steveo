@@ -1,5 +1,12 @@
 # @steveojs/storage-postgres
 
+## 16.0.0
+
+### Patch Changes
+
+- Updated dependencies [a8f7bdd]
+  - steveo@11.1.0
+
 ## 15.0.0
 
 ### Patch Changes
