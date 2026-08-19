@@ -38,7 +38,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "dd-trace": "^5.2.0"
+    "dd-trace": "^5.122.0"
   },
   "peerDependencies": {
     "steveo": "*"
