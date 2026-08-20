@@ -1,5 +1,11 @@
 # @steveojs/datadog
 
+## 20.0.1
+
+### Patch Changes
+
+- df5f34d: Update dd-client to 5.122.0
+
 ## 20.0.0
 
 ### Patch Changes
