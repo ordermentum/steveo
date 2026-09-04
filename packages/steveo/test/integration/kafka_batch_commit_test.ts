@@ -11,6 +11,23 @@ const PER_PARTITION = 2;
 
 type Committed = { partition: number; offset?: number }[];
 
+type TestRunner = {
+  createQueues(): Promise<unknown>;
+  state: string;
+  consumer: unknown;
+};
+
+type TestProducer = {
+  produce(
+    topic: string,
+    partition: number,
+    value: Buffer,
+    key: string | null,
+    timestamp: number,
+    callback: () => void
+  ): void;
+};
+
 const committedOffsets = (consumer, topic: string): Promise<Committed> => {
   const toppars = Array.from({ length: PARTITIONS }, (_, partition) => ({
     topic,
@@ -59,13 +76,14 @@ describe('Kafka Integration Test - batch commit coverage', () => {
     };
 
     const steveo = new Steveo(configuration, logger({ level: 'warn' }));
-    const runner = steveo.runner() as any;
+    const runner = steveo.runner() as unknown as TestRunner;
 
     const handled: number[] = [];
     let firstBatch: number[] | undefined;
 
-    steveo.task(topic, async (payload: { partition: number }) => {
+    steveo.task(topic, (payload: { partition: number }) => {
       handled.push(payload.partition);
+      return Promise.resolve();
     });
 
     // freeze after the first batch so no later batch can cover for it
@@ -80,7 +98,9 @@ describe('Kafka Integration Test - batch commit coverage', () => {
     await steveo.producer.initialize();
 
     // explicit partitions, so the batch provably spans more than one of them
-    const { producer } = steveo.producer as any;
+    const { producer } = steveo.producer as unknown as {
+      producer: TestProducer;
+    };
     let delivered = 0;
     const onDelivery = () => {
       delivered += 1;

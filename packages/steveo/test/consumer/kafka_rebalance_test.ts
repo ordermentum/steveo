@@ -1,8 +1,20 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import Kafka from '@confluentinc/kafka-javascript';
+import Kafka, { KafkaConsumer } from '@confluentinc/kafka-javascript';
 import Runner from '../../src/consumers/kafka';
 import { build } from '../../src/lib/pool';
+
+// the runner's own type hides processBatch, and globalConfig is untyped
+type TestRunner = {
+  processBatch(messages: unknown[]): Promise<void>;
+  shutdown(): Promise<void>;
+  consumer: KafkaConsumer & {
+    globalConfig: { rebalance_cb(err: number, assignment: unknown[]): void };
+    rebalanceProtocol(): string;
+    incrementalAssign(assignment: unknown[]): void;
+    incrementalUnassign(assignment: unknown[]): void;
+  };
+};
 
 const { ERR__REVOKE_PARTITIONS, ERR__ASSIGN_PARTITIONS } = Kafka.CODES.ERRORS;
 
@@ -10,7 +22,10 @@ const TOPIC = 'test-topic';
 
 const buildRunner = (sandbox: sinon.SinonSandbox, protocol = 'EAGER') => {
   const registry = {
-    getTask: () => ({ publish: () => {}, subscribe: sinon.stub().resolves() }),
+    getTask: () => ({
+      publish: sinon.stub(),
+      subscribe: sinon.stub().resolves(),
+    }),
     emit: sandbox.stub(),
     events: { emit: sandbox.stub() },
   };
@@ -22,11 +37,11 @@ const buildRunner = (sandbox: sinon.SinonSandbox, protocol = 'EAGER') => {
       batchProcessing: { enabled: true, batchSize: 10 },
     },
     registry,
-    // @ts-expect-error
+    // @ts-expect-error registry double only carries what the pool reads
     pool: build(registry),
   };
-  // @ts-expect-error
-  const runner: any = new Runner(steveo);
+  // @ts-expect-error steveo double only carries what the runner reads
+  const runner = new Runner(steveo) as unknown as TestRunner;
   sandbox.stub(runner.consumer, 'rebalanceProtocol').returns(protocol);
   sandbox.stub(runner.consumer, 'commitMessage');
   return runner;
@@ -41,8 +56,11 @@ const message = (partition: number, offset: number) => ({
 
 // driving globalConfig runs the client's own rebalance handling, so these
 // assertions cover our listener and the client's assign/unassign together
-const rebalance = (runner, code: number, assignment: unknown[] = []) =>
-  runner.consumer.globalConfig.rebalance_cb(code, assignment);
+const rebalance = (
+  runner: TestRunner,
+  code: number,
+  assignment: unknown[] = []
+) => runner.consumer.globalConfig.rebalance_cb(code, assignment);
 
 describe('runner/kafka - rebalance', () => {
   let sandbox: sinon.SinonSandbox;

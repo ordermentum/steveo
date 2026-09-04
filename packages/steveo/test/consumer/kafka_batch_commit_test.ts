@@ -1,13 +1,20 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
+import { KafkaConsumer } from '@confluentinc/kafka-javascript';
 import Runner from '../../src/consumers/kafka';
 import { build } from '../../src/lib/pool';
+
+// the runner's own type hides processBatch, which these tests drive directly
+type TestRunner = {
+  processBatch(messages: unknown[]): Promise<void>;
+  consumer: KafkaConsumer;
+};
 
 const buildRunner = (sandbox, batchSize = 10) => {
   const subscribeStub = sinon.stub().resolves({ some: 'success' });
   const registry = {
     getTask: () => ({
-      publish: () => {},
+      publish: sinon.stub(),
       subscribe: subscribeStub,
     }),
     emit: sandbox.stub(),
@@ -21,11 +28,11 @@ const buildRunner = (sandbox, batchSize = 10) => {
       batchProcessing: { enabled: true, batchSize },
     },
     registry,
-    // @ts-expect-error
+    // @ts-expect-error registry double only carries what the pool reads
     pool: build(registry),
   };
-  // @ts-expect-error
-  const runner: any = new Runner(steveo);
+  // @ts-expect-error steveo double only carries what the runner reads
+  const runner = new Runner(steveo) as unknown as TestRunner;
   return { runner, subscribeStub };
 };
 
