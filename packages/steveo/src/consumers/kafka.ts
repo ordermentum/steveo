@@ -3,6 +3,7 @@ import Kafka, {
   IAdminClient,
   KafkaConsumer,
   Message,
+  TopicPartitionOffset,
 } from '@confluentinc/kafka-javascript';
 import Bluebird from 'bluebird';
 import nullLogger from 'null-logger';
@@ -31,6 +32,8 @@ class KafkaRunner
 
   private debugEnabled: boolean;
 
+  private processedOffsets = new Map<string, TopicPartitionOffset>();
+
   constructor(steveo: Steveo) {
     super(steveo);
     this.config = steveo.config as KafkaConfiguration;
@@ -47,36 +50,8 @@ class KafkaRunner
       {
         'bootstrap.servers': this.config.bootstrapServers,
         'security.protocol': this.config.securityProtocol,
-        rebalance_cb: (err, assignment) => {
-          this.logger.debug('Rebalance event', err, assignment);
-          try {
-            /**
-             * These error codes can mean that the consumer needs to reassign
-             *
-             * KafkaJS (another kafka client) has a similar implementation
-             * See: https://github.com/tulios/kafkajs/pull/1474
-             * See: https://github.com/tulios/kafkajs/blob/master/src/consumer/runner.js#L115-L160
-             */
-            if (
-              [
-                Kafka.CODES.ERRORS.ERR__ASSIGN_PARTITIONS,
-                Kafka.CODES.ERRORS.ERR_NOT_COORDINATOR_FOR_GROUP,
-                Kafka.CODES.ERRORS.ERR_REBALANCE_IN_PROGRESS,
-                Kafka.CODES.ERRORS.ERR_ILLEGAL_GENERATION,
-                Kafka.CODES.ERRORS.ERR_UNKNOWN_MEMBER_ID,
-              ].includes(err.code)
-            ) {
-              //
-              this.consumer.assign(assignment);
-            } else if (err.code === Kafka.CODES.ERRORS.ERR__REVOKE_PARTITIONS) {
-              this.consumer.unassign();
-            }
-          } catch (e) {
-            this.logger.error('Error during rebalance', e);
-            // Shutting down the consumer to not have a zombie consumer
-            if (this.consumer.isConnected()) this.shutdown();
-          }
-        },
+        // the client handles assign/unassign, including cooperative
+        rebalance_cb: true,
         offset_commit_cb: (err, topicPartitions) => {
           if (err) {
             this.logger.error(err);
@@ -99,6 +74,16 @@ class KafkaRunner
       },
       this.config.consumer?.topic ?? {}
     );
+
+    this.consumer.on('rebalance', err => {
+      if (err?.code === Kafka.CODES.ERRORS.ERR__REVOKE_PARTITIONS) {
+        this.flushOffsets();
+      }
+    });
+
+    this.consumer.on('rebalance.error', err => {
+      this.logger.error('Error during rebalance', err);
+    });
 
     this.adminClient = AdminClient.create({
       'bootstrap.servers': this.config.bootstrapServers,
@@ -230,8 +215,6 @@ class KafkaRunner
 
     // Always commit, even if there are failures
     // This prevents infinite reprocessing of failed messages
-    const lastMessage = batch[batch.length - 1];
-
     if (failures.length > 0) {
       this.logger.warn(
         `Batch had ${failures.length} failures out of ${batch.length} messages.`
@@ -250,13 +233,57 @@ class KafkaRunner
         error: failures[0],
       });
     } else {
-      this.logger.debug(
-        `Batch succeeded (${batch.length} messages), committing offset ${lastMessage.offset}`
-      );
+      this.logger.debug(`Batch succeeded (${batch.length} messages)`);
     }
 
-    // Always commit the last offset to move forward
-    this.consumer.commitMessage(lastMessage);
+    this.commitBatch(batch);
+  }
+
+  /**
+   * A batch is drained from the consumer queue, so it can span partitions and
+   * topics. Committing only the final message leaves the rest of the batch
+   * uncommitted and redelivered on the next rebalance.
+   */
+  private commitBatch(batch: Message[]): void {
+    const highestPerPartition = new Map<string, Message>();
+
+    for (const message of batch) {
+      const key = `${message.topic}/${message.partition}`;
+      const highest = highestPerPartition.get(key);
+
+      if (!highest || message.offset > highest.offset) {
+        highestPerPartition.set(key, message);
+      }
+    }
+
+    for (const [key, message] of highestPerPartition) {
+      this.consumer.commitMessage(message);
+      this.processedOffsets.set(key, {
+        topic: message.topic,
+        partition: message.partition,
+        offset: message.offset + 1,
+      });
+    }
+  }
+
+  /**
+   * commitMessage is queued, and librdkafka only flushes offsets on revoke when
+   * enable.auto.commit is on. Committing here, while the old generation is
+   * still current, keeps those messages from being redelivered. We send what we
+   * processed rather than the stored offsets, which run ahead of processing.
+   */
+  private flushOffsets(): void {
+    if (!this.processedOffsets.size) {
+      return;
+    }
+
+    try {
+      this.consumer.commitSync([...this.processedOffsets.values()]);
+    } catch (e) {
+      this.logger.error('Error committing offsets before revoke', e);
+    }
+
+    this.processedOffsets.clear();
   }
 
   reconnect = async () =>
