@@ -1568,9 +1568,9 @@
   integrity sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==
 
 "@salesforce/ts-sinon@^1.4.27":
-  version "1.4.31"
-  resolved "https://registry.yarnpkg.com/@salesforce/ts-sinon/-/ts-sinon-1.4.31.tgz#59225de2bc0c415b694ed5e8777df886eb79b606"
-  integrity sha512-AwdfynLtwk001v3AdkhiCrZArnp1osET+arE659633PnDxUtk45WPHQUKVc4eblOo/s7pRNotUMDisxwzPWCDw==
+  version "1.4.36"
+  resolved "https://registry.yarnpkg.com/@salesforce/ts-sinon/-/ts-sinon-1.4.36.tgz#8707fcc129f90db6fd0330ea12903f50a9be3b0f"
+  integrity sha512-RaBo7QhsikZW3kMcb8UJ4T2ZH3YkDpOZ0U/Ty7m0pBT+bCXBRYJ07aKIV/6Do2WD6aZnR8ajJseKEBbpDxAr6Q==
   dependencies:
     "@salesforce/ts-types" "^2.0.12"
     sinon "^5.1.1"
