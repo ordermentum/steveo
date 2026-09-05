@@ -925,14 +925,16 @@
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
 
-"@confluentinc/kafka-javascript@1.8.2":
-  version "1.8.2"
-  resolved "https://registry.yarnpkg.com/@confluentinc/kafka-javascript/-/kafka-javascript-1.8.2.tgz#559d203e788c04216bcb1a92ceb33170be359a52"
-  integrity sha512-sH607B4S00IO8omtpnUlcHeHsZ7hR2C441E4erZyFb+yXNVTl++8+BjIfIcflzW07iGHE5r5McD3oO3vxHi+ww==
+"@confluentinc/kafka-javascript@1.10.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@confluentinc/kafka-javascript/-/kafka-javascript-1.10.0.tgz#860e346d085ec3cbc4b52ae05ee33d08eca9bef5"
+  integrity sha512-6gLgZSxbtlC5kR/VOG1JE2m8Lb2NwXMDJmkEDunyj8yV/VyzjLTqH/SojMJ/SdcmwUxmXVwf7VC4ATK/gQsKxg==
   dependencies:
     "@mapbox/node-pre-gyp" "^2.0.3"
     bindings "^1.3.1"
+    js-yaml "^4.2.0"
     nan "^2.22.0"
+    tar "^7.5.16"
 
 "@contrast/fn-inspect@^3.3.0":
   version "3.3.1"
@@ -5221,7 +5223,7 @@ js-yaml@^3.6.1:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
-js-yaml@^4.1.1:
+js-yaml@^4.1.1, js-yaml@^4.2.0:
   version "4.3.2"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.3.2.tgz#8e44fb14a2643c59726bb15787b5f1512cb3d3fb"
   integrity sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==
@@ -7497,6 +7499,17 @@ tar@^7.4.0:
   version "7.5.12"
   resolved "https://registry.yarnpkg.com/tar/-/tar-7.5.12.tgz#f8705c00ca1001b8b60bc44db1ab26573736b871"
   integrity sha512-9TsuLcdhOn4XztcQqhNyq1KOwOOED/3k58JAvtULiYqbO8B/0IBAAIE1hj0Svmm58k27TmcigyDI0deMlgG3uw==
+  dependencies:
+    "@isaacs/fs-minipass" "^4.0.0"
+    chownr "^3.0.0"
+    minipass "^7.1.2"
+    minizlib "^3.1.0"
+    yallist "^5.0.0"
+
+tar@^7.5.16:
+  version "7.5.22"
+  resolved "https://registry.yarnpkg.com/tar/-/tar-7.5.22.tgz#a696f998136e71487dc3f869a85bba2c67971ba9"
+  integrity sha512-MFO/QzvtAOmJbkhOaCTvbGcFN9L9b+JunIsDwaKljSOdcLMea3NJ1k9Usz/rjdfSXTq4dfzfeS7W4p4YOAAHeA==
   dependencies:
     "@isaacs/fs-minipass" "^4.0.0"
     chownr "^3.0.0"
