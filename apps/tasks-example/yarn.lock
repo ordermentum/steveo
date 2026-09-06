@@ -430,11 +430,6 @@ lodash.shuffle@^4.2.0:
   resolved "https://registry.yarnpkg.com/lodash.shuffle/-/lodash.shuffle-4.2.0.tgz#145b5053cf875f6f5c2a33f48b6e9948c6ec7b4b"
   integrity sha1-FFtQU8+HX29cKjP0i26ZSMbse0s=
 
-lodash@^4.17.21:
-  version "4.17.21"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
-  integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
-
 math-intrinsics@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/math-intrinsics/-/math-intrinsics-1.1.0.tgz#a0dd74be81e2aa5c2f27e65ce283605ee4e2b7f9"
@@ -581,12 +576,11 @@ rimraf@~2.4.0:
   dependencies:
     glob "^6.0.1"
 
-rsmq@^0.12.3:
-  version "0.12.4"
-  resolved "https://registry.yarnpkg.com/rsmq/-/rsmq-0.12.4.tgz#de42490956666aa7ddc245f4a5dff9deea91615e"
-  integrity sha512-xXs0MudraTG0ndRUo8QIG6/G0/xcPFag/kxbfZZ9Xuz7hTeaQLJKaZH5y0B4fcpLkWBXjC8A9ynIHula65bGBQ==
+rsmq@^0.13.0:
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/rsmq/-/rsmq-0.13.0.tgz#f2b9a0901a0f74d1c45912e187507e193efe0d97"
+  integrity sha512-XbJ18rnRpnX7aQ02BiNzcEz/fvapjWKvek0BsNhjFs020eRZgitwpYhwCqJvGS351oqinj/iPVchko4j3f86yw==
   dependencies:
-    lodash "^4.17.21"
     redis "^3.1.2"
 
 safe-json-stringify@~1:

@@ -6881,12 +6881,19 @@ rrule-rust@^1.2.0:
     "@rrule-rust/lib-win32-ia32-msvc" "1.2.0"
     "@rrule-rust/lib-win32-x64-msvc" "1.2.0"
 
-rsmq@*, rsmq@^0.12.4:
+rsmq@*:
   version "0.12.4"
   resolved "https://registry.npmjs.org/rsmq/-/rsmq-0.12.4.tgz"
   integrity sha512-xXs0MudraTG0ndRUo8QIG6/G0/xcPFag/kxbfZZ9Xuz7hTeaQLJKaZH5y0B4fcpLkWBXjC8A9ynIHula65bGBQ==
   dependencies:
     lodash "^4.17.21"
+    redis "^3.1.2"
+
+rsmq@^0.13.0:
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/rsmq/-/rsmq-0.13.0.tgz#f2b9a0901a0f74d1c45912e187507e193efe0d97"
+  integrity sha512-XbJ18rnRpnX7aQ02BiNzcEz/fvapjWKvek0BsNhjFs020eRZgitwpYhwCqJvGS351oqinj/iPVchko4j3f86yw==
+  dependencies:
     redis "^3.1.2"
 
 run-parallel@^1.1.9:
