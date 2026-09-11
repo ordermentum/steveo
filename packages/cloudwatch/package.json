@@ -33,6 +33,6 @@
   "devDependencies": {
     "@steveojs/scheduler-prisma": "*",
     "@steveojs/scheduler-sequelize": "*",
-    "typescript": "5.1.3"
+    "typescript": "5.9.3"
   }
 }
