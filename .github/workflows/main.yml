@@ -80,7 +80,8 @@ jobs:
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       - name: Yarn install
-        run: yarn install --frozen-lockfile --no-progress
+        # The experimental leg runs ahead of the engines range, so skip the check there.
+        run: yarn install --frozen-lockfile --no-progress ${{ matrix.experimental && '--ignore-engines' || '' }}
       - name: Initialise postgres instance
         run: ./bin/initialise.sh
       - name: Migrate (publish) db schema

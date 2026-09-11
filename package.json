@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "debug": "4.4.3",
-    "mocha": "10.2.0",
+    "mocha": "12.0.0",
     "sinon": "^15.2.0",
     "ts-node": "10.9.2"
   },
@@ -31,7 +31,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-tailwindcss": "^3.17.5",
     "eslint-plugin-unicorn": "^56.0.0",
-    "mocha": "10.2.0",
+    "mocha": "12.0.0",
     "prettier": "^2.8.3",
     "turbo": "1.13.4",
     "typescript": "5.1.3"
@@ -46,6 +46,9 @@
     "packages/*"
   ],
   "packageManager": "yarn@1.22.22",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0 <25"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ordermentum/steveo.git"
