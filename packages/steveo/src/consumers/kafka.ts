@@ -354,7 +354,7 @@ class KafkaRunner
    * as with they are both polling consumers
    * no timeout behaviour, need to hook into the stream provided by node-rdkafka
    */
-  process(topics: Array<string>) {
+  process(topics?: Array<string>) {
     return new Promise<KafkaConsumer>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         this.logger.error(
@@ -403,8 +403,10 @@ class KafkaRunner
     });
   }
 
-  getTopicsWithTasks(topics: string[]) {
-    const topicsWithTasks = topics.filter(
+  // No topics means every topic we have a task for, matching IRunner.process
+  getTopicsWithTasks(topics?: string[]) {
+    const candidates = topics ?? this.registry.getTaskTopics();
+    const topicsWithTasks = candidates.filter(
       topic => !!this.registry.getTask(topic)
     );
     return topicsWithTasks;
