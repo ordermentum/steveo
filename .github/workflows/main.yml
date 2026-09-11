@@ -1,5 +1,6 @@
 name: CI
-
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 on:
   workflow_dispatch:
   push:
@@ -15,11 +16,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
         with:
-          node-version: 18.x
+          node-version: 24.x
       - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
@@ -51,12 +52,18 @@ jobs:
         ports:
           - 5432:5432
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x, 24.x]
+        experimental: [false]
+        include:
+          - node-version: 26.x
+            experimental: true
+    continue-on-error: ${{ matrix.experimental }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
       - name: "Setup Localstack"
