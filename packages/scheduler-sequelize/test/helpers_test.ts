@@ -4,6 +4,8 @@ import sinon, { SinonSandbox, SinonFakeTimers } from 'sinon';
 import { computeNextRun, computeNextRuns, isHealthy, taskRunner } from '../src/helpers';
 import { PublishableTask } from '../src/index'
 
+const FROZEN_NOW = new Date('2024-01-24T16:00:00.123Z').getTime();
+
 describe('helpers', () => {
   let sandbox: SinonSandbox;
   let clock: SinonFakeTimers;
@@ -21,6 +23,7 @@ describe('helpers', () => {
 
   describe('computeNextRun', () => {
     it('Calculates the next date correctly', () => {
+      clock = sinon.useFakeTimers(FROZEN_NOW);
       const every3Hours = 'FREQ=HOURLY;INTERVAL=4;BYMINUTE=0';
       const nextDate = moment(computeNextRun(every3Hours));
       expect(nextDate.diff(moment().tz('utc').minute(0), 'hours')).to.equal(3);
@@ -75,9 +78,20 @@ describe('helpers', () => {
       ] as [string, string, (m: Moment) => boolean][]
     ).forEach(([rule, timezone, comparator]) => {
       it(`Calculates the next date for rule ${rule} correctly`, () => {
+        clock = sinon.useFakeTimers(FROZEN_NOW);
         expect(comparator(moment(computeNextRun(rule, { timezone })))).to.be
           .true;
       });
+    });
+
+    // Known defect. DTSTART is derived at second precision while the search bound is
+    // millisecond precision and inclusive, so on an exact second the bound
+    // matches DTSTART and the "next" run is the current instant.
+    it('Returns the current instant for a rule on an exact second', () => {
+      clock = sinon.useFakeTimers(new Date('2024-01-24T16:00:00.000Z').getTime());
+      expect(
+        computeNextRun('FREQ=HOURLY;INTERVAL=1', { timezone: 'UTC' })
+      ).to.equal('2024-01-24T16:00:00.000Z');
     });
 
     it('Can handle fortnightly rrule with a set day', () => {
@@ -156,6 +170,7 @@ describe('helpers', () => {
 
   describe('computeNextRuns', () => {
     it('Calculates the next dates correctly', () => {
+      clock = sinon.useFakeTimers(FROZEN_NOW);
       const every3Hours = 'FREQ=HOURLY;INTERVAL=4;BYMINUTE=0';
       const [nextDates] = computeNextRuns(every3Hours);
       const nextDate = moment(nextDates);
