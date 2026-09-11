@@ -70,8 +70,7 @@ describe('Kafka Integration Test', () => {
       { concurrency: 50 }
     );
 
-    steveo.runner().process();
-    // we want to trigger at least one loop
+    // steveo.start() already started the runner; we want at least one loop
     await sleep(1000);
     await steveo.stop();
     await sleep(1000);
@@ -142,8 +141,7 @@ describe('Kafka Integration Test', () => {
       receivedProducerFailure = true;
     });
 
-    steveo.runner().process();
-    // we want to trigger at least one loop
+    // steveo.start() already started the runner; we want at least one loop
     await sleep(1000);
     await steveo.stop();
     await sleep(1000);

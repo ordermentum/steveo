@@ -62,6 +62,19 @@ describe('runner/kafka', () => {
     expect(consumeStub.args[0][0]).to.eqls(1);
   });
 
+  it('should subscribe to every registered task topic when called without topics', async () => {
+    sinon.stub(runner.consumer, 'connect').callsArgWith(1, null);
+    sinon.stub(runner.consumer, 'on').callsArgWith(1, 'ready', null, null);
+    const subscribeStub = sinon.stub(runner.consumer, 'subscribe').returns({});
+    const consumeStub = sinon.stub(runner.consumer, 'consume').returns({});
+
+    await runner.process();
+
+    expect(subscribeStub.callCount).to.equal(1);
+    expect(subscribeStub.args[0][0]).to.eqls(['test-topic']);
+    expect(consumeStub.callCount).to.equal(1);
+  });
+
   it('should invoke callback when receives a message on topic', async () => {
     const subscribeStub = sinon
       .stub()
