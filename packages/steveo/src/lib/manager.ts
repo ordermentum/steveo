@@ -43,7 +43,7 @@ export class Manager {
     }
 
     await Promise.all(
-      pools.map(async (pool) => {
+      pools.map(async pool => {
         try {
           if (pool.borrowed > 0) {
             await pool.drain();

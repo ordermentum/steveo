@@ -25,6 +25,7 @@
   "ignorePatterns": [
     "node_modules/",
     "build/",
-    "lib/"
+    "packages/*/lib/",
+    "apps/*/lib/"
   ]
 }
