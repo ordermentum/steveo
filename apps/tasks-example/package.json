@@ -6,7 +6,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "dependencies": {
-    "@confluentinc/kafka-javascript": "1.10.0",
+    "@confluentinc/kafka-javascript": "1.10.1",
     "aws-sdk": "^2.77.0",
     "bluebird": "^3.5.0",
     "generic-pool": "^3.7.2",

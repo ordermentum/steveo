@@ -27,7 +27,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@confluentinc/kafka-javascript": "1.10.0",
+    "@confluentinc/kafka-javascript": "1.10.1",
     "@steveojs/storage-postgres": "*",
     "aws-sdk": "^2.77.0",
     "bluebird": "^3.5.0",
