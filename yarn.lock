@@ -579,14 +579,14 @@
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
 
-"@confluentinc/kafka-javascript@1.10.0":
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/@confluentinc/kafka-javascript/-/kafka-javascript-1.10.0.tgz#860e346d085ec3cbc4b52ae05ee33d08eca9bef5"
-  integrity sha512-6gLgZSxbtlC5kR/VOG1JE2m8Lb2NwXMDJmkEDunyj8yV/VyzjLTqH/SojMJ/SdcmwUxmXVwf7VC4ATK/gQsKxg==
+"@confluentinc/kafka-javascript@1.10.1":
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/@confluentinc/kafka-javascript/-/kafka-javascript-1.10.1.tgz#8a6fdeb9e1b225f020299a313f9aebc7502e57bf"
+  integrity sha512-KVePUBn21EqCVP9mfxzEuM3SYJHHEF7X+iiC2e43QQgDSyEaksInmCGooT3w5q+cNAdkSCrK71j0ICfqoSqZLw==
   dependencies:
     "@mapbox/node-pre-gyp" "^2.0.3"
     bindings "^1.3.1"
-    js-yaml "^4.2.0"
+    js-yaml "^4.3.0"
     nan "^2.22.0"
     tar "^7.5.16"
 
@@ -4432,7 +4432,7 @@ js-yaml@^3.13.1, js-yaml@^3.6.1:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
-js-yaml@^4.1.0, js-yaml@^4.1.1, js-yaml@^4.2.0, js-yaml@^4.3.1:
+js-yaml@^4.1.0, js-yaml@^4.1.1, js-yaml@^4.3.0, js-yaml@^4.3.1:
   version "4.3.2"
   resolved "https://registry.npmjs.org/js-yaml/-/js-yaml-4.3.2.tgz#8e44fb14a2643c59726bb15787b5f1512cb3d3fb"
   integrity sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==
