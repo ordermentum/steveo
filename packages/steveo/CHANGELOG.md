@@ -1,5 +1,12 @@
 # steveo
 
+## 12.0.0
+
+### Major Changes
+
+- bb09849: Breaking changes:
+  Update uuid to v14 to mitigate GHSA-w5hq-g745-h8pq - This requires Node 20.x minimum.
+
 ## 11.2.0
 
 ### Minor Changes
