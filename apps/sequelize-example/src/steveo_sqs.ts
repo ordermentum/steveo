@@ -1,4 +1,3 @@
-import https from 'node:https';
 import path from 'node:path';
 import config from 'config';
 import { Steveo, SQSConfiguration } from 'steveo';
@@ -26,8 +25,16 @@ const steveoConfig: SQSConfiguration = {
   messageRetentionPeriod: '604800',
   engine: 'sqs',
   queuePrefix: sandbox ? 'testing' : `${nodeEnv}`,
-  accessKeyId: awsAccessKey,
-  secretAccessKey: awsSecretKey,
+  // Omitted entirely when unset so the SDK falls back to the default
+  // credential chain (instance role, shared config, env vars).
+  ...(awsAccessKey && awsSecretKey
+    ? {
+        credentials: {
+          accessKeyId: awsAccessKey,
+          secretAccessKey: awsSecretKey,
+        },
+      }
+    : {}),
   shuffleQueue: false,
   endpoint: sqsEndpoint,
   maxNumberOfMessages: 1,
@@ -37,14 +44,6 @@ const steveoConfig: SQSConfiguration = {
   visibilityTimeout: 180,
   waitTimeSeconds: 2,
   consumerPollInterval: steveoPollInterval,
-  httpOptions:
-    nodeEnv === 'development'
-      ? {
-          agent: new https.Agent({
-            rejectUnauthorized: false,
-          }),
-        }
-      : undefined,
   tasksPath: path.resolve(import.meta.dirname, './tasks'),
   upperCaseNames: true,
 };

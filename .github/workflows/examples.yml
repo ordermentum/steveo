@@ -1,0 +1,99 @@
+name: Examples
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+# The example apps are not yarn workspaces, so they install their own
+# dependencies. Their `steveo` / `@steveojs/*` ranges resolve from npm, which
+# would validate the examples against the *published* packages and never catch
+# a change in this repo breaking them. So we build packages/* first and symlink
+# those builds over the copies yarn fetched.
+#
+# Build and lint run from the root toolchain rather than each app's, so the
+# examples don't have to duplicate typescript + eslint + every shared plugin
+# four times over, and can't drift from the versions the repo actually uses.
+
+jobs:
+  examples:
+    name: ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - prisma-example
+          - sequelize-example
+          - tasks-example
+          - workflows-example
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+
+      - name: Configure NPM
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" > ~/.npmrc
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: Install root dependencies
+        run: yarn install --frozen-lockfile --no-progress
+
+      - name: Build workspace packages
+        run: yarn build
+
+      - name: Install example dependencies
+        working-directory: apps/${{ matrix.app }}
+        run: yarn install --no-progress
+
+      - name: Link locally built packages
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          for pkg in steveo scheduler-prisma scheduler-sequelize storage-postgres; do
+            case "$pkg" in
+              steveo) target="node_modules/steveo" ;;
+              *)      target="node_modules/@steveojs/$pkg" ;;
+            esac
+            # Only relink what this app actually depends on.
+            if [ -e "$target" ]; then
+              rm -rf "$target"
+              ln -s "$GITHUB_WORKSPACE/packages/$pkg" "$target"
+              echo "linked $pkg -> local build"
+            fi
+          done
+
+      - name: Generate Prisma client
+        if: matrix.app == 'prisma-example'
+        working-directory: apps/${{ matrix.app }}
+        run: yarn prisma generate
+
+      # tsc both typechecks and emits, so this is the build and the typecheck.
+      # tasks-example is plain JavaScript with no tsconfig, so its entry points
+      # are syntax checked as ES modules instead.
+      - name: Build
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          if [ -f tsconfig.json ]; then
+            "$GITHUB_WORKSPACE/node_modules/.bin/tsc" -p tsconfig.json
+          else
+            for f in *.js; do node --check "$f"; done
+          fi
+
+      - name: Lint
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          if [ -d src ]; then
+            "$GITHUB_WORKSPACE/node_modules/.bin/eslint" 'src/**/*.{ts,js}'
+          else
+            "$GITHUB_WORKSPACE/node_modules/.bin/eslint" '*.js'
+          fi

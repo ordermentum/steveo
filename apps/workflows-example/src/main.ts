@@ -13,6 +13,7 @@ import { Customer } from './types/customer.js';
     .flow('order-e2e-flow', {
       serviceId: 'ordermentum-api',
       waitToCommit: false,
+      deleteOnComplete: true,
     })
     .next({
       topic: 'extremely-verbose-topic-name-for-testing-purposes',
