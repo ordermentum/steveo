@@ -1,6 +1,6 @@
 {
   "name": "@steveojs/cloudwatch",
-  "version": "9.0.0",
+  "version": "10.0.0",
   "main": "lib/index.js",
   "repository": {
     "type": "git",
