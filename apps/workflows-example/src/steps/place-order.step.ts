@@ -1,6 +1,6 @@
-import { Order } from '../types/order';
-import { Customer } from '../types/customer';
-import { logger } from '../config';
+import { Order } from '../types/order.js';
+import { Customer } from '../types/customer.js';
+import { logger } from '../config.js';
 
 export function placeOrderStep(customer: Customer): Order {
   // ...

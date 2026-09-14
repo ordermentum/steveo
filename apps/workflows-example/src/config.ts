@@ -1,9 +1,9 @@
 import { load } from 'ts-dotenv';
-import Steveo, { SQSConfiguration } from 'steveo';
+import { Steveo, SQSConfiguration } from 'steveo';
 import { postgresFactory, PostgresStorageConfig } from '@steveojs/storage-postgres';
-import bunyan from 'bunyan';
+import pino from 'pino';
 
-export const logger = bunyan.createLogger({ name: 'workflow-test' });
+export const logger = pino({ name: 'workflow-test' });
 
 // Parse and validate the environment to the defined schema
 const env = load({
@@ -46,4 +46,4 @@ const postgresConfig: PostgresStorageConfig = {
 const storage = postgresFactory(postgresConfig, logger);
 
 // Create steveo instance with messaging config and storage instance
-export const steveo = Steveo(sqsConfig, logger, storage);
+export const steveo = new Steveo<'sqs'>(sqsConfig, logger, storage);

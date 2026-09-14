@@ -1,8 +1,8 @@
-const Steveo = require('../../lib').default;
-const bunyan = require('bunyan');
-const steveoConfig = require('./config');
+import pino from 'pino';
+import { Steveo } from 'steveo';
+import steveoConfig from './config.js';
 
-const logger = bunyan.createLogger({ name: 'consumer' });
+const logger = pino({ name: 'consumer' });
 
 (async () => {
   const config = steveoConfig[process.env.ENGINE];
@@ -11,15 +11,15 @@ const logger = bunyan.createLogger({ name: 'consumer' });
     return;
   }
 
-  const steveo = Steveo(config, logger)();
+  const steveo = new Steveo(config, logger);
 
   steveo.events.on('runner_failure', (topic, ex) => {
-    logger.info('Failed to call subscribe', topic, ex);
+    logger.error({ topic, err: ex }, 'Failed to call subscribe');
   });
 
   // subscribe Call for first task
   const subscribe = async payload => {
-    logger.info('Payload from producer', payload);
+    logger.info({ payload }, 'Payload from producer');
   };
 
   // create first Task
@@ -29,6 +29,6 @@ const logger = bunyan.createLogger({ name: 'consumer' });
   // initialize consumer
   await steveo.runner().process(['test-topic', 'test-spam']);
 })().catch(ex => {
-  logger.debug('Exception', ex);
+  logger.debug({ err: ex }, 'Exception');
   process.exit();
 });

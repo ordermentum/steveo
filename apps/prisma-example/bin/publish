@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 if (!process.env.NODE_ENV) process.env.NODE_ENV = 'development';
 
-let client;
+const prebuilt = ['testing', 'production'].includes(process.env.NODE_ENV);
 
-if (['testing', 'production'].includes(process.env.NODE_ENV)) {
-  client = require('../lib/client').client;
-} else {
-  require('ts-node').register({ transpileOnly: true }); // or babel-register
-  client = require('../src/client').client;
+if (!prebuilt) {
+  // Register the TypeScript loader so ./src can be imported directly
+  const { register } = await import('tsx/esm/api');
+  register();
 }
+
+const { client } = await import(
+  prebuilt ? '../lib/client.js' : '../src/client.ts'
+);
 
 process.title = 'jobs';
 

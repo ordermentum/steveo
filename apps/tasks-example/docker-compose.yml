@@ -29,7 +29,7 @@ services:
       - kafka
     volumes:
       - .:/usr/src/app
-      - ../lib:/usr/src/app/lib
+      - ../../packages/steveo:/usr/src/app/node_modules/steveo
     environment:
       - KAFKA_BROKERS=kafka:9092
       - AWS_ACCESS_KEY=AKKA

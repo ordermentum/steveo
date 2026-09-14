@@ -1,10 +1,10 @@
 // @ts-nocheck
-import { JobScheduler } from '@ordermentum/steveo';
+import { JobScheduler } from '@steveojs/scheduler-sequelize';
 import config from 'config';
-import registerSteveoTask from './tasks/taskThatRunsWithSteveoAndUsesTaskHelper';
-import { exampleTask2 } from './tasks/taskThatOnlyUsesSteveo';
-import exampleTask3 from './tasks/taskThatDoesnotUseSteveo';
-import { logger } from './logger';
+import registerSteveoTask from './tasks/taskThatRunsWithSteveoAndUsesTaskHelper.js';
+import { exampleTask2 } from './tasks/taskThatOnlyUsesSteveo.js';
+import exampleTask3 from './tasks/taskThatDoesnotUseSteveo.js';
+import { logger } from './logger.js';
 
 const jobScheduler = new JobScheduler({
   logger,

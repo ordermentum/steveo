@@ -1,9 +1,8 @@
-import Steveo from 'steveo';
-import https from 'https';
+import https from 'node:https';
+import path from 'node:path';
 import config from 'config';
-import { Configuration } from 'steveo/lib/common';
-import path from 'path';
-import logger from './logger';
+import { Steveo, SQSConfiguration } from 'steveo';
+import logger from './logger.js';
 
 const workerCount = config.get<number>('steveoWorkerCount');
 const steveoPollInterval = config.get<number>('steveoPollInterval');
@@ -20,7 +19,7 @@ const sqsEndpoint = config.has('sqsEndpoint')
   ? config.get<string>('sqsEndpoint')
   : undefined;
 
-const steveoConfig: Configuration = {
+const steveoConfig: SQSConfiguration = {
   region: awsRegion,
   apiVersion: '2012-11-05',
   receiveMessageWaitTimeSeconds: '20',
@@ -46,20 +45,16 @@ const steveoConfig: Configuration = {
           }),
         }
       : undefined,
-  childProcesses: {
-    instancePath: __filename,
-    args: nodeEnv === 'production' ? [] : ['-r', 'ts-node/register'],
-  },
-  tasksPath: path.resolve(__dirname, '../tasks'),
+  tasksPath: path.resolve(import.meta.dirname, './tasks'),
   upperCaseNames: true,
 };
 
-const steveo = Steveo(steveoConfig, logger);
+const steveo = new Steveo<'sqs'>(steveoConfig, logger);
 
 steveo.events.on(
   'runner_failure',
   async (topic: string, ex: Error, params: any) => {
-    logger.error(ex, { tags: { topic }, params });
+    logger.error({ err: ex, tags: { topic }, params }, 'runner failure');
   }
 );
 

@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { JobScheduler } from '@ordermentum/steveo';
-import steveo from '../steveo_sqs';
+import { JobScheduler } from '@steveojs/scheduler-sequelize';
+import steveo from '../steveo_sqs.js';
 
 export const callback = async () => {};
 
