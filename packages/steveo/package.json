@@ -62,7 +62,7 @@
     "@confluentinc/kafka-javascript": "1.10.0",
     "null-logger": "^2.0.0",
     "rsmq": "^0.12.4",
-    "uuid": "^9.0.0"
+    "uuid": "^14.0.2"
   },
   "peerDependencies": {},
   "devDependencies": {
@@ -77,13 +77,12 @@
     "@types/node": "20.17.28",
     "@types/rsmq": "0.8.4",
     "@types/sinon": "10.0.20",
-    "@types/uuid": "8.3.4",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "chai": "4.5.0",
     "cross-env": "7.0.3",
     "mocha": "12.0.0",
-    "nyc": "15.1.0",
+    "nyc": "^18.0.0",
     "pino": "^8.14.1",
     "prettier": "2.8.8",
     "rsmq": "^0.12.4",

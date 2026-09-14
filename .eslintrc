@@ -4,6 +4,20 @@
     "@ordermentum/ordermentum",
     "turbo"
   ],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": [
+          "tsconfig.json",
+          "packages/*/tsconfig.json"
+        ]
+      },
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  },
   "rules": {
     "@typescript-eslint/no-shadow": "off",
     "turbo/no-undeclared-env-vars": "off"
@@ -11,6 +25,7 @@
   "ignorePatterns": [
     "node_modules/",
     "build/",
-    "lib/"
+    "packages/*/lib/",
+    "apps/*/lib/"
   ]
 }
