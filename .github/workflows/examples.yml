@@ -2,14 +2,14 @@ name: Examples
 
 on:
   workflow_dispatch:
+  # `main` is the only long-lived branch, and it is the only one worth a
+  # post-merge run. Feature branches are covered by pull_request below.
   push:
     branches:
-      - develop
       - main
+  # Deliberately unfiltered: a PR targeting anything other than main (a stacked
+  # PR onto another feature branch, say) still needs CI.
   pull_request:
-    branches:
-      - develop
-      - main
 
 # The example apps are not yarn workspaces, so they install their own
 # dependencies. Their `steveo` / `@steveojs/*` ranges resolve from npm, which
