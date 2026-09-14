@@ -1,5 +1,5 @@
-import { exampleTask2 } from './taskThatOnlyUsesSteveo';
-import { JobInstance } from '../models/job';
+import { exampleTask2 } from './taskThatOnlyUsesSteveo.js';
+import { JobInstance } from '../models/job.js';
 
 const exampleTask3 = (jobs: JobInstance[] = []) => {
   const messages = jobs.map(job => Object.assign(job, { jobRowId: job.id }));

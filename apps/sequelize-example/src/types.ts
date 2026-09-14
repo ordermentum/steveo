@@ -1,5 +1,5 @@
 import { ModelCtor, Sequelize, Model } from 'sequelize';
-import { JobInstance } from './models/job';
+import { JobInstance } from './models/job.js';
 
 // Sequelize types
 export type dbList = { [modelName: string]: ModelCtor<Model> };

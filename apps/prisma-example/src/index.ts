@@ -1,10 +1,10 @@
 // @ts-nocheck
 import { JobScheduler } from '@steveojs/scheduler-prisma';
-import bunyan from 'bunyan';
-import exampleTask from './example_task';
-import { client } from './client';
+import pino from 'pino';
+import exampleTask from './example_task.js';
+import { client } from './client.js';
 
-const logger = bunyan.createLogger({ name: 'example-job' });
+const logger = pino({ name: 'example-job' });
 
 export const jobScheduler = new JobScheduler({
   client,

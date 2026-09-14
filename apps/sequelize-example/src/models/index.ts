@@ -1,8 +1,8 @@
 import { Sequelize, ModelCtor } from 'sequelize';
 import config from 'config';
-import { associable } from '../types';
-import logger from '../logger';
-import jobModelFactory, { JobInstance } from './job';
+import { associable } from '../types.js';
+import logger from '../logger.js';
+import jobModelFactory, { JobInstance } from './job.js';
 
 export type JobModel = associable<JobInstance> | ModelCtor<JobInstance>;
 
@@ -21,11 +21,11 @@ const db = {
   Job,
 };
 
-Object.values(db).forEach(model => {
+for (const model of Object.values(db)) {
   if ('associate' in model && model.associate) {
     model.associate(db);
   }
-});
+}
 
 export default {
   sequelize,

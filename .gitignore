@@ -46,5 +46,9 @@ jsconfig.json
 example/docker-compose-ordermentum.yml
 
 packages/*/lib/
+apps/*/lib/
+
+# The example apps resolve dependencies fresh; see .github/workflows/examples.yml
+apps/*/yarn.lock
 
 .turbo

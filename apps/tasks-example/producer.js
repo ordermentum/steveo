@@ -1,8 +1,8 @@
-const Steveo = require('../../lib').default;
-const steveoConfig = require('./config');
-const bunyan = require('bunyan');
+import pino from 'pino';
+import { Steveo } from 'steveo';
+import steveoConfig from './config.js';
 
-const logger = bunyan.createLogger({ name: 'producer' });
+const logger = pino({ name: 'producer' });
 
 (async () => {
   const config = steveoConfig[process.env.ENGINE];
@@ -10,18 +10,18 @@ const logger = bunyan.createLogger({ name: 'producer' });
   if (!config) {
     return;
   }
-  const steveo = Steveo(config, logger)();
+  const steveo = new Steveo(config, logger);
 
   steveo.events.on('producer_failure', (topic, ex) => {
-    logger.log('Failed to produce message', topic, ex);
+    logger.error({ topic, err: ex }, 'Failed to produce message');
   });
 
   steveo.events.on('producer_success', (topic, data) => {
-    logger.log('Message succesfully produced', topic, data);
+    logger.info({ topic, data }, 'Message successfully produced');
   });
 
   steveo.events.on('task_failure', (topic, ex) => {
-    logger.log('Failed task', topic, ex);
+    logger.error({ topic, err: ex }, 'Failed task');
   });
 
   const attributes = [
@@ -32,8 +32,20 @@ const logger = bunyan.createLogger({ name: 'producer' });
     },
   ];
   // create first Task
-  const firstTask = steveo.task('test-topic', () => {}, attributes);
-  const secondTask = steveo.task('test-spam', () => {}, attributes);
+  const firstTask = steveo.task(
+    'test-topic',
+    () => {
+      logger.info('test-topic Task executed');
+    },
+    attributes
+  );
+  const secondTask = steveo.task(
+    'test-spam',
+    () => {
+      logger.info('test-topic Task executed');
+    },
+    attributes
+  );
   await steveo.runner().createQueues();
 
   // let it run & publish messages in every second
@@ -41,7 +53,7 @@ const logger = bunyan.createLogger({ name: 'producer' });
     if (counter < 10) {
       setInterval(async () => {
         counter += 1; // eslint-disable-line
-        logger.log('Produce: Message ', counter);
+        logger.info({ counter }, 'Produce: Message');
         await firstTask.publish([{ payload: `Message ${counter}` }]);
         await secondTask.publish([{ payload: `Message ${counter}` }]);
         produceMessages(counter);
@@ -52,6 +64,6 @@ const logger = bunyan.createLogger({ name: 'producer' });
   }
   produceMessages(0);
 })().catch(ex => {
-  logger.log('Exception', ex);
+  logger.error({ err: ex }, 'Exception');
   process.exit();
 });

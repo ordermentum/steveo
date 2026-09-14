@@ -2,7 +2,7 @@
  * Note: This is a replica of https://github.com/ordermentum/ordermentum/blob/main/src/models/job.ts
  */
 import Sequelize from 'sequelize';
-import { associable, modelFactory, Properties } from '../types';
+import { associable, modelFactory, Properties } from '../types.js';
 
 const { Op } = Sequelize;
 
@@ -93,7 +93,7 @@ const jobModelFactory: modelFactory<JobInstance> = (
   Job.addScope('blocked', () => ({
     where: {
       queued: true,
-      deletedAt: null,
+      deletedAt: { [Op.is]: null },
       acceptedAt: {
         [Op.or]: {
           [Op.lte]: { [Op.col]: 'last_run_at' },

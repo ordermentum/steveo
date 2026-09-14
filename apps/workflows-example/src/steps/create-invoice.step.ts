@@ -1,6 +1,6 @@
-import { Order } from '../types/order';
-import { Invoice } from '../types/invoice';
-import { logger } from '../config';
+import { Order } from '../types/order.js';
+import { Invoice } from '../types/invoice.js';
+import { logger } from '../config.js';
 
 export function createInvoiceStep(order: Order): Invoice {
   // ...

@@ -1,10 +1,8 @@
-const bunyan = require('bunyan');
-
 module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   sandbox: process.env.SANDBOX || false,
   logger: {
-    level: bunyan.INFO,
+    level: 'info',
   },
   serviceName: 'netsuite',
   // Token for segment analytics
