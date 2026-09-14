@@ -1,5 +1,13 @@
 {
   "$schema": "https://turborepo.org/schema.json",
+  "globalDependencies": [
+    ".editorconfig",
+    ".eslintrc",
+    ".mocharc.js",
+    ".nvmrc",
+    "tsconfig.eslint.json",
+    "tsconfig.json"
+  ],
   "pipeline": {
     "build": {
       "dependsOn": [
