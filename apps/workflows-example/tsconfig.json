@@ -4,7 +4,7 @@
       "es2022"
     ],
     "target": "es2022",
-    "module": "commonjs",
+    "module": "nodenext",
     "allowJs": false,
     "declaration": true,
     "outDir": "lib",
@@ -19,7 +19,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true
   },
   "include": [
@@ -28,5 +28,5 @@
   "exclude": [
     "lib",
     "node_modules"
-  ],
+  ]
 }

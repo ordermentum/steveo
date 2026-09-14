@@ -1,18 +1,20 @@
 #!/usr/bin/env node
-const { promisify } = require('util');
-const writeFile = promisify(require('fs').writeFile);
-const path = require('path');
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 if (!process.env.NODE_ENV) process.env.NODE_ENV = 'development';
 
-let JobScheduler;
+const prebuilt = ['testing', 'production'].includes(process.env.NODE_ENV);
 
-if (['testing', 'production'].includes(process.env.NODE_ENV)) {
-  JobScheduler = require('../lib').default;
-} else {
-  require('ts-node').register({ transpileOnly: true }); // or babel-register
-  JobScheduler = require('../src').default;
+if (!prebuilt) {
+  // Register the TypeScript loader so ./src can be imported directly
+  const { register } = await import('tsx/esm/api');
+  register();
 }
+
+const { default: JobScheduler } = await import(
+  prebuilt ? '../lib/index.js' : '../src/index.ts'
+);
 
 process.title = 'jobs';
 

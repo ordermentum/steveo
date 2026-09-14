@@ -1,10 +1,10 @@
-import { steveo } from './config';
+import { steveo } from './config.js';
 import {
   createInvoiceStep,
   rollbackInvoiceStep,
-} from './steps/create-invoice.step';
-import { placeOrderStep } from './steps/place-order.step';
-import { Customer } from './types/customer';
+} from './steps/create-invoice.step.js';
+import { placeOrderStep } from './steps/place-order.step.js';
+import { Customer } from './types/customer.js';
 
 (async () => {
   // We are going to create a fictitious workflow that follows

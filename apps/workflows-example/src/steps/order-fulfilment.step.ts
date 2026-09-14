@@ -1,5 +1,5 @@
-import { Order } from '../types/order';
-import { Invoice } from '../types/invoice';
+import { Order } from '../types/order.js';
+import { Invoice } from '../types/invoice.js';
 
 export function orderFulfilmentStep(order: Order): Invoice {
   // ...

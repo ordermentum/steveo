@@ -27,4 +27,4 @@ const steveoConfig = {
   redis: redisConfig,
 };
 
-module.exports = steveoConfig;
+export default steveoConfig;
