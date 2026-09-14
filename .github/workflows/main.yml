@@ -3,13 +3,9 @@ env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 on:
   workflow_dispatch:
-  # `main` is the only long-lived branch, and it is the only one worth a
-  # post-merge run. Feature branches are covered by pull_request below.
   push:
     branches:
       - main
-  # Deliberately unfiltered: a PR targeting anything other than main (a stacked
-  # PR onto another feature branch, say) still needs CI.
   pull_request:
 
 jobs:
