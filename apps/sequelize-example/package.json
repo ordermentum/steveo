@@ -20,7 +20,6 @@
     "spec": "mocha -R spec --import tsx test/*.ts",
     "spec:runner": "mocha -R spec --import tsx",
     "build": "yarn clean && yarn tsc",
-    "prepublish": "yarn run build && yarn spec",
     "clean": "rm -rf lib",
     "reporter": "nyc --reporter=html yarn run test",
     "typecheck": "tsc --noEmit"
@@ -62,8 +61,8 @@
     "cross-env": "7.0.3",
     "mocha": "12.0.0",
     "nyc": "^18.0.0",
-    "sinon": "11.1.2",
+    "sinon": "15.2.0",
     "tsx": "^4.23.13",
-    "typescript": "4.9.5"
+    "typescript": "5.1.3"
   }
 }
