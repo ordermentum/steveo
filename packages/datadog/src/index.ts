@@ -3,8 +3,20 @@ import tracer, { SpanOptions } from 'dd-trace';
 import { Middleware } from 'steveo';
 import { MiddlewareContext } from 'steveo/lib/common';
 
+export type DataDogMiddlewareOptions = {
+  // Operation name of the span each consumed message runs in, e.g. `<service>.consume`
+  consumeOperationName?: string;
+};
+
 export class DataDogMiddleware implements Middleware {
   public readonly DATADOG_CONTEXT_FORMAT: string = 'text_map';
+
+  public readonly consumeOperationName: string;
+
+  constructor(options: DataDogMiddlewareOptions = {}) {
+    this.consumeOperationName =
+      options.consumeOperationName ?? 'steveo.consume';
+  }
 
   public publish(context, next) {
     const traceOptions = this.createBaseTraceOptionsFromContext(context);
@@ -23,9 +35,13 @@ export class DataDogMiddleware implements Middleware {
     );
   }
 
+  // Runs the handler inside a span so logs written by it carry dd.trace_id.
+  // Only the topic is tagged: message payloads must not end up in span tags.
   public async consume(context, next) {
-    const tracerOptions: tracer.TraceOptions & SpanOptions =
-      this.createBaseTraceOptionsFromContext(context);
+    const tracerOptions: tracer.TraceOptions & SpanOptions = {
+      resource: context.topic,
+      tags: { 'steveo.topic': context.topic },
+    };
 
     const messageMetadata: Record<string, any> =
       this.getMetaFromContext(context);
@@ -38,7 +54,9 @@ export class DataDogMiddleware implements Middleware {
       tracerOptions.childOf = spanContext;
     }
 
-    return tracer.trace('steveo.consume', tracerOptions, () => next(context));
+    return tracer.trace(this.consumeOperationName, tracerOptions, () =>
+      next(context)
+    );
   }
 
   private getMetaFromContext(context: MiddlewareContext): Record<string, any> {
