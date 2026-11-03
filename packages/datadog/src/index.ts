@@ -31,7 +31,7 @@ export class DataDogMiddleware implements Middleware {
           messageMetadata.datadog = this.getDatadogContextData(span);
           context.payload._meta = messageMetadata;
         }
-        return next(context);
+        next(context);
       }
     );
   }

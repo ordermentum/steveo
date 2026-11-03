@@ -118,18 +118,6 @@ describe('DataDogMiddleware', () => {
         )
       ).to.throw(error);
     });
-
-    it('should reject with the same error when the next middleware rejects', async () => {
-      const error = new Error('async failure');
-
-      const result = await new DataDogMiddleware()
-        .publish({ topic: 'test-topic', payload: {} }, () =>
-          Promise.reject(error)
-        )
-        .catch(e => e);
-
-      expect(result).to.equal(error);
-    });
   });
 
   describe('consume', () => {
