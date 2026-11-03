@@ -92,7 +92,13 @@ describe('DataDogMiddleware', () => {
       };
       const traceStub = sinon
         .stub(tracer, 'trace')
-        .callsFake((_name: string, _options: any, fn: any) => fn());
+        .callsFake(
+          (
+            _name: string,
+            _options: tracer.TraceOptions & SpanOptions,
+            fn: () => unknown
+          ) => fn()
+        );
 
       await new DataDogMiddleware().publish(context, () => Promise.resolve());
 
@@ -185,7 +191,13 @@ describe('DataDogMiddleware', () => {
       };
       const traceStub = sinon
         .stub(tracer, 'trace')
-        .callsFake((_name: string, _options: any, fn: any) => fn());
+        .callsFake(
+          (
+            _name: string,
+            _options: tracer.TraceOptions & SpanOptions,
+            fn: () => unknown
+          ) => fn()
+        );
 
       await new DataDogMiddleware().consume(context, () => Promise.resolve());
 
@@ -197,7 +209,13 @@ describe('DataDogMiddleware', () => {
     it('should use the configured operation name', async () => {
       const traceStub = sinon
         .stub(tracer, 'trace')
-        .callsFake((_name: string, _options: any, fn: any) => fn());
+        .callsFake(
+          (
+            _name: string,
+            _options: tracer.TraceOptions & SpanOptions,
+            fn: () => unknown
+          ) => fn()
+        );
 
       await new DataDogMiddleware({
         consumeOperationName: 'documentum-jobs.consume',
