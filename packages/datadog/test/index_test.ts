@@ -85,6 +85,51 @@ describe('DataDogMiddleware', () => {
         }
       );
     });
+    it('should not copy the message payload into span tags', async () => {
+      const context: MiddlewareContext = {
+        topic: 'test-topic',
+        payload: { orderId: 'secret-order', rows: [{ email: 'a@b.c' }] },
+      };
+      const traceStub = sinon
+        .stub(tracer, 'trace')
+        .callsFake((_name: string, _options: any, fn: any) => fn());
+
+      await new DataDogMiddleware().publish(context, () => Promise.resolve());
+
+      const options = traceStub.firstCall.args[1] as tracer.TraceOptions &
+        SpanOptions;
+      expect(options).to.deep.equal({
+        resource: 'test-topic',
+        tags: { 'steveo.topic': 'test-topic' },
+      });
+      expect(JSON.stringify(options)).to.not.include('secret-order');
+      expect(JSON.stringify(options)).to.not.include('a@b.c');
+    });
+
+    it('should rethrow the same error when the next middleware throws', () => {
+      const error = new Error('sync failure');
+
+      expect(() =>
+        new DataDogMiddleware().publish(
+          { topic: 'test-topic', payload: {} },
+          () => {
+            throw error;
+          }
+        )
+      ).to.throw(error);
+    });
+
+    it('should reject with the same error when the next middleware rejects', async () => {
+      const error = new Error('async failure');
+
+      const result = await new DataDogMiddleware()
+        .publish({ topic: 'test-topic', payload: {} }, () =>
+          Promise.reject(error)
+        )
+        .catch(e => e);
+
+      expect(result).to.equal(error);
+    });
   });
 
   describe('consume', () => {

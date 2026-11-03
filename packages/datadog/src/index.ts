@@ -18,6 +18,7 @@ export class DataDogMiddleware implements Middleware {
       options.consumeOperationName ?? 'steveo.consume';
   }
 
+  // Passes the span context to consumers in payload._meta.datadog.
   public publish(context, next) {
     const traceOptions = this.createBaseTraceOptionsFromContext(context);
     return tracer.trace(
@@ -30,18 +31,15 @@ export class DataDogMiddleware implements Middleware {
           messageMetadata.datadog = this.getDatadogContextData(span);
           context.payload._meta = messageMetadata;
         }
-        next(context);
+        return next(context);
       }
     );
   }
 
   // Runs the handler inside a span so logs written by it carry dd.trace_id.
-  // Only the topic is tagged: message payloads must not end up in span tags.
   public async consume(context, next) {
-    const tracerOptions: tracer.TraceOptions & SpanOptions = {
-      resource: context.topic,
-      tags: { 'steveo.topic': context.topic },
-    };
+    const tracerOptions: tracer.TraceOptions & SpanOptions =
+      this.createBaseTraceOptionsFromContext(context);
 
     const messageMetadata: Record<string, any> =
       this.getMetaFromContext(context);
@@ -69,15 +67,13 @@ export class DataDogMiddleware implements Middleware {
     return contextData;
   }
 
+  // Only the topic is tagged: message payloads must not end up in span tags.
   private createBaseTraceOptionsFromContext(
     context: MiddlewareContext
   ): tracer.TraceOptions & SpanOptions {
-    const shouldAddTags: boolean = typeof context.payload !== 'string';
-    const tags = shouldAddTags ? { ...context.payload } : {};
-
     return {
       resource: context.topic,
-      tags,
+      tags: { 'steveo.topic': context.topic },
     };
   }
 }
