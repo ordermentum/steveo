@@ -124,6 +124,70 @@ describe('DataDogMiddleware', () => {
         )
       ).to.throw(error);
     });
+
+    it('should resolve only after the next middleware resolves', async () => {
+      let resolveNext: () => void = () => {};
+      const nextDone = new Promise<void>(resolve => {
+        resolveNext = resolve;
+      });
+      let settled = false;
+
+      const published = Promise.resolve(
+        new DataDogMiddleware().publish(
+          { topic: 'test-topic', payload: {} },
+          () => nextDone
+        )
+      ).then(() => {
+        settled = true;
+        return settled;
+      });
+
+      await new Promise(resolve => {
+        setImmediate(resolve);
+      });
+      expect(settled).to.equal(false);
+
+      resolveNext();
+      await published;
+      expect(settled).to.equal(true);
+    });
+
+    it('should reject with the same error when the next middleware rejects', async () => {
+      const error = new Error('async failure');
+
+      const result = await Promise.resolve(
+        new DataDogMiddleware().publish(
+          { topic: 'test-topic', payload: {} },
+          () => Promise.reject(error)
+        )
+      ).catch(e => e);
+
+      expect(result).to.equal(error);
+    });
+
+    it('should inject the span context into payload._meta.datadog before awaiting next', async () => {
+      const fakeSpanData = { spanId: '12345678910', traceId: '10987654321' };
+      sinon
+        .stub(DataDogMiddleware.prototype, <any>'getDatadogContextData')
+        .returns(fakeSpanData);
+      const context: MiddlewareContext = {
+        topic: 'test-topic',
+        payload: { key: 'value' },
+      };
+      const expectedPayload = {
+        key: 'value',
+        _meta: { datadog: fakeSpanData },
+      };
+      let payloadSeenByNext;
+
+      await new DataDogMiddleware().publish(context, (c: MiddlewareContext) => {
+        payloadSeenByNext = { ...c.payload };
+        return Promise.resolve();
+      });
+
+      expect(payloadSeenByNext).to.deep.equal(expectedPayload);
+      expect(context.payload).to.deep.equal(expectedPayload);
+    });
   });
 
   describe('consume', () => {
