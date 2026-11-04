@@ -1,5 +1,11 @@
 # @steveojs/datadog
 
+## 23.0.1
+
+### Patch Changes
+
+- 134b9c2: publish now waits for the send and rejects when it fails.
+
 ## 23.0.0
 
 ### Major Changes
