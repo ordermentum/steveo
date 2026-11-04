@@ -3,9 +3,22 @@ import tracer, { SpanOptions } from 'dd-trace';
 import { Middleware } from 'steveo';
 import { MiddlewareContext } from 'steveo/lib/common';
 
+export type DataDogMiddlewareOptions = {
+  // Operation name of the span each consumed message runs in, e.g. `<service>.consume`
+  consumeOperationName?: string;
+};
+
 export class DataDogMiddleware implements Middleware {
   public readonly DATADOG_CONTEXT_FORMAT: string = 'text_map';
 
+  public readonly consumeOperationName: string;
+
+  constructor(options: DataDogMiddlewareOptions = {}) {
+    this.consumeOperationName =
+      options.consumeOperationName ?? 'steveo.consume';
+  }
+
+  // Passes the span context to consumers in payload._meta.datadog.
   public publish(context, next) {
     const traceOptions = this.createBaseTraceOptionsFromContext(context);
     return tracer.trace(
@@ -23,6 +36,7 @@ export class DataDogMiddleware implements Middleware {
     );
   }
 
+  // Runs the handler inside a span so logs written by it carry dd.trace_id.
   public async consume(context, next) {
     const tracerOptions: tracer.TraceOptions & SpanOptions =
       this.createBaseTraceOptionsFromContext(context);
@@ -38,7 +52,9 @@ export class DataDogMiddleware implements Middleware {
       tracerOptions.childOf = spanContext;
     }
 
-    return tracer.trace('steveo.consume', tracerOptions, () => next(context));
+    return tracer.trace(this.consumeOperationName, tracerOptions, () =>
+      next(context)
+    );
   }
 
   private getMetaFromContext(context: MiddlewareContext): Record<string, any> {
@@ -51,15 +67,13 @@ export class DataDogMiddleware implements Middleware {
     return contextData;
   }
 
+  // Only the topic is tagged: message payloads must not end up in span tags.
   private createBaseTraceOptionsFromContext(
     context: MiddlewareContext
   ): tracer.TraceOptions & SpanOptions {
-    const shouldAddTags: boolean = typeof context.payload !== 'string';
-    const tags = shouldAddTags ? { ...context.payload } : {};
-
     return {
       resource: context.topic,
-      tags,
+      tags: { 'steveo.topic': context.topic },
     };
   }
 }

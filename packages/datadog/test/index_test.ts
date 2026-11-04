@@ -85,6 +85,45 @@ describe('DataDogMiddleware', () => {
         }
       );
     });
+    it('should not copy the message payload into span tags', async () => {
+      const context: MiddlewareContext = {
+        topic: 'test-topic',
+        payload: { orderId: 'secret-order', rows: [{ email: 'a@b.c' }] },
+      };
+      const traceStub = sinon
+        .stub(tracer, 'trace')
+        .callsFake(
+          (
+            _name: string,
+            _options: tracer.TraceOptions & SpanOptions,
+            fn: () => unknown
+          ) => fn()
+        );
+
+      await new DataDogMiddleware().publish(context, () => Promise.resolve());
+
+      const options = traceStub.firstCall.args[1] as tracer.TraceOptions &
+        SpanOptions;
+      expect(options).to.deep.equal({
+        resource: 'test-topic',
+        tags: { 'steveo.topic': 'test-topic' },
+      });
+      expect(JSON.stringify(options)).to.not.include('secret-order');
+      expect(JSON.stringify(options)).to.not.include('a@b.c');
+    });
+
+    it('should rethrow the same error when the next middleware throws', () => {
+      const error = new Error('sync failure');
+
+      expect(() =>
+        new DataDogMiddleware().publish(
+          { topic: 'test-topic', payload: {} },
+          () => {
+            throw error;
+          }
+        )
+      ).to.throw(error);
+    });
   });
 
   describe('consume', () => {
@@ -97,9 +136,7 @@ describe('DataDogMiddleware', () => {
       };
       const expectedTracerOptions: tracer.TraceOptions & SpanOptions = {
         resource: context.topic,
-        tags: {
-          ...context.payload,
-        },
+        tags: { 'steveo.topic': context.topic },
       };
       const middleware: DataDogMiddleware = new DataDogMiddleware();
       const tracerStub = sinon.stub(tracer);
@@ -145,6 +182,72 @@ describe('DataDogMiddleware', () => {
         expectedContext,
         (_: MiddlewareContext): Promise<void> => Promise.resolve()
       );
+    });
+
+    it('should not copy the message payload into span tags', async () => {
+      const context: MiddlewareContext = {
+        topic: 'test-topic',
+        payload: { orderId: 'secret-order', rows: [{ email: 'a@b.c' }] },
+      };
+      const traceStub = sinon
+        .stub(tracer, 'trace')
+        .callsFake(
+          (
+            _name: string,
+            _options: tracer.TraceOptions & SpanOptions,
+            fn: () => unknown
+          ) => fn()
+        );
+
+      await new DataDogMiddleware().consume(context, () => Promise.resolve());
+
+      const options = traceStub.firstCall.args[1] as tracer.TraceOptions &
+        SpanOptions;
+      expect(options.tags).to.deep.equal({ 'steveo.topic': 'test-topic' });
+    });
+
+    it('should use the configured operation name', async () => {
+      const traceStub = sinon
+        .stub(tracer, 'trace')
+        .callsFake(
+          (
+            _name: string,
+            _options: tracer.TraceOptions & SpanOptions,
+            fn: () => unknown
+          ) => fn()
+        );
+
+      await new DataDogMiddleware({
+        consumeOperationName: 'documentum-jobs.consume',
+      }).consume({ topic: 'test-topic', payload: {} }, () => Promise.resolve());
+
+      expect(traceStub.firstCall.args[0]).to.equal('documentum-jobs.consume');
+    });
+
+    it('should rethrow the same error when the handler throws', async () => {
+      const error = new Error('sync failure');
+      const middleware = new DataDogMiddleware();
+
+      const result = await middleware
+        .consume({ topic: 'test-topic', payload: {} }, () => {
+          throw error;
+        })
+        .catch(e => e);
+
+      expect(result).to.equal(error);
+    });
+
+    it('should reject with the same error when the handler rejects', async () => {
+      const error = new Error('async failure');
+      const middleware = new DataDogMiddleware();
+
+      const result = await middleware
+        .consume({ topic: 'test-topic', payload: {} }, () =>
+          Promise.reject(error)
+        )
+        .catch(e => e);
+
+      expect(result).to.equal(error);
     });
 
     it('should make sure tracer.tracer calls the next function with context as argument', async () => {
